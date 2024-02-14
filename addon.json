@@ -1,0 +1,14 @@
+{
+  "display_name": "AnkiDeckVault",
+  "module_name": "ankideckvault",
+  "repo_name": "ankideckvault",
+  "ankiweb_id": "1323335830",
+  "author": "Unlucky-Life",
+  "conflicts": [],
+  "targets": [
+    "anki21"
+  ],
+  "min_point_version": "2.1.36",
+  "max_tested_anki_version": "2.1.66",
+  "ankiweb_conflicts_with_local": false
+}
