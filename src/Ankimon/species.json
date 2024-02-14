@@ -1,0 +1,738 @@
+{
+    "bulbasaur": {
+        "id": "001",
+        "Species": "Starter"
+    },
+    "chikorita": {
+        "id": "152",
+        "Species": "Starter"
+    },
+    "treecko": {
+        "id": "252",
+        "Species": "Starter"
+    },
+    "turtwig": {
+        "id": "387",
+        "Species": "Starter"
+    },
+    "victini": {
+        "id": "494",
+        "Species": "Mythical"
+    },
+    "chespin": {
+        "id": "650",
+        "Species": "Starter"
+    },
+    "rowlet": {
+        "id": "722",
+        "Species": "Starter"
+    },
+    "grookey": {
+        "id": "810",
+        "Species": "Starter"
+    },
+    "sprigatito": {
+        "id": "906",
+        "Species": "Starter"
+    },
+    "snivy": {
+        "id": "495",
+        "Species": "Starter"
+    },
+    "charmander": {
+        "id": "004",
+        "Species": "Starter"
+    },
+    "cyndaquil": {
+        "id": "155",
+        "Species": "Starter"
+    },
+    "torchic": {
+        "id": "255",
+        "Species": "Starter"
+    },
+    "chimchar": {
+        "id": "390",
+        "Species": "Starter"
+    },
+    "fennekin": {
+        "id": "653",
+        "Species": "Starter"
+    },
+    "litten": {
+        "id": "725",
+        "Species": "Starter"
+    },
+    "scorbunny": {
+        "id": "813",
+        "Species": "Starter"
+    },
+    "fuecoco": {
+        "id": "909",
+        "Species": "Starter"
+    },
+    "tepig": {
+        "id": "498",
+        "Species": "Starter"
+    },
+    "squirtle": {
+        "id": "007",
+        "Species": "Starter"
+    },
+    "totodile": {
+        "id": "158",
+        "Species": "Starter"
+    },
+    "mudkip": {
+        "id": "258",
+        "Species": "Starter"
+    },
+    "piplup": {
+        "id": "393",
+        "Species": "Starter"
+    },
+    "froakie": {
+        "id": "656",
+        "Species": "Starter"
+    },
+    "popplio": {
+        "id": "728",
+        "Species": "Starter"
+    },
+    "sobble": {
+        "id": "816",
+        "Species": "Starter"
+    },
+    "quaxly": {
+        "id": "912",
+        "Species": "Starter"
+    },
+    "oshawott": {
+        "id": "501",
+        "Species": "Starter"
+    },
+    "budew": {
+        "id": "406",
+        "Species": "Baby"
+    },
+    "pichu": {
+        "id": "172",
+        "Species": "Baby"
+    },
+    "cleffa": {
+        "id": "173",
+        "Species": "Baby"
+    },
+    "cranidos": {
+        "id": "408",
+        "Species": "Fossil"
+    },
+    "igglybuff": {
+        "id": "174",
+        "Species": "Baby"
+    },
+    "rampardos": {
+        "id": "409",
+        "Species": "Fossil"
+    },
+    "togepi": {
+        "id": "175",
+        "Species": "Baby"
+    },
+    "shieldon": {
+        "id": "410",
+        "Species": "Fossil"
+    },
+    "bastiodon": {
+        "id": "411",
+        "Species": "Fossil"
+    },
+    "toxel": {
+        "id": "848",
+        "Species": "Baby"
+    },
+    "azurill": {
+        "id": "298",
+        "Species": "Baby"
+    },
+    "chingling": {
+        "id": "433",
+        "Species": "Baby"
+    },
+    "tyrunt": {
+        "id": "696",
+        "Species": "Fossil"
+    },
+    "tyrantrum": {
+        "id": "697",
+        "Species": "Fossil"
+    },
+    "amaura": {
+        "id": "698",
+        "Species": "Fossil"
+    },
+    "aurorus": {
+        "id": "699",
+        "Species": "Fossil"
+    },
+    "type: null": {
+        "id": "772",
+        "Species": "Legendary"
+    },
+    "bonsly": {
+        "id": "438",
+        "Species": "Baby"
+    },
+    "silvally": {
+        "id": "773",
+        "Species": "Legendary"
+    },
+    "mime jr.": {
+        "id": "439",
+        "Species": "Baby"
+    },
+    "happiny": {
+        "id": "440",
+        "Species": "Baby"
+    },
+    "munchlax": {
+        "id": "446",
+        "Species": "Baby"
+    },
+    "riolu": {
+        "id": "447",
+        "Species": "Baby"
+    },
+    "tapu koko": {
+        "id": "785",
+        "Species": "Legendary"
+    },
+    "tapu lele": {
+        "id": "786",
+        "Species": "Legendary"
+    },
+    "tapu bulu": {
+        "id": "787",
+        "Species": "Legendary"
+    },
+    "xerneas": {
+        "id": "716",
+        "Species": "Legendary"
+    },
+    "tapu fini": {
+        "id": "788",
+        "Species": "Legendary"
+    },
+    "yveltal": {
+        "id": "717",
+        "Species": "Legendary"
+    },
+    "cosmog": {
+        "id": "789",
+        "Species": "Legendary"
+    },
+    "zygarde": {
+        "id": "718",
+        "Species": "Legendary"
+    },
+    "cosmoem": {
+        "id": "790",
+        "Species": "Legendary"
+    },
+    "diancie": {
+        "id": "719",
+        "Species": "Mythical"
+    },
+    "solgaleo": {
+        "id": "791",
+        "Species": "Legendary"
+    },
+    "tirtouga": {
+        "id": "564",
+        "Species": "Fossil"
+    },
+    "hoopa": {
+        "id": "720",
+        "Species": "Mythical"
+    },
+    "lunala": {
+        "id": "792",
+        "Species": "Legendary"
+    },
+    "dracozolt": {
+        "id": "880",
+        "Species": "Fossil"
+    },
+    "mantyke": {
+        "id": "458",
+        "Species": "Baby"
+    },
+    "carracosta": {
+        "id": "565",
+        "Species": "Fossil"
+    },
+    "volcanion": {
+        "id": "721",
+        "Species": "Mythical"
+    },
+    "nihilego": {
+        "id": "793",
+        "Species": "Ultra"
+    },
+    "arctozolt": {
+        "id": "881",
+        "Species": "Fossil"
+    },
+    "archeops": {
+        "id": "567",
+        "Species": "Fossil"
+    },
+    "pheromosa": {
+        "id": "795",
+        "Species": "Ultra"
+    },
+    "arctovish": {
+        "id": "883",
+        "Species": "Fossil"
+    },
+    "xurkitree": {
+        "id": "796",
+        "Species": "Ultra"
+    },
+    "celesteela": {
+        "id": "797",
+        "Species": "Ultra"
+    },
+    "kartana": {
+        "id": "798",
+        "Species": "Ultra"
+    },
+    "guzzlord": {
+        "id": "799",
+        "Species": "Ultra"
+    },
+    "necrozma": {
+        "id": "800",
+        "Species": "Legendary"
+    },
+    "zacian": {
+        "id": "888",
+        "Species": "Legendary"
+    },
+    "great tusk": {
+        "id": "984",
+        "Species": "Paradox"
+    },
+    "magearna": {
+        "id": "801",
+        "Species": "Mythical"
+    },
+    "zamazenta": {
+        "id": "889",
+        "Species": "Legendary"
+    },
+    "scream tail": {
+        "id": "985",
+        "Species": "Paradox"
+    },
+    "marshadow": {
+        "id": "802",
+        "Species": "Mythical"
+    },
+    "eternatus": {
+        "id": "890",
+        "Species": "Legendary"
+    },
+    "brute bonnet": {
+        "id": "986",
+        "Species": "Paradox"
+    },
+    "poipole": {
+        "id": "803",
+        "Species": "Ultra"
+    },
+    "kubfu": {
+        "id": "891",
+        "Species": "Legendary"
+    },
+    "flutter mane": {
+        "id": "987",
+        "Species": "Paradox"
+    },
+    "naganadel": {
+        "id": "804",
+        "Species": "Ultra"
+    },
+    "urshifu": {
+        "id": "892",
+        "Species": "Legendary"
+    },
+    "slither wing": {
+        "id": "988",
+        "Species": "Paradox"
+    },
+    "stakataka": {
+        "id": "805",
+        "Species": "Ultra"
+    },
+    "zarude": {
+        "id": "893",
+        "Species": "Mythical"
+    },
+    "sandy shocks": {
+        "id": "989",
+        "Species": "Paradox"
+    },
+    "tyrogue": {
+        "id": "236",
+        "Species": "Baby"
+    },
+    "blacephalon": {
+        "id": "806",
+        "Species": "Ultra"
+    },
+    "regieleki": {
+        "id": "894",
+        "Species": "Legendary"
+    },
+    "iron treads": {
+        "id": "990",
+        "Species": "Paradox"
+    },
+    "zeraora": {
+        "id": "807",
+        "Species": "Mythical"
+    },
+    "regidrago": {
+        "id": "895",
+        "Species": "Legendary"
+    },
+    "iron bundle": {
+        "id": "991",
+        "Species": "Paradox"
+    },
+    "smoochum": {
+        "id": "238",
+        "Species": "Baby"
+    },
+    "meltan": {
+        "id": "808",
+        "Species": "Mythical"
+    },
+    "glastrier": {
+        "id": "896",
+        "Species": "Legendary"
+    },
+    "iron hands": {
+        "id": "992",
+        "Species": "Paradox"
+    },
+    "elekid": {
+        "id": "239",
+        "Species": "Baby"
+    },
+    "melmetal": {
+        "id": "809",
+        "Species": "Mythical"
+    },
+    "spectrier": {
+        "id": "897",
+        "Species": "Legendary"
+    },
+    "iron jugulis": {
+        "id": "993",
+        "Species": "Paradox"
+    },
+    "iron thorns": {
+        "id": "995",
+        "Species": "Paradox"
+    },
+    "raikou": {
+        "id": "243",
+        "Species": "Legendary"
+    },
+    "entei": {
+        "id": "244",
+        "Species": "Legendary"
+    },
+    "suicune": {
+        "id": "245",
+        "Species": "Legendary"
+    },
+    "lileep": {
+        "id": "345",
+        "Species": "Fossil"
+    },
+    "uxie": {
+        "id": "480",
+        "Species": "Legendary"
+    },
+    "cradily": {
+        "id": "346",
+        "Species": "Fossil"
+    },
+    "mesprit": {
+        "id": "481",
+        "Species": "Legendary"
+    },
+    "anorith": {
+        "id": "347",
+        "Species": "Fossil"
+    },
+    "azelf": {
+        "id": "482",
+        "Species": "Legendary"
+    },
+    "enamorus": {
+        "id": "905",
+        "Species": "Legendary"
+    },
+    "wo-chien": {
+        "id": "1001",
+        "Species": "Legendary"
+    },
+    "lugia": {
+        "id": "249",
+        "Species": "Legendary"
+    },
+    "palkia": {
+        "id": "484",
+        "Species": "Legendary"
+    },
+    "ting-lu": {
+        "id": "1003",
+        "Species": "Legendary"
+    },
+    "ho-oh": {
+        "id": "250",
+        "Species": "Legendary"
+    },
+    "heatran": {
+        "id": "485",
+        "Species": "Legendary"
+    },
+    "chi-yu": {
+        "id": "1004",
+        "Species": "Legendary"
+    },
+    "celebi": {
+        "id": "251",
+        "Species": "Mythical"
+    },
+    "regigigas": {
+        "id": "486",
+        "Species": "Legendary"
+    },
+    "roaring moon": {
+        "id": "1005",
+        "Species": "Paradox"
+    },
+    "cresselia": {
+        "id": "488",
+        "Species": "Legendary"
+    },
+    "koraidon": {
+        "id": "1007",
+        "Species": "Legendary"
+    },
+    "phione": {
+        "id": "489",
+        "Species": "Mythical"
+    },
+    "miraidon": {
+        "id": "1008",
+        "Species": "Legendary"
+    },
+    "manaphy": {
+        "id": "490",
+        "Species": "Mythical"
+    },
+    "walking wake": {
+        "id": "1009",
+        "Species": "Paradox"
+    },
+    "darkrai": {
+        "id": "491",
+        "Species": "Mythical"
+    },
+    "iron leaves": {
+        "id": "1010",
+        "Species": "Paradox"
+    },
+    "shaymin": {
+        "id": "492",
+        "Species": "Mythical"
+    },
+    "arceus": {
+        "id": "493",
+        "Species": "Mythical"
+    },
+    "wynaut": {
+        "id": "360",
+        "Species": "Baby"
+    },
+    "okidogi": {
+        "id": "1014",
+        "Species": "Legendary"
+    },
+    "munkidori": {
+        "id": "1015",
+        "Species": "Legendary"
+    },
+    "fezandipiti": {
+        "id": "1016",
+        "Species": "Legendary"
+    },
+    "ogerpon": {
+        "id": "1017",
+        "Species": "Legendary"
+    },
+    "gouging fire": {
+        "id": "1020",
+        "Species": "Paradox"
+    },
+    "raging bolt": {
+        "id": "1021",
+        "Species": "Paradox"
+    },
+    "iron boulder": {
+        "id": "1022",
+        "Species": "Paradox"
+    },
+    "iron crown": {
+        "id": "1023",
+        "Species": "Paradox"
+    },
+    "terapagos": {
+        "id": "1024",
+        "Species": "Legendary"
+    },
+    "pecharunt": {
+        "id": "1025",
+        "Species": "Mythical"
+    },
+    "regirock": {
+        "id": "377",
+        "Species": "Legendary"
+    },
+    "regice": {
+        "id": "378",
+        "Species": "Legendary"
+    },
+    "registeel": {
+        "id": "379",
+        "Species": "Legendary"
+    },
+    "latias": {
+        "id": "380",
+        "Species": "Legendary"
+    },
+    "latios": {
+        "id": "381",
+        "Species": "Legendary"
+    },
+    "kyogre": {
+        "id": "382",
+        "Species": "Legendary"
+    },
+    "groudon": {
+        "id": "383",
+        "Species": "Legendary"
+    },
+    "rayquaza": {
+        "id": "384",
+        "Species": "Legendary"
+    },
+    "jirachi": {
+        "id": "385",
+        "Species": "Mythical"
+    },
+    "deoxys": {
+        "id": "386",
+        "Species": "Mythical"
+    },
+    "omanyte": {
+        "id": "138",
+        "Species": "Fossil"
+    },
+    "omastar": {
+        "id": "139",
+        "Species": "Fossil"
+    },
+    "kabuto": {
+        "id": "140",
+        "Species": "Fossil"
+    },
+    "kabutops": {
+        "id": "141",
+        "Species": "Fossil"
+    },
+    "aerodactyl": {
+        "id": "142",
+        "Species": "Fossil"
+    },
+    "articuno": {
+        "id": "144",
+        "Species": "Legendary"
+    },
+    "zapdos": {
+        "id": "145",
+        "Species": "Legendary"
+    },
+    "cobalion": {
+        "id": "638",
+        "Species": "Legendary"
+    },
+    "moltres": {
+        "id": "146",
+        "Species": "Legendary"
+    },
+    "terrakion": {
+        "id": "639",
+        "Species": "Legendary"
+    },
+    "virizion": {
+        "id": "640",
+        "Species": "Legendary"
+    },
+    "tornadus": {
+        "id": "641",
+        "Species": "Legendary"
+    },
+    "thundurus": {
+        "id": "642",
+        "Species": "Legendary"
+    },
+    "mewtwo": {
+        "id": "150",
+        "Species": "Legendary"
+    },
+    "reshiram": {
+        "id": "643",
+        "Species": "Legendary"
+    },
+    "mew": {
+        "id": "151",
+        "Species": "Mythical"
+    },
+    "zekrom": {
+        "id": "644",
+        "Species": "Legendary"
+    },
+    "kyurem": {
+        "id": "646",
+        "Species": "Legendary"
+    },
+    "keldeo": {
+        "id": "647",
+        "Species": "Mythical"
+    },
+    "meloetta": {
+        "id": "648",
+        "Species": "Mythical"
+    },
+    "genesect": {
+        "id": "649",
+        "Species": "Mythical"
+    }
+}
