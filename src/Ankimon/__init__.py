@@ -1529,7 +1529,6 @@ if database_complete and sprites_complete != False:
         starter = True
     except:
         starter = False
-        showInfo("You can pick your main pokemon now")
     name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
     battlescene_file = random_battle_scene()
 
@@ -3093,32 +3092,36 @@ def PokemonTradeIn(number_code, old_pokemon_name):
 
 def PokemonFree(name):
     global mypokemon_path
-    # Load the data from the file
-    with open(mypokemon_path, 'r') as file:
-        pokemon_list = json.load(file)
-
-    # Find and remove the Pokemon with the given name
-    pokemon_list = [p for p in pokemon_list if p['name'] != name]
-
-    # Write the updated data back to the file
-    with open(mypokemon_path, 'w') as file:
-        json.dump(pokemon_list, file, indent=2)
-
     global mainpokemon_path
     # Load the data from the file
     with open(mainpokemon_path, 'r') as file:
-        pokemons = json.load(file)
+        pokemon_data = json.load(file)
 
-    # Find and remove the Pokemon with the given name
-    pokemons = [p for p in pokemons if p['name'] != name]
+    for pokemons in pokemon_data:
+        pokemon_name = pokemons["name"]
 
-    # Write the updated data back to the file
-    with open(mainpokemon_path, 'w') as file:
-        json.dump(pokemons, file, indent=2)
+    if pokemon_name != name:
+        with open(mypokemon_path, 'r') as file:
+            pokemon_list = json.load(file)
+
+        # Find and remove the Pokemon with the given name
+        pokemon_list = [p for p in pokemon_list if p['name'] != name]
+
+        # Write the updated data back to the file
+        with open(mypokemon_path, 'w') as file:
+            json.dump(pokemon_list, file, indent=2)
 
 
-    showInfo(f"{name.capitalize()} has been let free.")
+        # Find and remove the Pokemon with the given name
+        pokemon_data = [p for p in pokemons if p['name'] != name]
 
+        # Write the updated data back to the file
+        with open(mainpokemon_path, 'w') as file:
+            json.dump(pokemon_data, file, indent=2)
+
+        showInfo(f"{name.capitalize()} has been let free.")
+    else:
+        showWarning("You can't free your Main Pokemon !")
 
 def createStatBar(color, value):
     pixmap = QPixmap(200, 10)
