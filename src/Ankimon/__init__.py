@@ -5594,6 +5594,12 @@ class AttackDialog(QDialog):
         self.selected_attack = sender.text()
         self.reject()
 
+def report_bug():
+    # Specify the URL of the Pokémon Showdown Team Builder
+    bug_url = "https://forms.gle/7pJZNcRaUJx5WRybA"
+
+    # Open the Team Builder in the default web browser
+    QDesktopServices.openUrl(QUrl(bug_url))
 
 #buttonlayout
 mw.pokemenu = QMenu('&Ankimon', mw)
@@ -5655,6 +5661,10 @@ mw.pokemenu.addAction(test_action14)
 test_action13 = QAction("About and License", mw)
 test_action13.triggered.connect(license.show_window)
 mw.pokemenu.addAction(test_action13)
+
+test_action16 = QAction("Report Bug", mw)
+test_action16.triggered.connect(report_bug)
+mw.pokemenu.addAction(test_action16)
 
 if sounds is True:
     def play_sound():
