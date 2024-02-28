@@ -1,0 +1,4102 @@
+[
+    {
+        "name": "Bulbasaur",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Chikorita",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Treecko",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Turtwig",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Victini",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Chespin",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Rowlet",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Grookey",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Sprigatito",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Ivysaur",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bayleef",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Grovyle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Grotle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Snivy",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Quilladin",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dartrix",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Thwackey",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Floragato",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Venusaur",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Meganium",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sceptile",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Torterra",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Servine",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Chesnaught",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Decidueye",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rillaboom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Meowscarada",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Charmander",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Cyndaquil",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Torchic",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Chimchar",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Serperior",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Fennekin",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Litten",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Scorbunny",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Fuecoco",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Charmeleon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Quilava",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Combusken",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Monferno",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tepig",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Braixen",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Torracat",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Raboot",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Crocalor",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Charizard",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Typhlosion",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Blaziken",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Infernape",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pignite",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Delphox",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Incineroar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cinderace",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Skeledirge",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Squirtle",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Totodile",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Mudkip",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Piplup",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Emboar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Froakie",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Popplio",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Sobble",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Quaxly",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Wartortle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Croconaw",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Marshtomp",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Prinplup",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Oshawott",
+        "Tier": "Starter"
+    },
+    {
+        "name": "Frogadier",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Brionne",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Drizzile",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Quaxwell",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Blastoise",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Feraligatr",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Swampert",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Empoleon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dewott",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Greninja",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Primarina",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Inteleon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Quaquaval",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Caterpie",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sentret",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Poochyena",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Starly",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Samurott",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bunnelby",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pikipek",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Skwovet",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lechonk",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Metapod",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Furret",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mightyena",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Staravia",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Patrat",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Diggersby",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Trumbeak",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Greedent",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Oinkologne",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Butterfree",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hoothoot",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Zigzagoon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Staraptor",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Watchog",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Fletchling",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Toucannon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rookidee",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tarountula",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Weedle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Noctowl",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Linoone",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bidoof",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lillipup",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Fletchinder",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Yungoos",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Corvisquire",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Spidops",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kakuna",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ledyba",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wurmple",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bibarel",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Herdier",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Talonflame",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gumshoos",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Corviknight",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Nymble",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Beedrill",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ledian",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Silcoon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kricketot",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Stoutland",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Scatterbug",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Grubbin",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Blipbug",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lokix",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pidgey",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Spinarak",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Beautifly",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kricketune",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Purrloin",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Spewpa",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Charjabug",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dottler",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pawmi",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pidgeotto",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ariados",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cascoon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Shinx",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Liepard",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vivillon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vikavolt",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Orbeetle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pawmo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pidgeot",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Crobat",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dustox",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Luxio",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pansage",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Litleo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Crabrawler",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Nickit",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pawmot",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rattata",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Chinchou",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lotad",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Luxray",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Simisage",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pyroar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Crabominable",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Thievul",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tandemaus",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Raticate",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lanturn",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lombre",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Budew",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Pansear",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Flab\u00e9b\u00e9",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Oricorio",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gossifleur",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Maushold",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Spearow",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pichu",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Ludicolo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Roserade",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Simisear",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Floette",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cutiefly",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Eldegoss",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Fidough",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Fearow",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cleffa",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Seedot",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cranidos",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Panpour",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Florges",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ribombee",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wooloo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dachsbun",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ekans",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Igglybuff",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Nuzleaf",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rampardos",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Simipour",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Skiddo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rockruff",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dubwool",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Smoliv",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Arbok",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Togepi",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Shiftry",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Shieldon",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Munna",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gogoat",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lycanroc",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Chewtle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dolliv",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pikachu",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Togetic",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Taillow",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bastiodon",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Musharna",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pancham",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wishiwashi",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Drednaw",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Arboliva",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Raichu",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Natu",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Swellow",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Burmy",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pidove",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pangoro",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mareanie",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Yamper",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Squawkabilly",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sandshrew",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Xatu",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wingull",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wormadam",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tranquill",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Furfrou",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Toxapex",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Boltund",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Nacli",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sandslash",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mareep",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pelipper",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mothim",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Unfezant",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Espurr",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mudbray",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rolycoly",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Naclstack",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Nidoran",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Flaaffy",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ralts",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Combee",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Blitzle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Meowstic",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mudsdale",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Carkol",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Garganacl",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Nidorina",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ampharos",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kirlia",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vespiquen",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Zebstrika",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Honedge",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dewpider",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Coalossal",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Charcadet",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Nidoqueen",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bellossom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gardevoir",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pachirisu",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Roggenrola",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Doublade",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Araquanid",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Applin",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Armarouge",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Nidoran\u2642",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Marill",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Surskit",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Buizel",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Boldore",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Aegislash",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Fomantis",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Flapple",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ceruledge",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Nidorino",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Azumarill",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Masquerain",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Floatzel",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gigalith",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Spritzee",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lurantis",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Appletun",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tadbulb",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Nidoking",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sudowoodo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Shroomish",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cherubi",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Woobat",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Aromatisse",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Morelull",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Silicobra",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bellibolt",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Clefairy",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Politoed",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Breloom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cherrim",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Swoobat",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Swirlix",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Shiinotic",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sandaconda",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wattrel",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Clefable",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hoppip",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Slakoth",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Shellos",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Drilbur",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Slurpuff",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Salandit",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cramorant",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kilowattrel",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vulpix",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Skiploom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vigoroth",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gastrodon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Excadrill",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Inkay",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Salazzle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Arrokuda",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Maschiff",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ninetales",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Jumpluff",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Slaking",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ambipom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Audino",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Malamar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Stufful",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Barraskewda",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mabosstiff",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Jigglypuff",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Aipom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Nincada",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Drifloon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Timburr",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Binacle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bewear",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Toxel",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Shroodle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wigglytuff",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sunkern",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ninjask",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Drifblim",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gurdurr",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Barbaracle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bounsweet",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Toxtricity",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Grafaiai",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Zubat",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sunflora",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Shedinja",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Buneary",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Conkeldurr",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Skrelp",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Steenee",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sizzlipede",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bramblin",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Golbat",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Yanma",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Whismur",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lopunny",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tympole",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dragalge",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tsareena",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Centiskorch",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Brambleghast",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Oddish",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wooper",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Loudred",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mismagius",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Palpitoad",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Clauncher",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Comfey",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Clobbopus",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Toedscool",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gloom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Quagsire",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Exploud",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Honchkrow",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Seismitoad",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Clawitzer",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Oranguru",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Grapploct",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Toedscruel",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vileplume",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Espeon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Makuhita",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Glameow",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Throh",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Helioptile",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Passimian",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sinistea",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Klawf",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Paras",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Umbreon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hariyama",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Purugly",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sawk",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Heliolisk",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wimpod",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Polteageist",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Capsakid",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Parasect",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Murkrow",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Azurill",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Chingling",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Sewaddle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tyrunt",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Golisopod",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hatenna",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Scovillain",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Venonat",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Slowking",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Nosepass",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Stunky",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Swadloon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tyrantrum",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Sandygast",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hattrem",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rellor",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Venomoth",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Misdreavus",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Skitty",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Skuntank",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Leavanny",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Amaura",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Palossand",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hatterene",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rabsca",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Diglett",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Unown",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Delcatty",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bronzor",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Venipede",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Aurorus",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Pyukumuku",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Impidimp",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Flittle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dugtrio",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wobbuffet",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sableye",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bronzong",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Whirlipede",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sylveon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Type: Null",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Morgrem",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Espathra",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Meowth",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Girafarig",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mawile",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bonsly",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Scolipede",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hawlucha",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Silvally",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Grimmsnarl",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tinkatink",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Persian",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pineco",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Aron",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mime Jr.",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Cottonee",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dedenne",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Minior",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Obstagoon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tinkatuff",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Psyduck",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Forretress",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lairon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Happiny",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Whimsicott",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Carbink",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Komala",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Perrserker",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tinkaton",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Golduck",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dunsparce",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Aggron",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Chatot",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Petilil",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Goomy",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Turtonator",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cursola",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wiglett",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mankey",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gligar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Meditite",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Spiritomb",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lilligant",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sliggoo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Togedemaru",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sirfetch'd",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wugtrio",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Primeape",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Steelix",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Medicham",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gible",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Basculin",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Goodra",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mimikyu",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mr. Rime",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bombirdier",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Growlithe",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Snubbull",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Electrike",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gabite",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sandile",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Klefki",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bruxish",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Runerigus",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Finizen",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Arcanine",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Granbull",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Manectric",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Garchomp",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Krokorok",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Phantump",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Drampa",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Milcery",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Palafin",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Poliwag",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Qwilfish",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Plusle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Munchlax",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Krookodile",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Trevenant",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dhelmise",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Alcremie",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Varoom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Poliwhirl",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Scizor",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Minun",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Riolu",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Darumaka",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pumpkaboo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Jangmo-o",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Falinks",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Revavroom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Poliwrath",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Shuckle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Volbeat",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lucario",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Darmanitan",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gourgeist",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hakamo-o",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pincurchin",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cyclizar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Abra",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Heracross",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Illumise",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hippopotas",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Maractus",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bergmite",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kommo-o",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Snom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Orthworm",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kadabra",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sneasel",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Roselia",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hippowdon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dwebble",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Avalugg",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tapu Koko",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Frosmoth",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Glimmet",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Alakazam",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Teddiursa",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gulpin",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Skorupi",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Crustle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Noibat",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tapu Lele",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Stonjourner",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Glimmora",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Machop",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ursaring",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Swalot",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Drapion",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Scraggy",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Noivern",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tapu Bulu",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Eiscue",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Greavard",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Machoke",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Slugma",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Carvanha",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Croagunk",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Scrafty",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Xerneas",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Tapu Fini",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Indeedee",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Houndstone",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Machamp",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Magcargo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sharpedo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Toxicroak",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sigilyph",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Yveltal",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Cosmog",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Morpeko",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Flamigo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bellsprout",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Swinub",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wailmer",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Carnivine",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Yamask",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Zygarde",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Cosmoem",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Cufant",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cetoddle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Weepinbell",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Piloswine",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wailord",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Finneon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cofagrigus",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Diancie",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Solgaleo",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Copperajah",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cetitan",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Victreebel",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Corsola",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Numel",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lumineon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tirtouga",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Hoopa",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Lunala",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Dracozolt",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Veluza",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tentacool",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Remoraid",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Camerupt",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mantyke",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Carracosta",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Volcanion",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Nihilego",
+        "Tier": "Ultra"
+    },
+    {
+        "name": "Arctozolt",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Dondozo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tentacruel",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Octillery",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Torkoal",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Snover",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Archen",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Buzzwole",
+        "Tier": "Ultra"
+    },
+    {
+        "name": "Dracovish",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Tatsugiri",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Geodude",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Delibird",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Spoink",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Abomasnow",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Archeops",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Pheromosa",
+        "Tier": "Ultra"
+    },
+    {
+        "name": "Arctovish",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Annihilape",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Graveler",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mantine",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Grumpig",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Weavile",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Trubbish",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Xurkitree",
+        "Tier": "Ultra"
+    },
+    {
+        "name": "Duraludon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Clodsire",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Golem",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Skarmory",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Spinda",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Magnezone",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Garbodor",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Celesteela",
+        "Tier": "Ultra"
+    },
+    {
+        "name": "Dreepy",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Farigiraf",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ponyta",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Houndour",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Trapinch",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lickilicky",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Zorua",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kartana",
+        "Tier": "Ultra"
+    },
+    {
+        "name": "Drakloak",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dudunsparce",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rapidash",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Houndoom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vibrava",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rhyperior",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Zoroark",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Guzzlord",
+        "Tier": "Ultra"
+    },
+    {
+        "name": "Dragapult",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kingambit",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Slowpoke",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kingdra",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Flygon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tangrowth",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Minccino",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Necrozma",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Zacian",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Great Tusk",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Slowbro",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Phanpy",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cacnea",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Electivire",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cinccino",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Magearna[e]",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Zamazenta",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Scream Tail",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Magnemite",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Donphan",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cacturne",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Magmortar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gothita",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Marshadow",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Eternatus",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Brute Bonnet",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Magneton",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Porygon2",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Swablu",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Togekiss",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gothorita",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Poipole",
+        "Tier": "Ultra"
+    },
+    {
+        "name": "Kubfu",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Flutter Mane",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Farfetch'd",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Stantler",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Altaria",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Yanmega",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gothitelle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Naganadel",
+        "Tier": "Ultra"
+    },
+    {
+        "name": "Urshifu",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Slither Wing",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Doduo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Smeargle",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Zangoose",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Leafeon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Solosis",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Stakataka",
+        "Tier": "Ultra"
+    },
+    {
+        "name": "Zarude",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Sandy Shocks",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Dodrio",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tyrogue",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Seviper",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Glaceon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Duosion",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Blacephalon",
+        "Tier": "Ultra"
+    },
+    {
+        "name": "Regieleki",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Iron Treads",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Seel",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hitmontop",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lunatone",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gliscor",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Reuniclus",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Zeraora",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Regidrago",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Iron Bundle",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Dewgong",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Smoochum",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Solrock",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mamoswine",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ducklett",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Meltan",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Glastrier",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Iron Hands",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Grimer",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Elekid",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Barboach",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Porygon-Z",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Swanna",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Melmetal",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Spectrier",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Iron Jugulis",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Muk",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Magby",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Whiscash",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gallade",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vanillite",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Calyrex",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Iron Moth",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Shellder",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Miltank",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Corphish",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Probopass",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vanillish",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wyrdeer",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Iron Thorns",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Cloyster",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Blissey",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Crawdaunt",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dusknoir",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vanilluxe",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kleavor",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Frigibax",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gastly",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Raikou",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Baltoy",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Froslass",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Deerling",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ursaluna",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Arctibax",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Haunter",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Entei",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Claydol",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rotom",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sawsbuck",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Basculegion",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Baxcalibur",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gengar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Suicune",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Lileep",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Uxie",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Emolga",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sneasler",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gimmighoul",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Onix",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Larvitar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cradily",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Mesprit",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Karrablast",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Overqwil",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gholdengo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Drowzee",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pupitar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Anorith",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Azelf",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Escavalier",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Enamorus",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Wo-Chien",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Hypno",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tyranitar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Armaldo",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Dialga",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Foongus",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Chien-Pao",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Krabby",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lugia",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Feebas",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Palkia",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Amoonguss",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ting-Lu",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Kingler",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ho-oh",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Milotic",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Heatran",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Frillish",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Chi-Yu",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Voltorb",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Celebi[e]",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Castform",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Regigigas",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Jellicent",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Roaring Moon",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Electrode",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kecleon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Giratina",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Alomomola",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Iron Valiant",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Exeggcute",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Shuppet",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cresselia",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Joltik",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Koraidon",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Exeggutor",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Banette",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Phione[e]",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Galvantula",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Miraidon",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Cubone",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Duskull",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Manaphy[e]",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Ferroseed",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Walking Wake",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Marowak",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dusclops",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Darkrai [e]",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Ferrothorn",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Iron Leaves",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Hitmonlee",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tropius",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Shaymin[e]",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Klink",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Dipplin",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hitmonchan",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Chimecho",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Arceus[e]",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Klang",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Poltchageist",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lickitung",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Absol",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Klinklang",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sinistcha",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Koffing",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Wynaut",
+        "Tier": "Baby"
+    },
+    {
+        "name": "Tynamo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Okidogi",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Weezing",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Snorunt",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Eelektrik",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Munkidori",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Rhyhorn",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Glalie",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Eelektross",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Fezandipiti",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Rhydon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Spheal",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Elgyem",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ogerpon",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Chansey",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Sealeo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Beheeyem",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Archaludon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tangela",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Walrein",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Litwick",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Hydrapple",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kangaskhan",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Clamperl",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lampent",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gouging Fire",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Horsea",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Huntail",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Chandelure",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Raging Bolt",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Seadra",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gorebyss",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Axew",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Iron Boulder",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Goldeen",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Relicanth",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Fraxure",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Iron Crown",
+        "Tier": "Paradox"
+    },
+    {
+        "name": "Seaking",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Luvdisc",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Haxorus",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Terapagos",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Staryu",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Bagon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cubchoo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pecharunt",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Starmie",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Shelgon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Beartic",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mr. Mime",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Salamence",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Cryogonal",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Scyther",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Beldum",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Shelmet",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Jynx",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Metang",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Accelgor",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Electabuzz",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Metagross",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Stunfisk",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Magmar",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Regirock",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Mienfoo",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Pinsir",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Regice",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Mienshao",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tauros",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Registeel",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Druddigon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Magikarp",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Latias",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Golett",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Gyarados",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Latios",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Golurk",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Lapras",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kyogre",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Pawniard",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Ditto",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Groudon",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Bisharp",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Eevee",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Rayquaza",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Bouffalant",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vaporeon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Jirachi[e]",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Rufflet",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Jolteon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Deoxys[e]",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Braviary",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Flareon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Vullaby",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Porygon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Mandibuzz",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Omanyte",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Heatmor",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Omastar",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Durant",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kabuto",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Deino",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Kabutops",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Zweilous",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Aerodactyl",
+        "Tier": "Fossil"
+    },
+    {
+        "name": "Hydreigon",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Snorlax",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Larvesta",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Articuno",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Volcarona",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Zapdos",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Cobalion",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Moltres",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Terrakion",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Dratini",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Virizion",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Dragonair",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Tornadus",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Dragonite",
+        "Tier": "Normal"
+    },
+    {
+        "name": "Thundurus",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Mewtwo",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Reshiram",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Mew[e]",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Zekrom",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Landorus",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Kyurem",
+        "Tier": "Legendary"
+    },
+    {
+        "name": "Keldeo[e]",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Meloetta",
+        "Tier": "Mythical"
+    },
+    {
+        "name": "Genesect",
+        "Tier": "Mythical"
+    }
+]

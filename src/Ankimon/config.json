@@ -1,0 +1,15 @@
+{
+  "gen1": true,
+  "gen2": true,
+  "gen3": true,
+  "gen4": true,
+  "gen5": true,
+  "gen6": true,
+  "gen7": true,
+  "gen8": true,
+  "gen9": true,
+  "cards_per_round": 2,
+  "only_use_online_sprites": false,
+  "reviewer_image_gif": false,
+  "sounds": false
+}
