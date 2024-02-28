@@ -44,14 +44,12 @@ addon_dir = Path(__file__).parents[0]
 currdirname = addon_dir
 
 def check_folders_exist(parent_directory, folder):
-    # Check if both folders exist in the parent directory
     folder_path = os.path.join(parent_directory, folder)
     if not os.path.isdir(folder_path):
        #showInfo(f"Folder '{folder}' does not exist in '{parent_directory}'")
        return False
     else:
-        #showInfo("Both 'back_default' and 'front_default' folders exist in the specified directory.")
-        return True
+       return True
 
 def check_file_exists(folder, filename):
     file_path = os.path.join(folder, filename)
@@ -125,11 +123,12 @@ class CheckFiles(QDialog):
     def __init__(self):
         super().__init__()
 
-        check_files_message = "Pokemon Files downloaded:"
-        if database_complete != True:
-            check_files_message += f" \n All Pokemon Sprites complete: {database_complete} \n  Please go to Ankimon => 'Download Sprite Files' to download the needed files"
+        check_files_message = "Ankimon Files:"
         if sprites_complete != True:
-            check_files_message += f" \n All Pokemon Files complete: {database_complete} \n  Please go to Ankimon => 'Download Database Files' to download the needed files"
+            check_files_message += " \n Sprite Files incomplete. \n  Please go to Ankimon => 'Download Sprite Files' to download the needed files"
+        if database_complete != True:
+            check_files_message += " \n Data Files incomplete. \n  Please go to Ankimon => 'Download Database Files' to download the needed files"
+        check_files_message += "\n Once all files have been download.\n Please restart Anki"
         # Set the window title for the dialog
         self.setWindowTitle("Ankimon Files Checker")
 
@@ -953,6 +952,7 @@ def get_pokemon_by_category(category_name):
 def save_caught_pokemon(nickname):
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
+    stats = search_pokedex(name.lower(),"baseStats")
     stats["xp"] = 0
     ev = {
       "hp": 0,
@@ -1521,17 +1521,15 @@ def mainpokemon_data():
                     mainpokemon_gender = main_pokemon_data["gender"]
                     return mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender
     except:
-        showInfo("Please Choose a Mainpokemon !")
-
+            pass
 #get main pokemon details:
 if database_complete and sprites_complete != False:
     try:
         mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender = mainpokemon_data()
         starter = True
-        showInfo("You can pick your main pokemon now")
     except:
         starter = False
-        showInfo("No Mainpokemon selected yet!")
+        showInfo("You can pick your main pokemon now")
     name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
     battlescene_file = random_battle_scene()
 
@@ -3294,16 +3292,14 @@ class Downloader(QObject):
             else:
                 try:
                     self.pokedex = []
-                    #id = 980
-                    id = 1001
+                    id = 898
                     for pokemon_id in range(1, id):
                         self.create_pokedex(pokemon_id)
-                        progress = int((pokemon_id / id) * 100)
+                        progress = int(((pokemon_id / id) + 1) * 100)
                         self.progress_updated.emit(progress)
                     filename = addon_dir / "pokeapi_db.json"
                     with open(filename, 'w') as json_file:
                         json.dump(self.pokedex, json_file, indent=2)
-                        #showInfo("PokeApi Databank saved!")
                         self.download_complete.emit()
                 except Exception as e:
                     showWarning(f"An error occured {e}")
@@ -3955,7 +3951,7 @@ class AgreementDialog(QDialog):
 
 life_bar_injected = False
 
-if sprites_complete != False and database_complete != False:
+if sprites_complete and database_complete != False:
     def reviewer_reset_life_bar_inject():
         global life_bar_injected
         life_bar_injected = False
@@ -4954,7 +4950,7 @@ class StarterWindow(QWidget):
         self.setMaximumHeight(340)
         self.show()
         self.starter = True
-        showInfo("You have chosen your Starter Pokemon ! \n You can now close this window !")
+        showInfo("You have chosen your Starter Pokemon ! \n You can now close this window ! \n Please restart your Anki to restart your Pokemon Journey!")
 
     def pokemon_display_starter_buttons(self, water_start, fire_start, grass_start):
         # Create buttons for catching and killing the Pokémon
@@ -5601,7 +5597,7 @@ mw.pokemenu = QMenu('&Ankimon', mw)
 # and add it to the tools menu
 mw.form.menubar.addMenu(mw.pokemenu)
 
-if back_sprites and front_sprites != False:
+if sprites_complete and database_complete != False:
     pokecol_action = QAction("Show Pokemon Collection", mw)
     # set it to call testFunction when it's clicked
     mw.pokemenu.addAction(pokecol_action)
