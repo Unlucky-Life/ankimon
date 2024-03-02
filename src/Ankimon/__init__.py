@@ -4117,6 +4117,7 @@ def choose_pokemon(starter_name):
     name = search_pokedex(starter_name, "name")
     generation_file = "pokeapi_db.json"
     growth_rate = search_pokeapi_db(f"{name.lower()}", "growth_rate")
+    base_experience = search_pokeapi_db(f"{name.lower()}", "base_experience")
     description= search_pokeapi_db(f"{name.lower()}", "description")
     level = 5
     attacks = get_random_moves_for_pokemon(starter_name, level)
