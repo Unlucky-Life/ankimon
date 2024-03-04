@@ -3295,6 +3295,7 @@ class Downloader(QObject):
                         self.download_complete.emit()
                 except Exception as e:
                     showWarning(f"An error occured {e}")
+
 class LoadingDialog(QDialog):
     def __init__(self, addon_dir, parent=None):
         super().__init__(parent)
@@ -3318,6 +3319,14 @@ class LoadingDialog(QDialog):
 
     def on_download_complete(self):
         self.label.setText("Download complete! You can now close this window.")
+
+def show_agreement_and_download_database():
+    # Show the agreement dialog
+    dialog = AgreementDialog()
+    if dialog.exec() == QDialog.DialogCode.Accepted:
+        #pyqt6.6.1 difference
+        # User agreed, proceed with download
+        pokeapi_db_downloader()
 
 def pokeapi_db_downloader():
     global addon_dir
@@ -5638,7 +5647,7 @@ test_action12.triggered.connect(gen_id_chart.show_gen_chart)
 mw.pokemenu.addAction(test_action12)
 
 test_action3 = QAction("Download Database Files", mw)
-qconnect(test_action3.triggered, pokeapi_db_downloader)
+qconnect(test_action3.triggered, show_agreement_and_download_database)
 mw.pokemenu.addAction(test_action3)
 test_action4 = QAction("Download Sprite Files", mw)
 qconnect(test_action4.triggered, show_agreement_and_downloadsprites)
