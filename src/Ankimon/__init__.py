@@ -8,7 +8,7 @@ import threading
 from anki.hooks import addHook, wrap
 from aqt.reviewer import Reviewer
 from aqt import mw, editor, gui_hooks
-from aqt.qt import QDialog, QGridLayout, QLabel, QPixmap, QPainter, QFont, Qt, QVBoxLayout, QWidget
+from aqt.qt import QDialog, QGridLayout, QLabel, QPixmap, QPainter, QFont, Qt, QVBoxLayout, QWidget, QAction
 import random
 import csv
 from aqt.qt import *
@@ -18,7 +18,9 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.QtWebEngineWidgets import *
-from PyQt6.QtWidgets import QAction
+#from PyQt6.QtWidgets import QAction
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QDialog, QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QApplication, QWidget
 from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtMultimediaWidgets import QVideoWidget
 from PyQt6.QtCore import QUrl
@@ -199,16 +201,19 @@ for i in range(1,10):
 
 def check_id_ok(id_num):
     # Determine the generation of the given ID
-    generation = 0
-    for gen, max_id in gen_ids.items():
-        if id_num <= max_id:
-            generation = int(gen.split('_')[1])
-            break
+    if id_num < 980:
+        generation = 0
+        for gen, max_id in gen_ids.items():
+            if id_num <= max_id:
+                generation = int(gen.split('_')[1])
+                break
 
-    if generation == 0:
-        return False  # ID does not belong to any generation
+        if generation == 0:
+            return False  # ID does not belong to any generation
 
-    return gen_config[generation - 1]
+        return gen_config[generation - 1]
+    else:
+        return False
 
 #count index - count 10 cards - easy = 20, good = 10, hard = 5, again = 0
 # if index = 40 - 100 => normal ; multiply with damage
@@ -676,58 +681,38 @@ def customCloseTooltip(tooltipLabel):
 		tooltipLabel = None
 
 def tooltipWithColour(msg, color, x=0, y=20, xref=1, period=3000, parent=None, width=0, height=0, centered=False):
-    global _tooltipLabel
-    tooltipTimer = 4000
     class CustomLabel(QLabel):
-        silentlyClose = True
-
         def mousePressEvent(self, evt):
             evt.accept()
             self.hide()
 
+    # Assuming closeTooltip() and customCloseTooltip() are defined elsewhere
     closeTooltip()
-    aw = parent or aqt.mw.app.activeWindow() or aqt.mw
-    x = aw.mapToGlobal(QPoint(x + int(round(aw.width() / 2, 0)), 0)).x()
-    y = aw.mapToGlobal(QPoint(0,aw.height()-180)).y()
+    aw = parent or QApplication.activeWindow()
+    x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
+    y = aw.mapToGlobal(QPoint(0, aw.height() - 180)).y()
 
-    # apply width and height
-    styleString1 = "height:100%; height: 100%; background: red;"
-    styleString2 = "padding: 8px 13px; text-align: center;"
-
-    lab = CustomLabel("""\
-<table cellpadding=0 padding=0px style="height:100%; height: 100%;">
-<tr>
-<td style="padding: 8px 13px; text-align: center; z-index: 10000;">""" + msg + """</td>
-</tr>
-</table>""", aw)
-    lab.setFrameStyle(QFrame.Panel)
+    lab = CustomLabel(aw)
+    lab.setFrameShape(QFrame.Shape.StyledPanel)
     lab.setLineWidth(2)
-    lab.setWindowFlags(Qt.ToolTip)
-    lab.setAlignment(Qt.AlignBottom | Qt.AlignHCenter)
+    lab.setWindowFlags(Qt.WindowType.ToolTip)
+    lab.setText(msg)
+    lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
 
-    # adjust height if user configured custom height
-
-    if (width > 0):
+    if width > 0:
         lab.setFixedWidth(width)
-    if (height > 0):
+    if height > 0:
         lab.setFixedHeight(height)
 
     p = QPalette()
-    p.setColor(QPalette.Window, QColor(color))
-    p.setColor(QPalette.WindowText, QColor("#000000"))
+    p.setColor(QPalette.ColorRole.Window, QColor(color))
+    p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
     lab.setPalette(p)
     lab.show()
-    lab.move(QPoint(x - int(round(lab.width() * 0.5 * xref, 0)), y))
+    lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))
 
-    def handler():
-        customCloseTooltip(lab)
+    QTimer.singleShot(period, lambda: lab.hide())
 
-    t = QTimer(aqt.mw)
-    t.setSingleShot = True
-    t.timeout.connect(handler)
-    t.start(period)
-
-    _tooltipLabel = lab
 # Your random Pokémon generation function using the PokeAPI
 if all_species != False:
     def generate_random_pokemon():
@@ -919,9 +904,9 @@ def display_dead_pokemon():
     layout2.addWidget(kill_button)
 
     # align things needed to middle
-    pkmnimage_label.setAlignment(Qt.AlignCenter)
-    level_label.setAlignment(Qt.AlignCenter)
-    name_label.setAlignment(Qt.AlignCenter)  # Align to the center
+    pkmnimage_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    level_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Align to the center
 
     # Set the layout for the dialog
     w_dead_pokemon.setLayout(layout2)
@@ -930,7 +915,7 @@ def display_dead_pokemon():
         # Close the existing dialog if it's open
         w_dead_pokemon.accept()
     # Show the dialog
-    result = w_dead_pokemon.exec_()
+    result = w_dead_pokemon.exec()
     # Check the result to determine if the user closed the dialog
     if result == QDialog.Rejected:
         w_dead_pokemon = None  # Reset the global window reference
@@ -1603,7 +1588,8 @@ def show_random_pokemon():
 
         # Merge the background image and the Pokémon image
         merged_pixmap = QPixmap(pixmap_bckg.size())
-        merged_pixmap.fill(Qt.transparent)
+        merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
+        #merged_pixmap.fill(Qt.transparent)
         # merge both images together
         painter = QPainter(merged_pixmap)
         # draw background to a specific pixel
@@ -1703,15 +1689,10 @@ def show_random_pokemon():
         image_label2, msg_font = window_show()
         layout.replaceWidget(image_label, image_label2)
         def create_gif_widget():
-            global attack_animation_path
             widget = QWidget()
             vbox = QVBoxLayout(widget)
 
             label = QLabel(widget)
-            movie = QMovie(str(attack_animation_path))
-
-            label.setMovie(movie)
-            movie.start()
             vbox.addWidget(label)
             widget.setLayout(vbox)
             widget.setGeometry(100, 100, 400, 300)
@@ -1789,7 +1770,7 @@ def show_random_pokemon():
     window.setLayout(layout)
 
     # Show the dialog
-    #window.exec_()
+    #window.exec()
 
     window.show()
 
@@ -1858,114 +1839,117 @@ def calc_multiply_card_rating():
 reviewed_cards_count = 0
 # Hook into Anki's card review event
 def on_review_card():
-    global reviewed_cards_count, card_ratings_count, card_counter
-    global hp, stats, type, battle_status, name, battle_stats
-    global pokemon_encounter
-    global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats
-    global attack_counter
-    global pkmn_window
-    # Increment the counter when a card is reviewed
-    reviewed_cards_count += 1
-    card_counter += 1
-    if reviewed_cards_count >= cards_per_round:
-        reviewed_cards_count = 0
-        attack_counter = 0
-        slp_counter = 0
-        pokemon_encounter += 1
-        multiplier = calc_multiply_card_rating()
-        #showInfo(f"{multiplier}x has been calc")
-        msg = ""
-        msg += f"{multiplier}x Multiplier - "
-        # If 10 or more cards have been reviewed, show the random Pokémon
-        if pokemon_encounter > 0 and hp > 0:
-            random_attack = random.choice(mainpokemon_attacks)
-            msg += f"\n {random_attack.capitalize()} has been choosen !"
-            move = find_details_move(random_attack)
-            category = move.get("category")
-            acc = move.get("accuracy")
-            if battle_status != "fighting":
-                msg, acc, battle_status, stats = status_effect(battle_status, name, move, hp, slp_counter, battle_stats, msg, acc)
-            if acc is True:
-                acc = 100
-            if acc != 0:
-                calc_acc = 100 / acc
-            else:
-                calc_acc = 0
-            if battle_status == "slp":
-                calc_acc = 0
-                msg += f"{name.capitalize()} is deep asleep."
-                #slp_counter -= 1
-            elif battle_status == "par":
-                msg += f"\n {name.capitalize()} is paralyzed."
-                missing_chance = 1 / 4
-                random_number = random.random()
-                if random_number < missing_chance:
-                   acc = 0
-            if random.random() > calc_acc:
-                #showInfo("Move has missed !")
-                msg += "\n Move has missed !"
-            else:
-                if category == "Status":
-                    color = "#F7DC6F"
-                    msg = effect_status_moves(random_attack, mainpokemon_stats, stats, msg, name, mainpokemon_name)
-                elif category == "Physical" or category == "Special":
-                    critRatio = move.get("critRatio", 1)
-                    if category == "Physical":
-                        color = "#F0B27A"
-                    elif category == "Special":
-                        color = "#D2B4DE"
-                    #showInfo(f"{random_attack} has been choosen")
-                    if move["basePower"] == 0:
-                        dmg = bP_none_moves(move)
-                        hp -= dmg
-                        if dmg == 0:
-                            #showInfo("Move was useless !")
-                            msg += "\n Move has missed !"
-                            #dmg = 1
-                    else:
-                        if category == "Special":
-                            def_stat = stats["spd"]
-                            atk_stat = mainpokemon_stats["spa"]
-                        elif category == "Physical":
-                            def_stat = stats["def"]
-                            atk_stat = mainpokemon_stats["atk"]
-                        dmg = int(calc_atk_dmg(mainpokemon_level, multiplier,move["basePower"], atk_stat, def_stat, mainpokemon_type, move["type"],type, critRatio))
-                        if dmg == 0:
-                            dmg = 1
-                        hp -= dmg
-                        msg += f" {dmg} dmg is dealt to {name.capitalize()}."
-                        move_stat = move.get("status", None)
-                        secondary = move.get("secondary", None)
-                        if secondary is not None:
-                            bat_status = move.get("secondary", None).get("status", None)
-                            if bat_status is not None:
+    try:
+        global reviewed_cards_count, card_ratings_count, card_counter
+        global hp, stats, type, battle_status, name, battle_stats
+        global pokemon_encounter
+        global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats
+        global attack_counter
+        global pkmn_window
+        # Increment the counter when a card is reviewed
+        reviewed_cards_count += 1
+        card_counter += 1
+        if reviewed_cards_count >= cards_per_round:
+            reviewed_cards_count = 0
+            attack_counter = 0
+            slp_counter = 0
+            pokemon_encounter += 1
+            multiplier = calc_multiply_card_rating()
+            #showInfo(f"{multiplier}x has been calc")
+            msg = ""
+            msg += f"{multiplier}x Multiplier - "
+            # If 10 or more cards have been reviewed, show the random Pokémon
+            if pokemon_encounter > 0 and hp > 0:
+                random_attack = random.choice(mainpokemon_attacks)
+                msg += f"\n {random_attack.capitalize()} has been choosen !"
+                move = find_details_move(random_attack)
+                category = move.get("category")
+                acc = move.get("accuracy")
+                if battle_status != "fighting":
+                    msg, acc, battle_status, stats = status_effect(battle_status, name, move, hp, slp_counter, battle_stats, msg, acc)
+                if acc is True:
+                    acc = 100
+                if acc != 0:
+                    calc_acc = 100 / acc
+                else:
+                    calc_acc = 0
+                if battle_status == "slp":
+                    calc_acc = 0
+                    msg += f"{name.capitalize()} is deep asleep."
+                    #slp_counter -= 1
+                elif battle_status == "par":
+                    msg += f"\n {name.capitalize()} is paralyzed."
+                    missing_chance = 1 / 4
+                    random_number = random.random()
+                    if random_number < missing_chance:
+                        acc = 0
+                if random.random() > calc_acc:
+                    #showInfo("Move has missed !")
+                    msg += "\n Move has missed !"
+                else:
+                    if category == "Status":
+                        color = "#F7DC6F"
+                        msg = effect_status_moves(random_attack, mainpokemon_stats, stats, msg, name, mainpokemon_name)
+                    elif category == "Physical" or category == "Special":
+                        critRatio = move.get("critRatio", 1)
+                        if category == "Physical":
+                            color = "#F0B27A"
+                        elif category == "Special":
+                            color = "#D2B4DE"
+                        #showInfo(f"{random_attack} has been choosen")
+                        if move["basePower"] == 0:
+                            dmg = bP_none_moves(move)
+                            hp -= dmg
+                            if dmg == 0:
+                                #showInfo("Move was useless !")
+                                msg += "\n Move has missed !"
+                                #dmg = 1
+                        else:
+                            if category == "Special":
+                                def_stat = stats["spd"]
+                                atk_stat = mainpokemon_stats["spa"]
+                            elif category == "Physical":
+                                def_stat = stats["def"]
+                                atk_stat = mainpokemon_stats["atk"]
+                            dmg = int(calc_atk_dmg(mainpokemon_level, multiplier,move["basePower"], atk_stat, def_stat, mainpokemon_type, move["type"],type, critRatio))
+                            if dmg == 0:
+                                dmg = 1
+                            hp -= dmg
+                            msg += f" {dmg} dmg is dealt to {name.capitalize()}."
+                            move_stat = move.get("status", None)
+                            secondary = move.get("secondary", None)
+                            if secondary is not None:
+                                bat_status = move.get("secondary", None).get("status", None)
+                                if bat_status is not None:
+                                    move_with_status(move, move_stat, secondary)
+                            if move_stat is not None:
                                 move_with_status(move, move_stat, secondary)
-                        if move_stat is not None:
-                            move_with_status(move, move_stat, secondary)
-                        if dmg == 0:
-                            #showInfo("Move was useless !")
-                            msg += " \n Move has missed !"
-                    if hp < 0:
-                        hp = 0
-                        msg += f" {name.capitalize()} has fainted"
-                tooltipWithColour(msg, color)
-        else:
+                            if dmg == 0:
+                                #showInfo("Move was useless !")
+                                msg += " \n Move has missed !"
+                        if hp < 0:
+                            hp = 0
+                            msg += f" {name.capitalize()} has fainted"
+                    tooltipWithColour(msg, color)
+            else:
+                if pkmn_window is True:
+                    test_window.display_pokemon_death()
+                elif pkmn_window is False:
+                    new_pokemon()
             if pkmn_window is True:
-                test_window.display_pokemon_death()
+                if hp > 0:
+                    test_window.display_first_encounter()
+                elif hp < 1:
+                    hp = 0
+                    test_window.display_pokemon_death()
             elif pkmn_window is False:
-                new_pokemon()
-        if pkmn_window is True:
-            if hp > 0:
-                test_window.display_first_encounter()
-            elif hp < 1:
-                hp = 0
-                test_window.display_pokemon_death()
-        elif pkmn_window is False:
-            if hp < 1:
-                hp = 0
-                kill_pokemon()
-        # Reset the counter
-        reviewed_cards_count = 0
+                if hp < 1:
+                    hp = 0
+                    kill_pokemon()
+            # Reset the counter
+            reviewed_cards_count = 0
+    except Exception as e:
+        showWarning(f"An error occured in reviewer: {e}")
 
 
 def create_status_label(status_name):
@@ -2290,22 +2274,22 @@ def ShowPokemonCollection():
 
                     # Create a QLabel for the capitalized name
                     name_label = QLabel(capitalized_name)
-                    name_label.setAlignment(Qt.AlignLeft)  # Align to the left
+                    name_label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align to the left
                     name_label.setFont(font)
 
                     # Create a QLabel for the level
                     level_label = QLabel(lvl)
-                    level_label.setAlignment(Qt.AlignLeft)  # Align to the left
+                    level_label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align to the left
                     level_label.setFont(fontpkmnspec)
 
                     # Create a QLabel for the type
                     type_label = QLabel(type_txt)
-                    type_label.setAlignment(Qt.AlignLeft)  # Align to the left
+                    type_label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align to the left
                     type_label.setFont(fontpkmnspec)
 
                     # Create a QLabel for the ability
                     ability_label = QLabel(ability_txt)
-                    ability_label.setAlignment(Qt.AlignLeft)  # Align to the left
+                    ability_label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align to the left
                     ability_label.setFont(fontpkmnspec)
 
                     # Set the merged image as the pixmap for the QLabel
@@ -2333,11 +2317,11 @@ def ShowPokemonCollection():
                     container_layout.addWidget(ability_label)
                     container_layout.addWidget(pokemon_button)
                     container_layout.addWidget(choose_pokemon_button)
-                    image_label.setAlignment(Qt.AlignCenter)
-                    type_label.setAlignment(Qt.AlignCenter)
-                    name_label.setAlignment(Qt.AlignCenter)
-                    level_label.setAlignment(Qt.AlignCenter)
-                    ability_label.setAlignment(Qt.AlignCenter)
+                    image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                    type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                    name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                    level_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                    ability_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
                     # Set the QVBoxLayout as the layout for the container
                     pokemon_container.setLayout(container_layout)
@@ -2373,7 +2357,7 @@ def ShowPokemonCollection():
                 window_layout.addWidget(scroll_area)
                 window.setLayout(window_layout)
                 # Show the dialog
-                window.exec_()
+                window.exec()
                 #window.show()
             else:
                 showInfo("You haven't captured any Pokémon yet.")
@@ -2409,221 +2393,224 @@ def rename_pkmn(nickname, pkmn_name):
 def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname):
     global frontdefault, type_style_file
     # Create the dialog
-    wpkmn_details = QDialog(mw)
-    if nickname is None:
-        wpkmn_details.setWindowTitle(f"Infos to : {name} ")
-    else:
-        wpkmn_details.setWindowTitle(f"Infos to : {nickname} ({name}) ")
+    try:
+        wpkmn_details = QDialog(mw)
+        if nickname is None:
+            wpkmn_details.setWindowTitle(f"Infos to : {name} ")
+        else:
+            wpkmn_details.setWindowTitle(f"Infos to : {nickname} ({name}) ")
 
-    wpkmn_details.setFixedWidth(500)
-    wpkmn_details.setMaximumHeight(400)
+        wpkmn_details.setFixedWidth(500)
+        wpkmn_details.setMaximumHeight(400)
 
-    # Create a layout for the dialog
-    layout = QVBoxLayout()
-    typelayout = QHBoxLayout()
-    attackslayout = QVBoxLayout()
-    # Display the Pokémon image
-    pkmnimage_file = f"{search_pokedex(name.lower(), 'num')}.png"
-    pkmnimage_path = frontdefault / pkmnimage_file
-    typeimage_file = f"{type[0]}.png"
-    typeimage_path = addon_dir / pkmnimgfolder / "Types" / typeimage_file
-    pkmnimage_label = QLabel()
-    pkmnpixmap = QPixmap()
-    pkmnpixmap.load(str(pkmnimage_path))
-    pkmntype_label = QLabel()
-    pkmntypepixmap = QPixmap()
-    pkmntypepixmap.load(str(typeimage_path))
-    if len(type) > 1:
-        type_image_file2 = f"{type[1]}.png"
-        typeimage_path2 = addon_dir / pkmnimgfolder / "Types" / type_image_file2
-        pkmntype_label2 = QLabel()
-        pkmntypepixmap2 = QPixmap()
-        pkmntypepixmap2.load(str(typeimage_path2))
-    # Calculate the new dimensions to maintain the aspect ratio
-    max_width = 150
-    original_width = pkmnpixmap.width()
-    original_height = pkmnpixmap.height()
-    new_width = max_width
-    new_height = (original_height * max_width) // original_width
-    pkmnpixmap = pkmnpixmap.scaled(new_width, new_height)
+        # Create a layout for the dialog
+        layout = QVBoxLayout()
+        typelayout = QHBoxLayout()
+        attackslayout = QVBoxLayout()
+        # Display the Pokémon image
+        pkmnimage_file = f"{search_pokedex(name.lower(), 'num')}.png"
+        pkmnimage_path = frontdefault / pkmnimage_file
+        typeimage_file = f"{type[0]}.png"
+        typeimage_path = addon_dir / pkmnimgfolder / "Types" / typeimage_file
+        pkmnimage_label = QLabel()
+        pkmnpixmap = QPixmap()
+        pkmnpixmap.load(str(pkmnimage_path))
+        pkmntype_label = QLabel()
+        pkmntypepixmap = QPixmap()
+        pkmntypepixmap.load(str(typeimage_path))
+        if len(type) > 1:
+            type_image_file2 = f"{type[1]}.png"
+            typeimage_path2 = addon_dir / pkmnimgfolder / "Types" / type_image_file2
+            pkmntype_label2 = QLabel()
+            pkmntypepixmap2 = QPixmap()
+            pkmntypepixmap2.load(str(typeimage_path2))
+        # Calculate the new dimensions to maintain the aspect ratio
+        max_width = 150
+        original_width = pkmnpixmap.width()
+        original_height = pkmnpixmap.height()
+        new_width = max_width
+        new_height = (original_height * max_width) // original_width
+        pkmnpixmap = pkmnpixmap.scaled(new_width, new_height)
 
-    # Create a painter to add text on top of the image
-    painter2 = QPainter(pkmnpixmap)
+        # Create a painter to add text on top of the image
+        painter2 = QPainter(pkmnpixmap)
 
-    #custom font
-    custom_font = load_custom_font(font_file, 20)
+        #custom font
+        custom_font = load_custom_font(font_file, 20)
 
-    # Capitalize the first letter of the Pokémon's name
-    if nickname is None:
-        capitalized_name = f"{name.capitalize()}"
-    else:
-        capitalized_name = f"{nickname} ({name.capitalize()})"
-    # Create level text
-    result = list(split_string_by_length(description, 65))
-    description_formated = '\n'.join(result)
-    description_txt = f"Description: \n {description_formated}"
-    #curr_hp_txt = (f"Current Hp:{current_hp}")
-    growth_rate_txt = (f"Growth Rate: {growth_rate.capitalize()}")
-    lvl = (f" Level: {level}")
-    ability_txt = (f" Ability: {ability.capitalize()}")
-    type_txt = (f" Type:")
-    stats_list = [
-        detail_stats["hp"],
-        detail_stats["atk"],
-        detail_stats["def"],
-        detail_stats["spa"],
-        detail_stats["spd"],
-        detail_stats["spe"],
-        detail_stats["xp"]
-    ]
-    stats_txt = f"Stats:\n\
-        Hp: {stats_list[0]}\n\
-        Attack: {stats_list[1]}\n\
-        Defense: {stats_list[2]}\n\
-        Special-attack: {stats_list[3]}\n\
-        Special-defense: {stats_list[4]}\n\
-        Speed: {stats_list[5]}\n\
-        XP: {stats_list[6]}"
-    attacks_txt = "Moves:"
-    for attack in attacks:
-        attacks_txt += f"\n{attack.capitalize()}"
+        # Capitalize the first letter of the Pokémon's name
+        if nickname is None:
+            capitalized_name = f"{name.capitalize()}"
+        else:
+            capitalized_name = f"{nickname} ({name.capitalize()})"
+        # Create level text
+        result = list(split_string_by_length(description, 65))
+        description_formated = '\n'.join(result)
+        description_txt = f"Description: \n {description_formated}"
+        #curr_hp_txt = (f"Current Hp:{current_hp}")
+        growth_rate_txt = (f"Growth Rate: {growth_rate.capitalize()}")
+        lvl = (f" Level: {level}")
+        ability_txt = (f" Ability: {ability.capitalize()}")
+        type_txt = (f" Type:")
+        stats_list = [
+            detail_stats["hp"],
+            detail_stats["atk"],
+            detail_stats["def"],
+            detail_stats["spa"],
+            detail_stats["spd"],
+            detail_stats["spe"],
+            detail_stats["xp"]
+        ]
+        stats_txt = f"Stats:\n\
+            Hp: {stats_list[0]}\n\
+            Attack: {stats_list[1]}\n\
+            Defense: {stats_list[2]}\n\
+            Special-attack: {stats_list[3]}\n\
+            Special-defense: {stats_list[4]}\n\
+            Speed: {stats_list[5]}\n\
+            XP: {stats_list[6]}"
+        attacks_txt = "Moves:"
+        for attack in attacks:
+            attacks_txt += f"\n{attack.capitalize()}"
 
-    CompleteTable_layout = PokemonDetailsStats(detail_stats, growth_rate, level)
+        CompleteTable_layout = PokemonDetailsStats(detail_stats, growth_rate, level)
 
-    # Properties of the text of the image
-    # custom font
-    namefont = load_custom_font(font_file, 30)
-    namefont.setUnderline(True)
-    painter2.setFont(namefont)
-    font = load_custom_font(font_file, 20)
-    painter2.end()
+        # Properties of the text of the image
+        # custom font
+        namefont = load_custom_font(font_file, 30)
+        namefont.setUnderline(True)
+        painter2.setFont(namefont)
+        font = load_custom_font(font_file, 20)
+        painter2.end()
 
-    # Create a QLabel for the capitalized name
-    name_label = QLabel(f"{capitalized_name} ({gender})")
-    name_label.setFont(namefont)
-    # Create a QLabel for the level
-    description_label = QLabel(description_txt)
-    level_label = QLabel(lvl)
-    growth_rate_label = QLabel(growth_rate_txt)
-    base_exp_label = QLabel(f"Base XP: {base_experience}")
-    # Align to the center
-    level_label.setFont(font)
-    base_exp_label.setFont(font)
-    type_label= QLabel("Type:")
-    type_label.setFont(font)
-    # Create a QLabel for the level
-    ability_label = QLabel(ability_txt)
-    ability_label.setFont(font)
-    attacks_label = QLabel(attacks_txt)
-    attacks_label.setFont(font)
-    growth_rate_label.setFont(font)
-    description_font = load_custom_font(font_file, 15)
-    description_label.setFont(description_font)
-    #stats_label = QLabel(stats_txt)
+        # Create a QLabel for the capitalized name
+        name_label = QLabel(f"{capitalized_name} ({gender})")
+        name_label.setFont(namefont)
+        # Create a QLabel for the level
+        description_label = QLabel(description_txt)
+        level_label = QLabel(lvl)
+        growth_rate_label = QLabel(growth_rate_txt)
+        base_exp_label = QLabel(f"Base XP: {base_experience}")
+        # Align to the center
+        level_label.setFont(font)
+        base_exp_label.setFont(font)
+        type_label= QLabel("Type:")
+        type_label.setFont(font)
+        # Create a QLabel for the level
+        ability_label = QLabel(ability_txt)
+        ability_label.setFont(font)
+        attacks_label = QLabel(attacks_txt)
+        attacks_label.setFont(font)
+        growth_rate_label.setFont(font)
+        description_font = load_custom_font(font_file, 15)
+        description_label.setFont(description_font)
+        #stats_label = QLabel(stats_txt)
 
-    # Set the merged image as the pixmap for the QLabel
-    pkmnimage_label.setPixmap(pkmnpixmap)
-    # Set the merged image as the pixmap for the QLabel
-    pkmntype_label.setPixmap(pkmntypepixmap)
-    if len(type) > 1:
-        pkmntype_label2.setPixmap(pkmntypepixmap2)
-    #Border
-    #description_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-    level_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-    base_exp_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-    ability_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-    growth_rate_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-    type_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-    level_label.setFixedWidth(230)
-    growth_rate_label.setFixedWidth(230)
-    base_exp_label.setFixedWidth(230)
-    pkmnimage_label.setFixedHeight(100)
-    ability_label.setFixedWidth(230)
-    attacks_label.setFixedWidth(230)
-    first_layout = QHBoxLayout() #Top Image Left and Direkt Info Right
-    TopR_layout_Box = QVBoxLayout() #Top Right Info Direkt Layout
-    TopL_layout_Box = QVBoxLayout() #Top Left Pokemon and Direkt Info Layout
-    typelayout_widget = QWidget()
-    TopL_layout_Box.addWidget(level_label)
-    TopL_layout_Box.addWidget(pkmnimage_label)
+        # Set the merged image as the pixmap for the QLabel
+        pkmnimage_label.setPixmap(pkmnpixmap)
+        # Set the merged image as the pixmap for the QLabel
+        pkmntype_label.setPixmap(pkmntypepixmap)
+        if len(type) > 1:
+            pkmntype_label2.setPixmap(pkmntypepixmap2)
+        #Border
+        #description_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
+        level_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
+        base_exp_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
+        ability_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
+        growth_rate_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
+        type_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
+        level_label.setFixedWidth(230)
+        growth_rate_label.setFixedWidth(230)
+        base_exp_label.setFixedWidth(230)
+        pkmnimage_label.setFixedHeight(100)
+        ability_label.setFixedWidth(230)
+        attacks_label.setFixedWidth(230)
+        first_layout = QHBoxLayout() #Top Image Left and Direkt Info Right
+        TopR_layout_Box = QVBoxLayout() #Top Right Info Direkt Layout
+        TopL_layout_Box = QVBoxLayout() #Top Left Pokemon and Direkt Info Layout
+        typelayout_widget = QWidget()
+        TopL_layout_Box.addWidget(level_label)
+        TopL_layout_Box.addWidget(pkmnimage_label)
 
-    TopFirstLayout = QWidget()
-    TopFirstLayout.setLayout(first_layout)
-    layout.addWidget(name_label)
-    layout.addWidget(TopFirstLayout)
-    layout.addWidget(description_label)
-    #.addWidget(growth_rate_label)
-    #.addWidget(base_exp_label)
-    typelayout.addWidget(type_label)
-    typelayout.addWidget(pkmntype_label)
-    pkmntype_label.setAlignment(Qt.AlignCenter)
-    pkmntype_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-    if len(type) > 1:
-        typelayout.addWidget(pkmntype_label2)
-        pkmntype_label2.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        pkmntype_label2.setAlignment(Qt.AlignLeft)
-        pkmntype_label2.setAlignment(Qt.AlignBottom)
-    typelayout_widget.setLayout(typelayout)
-    typelayout_widget.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-    typelayout_widget.setFixedWidth(230)
-    TopL_layout_Box.addWidget(typelayout_widget)
-    TopL_layout_Box.addWidget(ability_label)
-    #attackslayout.addWidget(attacks_label)
-    attacks_details_button = QPushButton("Attack Details") #add Details to Moves
-    qconnect(attacks_details_button.clicked, lambda: attack_details_window(attacks))
-    free_pokemon_button = QPushButton("Free Pokemon") #add Details to Moves
-    attacks_label.setFixedHeight(150)
-    TopR_layout_Box.addWidget(attacks_label)
-    TopR_layout_Box.addWidget(attacks_details_button)
-    first_layout.addLayout(TopL_layout_Box)
-    first_layout.addLayout(TopR_layout_Box)
-    layout.addLayout(first_layout)
-    attacks_label.setStyleSheet("border: 2px solid white; padding: 5px;")
-    #TopR_layout_Box.setStyleSheet("border: 2px solid white; padding: 5px;")
-    statstablelayout = QWidget()
-    statstablelayout.setLayout(CompleteTable_layout)
-    layout.addWidget(statstablelayout)
-    statstablelayout.setStyleSheet("border: 2px solid white; padding: 5px;")
-    #statstablelayout.setFixedWidth(350)
-    statstablelayout.setFixedHeight(200)
-    free_pokemon_button = QPushButton("Free Pokemon") #add Details to Moves
-    qconnect(free_pokemon_button.clicked, lambda: PokemonFree(name))
-    trade_pokemon_button = QPushButton("Trade Pokemon") #add Details to Moves
-    qconnect(trade_pokemon_button.clicked, lambda: PokemonTrade(name, id, level, ability, iv, ev, gender, attacks))
-    layout.addWidget(trade_pokemon_button)
-    layout.addWidget(free_pokemon_button)
-    rename_button = QPushButton("Rename Pokemon") #add Details to Moves
-    rename_input = QLineEdit()
-    rename_input.setPlaceholderText("Enter a new Nickname for your Pokemon")
-    qconnect(rename_button.clicked, lambda: rename_pkmn(rename_input.text(),name))
-    layout.addWidget(rename_input)
-    layout.addWidget(rename_button)
-    #qconnect()
-    #layout.addLayout(CompleteTable_layout)
+        TopFirstLayout = QWidget()
+        TopFirstLayout.setLayout(first_layout)
+        layout.addWidget(name_label)
+        layout.addWidget(TopFirstLayout)
+        layout.addWidget(description_label)
+        #.addWidget(growth_rate_label)
+        #.addWidget(base_exp_label)
+        typelayout.addWidget(type_label)
+        typelayout.addWidget(pkmntype_label)
+        pkmntype_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        pkmntype_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
+        if len(type) > 1:
+            typelayout.addWidget(pkmntype_label2)
+            pkmntype_label2.setStyleSheet("border: 0px solid #000000; padding: 0px;")
+            pkmntype_label2.setAlignment(Qt.AlignmentFlag.AlignLeft)
+            pkmntype_label2.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        typelayout_widget.setLayout(typelayout)
+        typelayout_widget.setStyleSheet("border: 0px solid #000000; padding: 0px;")
+        typelayout_widget.setFixedWidth(230)
+        TopL_layout_Box.addWidget(typelayout_widget)
+        TopL_layout_Box.addWidget(ability_label)
+        #attackslayout.addWidget(attacks_label)
+        attacks_details_button = QPushButton("Attack Details") #add Details to Moves
+        qconnect(attacks_details_button.clicked, lambda: attack_details_window(attacks))
+        free_pokemon_button = QPushButton("Free Pokemon") #add Details to Moves
+        attacks_label.setFixedHeight(150)
+        TopR_layout_Box.addWidget(attacks_label)
+        TopR_layout_Box.addWidget(attacks_details_button)
+        first_layout.addLayout(TopL_layout_Box)
+        first_layout.addLayout(TopR_layout_Box)
+        layout.addLayout(first_layout)
+        attacks_label.setStyleSheet("border: 2px solid white; padding: 5px;")
+        #TopR_layout_Box.setStyleSheet("border: 2px solid white; padding: 5px;")
+        statstablelayout = QWidget()
+        statstablelayout.setLayout(CompleteTable_layout)
+        layout.addWidget(statstablelayout)
+        statstablelayout.setStyleSheet("border: 2px solid white; padding: 5px;")
+        #statstablelayout.setFixedWidth(350)
+        statstablelayout.setFixedHeight(200)
+        free_pokemon_button = QPushButton("Free Pokemon") #add Details to Moves
+        qconnect(free_pokemon_button.clicked, lambda: PokemonFree(name))
+        trade_pokemon_button = QPushButton("Trade Pokemon") #add Details to Moves
+        qconnect(trade_pokemon_button.clicked, lambda: PokemonTrade(name, id, level, ability, iv, ev, gender, attacks))
+        layout.addWidget(trade_pokemon_button)
+        layout.addWidget(free_pokemon_button)
+        rename_button = QPushButton("Rename Pokemon") #add Details to Moves
+        rename_input = QLineEdit()
+        rename_input.setPlaceholderText("Enter a new Nickname for your Pokemon")
+        qconnect(rename_button.clicked, lambda: rename_pkmn(rename_input.text(),name))
+        layout.addWidget(rename_input)
+        layout.addWidget(rename_button)
+        #qconnect()
+        #layout.addLayout(CompleteTable_layout)
 
-    #wpkmn_details.setFixedWidth(500)
-    #wpkmn_details.setMaximumHeight(600)
+        #wpkmn_details.setFixedWidth(500)
+        #wpkmn_details.setMaximumHeight(600)
 
-    # align things needed to middle
-    pkmnimage_label.setAlignment(Qt.AlignCenter)
-    level_label.setAlignment(Qt.AlignCenter)
-    growth_rate_label.setAlignment(Qt.AlignCenter)
-    base_exp_label.setAlignment(Qt.AlignBottom)
-    base_exp_label.setAlignment(Qt.AlignCenter)
-    pkmntype_label.setAlignment(Qt.AlignLeft)
-    pkmntype_label.setAlignment(Qt.AlignBottom)
-    type_label.setAlignment(Qt.AlignCenter)
-    type_label.setAlignment(Qt.AlignRight)
-    name_label.setAlignment(Qt.AlignCenter)  # Align to the center
-    ability_label.setAlignment(Qt.AlignCenter)
-    attacks_label.setAlignment(Qt.AlignCenter)
-    description_label.setAlignment(Qt.AlignCenter)
+        # align things needed to middle
+        pkmnimage_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        level_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        growth_rate_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        base_exp_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        base_exp_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        pkmntype_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        pkmntype_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        type_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Align to the center
+        ability_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        attacks_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    # Set the layout for the dialog
-    wpkmn_details.setLayout(layout)
+        # Set the layout for the dialog
+        wpkmn_details.setLayout(layout)
 
-    # Show the dialog
-    wpkmn_details.exec_()
+        # Show the dialog
+        wpkmn_details.exec()
+    except Exception as e:
+        showWarning(f"Error occured in Pokemon Details Button: {e}")
 
 def attack_details_window(attacks):
     window = QDialog()
@@ -2706,12 +2693,12 @@ def attack_details_window(attacks):
 
     # Create a QLabel to display the HTML content
     label = QLabel(html_content)
-    label.setAlignment(Qt.AlignTop)  # Align the label's content to the top
+    label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align the label's content to the top
     label.setScaledContents(True)  # Enable scaling of the pixmap
 
     layout.addWidget(label)
     window.setLayout(layout)
-    window.exec_()
+    window.exec()
 
 def type_colors(type):
     type_colors = {
@@ -2845,8 +2832,8 @@ def PokemonDetailsStats(detail_stats, growth_rate, level):
         stat_item2.setStyleSheet("border: 0px solid #000000; padding: 0px;")
         bar_item2.setStyleSheet("border: 0px solid #000000; padding: 0px;")
         value_item2.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        stat_item2.setAlignment(Qt.AlignCenter)
-        bar_item2.setAlignment(Qt.AlignCenter)
+        stat_item2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        bar_item2.setAlignment(Qt.AlignmentFlag.AlignCenter)
         CompleteTable_layout.addLayout(layout_row)
 
     return CompleteTable_layout
@@ -2929,7 +2916,7 @@ def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks):
     # remove pokemon from pokemon_list
 
     # Show the window
-    window.exec_()
+    window.exec()
 
 def find_move_by_num(move_num):
     global moves_file_path
@@ -3125,11 +3112,13 @@ def PokemonFree(name):
 
 def createStatBar(color, value):
     pixmap = QPixmap(200, 10)
-    pixmap.fill(Qt.transparent)
+    #pixmap.fill(Qt.transparent)
+    pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
     painter = QPainter(pixmap)
 
     # Draw bar in the background
-    painter.setPen(Qt.black)
+    painter.setPen(QColor(Qt.GlobalColor.black))
+    # new change due to pyqt6.6.1
     painter.setBrush(QColor(0, 0, 0, 200))  # Semi-transparent black
     painter.drawRect(0, 0, 200, 10)
 
@@ -3342,7 +3331,7 @@ def count_images_in_folder(folder_path):
 def show_agreement_and_downloadsprites():
     # Show the agreement dialog
     dialog = AgreementDialog()
-    if dialog.exec_() == QDialog.Accepted:
+    if dialog.exec() == QDialog.DialogCode.Accepted:
         # User agreed, proceed with download
         download_sprites()
 
@@ -3400,45 +3389,50 @@ class SpriteDownloader(QThread):
         self.download_complete.emit()
 
 def download_sprites():
-    global addon_dir
-    # (Your existing setup code)
-    sprites_path = str(addon_dir / "pokemon_sprites")
-    id_to = 898 #pokeapi free to uses
-    total_images_expected = id_to * 2
-    max_id = 898 #latest backdefaults
-    max_total_images_expected = id_to * 2
+    try:
+        global addon_dir
+        # (Your existing setup code)
+        sprites_path = str(addon_dir / "pokemon_sprites")
+        id_to = 898 #pokeapi free to uses
+        total_images_expected = id_to * 2
+        max_id = 898 #latest backdefaults
+        max_total_images_expected = id_to * 2
+        def show_loading_window():
+            try:
+                window = QDialog()
+                window.setWindowTitle("Loading Images")
+                window.label = QLabel("Loading Images... \n This may take several minutes", window)
+                window.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                window.progress = QProgressBar(window)
+                window.progress.setRange(0, total_images_expected)
+                layout = QVBoxLayout()
+                layout.addWidget(window.label)
+                layout.addWidget(window.progress)
+                window.setLayout(layout)
 
-    def show_loading_window():
-        window = QDialog()
-        window.setWindowTitle("Loading Images")
-        window.label = QLabel("Loading Images... \n This may take several minutes", window)
-        window.label.setAlignment(Qt.AlignCenter)
-        window.progress = QProgressBar(window)
-        window.progress.setRange(0, total_images_expected)
-        layout = QVBoxLayout()
-        layout.addWidget(window.label)
-        layout.addWidget(window.progress)
-        window.setLayout(layout)
+                def update_progress(value):
+                    window.progress.setValue(value)
 
-        def update_progress(value):
-            window.progress.setValue(value)
+                def on_download_complete():
+                    window.label.setText("All Images have been downloaded. Please close this window now.")
 
-        def on_download_complete():
-            window.label.setText("All Images have been downloaded. Please close this window now.")
-
-        sprite_downloader = SpriteDownloader(sprites_path, id_to)
-        sprite_downloader.progress_updated.connect(update_progress)
-        sprite_downloader.download_complete.connect(on_download_complete)
-        sprite_downloader.start()
-
-        window.exec_()
-
-    show_loading_window()
+                sprite_downloader = SpriteDownloader(sprites_path, id_to)
+                sprite_downloader.progress_updated.connect(update_progress)
+                sprite_downloader.download_complete.connect(on_download_complete)
+                sprite_downloader.start()
+                window.exec()
+            except Exception as e:
+                showWarning(f"An error occured in download window: {e}")
+        
+        show_loading_window()
+    except Exception as e:
+        showWarning(f"An error occured in the download process of the sprites: {e}")
 
 def show_agreement_and_downloadspritespokeshowdown():
     # Show the agreement dialog
     dialog = AgreementDialog()
-    if dialog.exec_() == QDialog.Accepted:
+    if dialog.exec() == QDialog.DialogCode.Accepted:
+        #pyqt6.6.1 difference
         # User agreed, proceed with download
         download_gifsprites()
 
@@ -3490,7 +3484,7 @@ def download_gifsprites():
         window = QDialog()
         window.setWindowTitle("Loading Images")
         window.label = QLabel("Loading Images... \n This may take several minutes", window)
-        window.label.setAlignment(Qt.AlignCenter)
+        window.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         window.progress = QProgressBar(window)
         window.progress.setRange(0, total_images_expected)
         layout = QVBoxLayout()
@@ -3509,7 +3503,7 @@ def download_gifsprites():
         sprite_downloader.download_complete.connect(on_download_complete)
         sprite_downloader.start()
 
-        window.exec_()
+        window.exec()
 
     show_loading_window()
 
@@ -3884,7 +3878,7 @@ def download_item_sprites():
         window = QDialog()
         window.setWindowTitle("Downloading Item Sprites")
         window.label = QLabel("Downloading... \n This may take several minutes", window)
-        window.label.setAlignment(Qt.AlignCenter)
+        window.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         window.progress = QProgressBar(window)
         window.progress.setRange(0, total_images_expected)
         layout = QVBoxLayout()
@@ -3903,15 +3897,17 @@ def download_item_sprites():
         sprite_downloader.download_complete.connect(on_download_complete)
         sprite_downloader.start()
 
-        window.exec_()
+        window.exec()
 
     show_loading_window()
 
 def show_agreement_and_download():
+    download_item_sprites()
     # Show the agreement dialog
     dialog = AgreementDialog()
-    if dialog.exec_() == QDialog.Accepted:
+    if dialog.exec() == QDialog.DialogCode.Accepted:
         # User agreed, proceed with download
+        showInfo("Now Downloading Sprites !")
         download_item_sprites()
 
 class AgreementDialog(QDialog):
@@ -3933,8 +3929,11 @@ class AgreementDialog(QDialog):
         layout.addWidget(title)
         layout.addWidget(subtitle)
         layout.addWidget(terms)
-        title.setAlignment(Qt.AlignCenter)
-        subtitle.setAlignment(Qt.AlignCenter)
+         # Ensure the terms QLabel is readable and scrolls if necessary
+        terms.setWordWrap(True)
+        terms.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         # Add a checkbox for the user to agree to the terms
         self.checkbox = QCheckBox("I agree to the above named terms.")
         layout.addWidget(self.checkbox)
@@ -4208,8 +4207,8 @@ def export_to_pkmn_showdown():
     info_label = QLabel(info)
 
     # Align labels
-    label.setAlignment(Qt.AlignCenter)  # Align center
-    info_label.setAlignment(Qt.AlignCenter)  # Align center
+    label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Align center
+    info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Align center
 
     # Create a layout and add the labels
     layout = QVBoxLayout()
@@ -4318,8 +4317,8 @@ def export_all_pkmn_showdown():
                     # Create labels to display the text
                     #label = QLabel(pokemon_info_complete_text)
                     # Align labels
-                    #label.setAlignment(Qt.AlignCenter)  # Align center
-                    info_label.setAlignment(Qt.AlignCenter)  # Align center
+                    #label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Align center
+                    info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Align center
 
                     # Create an input field for error code
                     error_code_input = QLineEdit()
@@ -4382,11 +4381,14 @@ class TestWindow(QWidget):
 
     def open_dynamic_window(self):
         # Create and show the dynamic window
-        global pkmn_window
-        if pkmn_window == False:
-            self.display_first_encounter()
-            pkmn_window = True
-        self.show()
+        try:
+            global pkmn_window
+            if pkmn_window == False:
+                self.display_first_encounter()
+                pkmn_window = True
+            self.show()
+        except Exception as e:
+            showWarning(f"Following Error occured when opening window: {e}")
 
     def display_first_start_up(self):
         global first_start, pkmn_window
@@ -4482,7 +4484,9 @@ class TestWindow(QWidget):
 
             # Merge the background image and the Pokémon image
             merged_pixmap = QPixmap(pixmap_bckg.size())
-            merged_pixmap.fill(Qt.transparent)
+            #merged_pixmap.fill(Qt.transparent)
+            merged_pixmap.fill(QColor(0, 0, 0, 0))
+            # RGBA where A (alpha) is 0 for full transparency
             # merge both images together
             painter = QPainter(merged_pixmap)
             # draw background to a specific pixel
@@ -4601,7 +4605,8 @@ class TestWindow(QWidget):
 
         # Merge the background image and the Pokémon image
         merged_pixmap = QPixmap(pixmap_bckg.size())
-        merged_pixmap.fill(Qt.transparent)
+        #merged_pixmap.fill(Qt.transparent)
+        merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
         # merge both images together
         painter = QPainter(merged_pixmap)
         # draw background to a specific pixel
@@ -4702,7 +4707,8 @@ class TestWindow(QWidget):
 
         # Merge the background image and the Pokémon image
         merged_pixmap = QPixmap(pixmap_bckg.size())
-        merged_pixmap.fill(Qt.transparent)
+        merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
+        #merged_pixmap.fill(Qt.transparent)
         # merge both images together
         painter = QPainter(merged_pixmap)
         # draw background to a specific pixel
@@ -4807,16 +4813,9 @@ class TestWindow(QWidget):
 
 
         # align things needed to middle
-        pkmnimage_label.setAlignment(Qt.AlignCenter)
+        pkmnimage_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         return pkmnimage_label, kill_button, catch_button, nickname_input
-
-    # This is a slot function that will be called when the media status changes
-    def handleMediaStatusChanged(self, status):
-        if status == QMediaPlayer.MediaStatus.LoadedMedia:
-            showInfo("Media loaded and ready to play")
-        elif status == QMediaPlayer.MediaStatus.EndOfMedia:
-            showInfo("Media playback ended")
 
     def display_first_encounter(self):
         # pokemon encounter image
@@ -4866,18 +4865,6 @@ class TestWindow(QWidget):
         # Close the main window when the spacebar is pressed
         if event.key() == Qt.Key.Key_N and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             self.close()
-        #if event.key() == Qt.Key_D:
-            #self.setMaximumWidth(590)
-            #self.setMaximumHeight(390)
-            #self.clear_layout(self.layout())
-            #layout = self.layout()
-            #battle_widget = self.pokemon_display_battle()
-            #layout.addWidget(battle_widget)
-            #self.setStyleSheet("background-color: rgb(44,44,44);")
-            #self.setLayout(layout)
-        #if event.key() == Qt.Key_J:
-            #self.display_item()
-            #self.setStyleSheet("background-color: rgb(44,44,44);")
 
     def clear_layout(self, layout):
         while layout.count():
@@ -4898,6 +4885,7 @@ class StarterWindow(QWidget):
         super().__init__()
         self.init_ui()
         #self.update()
+
     def init_ui(self):
         global test
         basic_layout = QVBoxLayout()
@@ -4905,8 +4893,10 @@ class StarterWindow(QWidget):
         self.setWindowTitle('Choose a Starter')
         self.setLayout(basic_layout)
         self.starter = False
+
     def open_dynamic_window(self):
         self.show()
+
     def clear_layout(self, layout):
         while layout.count():
             item = layout.takeAt(0)
@@ -5026,7 +5016,8 @@ class StarterWindow(QWidget):
 
         # Merge the background image and the Pokémon image
         merged_pixmap = QPixmap(pixmap_bckg.size())
-        merged_pixmap.fill(Qt.transparent)
+        merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
+        #merged_pixmap.fill(Qt.transparent)
         # merge both images together
         painter = QPainter(merged_pixmap)
         # draw background to a specific pixel
@@ -5074,7 +5065,8 @@ class StarterWindow(QWidget):
 
         # Merge the background image and the Pokémon image
         merged_pixmap = QPixmap(pixmap_bckg.size())
-        merged_pixmap.fill(Qt.transparent)
+        #merged_pixmap.fill(Qt.transparent)
+        merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
         # merge both images together
         painter = QPainter(merged_pixmap)
         # draw background to a specific pixel
@@ -5140,7 +5132,8 @@ class EvoWindow(QWidget):
 
         # Merge the background image and the Pokémon image
         merged_pixmap = QPixmap(pixmap_bckg.size())
-        merged_pixmap.fill(Qt.transparent)
+        merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
+        #merged_pixmap.fill(Qt.transparent)
         # merge both images together
         painter = QPainter(merged_pixmap)
         # draw background to a specific pixel
@@ -5232,7 +5225,8 @@ class EvoWindow(QWidget):
 
         # Merge the background image and the Pokémon image
         merged_pixmap = QPixmap(pixmap_bckg.size())
-        merged_pixmap.fill(Qt.transparent)
+        merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
+        #merged_pixmap.fill(Qt.transparent)
         # merge both images together
         painter = QPainter(merged_pixmap)
         painter.drawPixmap(0,0,pixmap_bckg)
@@ -5615,8 +5609,9 @@ if sprites_complete and database_complete != False:
     # Make new PokeAnki menu under tools
 
     test_action10 = QAction("Open Ankimon Window", mw)
-    test_action10.triggered.connect(test_window.open_dynamic_window)
+    #test_action10.triggered.connect(test_window.open_dynamic_window)
     mw.pokemenu.addAction(test_action10)
+    qconnect(test_action10.triggered, test_window.open_dynamic_window)
 
     test_action15 = QAction("Itembag", mw)
     test_action15.triggered.connect(item_window.show_window)
