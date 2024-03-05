@@ -201,7 +201,7 @@ for i in range(1,10):
 
 def check_id_ok(id_num):
     # Determine the generation of the given ID
-    if id_num < 980:
+    if id_num < 898:
         generation = 0
         for gen, max_id in gen_ids.items():
             if id_num <= max_id:
@@ -1010,7 +1010,14 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         showWarning("Missing Mainpokemon Data !")
     if int(experience) < int(mainpokemon_xp):
         mainpokemon_level += 1
-        showInfo(f"Your {mainpokemon_name} is now level {mainpokemon_level} !")
+        msg = ""
+        msg += f"Your {mainpokemon_name} is now level {mainpokemon_level} !"
+        color = "#6A4DAC" #pokemon leveling info color for tooltip
+        try:
+            tooltipWithColour(msg, color)
+        except:
+            pass
+        showInfo(f"{msg}")
         mainpokemon_xp = 0
         name = f"{mainpokemon_name}"
         # Update mainpokemon_evolution and handle evolution logic
@@ -1019,7 +1026,14 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             for pokemon in mainpokemon_evolution:
                 min_level = search_pokedex(pokemon.lower(), "evoLevel")
                 if min_level == mainpokemon_level:
-                    showInfo(f"{mainpokemon_name} is about to evolve to {pokemon} at level {min_level}")
+                    msg = ""
+                    msg += f"{mainpokemon_name} is about to evolve to {pokemon} at level {min_level}"
+                    showInfo(f"{msg}")
+                    color = "#6A4DAC"
+                    try:
+                        tooltipWithColour(msg, color)
+                    except:
+                        pass
                     evo_window.display_pokemon_evo(mainpokemon_name.lower())
                 else:
                     for mainpkmndata in main_pokemon_data:
@@ -1028,10 +1042,15 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                             # showInfo(f"{attacks}")
                             new_attacks = get_levelup_move_for_pokemon(mainpokemon_name.lower(),int(mainpokemon_level))
                             if new_attacks:
-                                showInfo(f"Your {mainpokemon_name.capitalize()} can now learn a new attack !")
+                                msg = ""
+                                msg += f"Your {mainpokemon_name.capitalize()} can learn a new attack !"
                             for new_attack in new_attacks:
                                 if len(attacks) < 4:
                                     attacks.append(new_attack)
+                                    msg += f"\n Your {mainpokemon_name.capitalize()} has learned {new_attack} !"
+                                    color = "#6A4DAC"
+                                    tooltipWithColour(msg, color)
+                                    showInfo(f"{msg}")
                                 else:
                                     dialog = AttackDialog(attacks, new_attack)
                                     if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -1052,7 +1071,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                                             showInfo(f"'{selected_attack}' not found in the list")
                                     else:
                                         # Handle the case where the user cancels the dialog
-                                        showInfo("No attack selected")
+                                        showInfo(f"{new_attack} will be discarded.")
                             mainpkmndata["attacks"] = attacks
                             break
         else:
@@ -1090,7 +1109,14 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                     mainpkmndata["attacks"] = attacks
                     break
     else:
-        showInfo(f"Your {mainpokemon_name} has gained {exp} XP.\n {experience} exp is needed for next level \n Your pokemon currently has {mainpokemon_xp}")
+        msg = ""
+        msg += f"Your {mainpokemon_name} has gained {exp} XP.\n {experience} exp is needed for next level \n Your pokemon currently has {mainpokemon_xp}"
+        color = "#6A4DAC" #pokemon leveling info color for tooltip
+        try:
+            tooltipWithColour(msg, color)
+        except:
+            pass
+        showInfo(f"{msg}")
     # Load existing Pokémon data if it exists
 
     for mainpkmndata in main_pokemon_data:
@@ -1196,8 +1222,9 @@ def evolve_pokemon(pkmn_name):
                             hp_stat = int(stats['hp'])
                             hp = calculate_hp(hp_stat, level, ev, iv)
                             pokemon["current_hp"] = int(hp)
-                            pokemon["gender"] = pick_random_gender(evoName.lower())
+                            #pokemon["gender"] = pick_random_gender(evoName.lower()) dont replace gender
                             pokemon["growth_rate"] = search_pokeapi_db(evoName.lower(), "growth_rate")
+                            pokemon["base_experience"] = search_pokeapi_db(evoName.lower(), "base_experience")
                             abilities = search_pokedex(evoName.lower(), "abilities")
                             # Filter abilities to include only those with numeric keys
                             # numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
@@ -5487,15 +5514,19 @@ class ItemWindow(QWidget):
         row, col = 0, 0
         max_items_per_row = 2
         max_rows = 4
-        for item_name in self.itembag_list:
-            if row >= max_rows:
-                break
-            item_widget = self.ItemLabel(item_name)
-            self.layout.addWidget(item_widget, row, col)
-            col += 1
-            if col >= max_items_per_row:
-                row += 1
-                col = 0
+        if self.itembag_list is None or not self.itembag_list:  # Wenn None oder leer
+            empty_label = QLabel("You dont own any items yet.")
+            self.layout.addWidget(empty_label, 1, 1)
+        else:
+            for item_name in self.itembag_list:
+                if row >= max_rows:
+                    break
+                item_widget = self.ItemLabel(item_name)
+                self.layout.addWidget(item_widget, row, col)
+                col += 1
+                if col >= max_items_per_row:
+                    row += 1
+                    col = 0
 
     def ItemLabel(self, item_name):
         item_file_path = items_path / f"{item_name}.png"
