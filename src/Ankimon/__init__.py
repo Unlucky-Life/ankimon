@@ -5285,7 +5285,7 @@ class EvoWindow(QWidget):
         #fontlvl.setPointSize(12)
         # Create a QPen object for the font color
         pen = QPen()
-        pen.setColor(Qt.white)
+        pen.setColor(QColor('white'))
         painter.setPen(pen)
         painter.drawText(150,35,f"{pkmn_name.capitalize()} is evolving to {pokemon_evo.capitalize()}")
         painter.drawText(95,430,"Please Choose to Evolve Your Pokemon or Cancel Evolution")
