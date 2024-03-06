@@ -23,7 +23,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QDialog, QVB
 from PyQt6.QtWidgets import QApplication, QWidget
 from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtMultimediaWidgets import QVideoWidget
-from PyQt6.QtCore import QUrl
+#from PyQt6.QtCore import QUrl
 import base64
 from aqt import utils
 from PyQt6.QtGui import QSurfaceFormat
@@ -36,7 +36,7 @@ import distutils.dir_util
 from anki.collection import Collection
 import csv
 import time, wave
-from .download_pokeapi_db import create_pokeapidb
+#from .download_pokeapi_db import create_pokeapidb
 
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
@@ -3234,6 +3234,11 @@ class Downloader(QObject):
     progress_updated = pyqtSignal(int)  # Signal to update progress bar
     download_complete = pyqtSignal()  # Signal when download is complete
 
+    def __init__(self, addon_dir, parent=None):
+        super().__init__(parent)
+        self.addon_dir = Path(addon_dir)
+        self.pokedex = []
+
     def save_to_json(self, pokedex, filename):
         with open(filename, 'w') as json_file:
             json.dump(pokedex, json_file, indent=2)
@@ -3288,40 +3293,38 @@ class Downloader(QObject):
             }
             self.pokedex.append(entry)
 
-    def download_pokemon_data(self, addon_dir):
-        urls = [
-            "https://play.pokemonshowdown.com/data/learnsets.json",
-            "https://play.pokemonshowdown.com/data/pokedex.json",
-            "https://play.pokemonshowdown.com/data/moves.json",
-            "POKEAPI"
-        ]
-        num_files = len(urls)
-        for i, url in enumerate(urls, start=1):
-            if url != "POKEAPI":
-                response = requests.get(url)
-                if response.status_code == 200:
-                    data = response.json()
-                    file_path = addon_dir / f"{url.split('/')[-1]}"
-                    with open(file_path, 'w') as json_file:
-                        json.dump(data, json_file, indent=2)
-                else:
-                    print(f"Failed to download data from {url}")
-                progress = int((i / num_files) * 100)
-                self.progress_updated.emit(progress)
-            else:
-                try:
+    def download_pokemon_data(self):
+        try:
+            urls = [
+                "https://play.pokemonshowdown.com/data/learnsets.json",
+                "https://play.pokemonshowdown.com/data/pokedex.json",
+                "https://play.pokemonshowdown.com/data/moves.json",
+                "POKEAPI"
+            ]
+            num_files = len(urls)
+            for i, url in enumerate(urls, start=1):
+                if url != "POKEAPI":
+                    response = requests.get(url)
+                    if response.status_code == 200:
+                        data = response.json()
+                        file_path = self.addon_dir / f"{url.split('/')[-1]}"
+                        with open(file_path, 'w') as json_file:
+                            json.dump(data, json_file, indent=2)
+                    else:
+                        print(f"Failed to download data from {url}")  # Replace with a signal if needed
+                    progress = int((i / num_files) * 100)
+                    self.progress_updated.emit(progress)
+                else:  # Handle "POKEAPI" case
                     self.pokedex = []
-                    id = 898
+                    id = 899  # Assuming you want to fetch data for 898 Pokemon
                     for pokemon_id in range(1, id):
                         self.create_pokedex(pokemon_id)
-                        progress = int(((pokemon_id / id) + 1) * 100)
+                        progress = int((pokemon_id / id) * 100)
                         self.progress_updated.emit(progress)
-                    filename = addon_dir / "pokeapi_db.json"
-                    with open(filename, 'w') as json_file:
-                        json.dump(self.pokedex, json_file, indent=2)
-                        self.download_complete.emit()
-                except Exception as e:
-                    showWarning(f"An error occured {e}")
+                    self.save_to_json(self.pokedex, self.addon_dir / "pokeapi_db.json")
+            self.download_complete.emit()
+        except Exception as e:
+            showWarning(f"An error occurred: {e}")  # Replace with a signal if needed
 
 class LoadingDialog(QDialog):
     def __init__(self, addon_dir, parent=None):
@@ -3335,14 +3338,19 @@ class LoadingDialog(QDialog):
         layout.addWidget(self.label)
         layout.addWidget(self.progress)
         self.setLayout(layout)
-        self.downloader = Downloader()
-        self.downloader.progress_updated.connect(self.progress.setValue)
-        self.downloader.download_complete.connect(self.on_download_complete)
         self.start_download(addon_dir)
 
     def start_download(self, addon_dir):
-        thread = threading.Thread(target=self.downloader.download_pokemon_data, args=(addon_dir,))
-        thread.start()
+        self.thread = QThread()
+        self.downloader = Downloader(addon_dir)
+        self.downloader.moveToThread(self.thread)
+        self.thread.started.connect(self.downloader.download_pokemon_data)
+        self.downloader.progress_updated.connect(self.progress.setValue)
+        self.downloader.download_complete.connect(self.on_download_complete)
+        self.downloader.download_complete.connect(self.thread.quit)
+        self.downloader.download_complete.connect(self.downloader.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.start()
 
     def on_download_complete(self):
         self.label.setText("Download complete! You can now close this window.")
@@ -4942,11 +4950,12 @@ class StarterWindow(QWidget):
     def keyPressEvent(self, event):
         global test, pokemon_encounter, pokedex_image_path
         # Close the main window when the spacebar is pressed
-        if event.key() == Qt.Key_G:
-            #first encounter image
-            if self.starter == False:
+        if event.key() == Qt.Key.Key_G:  # Updated to Key_G for PyQt 6
+            # First encounter image
+            if not self.starter:
                 self.display_starter_pokemon()
-            elif self.starter == True:
+            # If self.starter is True, simply pass (do nothing)
+            else:
                 pass
 
     def display_starter_pokemon(self):
@@ -5311,7 +5320,7 @@ evo_window = EvoWindow()
 # Erstellen einer Klasse, die von QObject erbt und die eventFilter Methode überschreibt
 class MyEventFilter(QObject):
     def eventFilter(self, obj, event):
-        if obj is mw and event.type() == QEvent.KeyPress:
+        if obj is mw and event.type() == QEvent.Type.KeyPress:
             if event.key() == Qt.Key.Key_M and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
                 if test_window.isVisible():
                     test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
