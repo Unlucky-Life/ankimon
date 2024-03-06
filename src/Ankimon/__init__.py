@@ -220,6 +220,78 @@ def check_id_ok(id_num):
 # if index = 40 - 100 => normal ; multiply with damage
 # if index < 40 => attack misses
 
+#Badges needed for achievements:
+badges = {
+  "1": "changed",
+  "2": "changed",
+  "3": "changed",
+  "4": "changed",
+  "5": "changed",
+  "6": "changed",
+  "7": "changed",
+  "8": "changed",
+  "9": "changed",
+  "10": "changed",
+  "11": "changed",
+  "12": "changed",
+  "13": "changed",
+  "14": "changed",
+  "15": "changed",
+  "16": "changed",
+  "17": "changed",
+  "18": "changed",
+  "19": "changed",
+  "20": "changed",
+  "21": "changed",
+  "22": "changed",
+  "23": "changed",
+  "24": "changed",
+  "25": "changed",
+  "26": "changed",
+  "27": "changed",
+  "28": "changed",
+  "29": "changed",
+  "30": "changed",
+  "31": "changed",
+  "32": "changed",
+  "33": "changed",
+  "34": "changed",
+  "35": "changed",
+  "36": "changed",
+  "37": "changed",
+  "38": "changed",
+  "39": "changed",
+  "40": "changed",
+  "41": "changed",
+  "42": "changed",
+  "43": "changed",
+  "44": "changed",
+  "45": "changed",
+  "46": "changed",
+  "47": "changed",
+  "48": "changed",
+  "49": "changed",
+  "50": "changed",
+  "51": "changed",
+  "52": "changed",
+  "53": "changed",
+  "54": "changed",
+  "55": "changed",
+  "56": "changed",
+  "57": "changed",
+  "58": "changed",
+  "59": "Add",
+  "60": "Add",
+  "61": "Add",
+  "62": "Add",
+  "63": "Add",
+  "64": "Add",
+  "65": "Add",
+  "66": "Add",
+  "67": "Add"
+}
+
+
 
 def special_pokemon_names_for_min_level(name):
     if name == "flabébé":
@@ -3559,8 +3631,10 @@ class ItemSpriteDownloader(QThread):
     def __init__(self, destination_to):
         super().__init__()
         global addon_dir
-        self.destination_to = addon_dir / "pokemon_sprites" / "items"
-        self.base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dream-world/"
+        self.items_destination_to = addon_dir / "pokemon_sprites" / "items"
+        self.badges_destination_to = addon_dir / "pokemon_sprites" / "badges"
+        self.badges_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/"
+        self.item_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dream-world/"
         self.item_names = [
         "absorb-bulb.png",
         "aguav-berry.png",
@@ -3898,24 +3972,41 @@ class ItemSpriteDownloader(QThread):
         "zap-plate.png",
         "zinc.png",
         "zoom-lens.png"
-    ]
-        if not os.path.exists(self.destination_to):
-            os.makedirs(self.destination_to)
+        ]
+        if not os.path.exists(self.items_destination_to):
+            os.makedirs(self.items_destination_to)
+        if not os.path.exists(self.badges_destination_to):
+            os.makedirs(self.badges_destination_to)
 
     def run(self):
         total_downloaded = 0
         for item_name in self.item_names:
-            item_url = self.base_url + item_name
+            item_url = self.item_base_url + item_name
             response = requests.get(item_url)
             if response.status_code == 200:
-                with open(os.path.join(self.destination_to, item_name), 'wb') as file:
+                with open(os.path.join(self.items_destination_to, item_name), 'wb') as file:
                     file.write(response.content)
             total_downloaded += 1
             self.progress_updated.emit(total_downloaded)
         # Emit the download_complete signal at the end of the download process
+        max_badges = 68
+        for badge_num in range(1,68):
+            badge_file = f"{badge_num}.png"
+            badge_url = self.badges_base_url + badge_file
+            response = requests.get(badge_url)
+            if response.status_code == 200:
+                with open(os.path.join(self.badges_destination_to, badge_file), 'wb') as file:
+                    file.write(response.content)
+            total_downloaded += 1
+            self.progress_updated.emit(total_downloaded)
+        total_downloaded += 1
+        self.progress_updated.emit(total_downloaded)
         self.download_complete.emit()
+
+
+
 def download_item_sprites():
-    total_images_expected = 336
+    total_images_expected = int(336 + 68)
     global addon_dir
     destination_to = addon_dir / "pokemon_sprites" / "items"
 
@@ -3947,12 +4038,10 @@ def download_item_sprites():
     show_loading_window()
 
 def show_agreement_and_download():
-    download_item_sprites()
     # Show the agreement dialog
     dialog = AgreementDialog()
     if dialog.exec() == QDialog.DialogCode.Accepted:
         # User agreed, proceed with download
-        showInfo("Now Downloading Sprites !")
         download_item_sprites()
 
 class AgreementDialog(QDialog):
