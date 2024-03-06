@@ -88,6 +88,7 @@ all_species_path = addon_dir / "all_species.json"
 species_path = addon_dir / "species.json"
 items_path = addon_dir / "pokemon_sprites" / "items"
 itembag_path = addon_dir / "items.json"
+badgebag_path = addon_dir / "badges.json"
 # Get the profile folder
 profilename = mw.pm.name
 #profilefolder = Path(mw.pm.profileFolder())
@@ -3969,7 +3970,10 @@ class AgreementDialog(QDialog):
 
 §2 Copyright Infringements
 (1) The user agrees to respect copyright and other protective rights of third parties. \n It is prohibited for the user to download, reproduce, distribute, or make publicly available any copyrighted works \n without the required permission of the rights holder.
-(2) In the event of a violation of copyright provisions, the user bears full responsibility and the resulting consequences. \n The provider reserves the right to take appropriate legal action \n in the event of becoming aware of any rights violations and to block access to the services.""")
+(2) In the event of a violation of copyright provisions, the user bears full responsibility and the resulting consequences. \n The provider reserves the right to take appropriate legal action \n in the event of becoming aware of any rights violations and to block access to the services.
+                       
+Check out https://pokeapi.co/docs/v2#fairuse and https://github.com/smogon/pokemon-showdown for more information.
+                       """)
         layout.addWidget(title)
         layout.addWidget(subtitle)
         layout.addWidget(terms)
@@ -5285,7 +5289,7 @@ class EvoWindow(QWidget):
         #fontlvl.setPointSize(12)
         # Create a QPen object for the font color
         pen = QPen()
-        pen.setColor(QColor('white'))
+        pen.setColor(Qt.white)
         painter.setPen(pen)
         painter.drawText(150,35,f"{pkmn_name.capitalize()} is evolving to {pokemon_evo.capitalize()}")
         painter.drawText(95,430,"Please Choose to Evolve Your Pokemon or Cancel Evolution")
@@ -5638,12 +5642,85 @@ class AttackDialog(QDialog):
         self.selected_attack = sender.text()
         self.reject()
 
+
+class AchievementWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.read_item_file()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle("Achievements")
+        global addon_dir
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+
+    def renewWidgets(self):
+        # Clear the existing widgets from the layout
+        for i in reversed(range(self.layout.count())):
+            widget = self.layout.itemAt(i).widget()
+            if widget:
+                widget.deleteLater()
+        row, col = 0, 0
+        max_items_per_row = 2
+        max_rows = 4
+        if self.badge_list is None or not self.badge_list:  # Wenn None oder leer
+            empty_label = QLabel("You dont own any badges yet.")
+            self.layout.addWidget(empty_label, 1, 1)
+        else:
+            for badge_name in self.badge_list:
+                if row >= max_rows:
+                    break
+                item_widget = self.BadgesLabel(badge_name)
+                self.layout.addWidget(item_widget, row, col)
+                col += 1
+                if col >= max_items_per_row:
+                    row += 1
+                    col = 0
+
+    def BadgesLabel(self, item_name):
+        badges_path = badges_path / f"{badge_name}.png"
+        frame = QVBoxLayout() #itemframe
+        badges_name_label = QLabel(f"{item_name.capitalize()}") #itemname
+        badges_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        picture_pixmap = QPixmap(str(badges_path))
+        picture_label = QLabel()
+        picture_label.setPixmap(picture_pixmap)
+        picture_label.setStyleSheet("border: 2px solid #3498db; border-radius: 5px; padding: 5px;")
+        frame.addWidget(picture_label)
+        frame.addWidget(badges_name_label)
+        frame_widget = QWidget()
+        frame_widget.setLayout(frame)
+
+        return frame_widget
+
+    def read_item_file(self):
+        # Read the list from the JSON file
+        with open(badgebag_path, 'r') as json_file:
+            self.badge_list = json.load(json_file)
+
+    def clear_layout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+    def showEvent(self, event):
+        # This method is called when the window is shown or displayed
+        self.renewWidgets()
+
+    def show_window(self):
+        self.show()
+
 def report_bug():
     # Specify the URL of the Pokémon Showdown Team Builder
     bug_url = "https://forms.gle/7pJZNcRaUJx5WRybA"
 
     # Open the Team Builder in the default web browser
     QDesktopServices.openUrl(QUrl(bug_url))
+
+achievement_bag = AchievementWindow()
 
 #buttonlayout
 mw.pokemenu = QMenu('&Ankimon', mw)
@@ -5665,6 +5742,10 @@ if sprites_complete and database_complete != False:
     test_action15 = QAction("Itembag", mw)
     test_action15.triggered.connect(item_window.show_window)
     mw.pokemenu.addAction(test_action15)
+
+    achievement_bag_action = QAction("Achievements", mw)
+    achievement_bag_action.triggered.connect(achievement_bag.show_window)
+    mw.pokemenu.addAction(achievement_bag_action)
 
     test_action8 = QAction("Open Pokemon Showdown Teambuilder", mw)
     qconnect(test_action8.triggered, open_team_builder)
@@ -5753,14 +5834,14 @@ if sounds is True:
                 frames = file.getnframes()
                 rate = file.getframerate()
                 duration = frames / float(rate)
-                showInfo(f"{duration}")
+                #showInfo(f"{duration}")
 
         timer_interval = int(duration * 1000)  # Convert duration to milliseconds
         timer.start(timer_interval)  # Restart timer
 
-    test_action14 = QAction("Play Sound", mw)
-    test_action14.triggered.connect(play_sound)
-    mw.pokemenu.addAction(test_action14)
+    sound_action = QAction("Play Sound", mw)
+    sound_action.triggered.connect(play_sound)
+    mw.pokemenu.addAction(sound_action)
 
     # Create a QTimer
     timer = QTimer()
