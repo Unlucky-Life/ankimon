@@ -369,6 +369,15 @@ def check_badges(achievements):
             for badge_num in badge_list:
                 achievements[str(badge_num)] = True
         return achievements
+
+def check_for_badge(achievements, rec_badge_num):
+    with open(badgebag_path, 'r') as json_file:
+        badge_list = json.load(json_file)
+        if badge_list[str(rec_badge_num)] is False:
+            rec_badge = True
+        else:
+            rec_badge = False
+        return rec_badge
         
 def save_badges(badges):
         with open(badgebag_path, 'w') as json_file:
@@ -380,11 +389,11 @@ def receive_badge(badge_num,achievements):
     achievements = check_badges(achievements)
     #for badges in badge_list:
     achievements[str(badge_num)] = True
-    badges = []
+    badges_collection = []
     for num in range(1,69):
         if achievements[str(num)] is True:
-            badges.append(int(num))
-    save_badges(badges)
+            badges_collection.append(int(num))
+    save_badges(badges_collection)
     
 achievements = receive_badge(61, achievements)
 
@@ -4978,6 +4987,70 @@ class TestWindow(QWidget):
 
         return image_label
 
+    def pokemon_display_badge(self, badge_number):
+        global pokemon_encounter
+        global addon_dir
+        global badges_path
+        global frontdefault
+        global badges
+        bckgimage_path = addon_dir / "pokemon_sprites" / "starter_screen" / "bg.png"
+        badge_path = badges_path / f"{str(badge_number)}.png"
+
+        # Load the background image
+        pixmap_bckg = QPixmap()
+        pixmap_bckg.load(str(bckgimage_path))
+
+        # Display the Pokémon image
+        item_label = QLabel()
+        item_pixmap = QPixmap()
+        item_pixmap.load(str(badge_path))
+
+        def resize_pixmap_img(pixmap):
+            max_width = 100
+            original_width = pixmap.width()
+            original_height = pixmap.height()
+
+            if original_width == 0:
+                return pixmap  # Avoid division by zero
+
+            new_width = max_width
+            new_height = (original_height * max_width) // original_width
+            pixmap2 = pixmap.scaled(new_width, new_height)
+            return pixmap2
+
+        item_pixmap = resize_pixmap_img(item_pixmap)
+
+        # Merge the background image and the Pokémon image
+        merged_pixmap = QPixmap(pixmap_bckg.size())
+        merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
+        #merged_pixmap.fill(Qt.transparent)
+        # merge both images together
+        painter = QPainter(merged_pixmap)
+        # draw background to a specific pixel
+        painter.drawPixmap(0, 0, pixmap_bckg)
+        #item = str(item)
+        painter.drawPixmap(200,90,item_pixmap)
+
+        # custom font
+        custom_font = load_custom_font(font_file, 26)
+        message_box_text = f"""
+        You have received a badge for:
+        {badges[str(badge_number)]} !"""
+        # Draw the text on top of the image
+        # Adjust the font size as needed
+        painter.setFont(custom_font)
+        painter.setPen(QColor(255,255,255))  # Text color
+        painter.drawText(50, 290, message_box_text)
+        custom_font = load_custom_font(font_file, 20)
+        painter.setFont(custom_font)
+        #painter.drawText(10, 330, "You can look this up in your item bag.")
+        painter.end()
+        # Set the merged image as the pixmap for the QLabel
+        image_label = QLabel()
+        image_label.setPixmap(merged_pixmap)
+
+        return image_label
+
     def pokemon_display_dead_pokemon(self):
         global pokemon_hp, name, id, level, type, caught_pokemon, pkmnimgfolder, frontdefault, addon_dir, caught, pokedex_image_path
         # Create the dialog
@@ -5072,6 +5145,17 @@ class TestWindow(QWidget):
         item_name = random_item()
         item_widget = self.pokemon_display_item(item_name)
         layout.addWidget(item_widget)
+        self.setStyleSheet("background-color: rgb(44,44,44);")
+        self.setMaximumWidth(512)
+        self.setMaximumHeight(320)
+        self.setLayout(layout)
+
+    def display_badge(self, badge_num):
+        # pokemon encounter image
+        self.clear_layout(self.layout())
+        layout = self.layout()
+        badge_widget = self.pokemon_display_badge(badge_num)
+        layout.addWidget(badge_widget)
         self.setStyleSheet("background-color: rgb(44,44,44);")
         self.setMaximumWidth(512)
         self.setMaximumHeight(320)
