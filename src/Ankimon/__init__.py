@@ -87,6 +87,7 @@ pokedex_path = addon_dir / "pokedex.json"
 all_species_path = addon_dir / "all_species.json"
 species_path = addon_dir / "species.json"
 items_path = addon_dir / "pokemon_sprites" / "items"
+badges_path = addon_dir / "pokemon_sprites" / "badges"
 itembag_path = addon_dir / "items.json"
 badgebag_path = addon_dir / "badges.json"
 # Get the profile folder
@@ -222,21 +223,21 @@ def check_id_ok(id_num):
 
 #Badges needed for achievements:
 badges = {
-  "1": "changed",
-  "2": "changed",
-  "3": "changed",
-  "4": "changed",
-  "5": "changed",
-  "6": "changed",
-  "7": "changed",
-  "8": "changed",
-  "9": "changed",
-  "10": "changed",
-  "11": "changed",
-  "12": "changed",
-  "13": "changed",
-  "14": "changed",
-  "15": "changed",
+  "1": "100 Cards in one Session",
+  "2": "300 Cards in one Session",
+  "3": "500 Cards in one Session",
+  "4": "Evolved a Pokemon !",
+  "5": "Leveled a Pokemon !",
+  "6": "Received the first Item !",
+  "7": "First Pokemon Caught !",
+  "8": "Caught first Ultra Pokemon",
+  "9": "Caught first Baby Pokemon",
+  "10": "Caught first Mythical Pokemon",
+  "11": "First Leech Card unleeched",
+  "12": "1000 Cards in one Session",
+  "13": "2000 Cards in one Session",
+  "14": "Received a Pokemon Egg",
+  "15": "Hatched a Pokemon Egg",
   "16": "changed",
   "17": "changed",
   "18": "changed",
@@ -291,7 +292,101 @@ badges = {
   "67": "Add"
 }
 
+achievements = {
+  "1": False,
+  "2": False,
+  "3": False,
+  "4": False,
+  "5": False,
+  "6": False,
+  "7": False,
+  "8": False,
+  "9": False,
+  "10": False,
+  "11": False,
+  "12": False,
+  "13": False,
+  "14": False,
+  "15": False,
+  "16": False,
+  "17": False,
+  "18": False,
+  "19": False,
+  "20": False,
+  "21": False,
+  "22": False,
+  "23": False,
+  "24": False,
+  "25": False,
+  "26": False,
+  "27": False,
+  "28": False,
+  "29": False,
+  "30": False,
+  "31": False,
+  "32": False,
+  "33": False,
+  "34": False,
+  "35": False,
+  "36": False,
+  "37": False,
+  "38": False,
+  "39": False,
+  "40": False,
+  "41": False,
+  "42": False,
+  "43": False,
+  "44": False,
+  "45": False,
+  "46": False,
+  "47": False,
+  "48": False,
+  "49": False,
+  "50": False,
+  "51": False,
+  "52": False,
+  "53": False,
+  "54": False,
+  "55": False,
+  "56": False,
+  "57": False,
+  "58": False,
+  "59": False,
+  "60": False,
+  "61": False,
+  "62": False,
+  "63": False,
+  "64": False,
+  "65": False,
+  "66": False,
+  "67": False,
+  "68": False
+}
 
+def check_badges(achievements):
+        with open(badgebag_path, 'r') as json_file:
+            badge_list = json.load(json_file)
+            for badge_num in badge_list:
+                achievements[str(badge_num)] = True
+        return achievements
+        
+def save_badges(badges):
+        with open(badgebag_path, 'w') as json_file:
+            json.dump(badges, json_file)
+
+achievements = check_badges(achievements)
+
+def receive_badge(badge_num,achievements):
+    achievements = check_badges(achievements)
+    #for badges in badge_list:
+    achievements[str(badge_num)] = True
+    badges = []
+    for num in range(1,69):
+        if achievements[str(num)] is True:
+            badges.append(int(num))
+    save_badges(badges)
+    
+achievements = receive_badge(61, achievements)
 
 def special_pokemon_names_for_min_level(name):
     if name == "flabébé":
@@ -334,20 +429,12 @@ def answerCard_after(rev, card, ease):
     # Aktualisieren Sie die Zählung basierend auf der Bewertung
     global card_ratings_count
     if ease == 1:
-        msg = "Again"
-        color = "#FF9999"
         card_ratings_count["Again"] += 1
     elif ease == maxEase - 2:
-        msg = "Hard"
-        color = "#A3A3A3"
         card_ratings_count["Hard"] += 1
     elif ease == maxEase - 1:
-        msg = "Good"
-        color = "#99FFA4"
         card_ratings_count["Good"] += 1
     elif ease == maxEase:
-        msg = "Easy"
-        color = "#BBEEFF"
         card_ratings_count["Easy"] += 1
     else:
         # default behavior for unforeseen cases
@@ -618,6 +705,12 @@ if item_sprites != False:
         item_names = [name for name in item_names if not name.endswith("-piece")]
         item_names = [name for name in item_names if not name.endswith("-nugget")]
         item_name = random.choice(item_names)
+        # add item to item list
+        with open(itembag_path, 'r') as json_file:
+            itembag_list = json.load(json_file)
+            itembag_list.append(item_name)
+        with open(itembag_path, 'w') as json_file:
+            json.dump(itembag_list, json_file)
         return item_name
 
     def random_fossil():
@@ -630,6 +723,11 @@ if item_sprites != False:
                 # Append the file name without the .png extension to the list
                 fossil_names.append(file[:-4])
         fossil_name = random.choice(fossil_names)
+        with open(itembag_path, 'r') as json_file:
+            itembag_list = json.load(json_file)
+            itembag_list.append(fossil_name)
+        with open(itembag_path, 'w') as json_file:
+            json.dump(itembag_list, json_file, indent=2)
         return fossil_name
 
 def random_egg():
@@ -5757,25 +5855,46 @@ class AchievementWindow(QWidget):
             empty_label = QLabel("You dont own any badges yet.")
             self.layout.addWidget(empty_label, 1, 1)
         else:
-            for badge_name in self.badge_list:
+            for badge_num in self.badge_list:
                 if row >= max_rows:
                     break
-                item_widget = self.BadgesLabel(badge_name)
+                item_widget = self.BadgesLabel(badge_num)
                 self.layout.addWidget(item_widget, row, col)
                 col += 1
                 if col >= max_items_per_row:
                     row += 1
                     col = 0
 
-    def BadgesLabel(self, item_name):
-        badges_path = badges_path / f"{badge_name}.png"
+    def BadgesLabel(self, badge_num):
+        badge_path = badges_path / f"{str(badge_num)}.png"
         frame = QVBoxLayout() #itemframe
-        badges_name_label = QLabel(f"{item_name.capitalize()}") #itemname
+        achievement_description = f"{(badges[str(badge_num)])}"
+        badges_name_label = QLabel(f"{achievement_description}")
         badges_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        picture_pixmap = QPixmap(str(badges_path))
-        picture_label = QLabel()
-        picture_label.setPixmap(picture_pixmap)
+        if badge_num < 15:
+            border_width = 93  # Example width
+            border_height = 93  # Example height
+            border_color = QColor('black')
+            border_pixmap = QPixmap(border_width, border_height)
+            border_pixmap.fill(border_color)
+            desired_width = 89  # Example width
+            desired_height = 89  # Example height
+            background_color = QColor('white')
+            background_pixmap = QPixmap(desired_width, desired_height)
+            background_pixmap.fill(background_color)
+            picture_pixmap = QPixmap(str(badge_path))
+            painter = QPainter(border_pixmap)
+            painter.drawPixmap(2, 2, background_pixmap)
+            painter.drawPixmap(5,5, picture_pixmap)
+            painter.end()  # Finish drawing
+            picture_label = QLabel()
+            picture_label.setPixmap(border_pixmap)
+        else:
+            picture_pixmap = QPixmap(str(badge_path))
+            picture_label = QLabel()
+            picture_label.setPixmap(picture_pixmap)
         picture_label.setStyleSheet("border: 2px solid #3498db; border-radius: 5px; padding: 5px;")
+        picture_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         frame.addWidget(picture_label)
         frame.addWidget(badges_name_label)
         frame_widget = QWidget()
