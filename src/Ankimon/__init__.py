@@ -107,6 +107,8 @@ effectiveness_chart_file_path = addon_dir / "eff_chart.json"
 # check for sprites, data
 back_sprites = check_folders_exist(pkmnimgfolder, "back_default")
 front_sprites = check_folders_exist(pkmnimgfolder, "front_default")
+item_sprites = check_folders_exist(pkmnimgfolder, "items")
+badges_sprites = check_folders_exist(pkmnimgfolder, "badges")
 berries_sprites = check_folders_exist(addon_dir, "berries")
 item_sprites = check_folders_exist(pkmnimgfolder, "items")
 poke_api_data = check_file_exists(addon_dir, "pokeapi_db.json")
@@ -118,7 +120,7 @@ if back_sprites and front_sprites == True:
     sprites_complete = True
 else:
     sprites_complete = False
-if pokedex_data and learnsets_data and all_species and poke_api_data == True:
+if pokedex_data and learnsets_data and all_species and poke_api_data and badges_sprites and item_sprites == True:
     database_complete = True
 else:
     database_complete = False
@@ -130,9 +132,11 @@ class CheckFiles(QDialog):
         check_files_message = "Ankimon Files:"
         if sprites_complete != True:
             check_files_message += " \n Sprite Files incomplete. \n  Please go to Ankimon => 'Download Sprite Files' to download the needed files"
+        if item_sprites and badges_sprites != True:
+            check_files_message += " \n Item and Badges Sprite Files incomplete. \n  Please go to Ankimon => 'Download Database Files' to download the needed files"
         if database_complete != True:
-            check_files_message += " \n Data Files incomplete. \n  Please go to Ankimon => 'Download Database Files' to download the needed files"
-        check_files_message += "\n Once all files have been download.\n Please restart Anki"
+            check_files_message += " \n File Collection incomplete. \n  Please go to Ankimon => 'Download Badges and Item Sprites' to download the needed files"
+        check_files_message += "\n Once all files have been downloaded: Restart Anki"
         # Set the window title for the dialog
         self.setWindowTitle("Ankimon Files Checker")
 
@@ -6042,7 +6046,7 @@ class AchievementWindow(QWidget):
 
 def report_bug():
     # Specify the URL of the Pokémon Showdown Team Builder
-    bug_url = "https://forms.gle/7pJZNcRaUJx5WRybA"
+    bug_url = "https://forms.gle/SB9viXRuroazWmLy8"
 
     # Open the Team Builder in the default web browser
     QDesktopServices.openUrl(QUrl(bug_url))
