@@ -157,6 +157,7 @@ elif sprites_complete != True:
 window = None
 gender = None
 card_counter = 0
+item_receive_value = random.randint(50, 120)
 only_online_sprites = config["only_use_online_sprites"]
 cards_per_round = config["cards_per_round"]
 reviewer_image_gif = config["reviewer_image_gif"]
@@ -224,9 +225,9 @@ def check_id_ok(id_num):
 #Badges needed for achievements:
 badges = {
   "1": "100 Cards in one Session",
-  "2": "300 Cards in one Session",
-  "3": "500 Cards in one Session",
-  "4": "Evolved a Pokemon !",
+  "2": "200 Cards in one Session",
+  "3": "300 Cards in one Session",
+  "4": "500 Cards in one Session",
   "5": "Leveled a Pokemon !",
   "6": "Received the first Item !",
   "7": "First Pokemon Caught !",
@@ -238,7 +239,7 @@ badges = {
   "13": "2000 Cards in one Session",
   "14": "Received a Pokemon Egg",
   "15": "Hatched a Pokemon Egg",
-  "16": "changed",
+  "16": "Evolved a Pokemon !",
   "17": "changed",
   "18": "changed",
   "19": "changed",
@@ -371,17 +372,16 @@ def check_badges(achievements):
         return achievements
 
 def check_for_badge(achievements, rec_badge_num):
-    with open(badgebag_path, 'r') as json_file:
-        badge_list = json.load(json_file)
-        if badge_list[str(rec_badge_num)] is False:
-            rec_badge = True
+        achievements = check_badges(achievements)
+        if achievements[str(rec_badge_num)] is False:
+            got_badge = False
         else:
-            rec_badge = False
-        return rec_badge
+            got_badge = True
+        return got_badge
         
-def save_badges(badges):
+def save_badges(badges_collection):
         with open(badgebag_path, 'w') as json_file:
-            json.dump(badges, json_file)
+            json.dump(badges_collection, json_file)
 
 achievements = check_badges(achievements)
 
@@ -394,8 +394,7 @@ def receive_badge(badge_num,achievements):
         if achievements[str(num)] is True:
             badges_collection.append(int(num))
     save_badges(badges_collection)
-    
-achievements = receive_badge(61, achievements)
+    return achievements
 
 def special_pokemon_names_for_min_level(name):
     if name == "flabébé":
@@ -2053,9 +2052,41 @@ def on_review_card():
         global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats
         global attack_counter
         global pkmn_window
+        global achievements
         # Increment the counter when a card is reviewed
         reviewed_cards_count += 1
-        card_counter += 1
+        card_counter += 50
+        #test achievment system
+        if card_counter == 100:
+            check = check_for_badge(achievements,1)
+            if check is False:
+                achievements = receive_badge(1,achievements)
+                test_window.display_badge(1)
+            else:
+                pass
+        elif card_counter == 200:
+            check = check_for_badge(achievements,2)
+            if check is False:
+                achievements = receive_badge(2,achievements)
+                test_window.display_badge(2)
+            else:
+                pass
+        elif card_counter == 300:
+                check = check_for_badge(achievements,3)
+                if check is False:
+                    achievements = receive_badge(3,achievements)
+                    test_window.display_badge(3)
+                else:
+                    pass
+        elif card_counter == 500:
+                check = check_for_badge(achievements,4)
+                if check is False:
+                    receive_badge(4,achievements)
+                    test_window.display_badge(4)
+                else:
+                    pass
+        if card_counter == item_receive_value:
+            test_window.display_item()
         if reviewed_cards_count >= cards_per_round:
             reviewed_cards_count = 0
             attack_counter = 0
@@ -4640,7 +4671,7 @@ class TestWindow(QWidget):
             # Main window layout
             global addon_dir
             layout = QVBoxLayout()
-            image_file = f"ankimon logo.jpg"
+            image_file = f"ankimon_logo.png"
             image_path = addon_dir / image_file
             image_label = QLabel()
             pixmap = QPixmap()
@@ -4994,14 +5025,13 @@ class TestWindow(QWidget):
         global frontdefault
         global badges
         bckgimage_path = addon_dir / "pokemon_sprites" / "starter_screen" / "bg.png"
-        badge_path = badges_path / f"{str(badge_number)}.png"
+        badge_path = badges_path / f"{badge_number}.png"
 
         # Load the background image
         pixmap_bckg = QPixmap()
         pixmap_bckg.load(str(bckgimage_path))
 
         # Display the Pokémon image
-        item_label = QLabel()
         item_pixmap = QPixmap()
         item_pixmap.load(str(badge_path))
 
@@ -5032,15 +5062,15 @@ class TestWindow(QWidget):
         painter.drawPixmap(200,90,item_pixmap)
 
         # custom font
-        custom_font = load_custom_font(font_file, 26)
-        message_box_text = f"""
-        You have received a badge for:
-        {badges[str(badge_number)]} !"""
+        custom_font = load_custom_font(font_file, 20)
+        message_box_text = f"You have received a badge for:"
+        message_box_text2 = f"{badges[str(badge_number)]}!"
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(255,255,255))  # Text color
-        painter.drawText(50, 290, message_box_text)
+        painter.drawText(120, 270, message_box_text)
+        painter.drawText(140, 290, message_box_text2)
         custom_font = load_custom_font(font_file, 20)
         painter.setFont(custom_font)
         #painter.drawText(10, 330, "You can look this up in your item bag.")
@@ -5139,27 +5169,28 @@ class TestWindow(QWidget):
         self.setMaximumHeight(300)
 
     def display_item(self):
-        # pokemon encounter image
-        self.clear_layout(self.layout())
-        layout = self.layout()
+        Receive_Window = QDialog(mw)
+        layout = QHBoxLayout()
         item_name = random_item()
         item_widget = self.pokemon_display_item(item_name)
         layout.addWidget(item_widget)
-        self.setStyleSheet("background-color: rgb(44,44,44);")
-        self.setMaximumWidth(512)
-        self.setMaximumHeight(320)
-        self.setLayout(layout)
+        Receive_Window.setStyleSheet("background-color: rgb(44,44,44);")
+        Receive_Window.setMaximumWidth(512)
+        Receive_Window.setMaximumHeight(320)
+        Receive_Window.setLayout(layout)
+        Receive_Window.show()
 
     def display_badge(self, badge_num):
-        # pokemon encounter image
-        self.clear_layout(self.layout())
-        layout = self.layout()
+        Receive_Window = QDialog(mw)
+        layout = QHBoxLayout()
         badge_widget = self.pokemon_display_badge(badge_num)
         layout.addWidget(badge_widget)
-        self.setStyleSheet("background-color: rgb(44,44,44);")
-        self.setMaximumWidth(512)
-        self.setMaximumHeight(320)
-        self.setLayout(layout)
+        Receive_Window.setStyleSheet("background-color: rgb(44,44,44);")
+        Receive_Window.setMaximumWidth(512)
+        Receive_Window.setMaximumHeight(320)
+        Receive_Window.setLayout(layout)
+        Receive_Window.show()
+
 
     def display_pokemon_death(self):
         # pokemon encounter image
@@ -5927,6 +5958,7 @@ class AchievementWindow(QWidget):
         self.setLayout(self.layout)
 
     def renewWidgets(self):
+        self.read_item_file()
         # Clear the existing widgets from the layout
         for i in reversed(range(self.layout.count())):
             widget = self.layout.itemAt(i).widget()
@@ -5975,8 +6007,11 @@ class AchievementWindow(QWidget):
             picture_label.setPixmap(border_pixmap)
         else:
             picture_pixmap = QPixmap(str(badge_path))
+            # Scale the QPixmap to fit within a maximum size while maintaining the aspect ratio
+            max_width, max_height = 100, 100  # Example maximum sizes
+            scaled_pixmap = picture_pixmap.scaled(max_width, max_height, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             picture_label = QLabel()
-            picture_label.setPixmap(picture_pixmap)
+            picture_label.setPixmap(scaled_pixmap)
         picture_label.setStyleSheet("border: 2px solid #3498db; border-radius: 5px; padding: 5px;")
         picture_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         frame.addWidget(picture_label)
@@ -6068,7 +6103,7 @@ mw.pokemenu.addAction(test_action4)
 test_action4 = QAction("Download PokemonShowDownSprites", mw)
 qconnect(test_action4.triggered, show_agreement_and_downloadspritespokeshowdown)
 mw.pokemenu.addAction(test_action4)
-itemspritesdow = QAction("Download Item Sprites", mw)
+itemspritesdow = QAction("Download Badges and Item Sprites", mw)
 qconnect(itemspritesdow.triggered, show_agreement_and_download)
 mw.pokemenu.addAction(itemspritesdow)
 
