@@ -912,10 +912,13 @@ if database_complete != False:
         pokemon_species = None
         #generation_file = ("pokeapi_db.json")
         try:
-            if card_counter < 100:
+            if card_counter < (80/cards_per_round):
                 name = get_pokemon_by_category("Normal")
                 pokemon_species = "Normal"
-            elif card_counter < (100/cards_per_round):
+            if card_counter < (80/cards_per_round):
+                name = get_pokemon_by_category("Normal")
+                pokemon_species = "Normal"
+            elif card_counter < (150/cards_per_round):
                 name = get_pokemon_by_category("Ultra")
                 pokemon_species = "Ultra"
             elif card_counter < (200/cards_per_round):
@@ -1080,7 +1083,7 @@ def display_dead_pokemon():
 
     # Create buttons for catching and killing the Pokémon
     catch_button = QPushButton("Catch Pokémon")
-    kill_button = QPushButton("Kill Pokémon")
+    kill_button = QPushButton("Defeat Pokémon")
     qconnect(catch_button.clicked, catch_pokemon)
     qconnect(kill_button.clicked, kill_pokemon)
 
@@ -1591,8 +1594,11 @@ def catch_pokemon(nickname):
     global mypokemon_path, caught
     caught += 1
     if caught == 1:
-        save_caught_pokemon(nickname)
         name = name.capitalize()
+        if nickname is None or not nickname:  # Wenn None oder leer
+            save_caught_pokemon(nickname)
+        else:
+            save_caught_pokemon(name)
         showInfo(f"You caught {name}!") # Display a message when the Pokémon is caught
         new_pokemon()  # Show a new random Pokémon
     else:
