@@ -1228,6 +1228,11 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         msg = ""
         msg += f"Your {mainpokemon_name} is now level {mainpokemon_level} !"
         color = "#6A4DAC" #pokemon leveling info color for tooltip
+        global achievements
+        check = check_for_badge(achievements,5)
+        if check is False:
+            achievements = receive_badge(5,achievements)
+            test_window.display_badge(5)
         try:
             tooltipWithColour(msg, color)
         except:
@@ -1383,6 +1388,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
 def evolve_pokemon(pkmn_name):
     global mainpokemon_path
     global addon_dir
+    global achievements
     try:
         evoName = search_pokedex(pkmn_name.lower(), "evos")
         evoName = f"{evoName[0]}"
@@ -1486,6 +1492,10 @@ def evolve_pokemon(pkmn_name):
         showWarning(f"{e}")
     prevo_name = pkmn_name
     evo_window.display_evo_pokemon(evoName.capitalize(), prevo_name)
+    check = check_for_badge(achievements,16)
+    if check is False:
+        receive_badge(16,achievements)
+        test_window.display_badge(16)
 
 def cancel_evolution(pkmn_name):
     global mainpokemon_current_hp, mainpokemon_ev, ev_yield, mainpokemon_evolutions
@@ -2115,6 +2125,10 @@ def on_review_card():
                     test_window.display_badge(4)
         if card_counter == item_receive_value:
             test_window.display_item()
+            check = check_for_badge(achievements,6)
+            if check is False:
+                receive_badge(6,achievements)
+                test_window.display_badge(6)
         if reviewed_cards_count >= cards_per_round:
             reviewed_cards_count = 0
             attack_counter = 0
@@ -5164,7 +5178,7 @@ class TestWindow(QWidget):
         #catch_button.setFixedWidth(150)
         qconnect(catch_button.clicked, lambda: catch_pokemon(nickname_input.text()))
 
-        kill_button = QPushButton("Kill Pokémon")
+        kill_button = QPushButton("Defeat Pokémon")
         kill_button.setFixedSize(175, 30)  # Adjust the size as needed
         kill_button.setFont(QFont("Arial", 12))  # Adjust the font size and style as needed
         kill_button.setStyleSheet("background-color: rgb(44,44,44);")
@@ -5320,6 +5334,11 @@ class StarterWindow(QWidget):
         self.show()
         self.starter = True
         showInfo("You have chosen your Starter Pokemon ! \n You can now close this window ! \n Please restart your Anki to restart your Pokemon Journey!")
+        global achievments
+        check = check_for_badge(achievements,7)
+        if check is False:
+            receive_badge(7,achievements)
+            test_window.display_badge(7)
 
     def pokemon_display_starter_buttons(self, water_start, fire_start, grass_start):
         # Create buttons for catching and killing the Pokémon
