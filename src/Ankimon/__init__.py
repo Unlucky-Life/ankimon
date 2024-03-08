@@ -896,8 +896,9 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, period=3000, parent=None, w
 
     QTimer.singleShot(period, lambda: lab.hide())
 
+pokemon_species = None
 # Your random Pokémon generation function using the PokeAPI
-if all_species != False:
+if database_complete != False:
     def generate_random_pokemon():
         # Fetch random Pokémon data from Generation
         # Load the JSON file with Pokémon data
@@ -905,20 +906,22 @@ if all_species != False:
         global pokemon_encounter
         global hp, gender, name
         global mainpokemon_level
+        global pokemon_species
+        global cards_per_round
         pokemon_encounter = 0
         pokemon_species = None
-        generation_file = ("pokeapi_db.json")
+        #generation_file = ("pokeapi_db.json")
         try:
             if card_counter < 100:
                 name = get_pokemon_by_category("Normal")
-                pokemon_species = None
-            elif card_counter < 200:
+                pokemon_species = "Normal"
+            elif card_counter < (100/cards_per_round):
                 name = get_pokemon_by_category("Ultra")
                 pokemon_species = "Ultra"
-            elif card_counter < 300:
+            elif card_counter < (200/cards_per_round):
                 name = get_pokemon_by_category("Legendary")
                 pokemon_species = "Legendary"
-            elif card_counter < 400:
+            elif card_counter < (300/cards_per_round):
                 name = get_pokemon_by_category("Mythical")
                 pokemon_species = "Mythical"
             var_level = 3
@@ -1125,6 +1128,7 @@ def get_pokemon_by_category(category_name):
 def save_caught_pokemon(nickname):
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
+    global achievements
     global pokemon_species
     if pokemon_species != None:
         if pokemon_species == "Normal":
@@ -3359,15 +3363,11 @@ def PokemonFree(name):
         # Write the updated data back to the file
         with open(mypokemon_path, 'w') as file:
             json.dump(pokemon_list, file, indent=2)
-
-
         # Find and remove the Pokemon with the given name
-        pokemon_data = [p for p in pokemons if p['name'] != name]
-
+        #pokemon_data = [p for p in pokemons if p['name'] != name]
         # Write the updated data back to the file
-        with open(mainpokemon_path, 'w') as file:
-            json.dump(pokemon_data, file, indent=2)
-
+        #with open(mainpokemon_path, 'w') as file:
+        #   json.dump(pokemon_data, file, indent=2)
         showInfo(f"{name.capitalize()} has been let free.")
     else:
         showWarning("You can't free your Main Pokemon !")
