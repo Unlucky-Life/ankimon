@@ -244,7 +244,7 @@ badges = {
   "14": "Received a Pokemon Egg",
   "15": "Hatched a Pokemon Egg",
   "16": "Evolved a Pokemon !",
-  "17": "changed",
+  "17": "Caught first Normal Pokemon",
   "18": "changed",
   "19": "changed",
   "20": "changed",
@@ -906,16 +906,21 @@ if all_species != False:
         global hp, gender, name
         global mainpokemon_level
         pokemon_encounter = 0
+        pokemon_species = None
         generation_file = ("pokeapi_db.json")
         try:
             if card_counter < 100:
                 name = get_pokemon_by_category("Normal")
+                pokemon_species = None
             elif card_counter < 200:
                 name = get_pokemon_by_category("Ultra")
+                pokemon_species = "Ultra"
             elif card_counter < 300:
                 name = get_pokemon_by_category("Legendary")
+                pokemon_species = "Legendary"
             elif card_counter < 400:
                 name = get_pokemon_by_category("Mythical")
+                pokemon_species = "Mythical"
             var_level = 3
             try:
                 level = random.randint((mainpokemon_level - (random.randint(0, var_level))), (
@@ -1120,6 +1125,29 @@ def get_pokemon_by_category(category_name):
 def save_caught_pokemon(nickname):
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
+    global pokemon_species
+    if pokemon_species != None:
+        if pokemon_species == "Normal":
+            check = check_for_badge(achievements,17)
+            if check is False:
+                achievements = receive_badge(17,achievements)
+                test_window.display_badge(17)
+        elif pokemon_species == "Ultra":
+            check = check_for_badge(achievements,8)
+            if check is False:
+                achievements = receive_badge(8,achievements)
+                test_window.display_badge(8)
+        elif pokemon_species == "Ultra":
+            check = check_for_badge(achievements,9)
+            if check is False:
+                achievements = receive_badge(9,achievements)
+                test_window.display_badge(9)
+        elif pokemon_species == "Mythical":
+            check = check_for_badge(achievements,10)
+            if check is False:
+                achievements = receive_badge(10,achievements)
+                test_window.display_badge(10)
+
     stats = search_pokedex(name.lower(),"baseStats")
     stats["xp"] = 0
     ev = {
@@ -2059,36 +2087,28 @@ def on_review_card():
         global achievements
         # Increment the counter when a card is reviewed
         reviewed_cards_count += 1
-        card_counter += 50
+        card_counter += 1
         #test achievment system
         if card_counter == 100:
             check = check_for_badge(achievements,1)
             if check is False:
                 achievements = receive_badge(1,achievements)
                 test_window.display_badge(1)
-            else:
-                pass
         elif card_counter == 200:
             check = check_for_badge(achievements,2)
             if check is False:
                 achievements = receive_badge(2,achievements)
                 test_window.display_badge(2)
-            else:
-                pass
         elif card_counter == 300:
                 check = check_for_badge(achievements,3)
                 if check is False:
                     achievements = receive_badge(3,achievements)
                     test_window.display_badge(3)
-                else:
-                    pass
         elif card_counter == 500:
                 check = check_for_badge(achievements,4)
                 if check is False:
                     receive_badge(4,achievements)
                     test_window.display_badge(4)
-                else:
-                    pass
         if card_counter == item_receive_value:
             test_window.display_item()
         if reviewed_cards_count >= cards_per_round:
@@ -3673,7 +3693,7 @@ def download_sprites():
                     window.progress.setValue(value)
 
                 def on_download_complete():
-                    window.label.setText("All Images have been downloaded. Please close this window now.")
+                    window.label.setText("All Images have been downloaded. \n Please close this window now and once all needed files have been installed \n => Restart Anki.")
 
                 sprite_downloader = SpriteDownloader(sprites_path, id_to)
                 sprite_downloader.progress_updated.connect(update_progress)
@@ -3755,7 +3775,7 @@ def download_gifsprites():
             window.progress.setValue(value)
 
         def on_download_complete():
-            window.label.setText("All Images have been downloaded. Please close this window now.")
+            window.label.setText("All Images have been downloaded. \n Please close this window now and once all needed files have been installed \n => Restart Anki.")
 
         sprite_downloader = SpriteGifDownloader(sprites_path, id_to)
         sprite_downloader.progress_updated.connect(update_progress)
@@ -4168,7 +4188,7 @@ def download_item_sprites():
             window.progress.setValue(value)
 
         def on_download_complete():
-            window.label.setText("All Images have been downloaded. Please close this window now.")
+            window.label.setText("All Images have been downloaded. \n Please close this window now and once all needed files have been installed \n => Restart Anki.")
 
         sprite_downloader = ItemSpriteDownloader(destination_to)
         sprite_downloader.progress_updated.connect(update_progress)
