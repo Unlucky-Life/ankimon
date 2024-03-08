@@ -156,7 +156,7 @@ elif sprites_complete != True:
 
 window = None
 gender = None
-card_counter = 0
+card_counter = -1
 item_receive_value = random.randint(50, 120)
 only_online_sprites = config["only_use_online_sprites"]
 cards_per_round = config["cards_per_round"]
@@ -2042,7 +2042,7 @@ def calc_multiply_card_rating():
     multiplier = multiply_sum / max_points
     return multiplier
 
-reviewed_cards_count = 0
+reviewed_cards_count = -1
 # Hook into Anki's card review event
 def on_review_card():
     try:
