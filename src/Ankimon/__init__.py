@@ -2501,10 +2501,10 @@ def ShowPokemonCollection():
                     image_label = QLabel()
                     pixmap = QPixmap()
                     pokemon_name = pokemon['name']
-                    try:
-                        pokemon_nickname = pokemon['nickname']
-                    except:
+                    if not pokemon.get('nickname') or pokemon.get('nickname') is None:
                         pokemon_nickname = None
+                    else:
+                        pokemon_nickname = pokemon['nickname']
                     pokemon_gender = pokemon['gender']
                     pokemon_level = pokemon['level']
                     pokemon_id = pokemon['id']
@@ -2544,7 +2544,7 @@ def ShowPokemonCollection():
                     lvl = (f" Level: {pokemon_level}")
                     type_txt = "Type: "
                     for type in pokemon_type:
-                        type_txt += f"{type.capitalize()}"
+                        type_txt += f" {type.capitalize()}"
                     #if len(pokemon_type) > 1:
                         #type_txt = (f" Type: {(pokemon_type[0].capitalize())} and {(pokemon_type[1].capitalize())}")
                     #else:
@@ -3042,7 +3042,6 @@ def MainPokemon(name, level, id, ability, type, detail_stats, attacks, hp, base_
     ]
     # Create a dictionary to store the Pokémon's data
     main_pokemon_data = []
-    showInfo(f"gender {gender}")
     main_pokemon_data = [
         {
             "name": name,
