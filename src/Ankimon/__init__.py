@@ -419,13 +419,82 @@ def special_pokemon_names_for_min_level(name):
         return "mrrime"
     elif name == "mr. mime":
         return "mrmime"
+    elif name == "mime jr.":
+        return "mimejr"
     elif name == "nidoran♂":
         return "nidoranm"
     elif name == "nidoran":
         return "nidoranf"
+    elif name == "keldeo[e]":
+        return "keldeo"
+    elif name == "mew[e]":
+        return "mew"
+    elif name == "deoxys[e]":
+        return "deoxys"
+    elif name == "jirachi[e]":
+        return "jirachi"
+    elif name == "arceus[e]":
+        return "arceus"
+    elif name == "shaymin[e]":
+        return "shaymin-land"
+    elif name == "darkrai [e]":
+        return "darkrai"
+    elif name == "manaphy[e]":
+        return "manaphy"
+    elif name == "phione[e]":
+        return "phione"
+    elif name == "celebi[e]":
+        return "celebi"
+    elif name == "magearna[e]":
+        return "magearna"
+    elif name == "type: null":
+        return "typenull"
     else:
         #showWarning("Error in Handling Pokémon name")
         return name
+
+pokedex_to_poke_api_db = {
+  "mr-mime": "mrmime",
+  "mr-rime": "mrrime",
+  "deoxys": "deosyx-normal",
+  "wormadam-plant": "wormadam",
+  "mimejr": "mime-jr",
+  "giratina": "giratina-altered",
+  "shaymin-land": "shaymin-land",
+  "basculin": "basculin-red-striped",
+  "darmanitan": "darmanitan-standard",
+  "tornadus": "tornadus-incarnate",
+  "thundurus": "thundurus-incarnate",
+  "landorus": "landorus-incarnate",
+  "keldeo": "keldeo-ordinary",
+  "meloetta": "meloetta-aria",
+  "meowstic": "meowstic-male",
+  "meowsticf": "meowstic-male",
+  "aegislash-shield": "aegislash",
+  "aegislashblade": "aegislash",
+  "pumpkaboo": "pumpkaboo-average",
+  "gourgeist": "gourgeist-average",
+  "zygarde": "zygarde-50",
+  "oricorio": "oricorio-baile",
+  "lycanroc": "lycanroc-midday",
+  "wishiwashi": "wishiwashi-solo",
+  "typenull": "type-null",
+  "minior": "minior-red-meteor",
+  "mimikyu": "mimikyu-disguised",
+  "tapukoko": "tapu-koko",
+  "tapulele": "tapu-lele",
+  "tapubulu": "tapu-bulu",
+  "tapufini": "tapu-fini",
+  "toxtricity": "toxtricity-amped",
+  "eiscue": "eiscue-ice",
+  "indeedee": "indeedee-male",
+  "morpeko": "morpeko-full-belly",
+  "urshifu": "urshifu-single-strike"
+}
+
+def special_pokemon_names_for_pokedex_to_poke_api_db(name):
+    global pokedex_to_poke_api_db
+    return pokedex_to_poke_api_db.get(name, name)
 
 def answerCard_before(filter, reviewer, card):
 	utils.answBtnAmt = reviewer.mw.col.sched.answerButtons(card)
@@ -912,19 +981,19 @@ if database_complete != False:
         pokemon_species = None
         #generation_file = ("pokeapi_db.json")
         try:
-            if card_counter < (80/cards_per_round):
+            if card_counter < (40*cards_per_round):
                 name = get_pokemon_by_category("Normal")
                 pokemon_species = "Normal"
-            if card_counter < (80/cards_per_round):
+            if card_counter < (60*cards_per_round):
                 name = get_pokemon_by_category("Normal")
                 pokemon_species = "Normal"
-            elif card_counter < (150/cards_per_round):
+            elif card_counter < (80*cards_per_round):
                 name = get_pokemon_by_category("Ultra")
                 pokemon_species = "Ultra"
-            elif card_counter < (200/cards_per_round):
+            elif card_counter < (100*cards_per_round):
                 name = get_pokemon_by_category("Legendary")
                 pokemon_species = "Legendary"
-            elif card_counter < (300/cards_per_round):
+            elif card_counter < (120*cards_per_round):
                 name = get_pokemon_by_category("Mythical")
                 pokemon_species = "Mythical"
             var_level = 3
@@ -943,7 +1012,7 @@ if database_complete != False:
                 generate_random_pokemon()
             if min_level is not None:
                 min_level = int(min_level)
-            elif min_level is None:
+            elif min_level is None or not min_level:
                 # showInfo(f"{min_level}, {name}")
                 level = 5
                 min_level = 0
@@ -1708,6 +1777,7 @@ def get_mainpokemon_evo(pokemon_name):
 
 def search_pokedex(pokemon_name,variable):
     global pokedex_path
+    pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
             if pokemon_name in pokedex_data:
@@ -1719,6 +1789,7 @@ def search_pokedex(pokemon_name,variable):
 
 def search_pokeapi_db(pokemon_name,variable):
     global addon_dir
+    pokemon_name = special_pokemon_names_for_pokedex_to_poke_api_db(pokemon_name)
     pokeapi_db_path = addon_dir / "pokeapi_db.json"
     with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
