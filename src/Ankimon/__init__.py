@@ -128,14 +128,13 @@ else:
 class CheckFiles(QDialog):
     def __init__(self):
         super().__init__()
-
         check_files_message = "Ankimon Files:"
         if sprites_complete != True:
             check_files_message += " \n Sprite Files incomplete. \n  Please go to Ankimon => 'Download Sprite Files' to download the needed files"
         if item_sprites and badges_sprites != True:
-            check_files_message += " \n Item and Badges Sprite Files incomplete. \n  Please go to Ankimon => 'Download Database Files' to download the needed files"
+            check_files_message += " \n Item and Badges Sprite Files incomplete. \n  Please go to Ankimon => 'Download Badges and Item Sprites' to download the needed files"
         if database_complete != True:
-            check_files_message += " \n File Collection incomplete. \n  Please go to Ankimon => 'Download Badges and Item Sprites' to download the needed files"
+            check_files_message += " \n File Collection incomplete. \n  Please go to Ankimon => 'Download Database Files' to download the needed files"
         check_files_message += "\n Once all files have been downloaded: Restart Anki"
         # Set the window title for the dialog
         self.setWindowTitle("Ankimon Files Checker")
