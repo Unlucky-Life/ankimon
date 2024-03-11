@@ -1,6 +1,6 @@
-Ankimon News:
+#Ankimon News:
 
-# Update Information
+## Update Information
 
 Feature A: **Battle Cries Integration** - This feature will integrate battle cries for each Pokémon, enhancing the battle experience by adding more depth and realism to the combat sequences.
 
