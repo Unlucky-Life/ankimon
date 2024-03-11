@@ -242,9 +242,9 @@ if online_connectivity != False:
             return None, None
 
     # URL of the file on GitHub
-    github_url = "https://github.com/Unlucky-Life/ankimon/blob/d35f24272a2db4c187d12788da1d7f7454892b8b/update_txt.md?raw=true"
+    github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
     # Path to the local file
-    local_file_path = "updateinfos.md"
+    local_file_path = addon_dir / "updateinfos.md"
     # Read content from GitHub
     github_content, github_html_content = read_github_file(github_url)
     # Read content from the local file
