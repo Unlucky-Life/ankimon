@@ -145,7 +145,7 @@ class CheckFiles(QDialog):
         if sprites_complete != True:
             check_files_message += " \n Sprite Files incomplete. \n  Please go to Ankimon => 'Download Sprite Files' to download the needed files"
         if item_sprites and badges_sprites != True:
-            check_files_message += " \n Item and Badges Sprite Files incomplete. \n  Please go to Ankimon => 'Download Badges and Item Sprites' to download the needed files"
+            check_files_message += " \n Item and Badges Sprite Files incomplete. \n  Please go to Ankimon => 'Download Sounds, Badges and Item Sprites' to download the needed files"
         if database_complete != True:
             check_files_message += " \n File Collection incomplete. \n  Please go to Ankimon => 'Download Database Files' to download the needed files"
         check_files_message += "\n Once all files have been downloaded: Restart Anki"
@@ -178,7 +178,7 @@ only_online_sprites = config["only_use_online_sprites"]
 cards_per_round = config["cards_per_round"]
 reviewer_image_gif = config["reviewer_image_gif"]
 sounds = config["sounds"]
-sounds = False
+battle_sounds = config["battle_sounds"]
 
 def test_online_connectivity(url='http://www.google.com', timeout=5):
     try:
@@ -2297,7 +2297,7 @@ cry_counter = 0
 # Hook into Anki's card review event
 def on_review_card():
     try:
-        global reviewed_cards_count, card_ratings_count, card_counter, general_card_count_for_battle, cry_counter
+        global reviewed_cards_count, card_ratings_count, card_counter, general_card_count_for_battle, cry_counter, battle_sounds
         global hp, stats, type, battle_status, name, battle_stats
         global pokemon_encounter
         global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats
@@ -2309,8 +2309,9 @@ def on_review_card():
         card_counter += 1
         cry_counter += 1
         general_card_count_for_battle += 1
-        if general_card_count_for_battle == 1:
-            play_sound()
+        if battle_sounds == True:
+            if general_card_count_for_battle == 1:
+                play_sound()
         #test achievment system
         if card_counter == 100:
             check = check_for_badge(achievements,1)
@@ -6359,7 +6360,7 @@ mw.pokemenu.addAction(test_action4)
 test_action4 = QAction("Download PokemonShowDownSprites", mw)
 qconnect(test_action4.triggered, show_agreement_and_downloadspritespokeshowdown)
 mw.pokemenu.addAction(test_action4)
-itemspritesdow = QAction("Download Badges and Item Sprites", mw)
+itemspritesdow = QAction("Download Sounds, Badges and Item Sprites", mw)
 qconnect(itemspritesdow.triggered, show_agreement_and_download)
 mw.pokemenu.addAction(itemspritesdow)
 
