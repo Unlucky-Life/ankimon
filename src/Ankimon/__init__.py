@@ -101,8 +101,8 @@ all_species_path = addon_dir / "all_species.json"
 species_path = addon_dir / "species.json"
 items_path = addon_dir / "pokemon_sprites" / "items"
 badges_path = addon_dir / "pokemon_sprites" / "badges"
-itembag_path = addon_dir / "items.json"
-badgebag_path = addon_dir / "badges.json"
+itembag_path = addon_dir / "user_files" / "items.json"
+badgebag_path = addon_dir / "user_files" / "badges.json"
 # Get the profile folder
 profilename = mw.pm.name
 #profilefolder = Path(mw.pm.profileFolder())
