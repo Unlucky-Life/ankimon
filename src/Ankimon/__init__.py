@@ -32,8 +32,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.QtWebEngineWidgets import *
 #from PyQt6.QtWidgets import QAction
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QDialog, QVBoxLayout, QLabel
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QDialog, QVBoxLayout, QLabel, QWidget
 from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtMultimediaWidgets import QVideoWidget
 #from PyQt6.QtCore import QUrl
@@ -173,7 +172,7 @@ elif sprites_complete != True:
 window = None
 gender = None
 card_counter = -1
-item_receive_value = random.randint(50, 120)
+item_receive_value = random.randint(30, 120)
 only_online_sprites = config["only_use_online_sprites"]
 cards_per_round = config["cards_per_round"]
 reviewer_image_gif = config["reviewer_image_gif"]
@@ -4681,11 +4680,10 @@ def choose_pokemon(starter_name):
 
     # Append the caught Pokémon's data to the list
     caught_pokemon_data.append(caught_pokemon)
-    if mainpokemon_path.is_file():
-        # Save the caught Pokémon's data to a JSON file
-        with open(str(mainpokemon_path), "w") as json_file:
-            json.dump(caught_pokemon_data, json_file, indent=2)
-        mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender = mainpokemon_data()
+    # Save the caught Pokémon's data to a JSON file
+    with open(str(mainpokemon_path), "w") as json_file:
+        json.dump(caught_pokemon_data, json_file, indent=2)
+    mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender = mainpokemon_data()
 
     # Save the caught Pokémon's data to a JSON file
     with open(str(mypokemon_path), "w") as json_file:
@@ -6299,7 +6297,7 @@ class AchievementWindow(QWidget):
 
 def report_bug():
     # Specify the URL of the Pokémon Showdown Team Builder
-    bug_url = "https://forms.gle/SB9viXRuroazWmLy8"
+    bug_url = "https://github.com/Unlucky-Life/ankimon/issues"
 
     # Open the Team Builder in the default web browser
     QDesktopServices.openUrl(QUrl(bug_url))
