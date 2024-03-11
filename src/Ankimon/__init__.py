@@ -201,7 +201,7 @@ if online_connectivity != False:
         def __init__(self, content):
             super().__init__()
 
-            self.setWindowTitle("GitHub File Content")
+            self.setWindowTitle("Ankimon Notifications")
             self.setGeometry(100, 100, 600, 400)
 
             layout = QVBoxLayout()
