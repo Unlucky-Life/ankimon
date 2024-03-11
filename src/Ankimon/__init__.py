@@ -3274,8 +3274,7 @@ def MainPokemon(name, level, id, ability, type, detail_stats, attacks, hp, base_
         json.dump(main_pokemon_data, json_file, indent=2)
 
     showInfo(f"{capitalized_name} has been chosen as your main Pokemon !")
-
-    # create a new menu item, "Show Pokemon Collection"
+    new_pokemon() #new pokemon if you change your pokemon
 
 def PokemonDetailsStats(detail_stats, growth_rate, level):
     global font_file
