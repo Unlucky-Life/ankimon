@@ -1,5 +1,5 @@
-![image](https://github.com/Unlucky-Life/ankimon/assets/77027147/4de7f5c4-46da-485b-be18-8516159259d2)
+![image](https://github.com/Unlucky-Life/ankimon/assets/77027147/753ee3c7-a258-41ed-ab38-c2a5d1f2df9e)
 ![image](https://github.com/Unlucky-Life/ankimon/assets/77027147/6bdd303d-3055-4520-b0ae-bc144c3d55b9)
-![image](https://github.com/Unlucky-Life/ankimon/assets/77027147/64e3c9ad-d31c-4d86-87bb-fcd2a18e51ea)
+![image](https://github.com/Unlucky-Life/ankimon/assets/77027147/ed6330ad-db26-4894-8375-869704a78a08)
 
 ![image](https://github.com/Unlucky-Life/ankimon/assets/77027147/20cc5c56-884f-4cfa-9787-38bd0be821b5)
