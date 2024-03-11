@@ -9,7 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # Important - If you redistribute it and/or modify this addon - must give contribution in Title and Code
-# aswell as ask for permission to modify / redistribute this addon itself or the code itself
+# aswell as ask for permission to modify / redistribute this addon or the code itself
 
 import os, sys
 from aqt.utils import *
