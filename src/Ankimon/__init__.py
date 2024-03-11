@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+
+# Ankimon
+# Copyright (C) 2024 Unlucky-Life
+
+# This program is free software: you can redistribute it and/or modify
+# by the Free Software Foundation
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# Important - If you redistribute it and/or modify this addon - must give contriubtion in Title and Code
+# aswell as ask for permission to modify / redistribute this addon itself or the code itself
+
 import os, sys
 from aqt.utils import *
 from typing import Optional
