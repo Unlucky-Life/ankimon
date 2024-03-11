@@ -193,14 +193,128 @@ def test_online_connectivity(url='http://www.google.com', timeout=5):
         return False
 
 online_connectivity = test_online_connectivity()
+if online_connectivity != False:
+    import markdown
+
+    # Custom Dialog class
+    class UpdateNotificationWindow(QDialog):
+        def __init__(self, content):
+            super().__init__()
+
+            self.setWindowTitle("GitHub File Content")
+            self.setGeometry(100, 100, 600, 400)
+
+            layout = QVBoxLayout()
+            self.text_edit = QTextEdit()
+            self.text_edit.setReadOnly(True)
+            self.text_edit.setHtml(content)
+            layout.addWidget(self.text_edit)
+
+            self.setLayout(layout)
+
+    # Function to check if the content of the two files is the same
+    def compare_files(local_content, github_content):
+        return local_content == github_content
+
+    # Function to read the content of the local file
+    def read_local_file(file_path):
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                return file.read()
+        except FileNotFoundError:
+            return None
+
+    # Function to write content to a local file
+    def write_local_file(file_path, content):
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(content)
+
+    # Function to check if the file exists on GitHub and read its content
+    def read_github_file(url):
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            # File exists, parse the Markdown content
+            content = response.text
+            html_content = markdown.markdown(content)
+            return content, html_content
+        else:
+            return None, None
+
+    # URL of the file on GitHub
+    github_url = "https://github.com/Unlucky-Life/ankimon/blob/d35f24272a2db4c187d12788da1d7f7454892b8b/update_txt.md?raw=true"
+    # Path to the local file
+    local_file_path = "updateinfos.md"
+    # Read content from GitHub
+    github_content, github_html_content = read_github_file(github_url)
+    # Read content from the local file
+    local_content = read_local_file(local_file_path)
+    # If local content exists and is the same as GitHub content, do not open dialog
+    if local_content is not None and compare_files(local_content, github_content):
+        #showInfo("Local file is up to date.")
+        pass
+    else:
+        # Download new content from GitHub
+        if github_content is not None:
+            # Write new content to the local file
+            write_local_file(local_file_path, github_content)
+            dialog = UpdateNotificationWindow(github_html_content)
+            dialog.exec()
+        else:
+            showWarning("Failed to retrieve Ankimon content from GitHub.")
+
 
 try:
     from aqt.sound import av_player
     from anki.sound import SoundOrVideoTag
     legacy_play = None
 except (ImportError, ModuleNotFoundError):
+    showWarning("Sound import error occured.")
     from anki.sound import play as legacy_play
     av_player = None
+
+sounds=True
+sound_list = ['ababo.mp3', 'abomasnow-mega.mp3', 'abomasnow.mp3', 'abra.mp3', 'absol-mega.mp3', 'absol.mp3', 'accelgor.mp3', 'aegislash.mp3', 'aerodactyl-mega.mp3', 'aerodactyl.mp3', 'aggron-mega.mp3', 'aggron.mp3', 'aipom.mp3', 'alakazam-mega.mp3', 'alakazam.mp3', 'alcremie.mp3', 'alomomola.mp3', 'altaria-mega.mp3', 'altaria.mp3', 'amaura.mp3', 'ambipom.mp3', 'amoonguss.mp3', 'ampharos-mega.mp3', 'ampharos.mp3', 'annihilape.mp3', 'anorith.mp3', 'appletun.mp3', 'applin.mp3', 'araquanid.mp3', 'arbok.mp3', 'arboliva.mp3', 'arcanine.mp3', 'arceus.mp3', 'archaludon.mp3', 'archen.mp3', 'archeops.mp3', 'arctibax.mp3', 'arctovish.mp3', 'arctozolt.mp3', 'argalis.mp3', 'arghonaut.mp3', 'ariados.mp3', 'armaldo.mp3', 'armarouge.mp3', 'aromatisse.mp3', 'aron.mp3', 'arrokuda.mp3', 'articuno.mp3', 'astrolotl.mp3', 'audino-mega.mp3', 'audino.mp3', 'aurorus.mp3', 'aurumoth.mp3', 'avalugg.mp3', 'axew.mp3', 'azelf.mp3', 'azumarill.mp3', 'azurill.mp3', 'bagon.mp3', 'baltoy.mp3', 'banette-mega.mp3', 'banette.mp3', 'barbaracle.mp3', 'barboach.mp3', 'barraskewda.mp3', 'basculegion.mp3', 'basculin.mp3', 'bastiodon.mp3', 'baxcalibur.mp3', 'bayleef.mp3', 'beartic.mp3', 'beautifly.mp3', 'beedrill-mega.mp3', 'beedrill.mp3', 'beheeyem.mp3', 'beldum.mp3', 'bellibolt.mp3', 'bellossom.mp3', 'bellsprout.mp3', 'bergmite.mp3', 'bewear.mp3', 'bibarel.mp3', 'bidoof.mp3', 'binacle.mp3', 'bisharp.mp3', 'blacephalon.mp3', 'blastoise-mega.mp3', 'blastoise.mp3', 'blaziken-mega.mp3', 'blaziken.mp3', 'blipbug.mp3', 'blissey.mp3', 'blitzle.mp3', 'boldore.mp3', 'boltund.mp3', 'bombirdier.mp3', 'bonsly.mp3', 'bouffalant.mp3', 'bounsweet.mp3', 'braixen.mp3', 'brambleghast.mp3', 'bramblin.mp3', 'brattler.mp3', 'braviary.mp3', 'breezi.mp3', 'breloom.mp3', 'brionne.mp3', 'bronzong.mp3', 'bronzor.mp3', 'brutebonnet.mp3', 'bruxish.mp3', 'budew.mp3', 'buizel.mp3', 'bulbasaur.mp3', 'buneary.mp3', 'bunnelby.mp3', 'burmy.mp3', 'butterfree.mp3', 'buzzwole.mp3', 'cacnea.mp3', 'cacturne.mp3', 'caimanoe.mp3', 'calyrex-ice.mp3', 'calyrex-shadow.mp3', 'calyrex.mp3', 'camerupt-mega.mp3', 'camerupt.mp3', 'capsakid.mp3', 'carbink.mp3', 'caribolt.mp3', 'carkol.mp3', 'carnivine.mp3', 'carracosta.mp3', 'carvanha.mp3', 'cascoon.mp3', 'castform.mp3', 'caterpie.mp3', 'cawdet.mp3', 'cawmodore.mp3', 'celebi.mp3', 'celesteela.mp3', 'centiskorch.mp3', 'ceruledge.mp3', 'cetitan.mp3', 'cetoddle.mp3', 'chandelure.mp3', 'chansey.mp3', 'charcadet.mp3', 'charizard-megax.mp3', 'charizard-megay.mp3', 'charizard.mp3', 'charjabug.mp3', 'charmander.mp3', 'charmeleon.mp3', 'chatot.mp3', 'cherrim.mp3', 'cherubi.mp3', 'chesnaught.mp3', 'chespin.mp3', 'chewtle.mp3', 'chienpao.mp3', 'chikorita.mp3', 'chimchar.mp3', 'chimecho.mp3', 'chinchou.mp3', 'chingling.mp3', 'chiyu.mp3', 'chromera.mp3', 'cinccino.mp3', 'cinderace.mp3', 'clamperl.mp3', 'clauncher.mp3', 'clawitzer.mp3', 'claydol.mp3', 'clefable.mp3', 'clefairy.mp3', 'cleffa.mp3', 'clobbopus.mp3', 'clodsire.mp3', 'cloyster.mp3', 'coalossal.mp3', 'cobalion.mp3', 'cofagrigus.mp3', 'colossoil.mp3', 'combee.mp3', 'combusken.mp3', 'comfey.mp3', 'conkeldurr.mp3', 'copperajah.mp3', 'coribalis.mp3', 'corphish.mp3', 'corsola.mp3', 'corviknight.mp3', 'corvisquire.mp3', 'cosmoem.mp3', 'cosmog.mp3', 'cottonee.mp3', 'crabominable.mp3', 'crabrawler.mp3', 'cradily.mp3', 'cramorant-gorging.mp3', 'cramorant-gulping.mp3', 'cramorant.mp3', 'cranidos.mp3', 'crawdaunt.mp3', 'cresselia.mp3', 'croagunk.mp3', 'crobat.mp3', 'crocalor.mp3', 'croconaw.mp3', 'crucibelle-mega.mp3', 'crucibelle.mp3', 'crustle.mp3', 'cryogonal.mp3', 'cubchoo.mp3', 'cubone.mp3', 'cufant.mp3', 'cupra.mp3', 'cursola.mp3', 'cutiefly.mp3', 'cyclizar.mp3', 'cyclohm.mp3', 'cyndaquil.mp3', 'dachsbun.mp3', 'darkrai.mp3', 'darmanitan.mp3', 'dartrix.mp3', 'darumaka.mp3', 'decidueye.mp3', 'dedenne.mp3', 'deerling.mp3', 'deino.mp3', 'delcatty.mp3', 'delibird.mp3', 'delphox.mp3', 'deoxys.mp3', 'dewgong.mp3', 'dewott.mp3', 'dewpider.mp3', 'dhelmise.mp3', 'dialga.mp3', 'diancie-mega.mp3', 'diancie.mp3', 'diggersby.mp3', 'diglett.mp3', 'dipplin.mp3', 'ditto.mp3', 'dodrio.mp3', 'doduo.mp3', 'dolliv.mp3', 'dondozo.mp3', 'donphan.mp3', 'dorsoil.mp3', 'dottler.mp3', 'doublade.mp3', 'dracovish.mp3', 'dracozolt.mp3', 'dragalge.mp3', 'dragapult.mp3', 'dragonair.mp3', 'dragonite.mp3', 'drakloak.mp3', 'drampa.mp3', 'drapion.mp3', 'dratini.mp3', 'drednaw.mp3', 'dreepy.mp3', 'drifblim.mp3', 'drifloon.mp3', 'drilbur.mp3', 'drizzile.mp3', 'drowzee.mp3', 'druddigon.mp3', 'dubwool.mp3', 'ducklett.mp3', 'dudunsparce.mp3', 'dugtrio.mp3', 'dunsparce.mp3', 'duohm.mp3', 'duosion.mp3', 'duraludon.mp3', 'durant.mp3', 'dusclops.mp3', 'dusknoir.mp3', 'duskull.mp3', 'dustox.mp3', 'dwebble.mp3', 'eelektrik.mp3', 'eelektross.mp3', 'eevee-starter.mp3', 'eevee.mp3', 'eiscue-noice.mp3', 'eiscue.mp3', 'ekans.mp3', 'eldegoss.mp3', 'electabuzz.mp3', 'electivire.mp3', 'electrelk.mp3', 'electrike.mp3', 'electrode.mp3', 'elekid.mp3', 'elgyem.mp3', 'embirch.mp3', 'emboar.mp3', 'emolga.mp3', 'empoleon.mp3', 'enamorus-therian.mp3', 'enamorus.mp3', 'entei.mp3', 'equilibra.mp3', 'escavalier.mp3', 'espathra.mp3', 'espeon.mp3', 'espurr.mp3', 'eternatus-eternamax.mp3', 'eternatus.mp3', 'excadrill.mp3', 'exeggcute.mp3', 'exeggutor.mp3', 'exploud.mp3', 'falinks.mp3', 'farfetchd.mp3', 'farigiraf.mp3', 'fawnifer.mp3', 'fearow.mp3', 'feebas.mp3', 'fennekin.mp3', 'feraligatr.mp3', 'ferroseed.mp3', 'ferrothorn.mp3', 'fezandipiti.mp3', 'fidgit.mp3', 'fidough.mp3', 'finizen.mp3', 'finneon.mp3', 'flaaffy.mp3', 'flabebe.mp3', 'flamigo.mp3', 'flapple.mp3', 'flarelm.mp3', 'flareon.mp3', 'fletchinder.mp3', 'fletchling.mp3', 'flittle.mp3', 'floatoy.mp3', 'floatzel.mp3', 'floette-eternal.mp3', 'floette.mp3', 'floragato.mp3', 'florges.mp3', 'fluttermane.mp3', 'flygon.mp3', 'fomantis.mp3', 'foongus.mp3', 'forretress.mp3', 'fraxure.mp3', 'frigibax.mp3', 'frillish.mp3', 'froakie.mp3', 'frogadier.mp3', 'froslass.mp3', 'frosmoth.mp3', 'fuecoco.mp3', 'furfrou.mp3', 'furret.mp3', 'gabite.mp3', 'gallade-mega.mp3', 'gallade.mp3', 'galvantula.mp3', 'garbodor.mp3', 'garchomp-mega.mp3', 'garchomp.mp3', 'gardevoir-mega.mp3', 'gardevoir.mp3', 'garganacl.mp3', 'gastly.mp3', 'gastrodon.mp3', 'genesect.mp3', 'gengar-mega.mp3', 'gengar.mp3', 'geodude.mp3', 'gholdengo.mp3', 'gible.mp3', 'gigalith.mp3', 'gimmighoul-roaming.mp3', 'gimmighoul.mp3', 'girafarig.mp3', 'giratina.mp3', 'glaceon.mp3', 'glalie-mega.mp3', 'glalie.mp3', 'glameow.mp3', 'glastrier.mp3', 'gligar.mp3', 'glimmet.mp3', 'glimmora.mp3', 'gliscor.mp3', 'gloom.mp3', 'gogoat.mp3', 'golbat.mp3', 'goldeen.mp3', 'golduck.mp3', 'golem.mp3', 'golett.mp3', 'golisopod.mp3', 'golurk.mp3', 'goodra.mp3', 'goomy.mp3', 'gorebyss.mp3', 'gossifleur.mp3', 'gothita.mp3', 'gothitelle.mp3', 'gothorita.mp3', 'gougingfire.mp3', 'gourgeist-super.mp3', 'gourgeist.mp3', 'grafaiai.mp3', 'granbull.mp3', 'grapploct.mp3', 'graveler.mp3', 'greattusk.mp3', 'greavard.mp3', 'greedent.mp3', 'greninja.mp3', 'grimer.mp3', 'grimmsnarl.mp3', 'grookey.mp3', 'grotle.mp3', 'groudon-primal.mp3', 'groudon.mp3', 'grovyle.mp3', 'growlithe.mp3', 'grubbin.mp3', 'grumpig.mp3', 'gulpin.mp3', 'gumshoos.mp3', 'gurdurr.mp3', 'guzzlord.mp3', 'gyarados-mega.mp3', 'gyarados.mp3', 'hakamoo.mp3', 'happiny.mp3', 'hariyama.mp3', 'hatenna.mp3', 'hatterene.mp3', 'hattrem.mp3', 'haunter.mp3', 'hawlucha.mp3', 'haxorus.mp3', 'heatmor.mp3', 'heatran.mp3', 'heliolisk.mp3', 'helioptile.mp3', 'hemogoblin.mp3', 'heracross-mega.mp3', 'heracross.mp3', 'herdier.mp3', 'hippopotas.mp3', 'hippowdon.mp3', 'hitmonchan.mp3', 'hitmonlee.mp3', 'hitmontop.mp3', 'honchkrow.mp3', 'honedge.mp3', 'hooh.mp3', 'hoopa-unbound.mp3', 'hoopa.mp3', 'hoothoot.mp3', 'hoppip.mp3', 'horsea.mp3', 'houndoom-mega.mp3', 'houndoom.mp3', 'houndour.mp3', 'houndstone.mp3', 'huntail.mp3', 'hydrapple.mp3', 'hydreigon.mp3', 'hypno.mp3', 'igglybuff.mp3', 'illumise.mp3', 'impidimp.mp3', 'incineroar.mp3', 'indeedee-f.mp3', 'indeedee.mp3', 'infernape.mp3', 'inkay.mp3', 'inteleon.mp3', 'ironboulder.mp3', 'ironbundle.mp3', 'ironcrown.mp3', 'ironhands.mp3', 'ironjugulis.mp3', 'ironleaves.mp3', 'ironmoth.mp3', 'ironthorns.mp3', 'irontreads.mp3', 'ironvaliant.mp3', 'ivysaur.mp3', 'jangmoo.mp3', 'jellicent.mp3', 'jigglypuff.mp3', 'jirachi.mp3', 'jolteon.mp3', 'joltik.mp3', 'jumbao.mp3', 'jumpluff.mp3', 'justyke.mp3', 'jynx.mp3', 'kabuto.mp3', 'kabutops.mp3', 'kadabra.mp3', 'kakuna.mp3', 'kangaskhan-mega.mp3', 'kangaskhan.mp3', 'karrablast.mp3', 'kartana.mp3', 'kecleon.mp3', 'keldeo.mp3', 'kerfluffle.mp3', 'kilowattrel.mp3', 'kingambit.mp3', 'kingdra.mp3', 'kingler.mp3', 'kirlia.mp3', 'kitsunoh.mp3', 'klang.mp3', 'klawf.mp3', 'kleavor.mp3', 'klefki.mp3', 'klink.mp3', 'klinklang.mp3', 'koffing.mp3', 'komala.mp3', 'kommoo.mp3', 'koraidon.mp3', 'krabby.mp3', 'kricketot.mp3', 'kricketune.mp3', 'krilowatt.mp3', 'krokorok.mp3', 'krookodile.mp3', 'kubfu.mp3', 'kyogre-primal.mp3', 'kyogre.mp3', 'kyurem-black.mp3', 'kyurem-white.mp3', 'kyurem.mp3', 'lairon.mp3', 'lampent.mp3', 'landorus-therian.mp3', 'landorus.mp3', 'lanturn.mp3', 'lapras.mp3', 'larvesta.mp3', 'larvitar.mp3', 'latias-mega.mp3', 'latias.mp3', 'latios-mega.mp3', 'latios.mp3', 'leafeon.mp3', 'leavanny.mp3', 'lechonk.mp3', 'ledian.mp3', 'ledyba.mp3', 'lickilicky.mp3', 'lickitung.mp3', 'liepard.mp3', 'lileep.mp3', 'lilligant.mp3', 'lillipup.mp3', 'linoone.mp3', 'litleo.mp3', 'litten.mp3', 'litwick.mp3', 'lokix.mp3', 'lombre.mp3', 'lopunny-mega.mp3', 'lopunny.mp3', 'lotad.mp3', 'loudred.mp3', 'lucario-mega.mp3', 'lucario.mp3', 'ludicolo.mp3', 'lugia.mp3', 'lumineon.mp3', 'lunala.mp3', 'lunatone.mp3', 'lurantis.mp3', 'luvdisc.mp3', 'luxio.mp3', 'luxray.mp3', 'lycanroc-dusk.mp3', 'lycanroc-midnight.mp3', 'lycanroc.mp3', 'mabosstiff.mp3', 'machamp.mp3', 'machoke.mp3', 'machop.mp3', 'magby.mp3', 'magcargo.mp3', 'magearna.mp3', 'magikarp.mp3', 'magmar.mp3', 'magmortar.mp3', 'magnemite.mp3', 'magneton.mp3', 'magnezone.mp3', 'makuhita.mp3', 'malaconda.mp3', 'malamar.mp3', 'mamoswine.mp3', 'manaphy.mp3', 'mandibuzz.mp3', 'manectric-mega.mp3', 'manectric.mp3', 'mankey.mp3', 'mantine.mp3', 'mantyke.mp3', 'maractus.mp3', 'mareanie.mp3', 'mareep.mp3', 'marill.mp3', 'marowak.mp3', 'marshadow.mp3', 'marshtomp.mp3', 'maschiff.mp3', 'masquerain.mp3', 'maushold-four.mp3', 'maushold.mp3', 'mawile-mega.mp3', 'mawile.mp3', 'medicham-mega.mp3', 'medicham.mp3', 'meditite.mp3', 'meganium.mp3', 'melmetal.mp3', 'meloetta.mp3', 'meltan.mp3', 'meowscarada.mp3', 'meowstic.mp3', 'meowth.mp3', 'mesprit.mp3', 'metagross-mega.mp3', 'metagross.mp3', 'metang.mp3', 'metapod.mp3', 'mew.mp3', 'mewtwo-megax.mp3', 'mewtwo-megay.mp3', 'mewtwo.mp3', 'miasmaw.mp3', 'miasmite.mp3', 'mienfoo.mp3', 'mienshao.mp3', 'mightyena.mp3', 'milcery.mp3', 'milotic.mp3', 'miltank.mp3', 'mimejr.mp3', 'mimikyu.mp3', 'minccino.mp3', 'minior.mp3', 'minun.mp3', 'miraidon.mp3', 'misdreavus.mp3', 'mismagius.mp3', 'mollux.mp3', 'moltres.mp3', 'monferno.mp3', 'monohm.mp3', 'morelull.mp3', 'morgrem.mp3', 'morpeko-hangry.mp3', 'morpeko.mp3', 'mothim.mp3', 'mrmime.mp3', 'mrrime.mp3', 'mudbray.mp3', 'mudkip.mp3', 'mudsdale.mp3', 'muk.mp3', 'mumbao.mp3', 'munchlax.mp3', 'munkidori.mp3', 'munna.mp3', 'murkrow.mp3', 'musharna.mp3', 'nacli.mp3', 'naclstack.mp3', 'naganadel.mp3', 'natu.mp3', 'naviathan.mp3', 'necrozma-dawnwings.mp3', 'necrozma-duskmane.mp3', 'necrozma-ultra.mp3', 'necrozma.mp3', 'necturine.mp3', 'necturna.mp3', 'nickit.mp3', 'nidoking.mp3', 'nidoqueen.mp3', 'nidoranf.mp3', 'nidoranm.mp3', 'nidorina.mp3', 'nidorino.mp3', 'nihilego.mp3', 'nincada.mp3', 'ninetales.mp3', 'ninjask.mp3', 'noctowl.mp3', 'nohface.mp3', 'noibat.mp3', 'noivern.mp3', 'nosepass.mp3', 'numel.mp3', 'nuzleaf.mp3', 'nymble.mp3', 'obstagoon.mp3', 'octillery.mp3', 'oddish.mp3', 'ogerpon.mp3', 'oinkologne-f.mp3', 'oinkologne.mp3', 'okidogi.mp3', 'omanyte.mp3', 'omastar.mp3', 'onix.mp3', 'oranguru.mp3', 'orbeetle.mp3', 'oricorio-pau.mp3', 'oricorio-pompom.mp3', 'oricorio-sensu.mp3', 'oricorio.mp3', 'orthworm.mp3', 'oshawott.mp3', 'overqwil.mp3', 'pachirisu.mp3', 'pajantom.mp3', 'palafin-hero.mp3', 'palafin.mp3', 'palkia.mp3', 'palossand.mp3', 'palpitoad.mp3', 'pancham.mp3', 'pangoro.mp3', 'panpour.mp3', 'pansage.mp3', 'pansear.mp3', 'paras.mp3', 'parasect.mp3', 'passimian.mp3', 'patrat.mp3', 'pawmi.mp3', 'pawmo.mp3', 'pawmot.mp3', 'pawniard.mp3', 'pecharunt.mp3', 'pelipper.mp3', 'perrserker.mp3', 'persian.mp3', 'petilil.mp3', 'phanpy.mp3', 'phantump.mp3', 'pheromosa.mp3', 'phione.mp3', 'pichu.mp3', 'pidgeot-mega.mp3', 'pidgeot.mp3', 'pidgeotto.mp3', 'pidgey.mp3', 'pidove.mp3', 'pignite.mp3', 'pikachu-starter.mp3', 'pikachu.mp3', 'pikipek.mp3', 'piloswine.mp3', 'pincurchin.mp3', 'pineco.mp3', 'pinsir-mega.mp3', 'pinsir.mp3', 'piplup.mp3', 'plasmanta.mp3', 'pluffle.mp3', 'plusle.mp3', 'poipole.mp3', 'politoed.mp3', 'poliwag.mp3', 'poliwhirl.mp3', 'poliwrath.mp3', 'poltchageist.mp3', 'polteageist.mp3', 'ponyta.mp3', 'poochyena.mp3', 'popplio.mp3', 'porygon.mp3', 'porygon2.mp3', 'porygonz.mp3', 'primarina.mp3', 'primeape.mp3', 'prinplup.mp3', 'privatyke.mp3', 'probopass.mp3', 'protowatt.mp3', 'psyduck.mp3', 'pumpkaboo-super.mp3', 'pumpkaboo.mp3', 'pupitar.mp3', 'purrloin.mp3', 'purugly.mp3', 'pyroak.mp3', 'pyroar.mp3', 'pyukumuku.mp3', 'quagsire.mp3', 'quaquaval.mp3', 'quaxly.mp3', 'quaxwell.mp3', 'quilava.mp3', 'quilladin.mp3', 'qwilfish.mp3', 'raboot.mp3', 'rabsca.mp3', 'ragingbolt.mp3', 'raichu.mp3', 'raikou.mp3', 'ralts.mp3', 'rampardos.mp3', 'rapidash.mp3', 'raticate.mp3', 'rattata.mp3', 'rayquaza-mega.mp3', 'rayquaza.mp3', 'rebble.mp3', 'regice.mp3', 'regidrago.mp3', 'regieleki.mp3', 'regigigas.mp3', 'regirock.mp3', 'registeel.mp3', 'relicanth.mp3', 'rellor.mp3', 'remoraid.mp3', 'reshiram.mp3', 'reuniclus.mp3', 'revavroom.mp3', 'revenankh.mp3', 'rhydon.mp3', 'rhyhorn.mp3', 'rhyperior.mp3', 'ribombee.mp3', 'rillaboom.mp3', 'riolu.mp3', 'roaringmoon.mp3', 'rockruff.mp3', 'roggenrola.mp3', 'rolycoly.mp3', 'rookidee.mp3', 'roselia.mp3', 'roserade.mp3', 'rotom.mp3', 'rowlet.mp3', 'rufflet.mp3', 'runerigus.mp3', 'sableye-mega.mp3', 'sableye.mp3', 'saharaja.mp3', 'saharascal.mp3', 'salamence-mega.mp3', 'salamence.mp3', 'salandit.mp3', 'salazzle.mp3', 'samurott.mp3', 'sandaconda.mp3', 'sandile.mp3', 'sandshrew.mp3', 'sandslash.mp3', 'sandygast.mp3', 'sandyshocks.mp3', 'sawk.mp3', 'sawsbuck.mp3', 'scatterbug.mp3', 'scattervein.mp3', 'sceptile-mega.mp3', 'sceptile.mp3', 'scizor-mega.mp3', 'scizor.mp3', 'scolipede.mp3', 'scorbunny.mp3', 'scovillain.mp3', 'scrafty.mp3', 'scraggy.mp3', 'scratchet.mp3', 'screamtail.mp3', 'scyther.mp3', 'seadra.mp3', 'seaking.mp3', 'sealeo.mp3', 'seedot.mp3', 'seel.mp3', 'seismitoad.mp3', 'sentret.mp3', 'serperior.mp3', 'servine.mp3', 'seviper.mp3', 'sewaddle.mp3', 'sharpedo-mega.mp3', 'sharpedo.mp3', 'shaymin-sky.mp3', 'shaymin.mp3', 'shedinja.mp3', 'shelgon.mp3', 'shellder.mp3', 'shellos.mp3', 'shelmet.mp3', 'shieldon.mp3', 'shiftry.mp3', 'shiinotic.mp3', 'shinx.mp3', 'shroodle.mp3', 'shroomish.mp3', 'shuckle.mp3', 'shuppet.mp3', 'sigilyph.mp3', 'silcoon.mp3', 'silicobra.mp3', 'silvally.mp3', 'simipour.mp3', 'simisage.mp3', 'simisear.mp3', 'sinistcha.mp3', 'sinistea.mp3', 'sirfetchd.mp3', 'sizzlipede.mp3', 'skarmory.mp3', 'skeledirge.mp3', 'skiddo.mp3', 'skiploom.mp3', 'skitty.mp3', 'skorupi.mp3', 'skrelp.mp3', 'skuntank.mp3', 'skwovet.mp3', 'slaking.mp3', 'slakoth.mp3', 'sliggoo.mp3', 'slitherwing.mp3', 'slowbro-mega.mp3', 'slowbro.mp3', 'slowking.mp3', 'slowpoke-galar.mp3', 'slowpoke.mp3', 'slugma.mp3', 'slurpuff.mp3', 'smeargle.mp3', 'smogecko.mp3', 'smoguana.mp3', 'smokomodo.mp3', 'smoliv.mp3', 'smoochum.mp3', 'snaelstrom.mp3', 'sneasel.mp3', 'sneasler.mp3', 'snivy.mp3', 'snom.mp3', 'snorlax.mp3', 'snorunt.mp3', 'snover.mp3', 'snubbull.mp3', 'snugglow.mp3', 'sobble.mp3', 'solgaleo.mp3', 'solosis.mp3', 'solotl.mp3', 'solrock.mp3', 'spearow.mp3', 'spectrier.mp3', 'spewpa.mp3', 'spheal.mp3', 'spidops.mp3', 'spinarak.mp3', 'spinda.mp3', 'spiritomb.mp3', 'spoink.mp3', 'sprigatito.mp3', 'spritzee.mp3', 'squawkabilly.mp3', 'squirtle.mp3', 'stakataka.mp3', 'stantler.mp3', 'staraptor.mp3', 'staravia.mp3', 'starly.mp3', 'starmie.mp3', 'staryu.mp3', 'steelix-mega.mp3', 'steelix.mp3', 'steenee.mp3', 'stonjourner.mp3', 'stoutland.mp3', 'stratagem.mp3', 'stufful.mp3', 'stunfisk.mp3', 'stunky.mp3', 'sudowoodo.mp3', 'suicune.mp3', 'sunflora.mp3', 'sunkern.mp3', 'surskit.mp3', 'swablu.mp3', 'swadloon.mp3', 'swalot.mp3', 'swampert-mega.mp3', 'swampert.mp3', 'swanna.mp3', 'swellow.mp3', 'swinub.mp3', 'swirlix.mp3', 'swirlpool.mp3', 'swoobat.mp3', 'syclant.mp3', 'syclar.mp3', 'sylveon.mp3', 'tactite.mp3', 'tadbulb.mp3', 'taillow.mp3', 'talonflame.mp3', 'tandemaus.mp3', 'tangela.mp3', 'tangrowth.mp3', 'tapubulu.mp3', 'tapufini.mp3', 'tapukoko.mp3', 'tapulele.mp3', 'tarountula.mp3', 'tatsugiri-droopy.mp3', 'tatsugiri-stretchy.mp3', 'tatsugiri.mp3', 'tauros.mp3', 'teddiursa.mp3', 'tentacool.mp3', 'tentacruel.mp3', 'tepig.mp3', 'terapagos.mp3', 'terrakion.mp3', 'thievul.mp3', 'throh.mp3', 'thundurus-therian.mp3', 'thundurus.mp3', 'thwackey.mp3', 'timburr.mp3', 'tinglu.mp3', 'tinkatink.mp3', 'tinkaton.mp3', 'tinkatuff.mp3', 'tirtouga.mp3', 'toedscool.mp3', 'toedscruel.mp3', 'togedemaru.mp3', 'togekiss.mp3', 'togepi.mp3', 'togetic.mp3', 'tomohawk.mp3', 'torchic.mp3', 'torkoal.mp3', 'tornadus-therian.mp3', 'tornadus.mp3', 'torracat.mp3', 'torterra.mp3', 'totodile.mp3', 'toucannon.mp3', 'toxapex.mp3', 'toxel.mp3', 'toxicroak.mp3', 'toxtricity-lowkey.mp3', 'toxtricity.mp3', 'tranquill.mp3', 'trapinch.mp3', 'treecko.mp3', 'trevenant.mp3', 'tropius.mp3', 'trubbish.mp3', 'trumbeak.mp3', 'tsareena.mp3', 'turtonator.mp3', 'turtwig.mp3', 'tympole.mp3', 'tynamo.mp3', 'typenull.mp3', 'typhlosion.mp3', 'tyranitar-mega.mp3', 'tyranitar.mp3', 'tyrantrum.mp3', 'tyrogue.mp3', 'tyrunt.mp3', 'umbreon.mp3', 'unfezant.mp3', 'unown.mp3', 'ursaluna.mp3', 'ursaring.mp3', 'urshifu-rapidstrike.mp3', 'urshifu.mp3', 'uxie.mp3', 'vanillish.mp3', 'vanillite.mp3', 'vanilluxe.mp3', 'vaporeon.mp3', 'varoom.mp3', 'veluza.mp3', 'venipede.mp3', 'venomicon.mp3', 'venomoth.mp3', 'venonat.mp3', 'venusaur-mega.mp3', 'venusaur.mp3', 'vespiquen.mp3', 'vibrava.mp3', 'victini.mp3', 'victreebel.mp3', 'vigoroth.mp3', 'vikavolt.mp3', 'vileplume.mp3', 'virizion.mp3', 'vivillon.mp3', 'volbeat.mp3', 'volcanion.mp3', 'volcarona.mp3', 'volkraken.mp3', 'volkritter.mp3', 'voltorb.mp3', 'voodoll.mp3', 'voodoom.mp3', 'vullaby.mp3', 'vulpix.mp3', 'wailmer.mp3', 'wailord.mp3', 'walkingwake.mp3', 'walrein.mp3', 'wartortle.mp3', 'watchog.mp3', 'wattrel.mp3', 'weavile.mp3', 'weedle.mp3', 'weepinbell.mp3', 'weezing.mp3', 'whimsicott.mp3', 'whirlipede.mp3', 'whiscash.mp3', 'whismur.mp3', 'wigglytuff.mp3', 'wiglett.mp3', 'wimpod.mp3', 'wingull.mp3', 'wishiwashi-school.mp3', 'wishiwashi.mp3', 'wobbuffet.mp3', 'wochien.mp3', 'woobat.mp3', 'wooloo.mp3', 'wooper.mp3', 'wormadam.mp3', 'wugtrio.mp3', 'wurmple.mp3', 'wynaut.mp3', 'wyrdeer.mp3', 'xatu.mp3', 'xerneas.mp3', 'xurkitree.mp3', 'yamask.mp3', 'yamper.mp3', 'yanma.mp3', 'yanmega.mp3', 'yungoos.mp3', 'yveltal.mp3', 'zacian-crowned.mp3', 'zacian.mp3', 'zamazenta-crowned.mp3', 'zamazenta.mp3', 'zangoose.mp3', 'zapdos.mp3', 'zarude.mp3', 'zebstrika.mp3', 'zekrom.mp3', 'zeraora.mp3', 'zigzagoon.mp3', 'zoroark.mp3', 'zorua.mp3', 'zubat.mp3', 'zweilous.mp3', 'zygarde-10.mp3', 'zygarde-complete.mp3', 'zygarde.mp3']
+
+# Function to play the sound
+def play_sound():
+    global timer
+    pass
+    if sounds is True:
+        global name
+        # Check if the sound should play
+        file_name = f"{name.lower()}.mp3"
+        audio_path = addon_dir / "pokemon_sprites" / "sounds" / file_name
+        if not audio_path.is_file():
+            showWarning(f"Audio file not found: {audio_path}")
+            return
+
+        audio_path = str(audio_path)
+
+        if av_player:
+            av_player.play_file(filename=audio_path)
+        elif legacy_play:
+            legacy_play(audio_path)
+        else:
+            showWarning("No suitable audio player found in Anki.")
+                
+        # Disconnect the timer's timeout signal to prevent further plays
+        try:
+            timer.timeout.disconnect(play_sound)
+        except TypeError:
+            pass  # Do nothing if the signal was not connected
+
+if sound == True:    
+    # Create a QTimer
+    timer = QTimer()
+
+    # Connect the timer's timeout signal to the play_sound function
+    timer.timeout.connect(play_sound)
+
+    #def play_pokemon_cry():
+        #play_sound()
+
+    #gui_hooks.reviewer_will_end.append(play_pokemon_cry)
 
 gen_ids = {
     "gen_1": 151,
@@ -2178,10 +2292,12 @@ def calc_multiply_card_rating():
     return multiplier
 
 reviewed_cards_count = -1
+general_card_count_for_battle = 0
+cry_counter = 0
 # Hook into Anki's card review event
 def on_review_card():
     try:
-        global reviewed_cards_count, card_ratings_count, card_counter
+        global reviewed_cards_count, card_ratings_count, card_counter, general_card_count_for_battle, cry_counter
         global hp, stats, type, battle_status, name, battle_stats
         global pokemon_encounter
         global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats
@@ -2191,6 +2307,10 @@ def on_review_card():
         # Increment the counter when a card is reviewed
         reviewed_cards_count += 1
         card_counter += 1
+        cry_counter += 1
+        general_card_count_for_battle += 1
+        if general_card_count_for_battle == 1:
+            play_sound()
         #test achievment system
         if card_counter == 100:
             check = check_for_badge(achievements,1)
@@ -2305,18 +2425,24 @@ def on_review_card():
                     test_window.display_pokemon_death()
                 elif pkmn_window is False:
                     new_pokemon()
+                    general_card_count_for_battle = 0
             if pkmn_window is True:
                 if hp > 0:
                     test_window.display_first_encounter()
                 elif hp < 1:
                     hp = 0
                     test_window.display_pokemon_death()
+                    general_card_count_for_battle = 0
             elif pkmn_window is False:
                 if hp < 1:
                     hp = 0
                     kill_pokemon()
+                    general_card_count_for_battle = 0
             # Reset the counter
             reviewed_cards_count = 0
+        if cry_counter == 10:
+            cry_counter = 0
+            play_sound()
     except Exception as e:
         showWarning(f"An error occured in reviewer: {e}")
 
@@ -3891,22 +4017,21 @@ def download_gifsprites():
 class ItemSpriteDownloader(QThread):
     progress_updated = pyqtSignal(int)
     download_complete = pyqtSignal()  # Signal to indicate download completion
+    downloading_sounds_txt = pyqtSignal()
+    downloading_item_sprites_txt = pyqtSignal()
+    downloading_badges_sprites_txt = pyqtSignal()  # Signal to indicate download completion
 
     def __init__(self, destination_to):
         super().__init__()
         global addon_dir
         self.items_destination_to = addon_dir / "pokemon_sprites" / "items"
         self.badges_destination_to = addon_dir / "pokemon_sprites" / "badges"
+        self.sounds_destination_to = addon_dir / "pokemon_sprites" / "sounds"
         self.badges_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/"
         self.item_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dream-world/"
-        self.item_names = [
-        "absorb-bulb.png",
-        "aguav-berry.png",
-        "air-balloon.png",
-        "amulet-coin.png",
-        "antidote.png",
-        "apicot-berry.png",
-        "armor-fossil.png",
+        self.sounds_base_url = "https://play.pokemonshowdown.com/audio/cries/"
+        self.sound_names = ['ababo.mp3', 'abomasnow-mega.mp3', 'abomasnow.mp3', 'abra.mp3', 'absol-mega.mp3', 'absol.mp3', 'accelgor.mp3', 'aegislash.mp3', 'aerodactyl-mega.mp3', 'aerodactyl.mp3', 'aggron-mega.mp3', 'aggron.mp3', 'aipom.mp3', 'alakazam-mega.mp3', 'alakazam.mp3', 'alcremie.mp3', 'alomomola.mp3', 'altaria-mega.mp3', 'altaria.mp3', 'amaura.mp3', 'ambipom.mp3', 'amoonguss.mp3', 'ampharos-mega.mp3', 'ampharos.mp3', 'annihilape.mp3', 'anorith.mp3', 'appletun.mp3', 'applin.mp3', 'araquanid.mp3', 'arbok.mp3', 'arboliva.mp3', 'arcanine.mp3', 'arceus.mp3', 'archaludon.mp3', 'archen.mp3', 'archeops.mp3', 'arctibax.mp3', 'arctovish.mp3', 'arctozolt.mp3', 'argalis.mp3', 'arghonaut.mp3', 'ariados.mp3', 'armaldo.mp3', 'armarouge.mp3', 'aromatisse.mp3', 'aron.mp3', 'arrokuda.mp3', 'articuno.mp3', 'astrolotl.mp3', 'audino-mega.mp3', 'audino.mp3', 'aurorus.mp3', 'aurumoth.mp3', 'avalugg.mp3', 'axew.mp3', 'azelf.mp3', 'azumarill.mp3', 'azurill.mp3', 'bagon.mp3', 'baltoy.mp3', 'banette-mega.mp3', 'banette.mp3', 'barbaracle.mp3', 'barboach.mp3', 'barraskewda.mp3', 'basculegion.mp3', 'basculin.mp3', 'bastiodon.mp3', 'baxcalibur.mp3', 'bayleef.mp3', 'beartic.mp3', 'beautifly.mp3', 'beedrill-mega.mp3', 'beedrill.mp3', 'beheeyem.mp3', 'beldum.mp3', 'bellibolt.mp3', 'bellossom.mp3', 'bellsprout.mp3', 'bergmite.mp3', 'bewear.mp3', 'bibarel.mp3', 'bidoof.mp3', 'binacle.mp3', 'bisharp.mp3', 'blacephalon.mp3', 'blastoise-mega.mp3', 'blastoise.mp3', 'blaziken-mega.mp3', 'blaziken.mp3', 'blipbug.mp3', 'blissey.mp3', 'blitzle.mp3', 'boldore.mp3', 'boltund.mp3', 'bombirdier.mp3', 'bonsly.mp3', 'bouffalant.mp3', 'bounsweet.mp3', 'braixen.mp3', 'brambleghast.mp3', 'bramblin.mp3', 'brattler.mp3', 'braviary.mp3', 'breezi.mp3', 'breloom.mp3', 'brionne.mp3', 'bronzong.mp3', 'bronzor.mp3', 'brutebonnet.mp3', 'bruxish.mp3', 'budew.mp3', 'buizel.mp3', 'bulbasaur.mp3', 'buneary.mp3', 'bunnelby.mp3', 'burmy.mp3', 'butterfree.mp3', 'buzzwole.mp3', 'cacnea.mp3', 'cacturne.mp3', 'caimanoe.mp3', 'calyrex-ice.mp3', 'calyrex-shadow.mp3', 'calyrex.mp3', 'camerupt-mega.mp3', 'camerupt.mp3', 'capsakid.mp3', 'carbink.mp3', 'caribolt.mp3', 'carkol.mp3', 'carnivine.mp3', 'carracosta.mp3', 'carvanha.mp3', 'cascoon.mp3', 'castform.mp3', 'caterpie.mp3', 'cawdet.mp3', 'cawmodore.mp3', 'celebi.mp3', 'celesteela.mp3', 'centiskorch.mp3', 'ceruledge.mp3', 'cetitan.mp3', 'cetoddle.mp3', 'chandelure.mp3', 'chansey.mp3', 'charcadet.mp3', 'charizard-megax.mp3', 'charizard-megay.mp3', 'charizard.mp3', 'charjabug.mp3', 'charmander.mp3', 'charmeleon.mp3', 'chatot.mp3', 'cherrim.mp3', 'cherubi.mp3', 'chesnaught.mp3', 'chespin.mp3', 'chewtle.mp3', 'chienpao.mp3', 'chikorita.mp3', 'chimchar.mp3', 'chimecho.mp3', 'chinchou.mp3', 'chingling.mp3', 'chiyu.mp3', 'chromera.mp3', 'cinccino.mp3', 'cinderace.mp3', 'clamperl.mp3', 'clauncher.mp3', 'clawitzer.mp3', 'claydol.mp3', 'clefable.mp3', 'clefairy.mp3', 'cleffa.mp3', 'clobbopus.mp3', 'clodsire.mp3', 'cloyster.mp3', 'coalossal.mp3', 'cobalion.mp3', 'cofagrigus.mp3', 'colossoil.mp3', 'combee.mp3', 'combusken.mp3', 'comfey.mp3', 'conkeldurr.mp3', 'copperajah.mp3', 'coribalis.mp3', 'corphish.mp3', 'corsola.mp3', 'corviknight.mp3', 'corvisquire.mp3', 'cosmoem.mp3', 'cosmog.mp3', 'cottonee.mp3', 'crabominable.mp3', 'crabrawler.mp3', 'cradily.mp3', 'cramorant-gorging.mp3', 'cramorant-gulping.mp3', 'cramorant.mp3', 'cranidos.mp3', 'crawdaunt.mp3', 'cresselia.mp3', 'croagunk.mp3', 'crobat.mp3', 'crocalor.mp3', 'croconaw.mp3', 'crucibelle-mega.mp3', 'crucibelle.mp3', 'crustle.mp3', 'cryogonal.mp3', 'cubchoo.mp3', 'cubone.mp3', 'cufant.mp3', 'cupra.mp3', 'cursola.mp3', 'cutiefly.mp3', 'cyclizar.mp3', 'cyclohm.mp3', 'cyndaquil.mp3', 'dachsbun.mp3', 'darkrai.mp3', 'darmanitan.mp3', 'dartrix.mp3', 'darumaka.mp3', 'decidueye.mp3', 'dedenne.mp3', 'deerling.mp3', 'deino.mp3', 'delcatty.mp3', 'delibird.mp3', 'delphox.mp3', 'deoxys.mp3', 'dewgong.mp3', 'dewott.mp3', 'dewpider.mp3', 'dhelmise.mp3', 'dialga.mp3', 'diancie-mega.mp3', 'diancie.mp3', 'diggersby.mp3', 'diglett.mp3', 'dipplin.mp3', 'ditto.mp3', 'dodrio.mp3', 'doduo.mp3', 'dolliv.mp3', 'dondozo.mp3', 'donphan.mp3', 'dorsoil.mp3', 'dottler.mp3', 'doublade.mp3', 'dracovish.mp3', 'dracozolt.mp3', 'dragalge.mp3', 'dragapult.mp3', 'dragonair.mp3', 'dragonite.mp3', 'drakloak.mp3', 'drampa.mp3', 'drapion.mp3', 'dratini.mp3', 'drednaw.mp3', 'dreepy.mp3', 'drifblim.mp3', 'drifloon.mp3', 'drilbur.mp3', 'drizzile.mp3', 'drowzee.mp3', 'druddigon.mp3', 'dubwool.mp3', 'ducklett.mp3', 'dudunsparce.mp3', 'dugtrio.mp3', 'dunsparce.mp3', 'duohm.mp3', 'duosion.mp3', 'duraludon.mp3', 'durant.mp3', 'dusclops.mp3', 'dusknoir.mp3', 'duskull.mp3', 'dustox.mp3', 'dwebble.mp3', 'eelektrik.mp3', 'eelektross.mp3', 'eevee-starter.mp3', 'eevee.mp3', 'eiscue-noice.mp3', 'eiscue.mp3', 'ekans.mp3', 'eldegoss.mp3', 'electabuzz.mp3', 'electivire.mp3', 'electrelk.mp3', 'electrike.mp3', 'electrode.mp3', 'elekid.mp3', 'elgyem.mp3', 'embirch.mp3', 'emboar.mp3', 'emolga.mp3', 'empoleon.mp3', 'enamorus-therian.mp3', 'enamorus.mp3', 'entei.mp3', 'equilibra.mp3', 'escavalier.mp3', 'espathra.mp3', 'espeon.mp3', 'espurr.mp3', 'eternatus-eternamax.mp3', 'eternatus.mp3', 'excadrill.mp3', 'exeggcute.mp3', 'exeggutor.mp3', 'exploud.mp3', 'falinks.mp3', 'farfetchd.mp3', 'farigiraf.mp3', 'fawnifer.mp3', 'fearow.mp3', 'feebas.mp3', 'fennekin.mp3', 'feraligatr.mp3', 'ferroseed.mp3', 'ferrothorn.mp3', 'fezandipiti.mp3', 'fidgit.mp3', 'fidough.mp3', 'finizen.mp3', 'finneon.mp3', 'flaaffy.mp3', 'flabebe.mp3', 'flamigo.mp3', 'flapple.mp3', 'flarelm.mp3', 'flareon.mp3', 'fletchinder.mp3', 'fletchling.mp3', 'flittle.mp3', 'floatoy.mp3', 'floatzel.mp3', 'floette-eternal.mp3', 'floette.mp3', 'floragato.mp3', 'florges.mp3', 'fluttermane.mp3', 'flygon.mp3', 'fomantis.mp3', 'foongus.mp3', 'forretress.mp3', 'fraxure.mp3', 'frigibax.mp3', 'frillish.mp3', 'froakie.mp3', 'frogadier.mp3', 'froslass.mp3', 'frosmoth.mp3', 'fuecoco.mp3', 'furfrou.mp3', 'furret.mp3', 'gabite.mp3', 'gallade-mega.mp3', 'gallade.mp3', 'galvantula.mp3', 'garbodor.mp3', 'garchomp-mega.mp3', 'garchomp.mp3', 'gardevoir-mega.mp3', 'gardevoir.mp3', 'garganacl.mp3', 'gastly.mp3', 'gastrodon.mp3', 'genesect.mp3', 'gengar-mega.mp3', 'gengar.mp3', 'geodude.mp3', 'gholdengo.mp3', 'gible.mp3', 'gigalith.mp3', 'gimmighoul-roaming.mp3', 'gimmighoul.mp3', 'girafarig.mp3', 'giratina.mp3', 'glaceon.mp3', 'glalie-mega.mp3', 'glalie.mp3', 'glameow.mp3', 'glastrier.mp3', 'gligar.mp3', 'glimmet.mp3', 'glimmora.mp3', 'gliscor.mp3', 'gloom.mp3', 'gogoat.mp3', 'golbat.mp3', 'goldeen.mp3', 'golduck.mp3', 'golem.mp3', 'golett.mp3', 'golisopod.mp3', 'golurk.mp3', 'goodra.mp3', 'goomy.mp3', 'gorebyss.mp3', 'gossifleur.mp3', 'gothita.mp3', 'gothitelle.mp3', 'gothorita.mp3', 'gougingfire.mp3', 'gourgeist-super.mp3', 'gourgeist.mp3', 'grafaiai.mp3', 'granbull.mp3', 'grapploct.mp3', 'graveler.mp3', 'greattusk.mp3', 'greavard.mp3', 'greedent.mp3', 'greninja.mp3', 'grimer.mp3', 'grimmsnarl.mp3', 'grookey.mp3', 'grotle.mp3', 'groudon-primal.mp3', 'groudon.mp3', 'grovyle.mp3', 'growlithe.mp3', 'grubbin.mp3', 'grumpig.mp3', 'gulpin.mp3', 'gumshoos.mp3', 'gurdurr.mp3', 'guzzlord.mp3', 'gyarados-mega.mp3', 'gyarados.mp3', 'hakamoo.mp3', 'happiny.mp3', 'hariyama.mp3', 'hatenna.mp3', 'hatterene.mp3', 'hattrem.mp3', 'haunter.mp3', 'hawlucha.mp3', 'haxorus.mp3', 'heatmor.mp3', 'heatran.mp3', 'heliolisk.mp3', 'helioptile.mp3', 'hemogoblin.mp3', 'heracross-mega.mp3', 'heracross.mp3', 'herdier.mp3', 'hippopotas.mp3', 'hippowdon.mp3', 'hitmonchan.mp3', 'hitmonlee.mp3', 'hitmontop.mp3', 'honchkrow.mp3', 'honedge.mp3', 'hooh.mp3', 'hoopa-unbound.mp3', 'hoopa.mp3', 'hoothoot.mp3', 'hoppip.mp3', 'horsea.mp3', 'houndoom-mega.mp3', 'houndoom.mp3', 'houndour.mp3', 'houndstone.mp3', 'huntail.mp3', 'hydrapple.mp3', 'hydreigon.mp3', 'hypno.mp3', 'igglybuff.mp3', 'illumise.mp3', 'impidimp.mp3', 'incineroar.mp3', 'indeedee-f.mp3', 'indeedee.mp3', 'infernape.mp3', 'inkay.mp3', 'inteleon.mp3', 'ironboulder.mp3', 'ironbundle.mp3', 'ironcrown.mp3', 'ironhands.mp3', 'ironjugulis.mp3', 'ironleaves.mp3', 'ironmoth.mp3', 'ironthorns.mp3', 'irontreads.mp3', 'ironvaliant.mp3', 'ivysaur.mp3', 'jangmoo.mp3', 'jellicent.mp3', 'jigglypuff.mp3', 'jirachi.mp3', 'jolteon.mp3', 'joltik.mp3', 'jumbao.mp3', 'jumpluff.mp3', 'justyke.mp3', 'jynx.mp3', 'kabuto.mp3', 'kabutops.mp3', 'kadabra.mp3', 'kakuna.mp3', 'kangaskhan-mega.mp3', 'kangaskhan.mp3', 'karrablast.mp3', 'kartana.mp3', 'kecleon.mp3', 'keldeo.mp3', 'kerfluffle.mp3', 'kilowattrel.mp3', 'kingambit.mp3', 'kingdra.mp3', 'kingler.mp3', 'kirlia.mp3', 'kitsunoh.mp3', 'klang.mp3', 'klawf.mp3', 'kleavor.mp3', 'klefki.mp3', 'klink.mp3', 'klinklang.mp3', 'koffing.mp3', 'komala.mp3', 'kommoo.mp3', 'koraidon.mp3', 'krabby.mp3', 'kricketot.mp3', 'kricketune.mp3', 'krilowatt.mp3', 'krokorok.mp3', 'krookodile.mp3', 'kubfu.mp3', 'kyogre-primal.mp3', 'kyogre.mp3', 'kyurem-black.mp3', 'kyurem-white.mp3', 'kyurem.mp3', 'lairon.mp3', 'lampent.mp3', 'landorus-therian.mp3', 'landorus.mp3', 'lanturn.mp3', 'lapras.mp3', 'larvesta.mp3', 'larvitar.mp3', 'latias-mega.mp3', 'latias.mp3', 'latios-mega.mp3', 'latios.mp3', 'leafeon.mp3', 'leavanny.mp3', 'lechonk.mp3', 'ledian.mp3', 'ledyba.mp3', 'lickilicky.mp3', 'lickitung.mp3', 'liepard.mp3', 'lileep.mp3', 'lilligant.mp3', 'lillipup.mp3', 'linoone.mp3', 'litleo.mp3', 'litten.mp3', 'litwick.mp3', 'lokix.mp3', 'lombre.mp3', 'lopunny-mega.mp3', 'lopunny.mp3', 'lotad.mp3', 'loudred.mp3', 'lucario-mega.mp3', 'lucario.mp3', 'ludicolo.mp3', 'lugia.mp3', 'lumineon.mp3', 'lunala.mp3', 'lunatone.mp3', 'lurantis.mp3', 'luvdisc.mp3', 'luxio.mp3', 'luxray.mp3', 'lycanroc-dusk.mp3', 'lycanroc-midnight.mp3', 'lycanroc.mp3', 'mabosstiff.mp3', 'machamp.mp3', 'machoke.mp3', 'machop.mp3', 'magby.mp3', 'magcargo.mp3', 'magearna.mp3', 'magikarp.mp3', 'magmar.mp3', 'magmortar.mp3', 'magnemite.mp3', 'magneton.mp3', 'magnezone.mp3', 'makuhita.mp3', 'malaconda.mp3', 'malamar.mp3', 'mamoswine.mp3', 'manaphy.mp3', 'mandibuzz.mp3', 'manectric-mega.mp3', 'manectric.mp3', 'mankey.mp3', 'mantine.mp3', 'mantyke.mp3', 'maractus.mp3', 'mareanie.mp3', 'mareep.mp3', 'marill.mp3', 'marowak.mp3', 'marshadow.mp3', 'marshtomp.mp3', 'maschiff.mp3', 'masquerain.mp3', 'maushold-four.mp3', 'maushold.mp3', 'mawile-mega.mp3', 'mawile.mp3', 'medicham-mega.mp3', 'medicham.mp3', 'meditite.mp3', 'meganium.mp3', 'melmetal.mp3', 'meloetta.mp3', 'meltan.mp3', 'meowscarada.mp3', 'meowstic.mp3', 'meowth.mp3', 'mesprit.mp3', 'metagross-mega.mp3', 'metagross.mp3', 'metang.mp3', 'metapod.mp3', 'mew.mp3', 'mewtwo-megax.mp3', 'mewtwo-megay.mp3', 'mewtwo.mp3', 'miasmaw.mp3', 'miasmite.mp3', 'mienfoo.mp3', 'mienshao.mp3', 'mightyena.mp3', 'milcery.mp3', 'milotic.mp3', 'miltank.mp3', 'mimejr.mp3', 'mimikyu.mp3', 'minccino.mp3', 'minior.mp3', 'minun.mp3', 'miraidon.mp3', 'misdreavus.mp3', 'mismagius.mp3', 'mollux.mp3', 'moltres.mp3', 'monferno.mp3', 'monohm.mp3', 'morelull.mp3', 'morgrem.mp3', 'morpeko-hangry.mp3', 'morpeko.mp3', 'mothim.mp3', 'mrmime.mp3', 'mrrime.mp3', 'mudbray.mp3', 'mudkip.mp3', 'mudsdale.mp3', 'muk.mp3', 'mumbao.mp3', 'munchlax.mp3', 'munkidori.mp3', 'munna.mp3', 'murkrow.mp3', 'musharna.mp3', 'nacli.mp3', 'naclstack.mp3', 'naganadel.mp3', 'natu.mp3', 'naviathan.mp3', 'necrozma-dawnwings.mp3', 'necrozma-duskmane.mp3', 'necrozma-ultra.mp3', 'necrozma.mp3', 'necturine.mp3', 'necturna.mp3', 'nickit.mp3', 'nidoking.mp3', 'nidoqueen.mp3', 'nidoranf.mp3', 'nidoranm.mp3', 'nidorina.mp3', 'nidorino.mp3', 'nihilego.mp3', 'nincada.mp3', 'ninetales.mp3', 'ninjask.mp3', 'noctowl.mp3', 'nohface.mp3', 'noibat.mp3', 'noivern.mp3', 'nosepass.mp3', 'numel.mp3', 'nuzleaf.mp3', 'nymble.mp3', 'obstagoon.mp3', 'octillery.mp3', 'oddish.mp3', 'ogerpon.mp3', 'oinkologne-f.mp3', 'oinkologne.mp3', 'okidogi.mp3', 'omanyte.mp3', 'omastar.mp3', 'onix.mp3', 'oranguru.mp3', 'orbeetle.mp3', 'oricorio-pau.mp3', 'oricorio-pompom.mp3', 'oricorio-sensu.mp3', 'oricorio.mp3', 'orthworm.mp3', 'oshawott.mp3', 'overqwil.mp3', 'pachirisu.mp3', 'pajantom.mp3', 'palafin-hero.mp3', 'palafin.mp3', 'palkia.mp3', 'palossand.mp3', 'palpitoad.mp3', 'pancham.mp3', 'pangoro.mp3', 'panpour.mp3', 'pansage.mp3', 'pansear.mp3', 'paras.mp3', 'parasect.mp3', 'passimian.mp3', 'patrat.mp3', 'pawmi.mp3', 'pawmo.mp3', 'pawmot.mp3', 'pawniard.mp3', 'pecharunt.mp3', 'pelipper.mp3', 'perrserker.mp3', 'persian.mp3', 'petilil.mp3', 'phanpy.mp3', 'phantump.mp3', 'pheromosa.mp3', 'phione.mp3', 'pichu.mp3', 'pidgeot-mega.mp3', 'pidgeot.mp3', 'pidgeotto.mp3', 'pidgey.mp3', 'pidove.mp3', 'pignite.mp3', 'pikachu-starter.mp3', 'pikachu.mp3', 'pikipek.mp3', 'piloswine.mp3', 'pincurchin.mp3', 'pineco.mp3', 'pinsir-mega.mp3', 'pinsir.mp3', 'piplup.mp3', 'plasmanta.mp3', 'pluffle.mp3', 'plusle.mp3', 'poipole.mp3', 'politoed.mp3', 'poliwag.mp3', 'poliwhirl.mp3', 'poliwrath.mp3', 'poltchageist.mp3', 'polteageist.mp3', 'ponyta.mp3', 'poochyena.mp3', 'popplio.mp3', 'porygon.mp3', 'porygon2.mp3', 'porygonz.mp3', 'primarina.mp3', 'primeape.mp3', 'prinplup.mp3', 'privatyke.mp3', 'probopass.mp3', 'protowatt.mp3', 'psyduck.mp3', 'pumpkaboo-super.mp3', 'pumpkaboo.mp3', 'pupitar.mp3', 'purrloin.mp3', 'purugly.mp3', 'pyroak.mp3', 'pyroar.mp3', 'pyukumuku.mp3', 'quagsire.mp3', 'quaquaval.mp3', 'quaxly.mp3', 'quaxwell.mp3', 'quilava.mp3', 'quilladin.mp3', 'qwilfish.mp3', 'raboot.mp3', 'rabsca.mp3', 'ragingbolt.mp3', 'raichu.mp3', 'raikou.mp3', 'ralts.mp3', 'rampardos.mp3', 'rapidash.mp3', 'raticate.mp3', 'rattata.mp3', 'rayquaza-mega.mp3', 'rayquaza.mp3', 'rebble.mp3', 'regice.mp3', 'regidrago.mp3', 'regieleki.mp3', 'regigigas.mp3', 'regirock.mp3', 'registeel.mp3', 'relicanth.mp3', 'rellor.mp3', 'remoraid.mp3', 'reshiram.mp3', 'reuniclus.mp3', 'revavroom.mp3', 'revenankh.mp3', 'rhydon.mp3', 'rhyhorn.mp3', 'rhyperior.mp3', 'ribombee.mp3', 'rillaboom.mp3', 'riolu.mp3', 'roaringmoon.mp3', 'rockruff.mp3', 'roggenrola.mp3', 'rolycoly.mp3', 'rookidee.mp3', 'roselia.mp3', 'roserade.mp3', 'rotom.mp3', 'rowlet.mp3', 'rufflet.mp3', 'runerigus.mp3', 'sableye-mega.mp3', 'sableye.mp3', 'saharaja.mp3', 'saharascal.mp3', 'salamence-mega.mp3', 'salamence.mp3', 'salandit.mp3', 'salazzle.mp3', 'samurott.mp3', 'sandaconda.mp3', 'sandile.mp3', 'sandshrew.mp3', 'sandslash.mp3', 'sandygast.mp3', 'sandyshocks.mp3', 'sawk.mp3', 'sawsbuck.mp3', 'scatterbug.mp3', 'scattervein.mp3', 'sceptile-mega.mp3', 'sceptile.mp3', 'scizor-mega.mp3', 'scizor.mp3', 'scolipede.mp3', 'scorbunny.mp3', 'scovillain.mp3', 'scrafty.mp3', 'scraggy.mp3', 'scratchet.mp3', 'screamtail.mp3', 'scyther.mp3', 'seadra.mp3', 'seaking.mp3', 'sealeo.mp3', 'seedot.mp3', 'seel.mp3', 'seismitoad.mp3', 'sentret.mp3', 'serperior.mp3', 'servine.mp3', 'seviper.mp3', 'sewaddle.mp3', 'sharpedo-mega.mp3', 'sharpedo.mp3', 'shaymin-sky.mp3', 'shaymin.mp3', 'shedinja.mp3', 'shelgon.mp3', 'shellder.mp3', 'shellos.mp3', 'shelmet.mp3', 'shieldon.mp3', 'shiftry.mp3', 'shiinotic.mp3', 'shinx.mp3', 'shroodle.mp3', 'shroomish.mp3', 'shuckle.mp3', 'shuppet.mp3', 'sigilyph.mp3', 'silcoon.mp3', 'silicobra.mp3', 'silvally.mp3', 'simipour.mp3', 'simisage.mp3', 'simisear.mp3', 'sinistcha.mp3', 'sinistea.mp3', 'sirfetchd.mp3', 'sizzlipede.mp3', 'skarmory.mp3', 'skeledirge.mp3', 'skiddo.mp3', 'skiploom.mp3', 'skitty.mp3', 'skorupi.mp3', 'skrelp.mp3', 'skuntank.mp3', 'skwovet.mp3', 'slaking.mp3', 'slakoth.mp3', 'sliggoo.mp3', 'slitherwing.mp3', 'slowbro-mega.mp3', 'slowbro.mp3', 'slowking.mp3', 'slowpoke-galar.mp3', 'slowpoke.mp3', 'slugma.mp3', 'slurpuff.mp3', 'smeargle.mp3', 'smogecko.mp3', 'smoguana.mp3', 'smokomodo.mp3', 'smoliv.mp3', 'smoochum.mp3', 'snaelstrom.mp3', 'sneasel.mp3', 'sneasler.mp3', 'snivy.mp3', 'snom.mp3', 'snorlax.mp3', 'snorunt.mp3', 'snover.mp3', 'snubbull.mp3', 'snugglow.mp3', 'sobble.mp3', 'solgaleo.mp3', 'solosis.mp3', 'solotl.mp3', 'solrock.mp3', 'spearow.mp3', 'spectrier.mp3', 'spewpa.mp3', 'spheal.mp3', 'spidops.mp3', 'spinarak.mp3', 'spinda.mp3', 'spiritomb.mp3', 'spoink.mp3', 'sprigatito.mp3', 'spritzee.mp3', 'squawkabilly.mp3', 'squirtle.mp3', 'stakataka.mp3', 'stantler.mp3', 'staraptor.mp3', 'staravia.mp3', 'starly.mp3', 'starmie.mp3', 'staryu.mp3', 'steelix-mega.mp3', 'steelix.mp3', 'steenee.mp3', 'stonjourner.mp3', 'stoutland.mp3', 'stratagem.mp3', 'stufful.mp3', 'stunfisk.mp3', 'stunky.mp3', 'sudowoodo.mp3', 'suicune.mp3', 'sunflora.mp3', 'sunkern.mp3', 'surskit.mp3', 'swablu.mp3', 'swadloon.mp3', 'swalot.mp3', 'swampert-mega.mp3', 'swampert.mp3', 'swanna.mp3', 'swellow.mp3', 'swinub.mp3', 'swirlix.mp3', 'swirlpool.mp3', 'swoobat.mp3', 'syclant.mp3', 'syclar.mp3', 'sylveon.mp3', 'tactite.mp3', 'tadbulb.mp3', 'taillow.mp3', 'talonflame.mp3', 'tandemaus.mp3', 'tangela.mp3', 'tangrowth.mp3', 'tapubulu.mp3', 'tapufini.mp3', 'tapukoko.mp3', 'tapulele.mp3', 'tarountula.mp3', 'tatsugiri-droopy.mp3', 'tatsugiri-stretchy.mp3', 'tatsugiri.mp3', 'tauros.mp3', 'teddiursa.mp3', 'tentacool.mp3', 'tentacruel.mp3', 'tepig.mp3', 'terapagos.mp3', 'terrakion.mp3', 'thievul.mp3', 'throh.mp3', 'thundurus-therian.mp3', 'thundurus.mp3', 'thwackey.mp3', 'timburr.mp3', 'tinglu.mp3', 'tinkatink.mp3', 'tinkaton.mp3', 'tinkatuff.mp3', 'tirtouga.mp3', 'toedscool.mp3', 'toedscruel.mp3', 'togedemaru.mp3', 'togekiss.mp3', 'togepi.mp3', 'togetic.mp3', 'tomohawk.mp3', 'torchic.mp3', 'torkoal.mp3', 'tornadus-therian.mp3', 'tornadus.mp3', 'torracat.mp3', 'torterra.mp3', 'totodile.mp3', 'toucannon.mp3', 'toxapex.mp3', 'toxel.mp3', 'toxicroak.mp3', 'toxtricity-lowkey.mp3', 'toxtricity.mp3', 'tranquill.mp3', 'trapinch.mp3', 'treecko.mp3', 'trevenant.mp3', 'tropius.mp3', 'trubbish.mp3', 'trumbeak.mp3', 'tsareena.mp3', 'turtonator.mp3', 'turtwig.mp3', 'tympole.mp3', 'tynamo.mp3', 'typenull.mp3', 'typhlosion.mp3', 'tyranitar-mega.mp3', 'tyranitar.mp3', 'tyrantrum.mp3', 'tyrogue.mp3', 'tyrunt.mp3', 'umbreon.mp3', 'unfezant.mp3', 'unown.mp3', 'ursaluna.mp3', 'ursaring.mp3', 'urshifu-rapidstrike.mp3', 'urshifu.mp3', 'uxie.mp3', 'vanillish.mp3', 'vanillite.mp3', 'vanilluxe.mp3', 'vaporeon.mp3', 'varoom.mp3', 'veluza.mp3', 'venipede.mp3', 'venomicon.mp3', 'venomoth.mp3', 'venonat.mp3', 'venusaur-mega.mp3', 'venusaur.mp3', 'vespiquen.mp3', 'vibrava.mp3', 'victini.mp3', 'victreebel.mp3', 'vigoroth.mp3', 'vikavolt.mp3', 'vileplume.mp3', 'virizion.mp3', 'vivillon.mp3', 'volbeat.mp3', 'volcanion.mp3', 'volcarona.mp3', 'volkraken.mp3', 'volkritter.mp3', 'voltorb.mp3', 'voodoll.mp3', 'voodoom.mp3', 'vullaby.mp3', 'vulpix.mp3', 'wailmer.mp3', 'wailord.mp3', 'walkingwake.mp3', 'walrein.mp3', 'wartortle.mp3', 'watchog.mp3', 'wattrel.mp3', 'weavile.mp3', 'weedle.mp3', 'weepinbell.mp3', 'weezing.mp3', 'whimsicott.mp3', 'whirlipede.mp3', 'whiscash.mp3', 'whismur.mp3', 'wigglytuff.mp3', 'wiglett.mp3', 'wimpod.mp3', 'wingull.mp3', 'wishiwashi-school.mp3', 'wishiwashi.mp3', 'wobbuffet.mp3', 'wochien.mp3', 'woobat.mp3', 'wooloo.mp3', 'wooper.mp3', 'wormadam.mp3', 'wugtrio.mp3', 'wurmple.mp3', 'wynaut.mp3', 'wyrdeer.mp3', 'xatu.mp3', 'xerneas.mp3', 'xurkitree.mp3', 'yamask.mp3', 'yamper.mp3', 'yanma.mp3', 'yanmega.mp3', 'yungoos.mp3', 'yveltal.mp3', 'zacian-crowned.mp3', 'zacian.mp3', 'zamazenta-crowned.mp3', 'zamazenta.mp3', 'zangoose.mp3', 'zapdos.mp3', 'zarude.mp3', 'zebstrika.mp3', 'zekrom.mp3', 'zeraora.mp3', 'zigzagoon.mp3', 'zoroark.mp3', 'zorua.mp3', 'zubat.mp3', 'zweilous.mp3', 'zygarde-10.mp3', 'zygarde-complete.mp3', 'zygarde.mp3']
+        self.item_names = [ "absorb-bulb.png",  "aguav-berry.png",  "air-balloon.png", "amulet-coin.png", "antidote.png", "apicot-berry.png", "armor-fossil.png",
         "aspear-berry.png",
         "awakening.png",
         "babiri-berry.png",
@@ -4211,39 +4336,17 @@ class ItemSpriteDownloader(QThread):
         "toxic-plate.png",
         "twisted-spoon.png",
         "ultra-ball.png",
-        "up-grade.png",
-        "wacan-berry.png",
-        "water-gem.png",
-        "water-stone.png",
-        "watmel-berry.png",
-        "wave-incense.png",
-        "wepear-berry.png",
-        "white-flute.png",
-        "white-herb.png",
-        "wide-lens.png",
-        "wiki-berry.png",
-        "wise-glasses.png",
-        "x-accuracy.png",
-        "x-attack.png",
-        "x-defense.png",
-        "x-sp-atk.png",
-        "x-sp-def.png",
-        "x-speed.png",
-        "yache-berry.png",
-        "yellow-flute.png",
-        "yellow-scarf.png",
-        "yellow-shard.png",
-        "zap-plate.png",
-        "zinc.png",
-        "zoom-lens.png"
+        "up-grade.png", "wacan-berry.png", "water-gem.png", "water-stone.png", "watmel-berry.png", "wave-incense.png", "wepear-berry.png", "white-flute.png", "white-herb.png", "wide-lens.png", "wiki-berry.png", "wise-glasses.png", "x-accuracy.png", "x-attack.png", "x-defense.png", "x-sp-atk.png", "x-sp-def.png", "x-speed.png", "yache-berry.png", "yellow-flute.png", "yellow-scarf.png", "yellow-shard.png", "zap-plate.png", "zinc.png", "zoom-lens.png"
         ]
         if not os.path.exists(self.items_destination_to):
             os.makedirs(self.items_destination_to)
         if not os.path.exists(self.badges_destination_to):
             os.makedirs(self.badges_destination_to)
-
+        if not os.path.exists(self.sounds_destination_to):
+            os.makedirs(self.sounds_destination_to)
     def run(self):
         total_downloaded = 0
+        self.downloading_item_sprites_txt.emit()
         for item_name in self.item_names:
             item_url = self.item_base_url + item_name
             response = requests.get(item_url)
@@ -4254,12 +4357,22 @@ class ItemSpriteDownloader(QThread):
             self.progress_updated.emit(total_downloaded)
         # Emit the download_complete signal at the end of the download process
         max_badges = 68
+        self.downloading_badges_sprites_txt.emit()
         for badge_num in range(1,68):
             badge_file = f"{badge_num}.png"
             badge_url = self.badges_base_url + badge_file
             response = requests.get(badge_url)
             if response.status_code == 200:
                 with open(os.path.join(self.badges_destination_to, badge_file), 'wb') as file:
+                    file.write(response.content)
+            total_downloaded += 1
+            self.progress_updated.emit(total_downloaded)
+        self.downloading_sounds_txt.emit()
+        for sound in self.sound_names:
+            sounds_url = self.sounds_base_url + sound
+            response = requests.get(sounds_url)
+            if response.status_code == 200:
+                with open(os.path.join(self.sounds_destination_to, sound), 'wb') as file:
                     file.write(response.content)
             total_downloaded += 1
             self.progress_updated.emit(total_downloaded)
@@ -4270,7 +4383,7 @@ class ItemSpriteDownloader(QThread):
 
 
 def download_item_sprites():
-    total_images_expected = int(336 + 68)
+    total_images_expected = int(336 + 68 + 1190)
     global addon_dir
     destination_to = addon_dir / "pokemon_sprites" / "items"
 
@@ -4291,9 +4404,21 @@ def download_item_sprites():
 
         def on_download_complete():
             window.label.setText("All Images have been downloaded. \n Please close this window now and once all needed files have been installed \n => Restart Anki.")
+        
+        def downloading_sounds_txt():
+            window.label.setText("Now Downloading Sound Files")
+        
+        def downloading_item_sprites_txt():
+            window.label.setText("Now Downloading Item Sprites...")
+
+        def downloading_badges_sprites_txt():
+            window.label.setText("Now Downloading Badges...")
 
         sprite_downloader = ItemSpriteDownloader(destination_to)
         sprite_downloader.progress_updated.connect(update_progress)
+        sprite_downloader.downloading_sounds_txt.connect(downloading_sounds_txt)
+        sprite_downloader.downloading_item_sprites_txt.connect(downloading_item_sprites_txt)
+        sprite_downloader.downloading_badges_sprites_txt.connect(downloading_badges_sprites_txt)
         sprite_downloader.download_complete.connect(on_download_complete)
         sprite_downloader.start()
 
@@ -6249,63 +6374,6 @@ mw.pokemenu.addAction(test_action13)
 test_action16 = QAction("Report Bug", mw)
 test_action16.triggered.connect(report_bug)
 mw.pokemenu.addAction(test_action16)
-
-if sounds is True:
-    def play_sound():
-        sounds = [
-            'Route 201 (Night)',
-            'Route 203 (Day)',
-            'Route 203 (Night)',
-            'Route 205 (Day)',
-            'Route 205 (Night)',
-            'Route 206 (Day)',
-            'Route 206 (Night)',
-            'Route 209 (Day)',
-            'Route 209 (Night)',
-            'Route 210 (Night)',
-            'Route 216 (Night)',
-            'Route 225 (Day)',
-            'Route 225 (Night)',
-            'Route 228 (Day)',
-            'Route 228 (Night)'
-        ]
-        file_name = random.choice(sounds)
-        """Play a sound file using Anki's audio system."""
-        audio_path = addon_dir / "sounds" / f"{file_name}.wav"
-        if not Path(audio_path).is_file():
-            showWarning(f"Audio file not found: {audio_path}")
-            return
-
-        audio_path = str(audio_path)
-
-        if av_player:
-            # Use Anki's newer audio player if available
-            av_player.play_file(filename=audio_path)
-        elif legacy_play:
-            # Fallback to legacy play method
-            legacy_play(audio_path)
-        else:
-            showWarning("No suitable audio player found in Anki.")
-
-        # Estimate sound file duration and set timer
-        with wave.open(audio_path, 'r') as file:
-                frames = file.getnframes()
-                rate = file.getframerate()
-                duration = frames / float(rate)
-                #showInfo(f"{duration}")
-
-        timer_interval = int(duration * 1000)  # Convert duration to milliseconds
-        timer.start(timer_interval)  # Restart timer
-
-    sound_action = QAction("Play Sound", mw)
-    sound_action.triggered.connect(play_sound)
-    mw.pokemenu.addAction(sound_action)
-
-    # Create a QTimer
-    timer = QTimer()
-
-    # Connect the timer's timeout signal to the play_sound function
-    timer.timeout.connect(play_sound)
 
     #https://goo.gl/uhAxsg
     #https://www.reddit.com/r/PokemonROMhacks/comments/9xgl7j/pokemon_sound_effects_collection_over_3200_sfx/
