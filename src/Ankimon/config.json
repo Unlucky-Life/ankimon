@@ -11,5 +11,6 @@
   "cards_per_round": 2,
   "only_use_online_sprites": false,
   "reviewer_image_gif": false,
-  "sounds": false
+  "sounds": false,
+  "battle_sounds": false
 }
