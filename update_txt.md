@@ -1,11 +1,5 @@
 # Update Information
 
-### Announcement:
-
-!!! IMPORTANT: Before the next update on Friday, 15 March 2024, or Sunday, 17 March 2024, go to your Ankimon Files and copy the following files to a different folder on your system: `mypokemon.json`, `mainpokemon.json`, `items.json`, and `badges.json`. After the update, copy the above-named files back into your Ankimon Addon folder and overwrite the new files.
-
-## Future Updates
-
 Feature A: **Battle Cries Integration** - This feature will integrate battle cries for each Pokémon, enhancing the battle experience by adding more depth and realism to the combat sequences.
 
 Feature B: **Language Support for Pokémon Names and Descriptions** - Upcoming updates will include support for multiple languages including Japanese, French, German, and English, allowing a broader audience to enjoy the game in their native language.
