@@ -304,7 +304,7 @@ def play_sound():
         except TypeError:
             pass  # Do nothing if the signal was not connected
 
-if sound == True:    
+if sounds == True:    
     # Create a QTimer
     timer = QTimer()
 
