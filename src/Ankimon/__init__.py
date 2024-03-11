@@ -3051,7 +3051,7 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         #attackslayout.addWidget(attacks_label)
         attacks_details_button = QPushButton("Attack Details") #add Details to Moves
         qconnect(attacks_details_button.clicked, lambda: attack_details_window(attacks))
-        free_pokemon_button = QPushButton("Free Pokemon") #add Details to Moves
+        #free_pokemon_button = QPushButton("Release Pokemon") #add Details to Moves unneeded button
         attacks_label.setFixedHeight(150)
         TopR_layout_Box.addWidget(attacks_label)
         TopR_layout_Box.addWidget(attacks_details_button)
@@ -3066,7 +3066,7 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         statstablelayout.setStyleSheet("border: 2px solid white; padding: 5px;")
         #statstablelayout.setFixedWidth(350)
         statstablelayout.setFixedHeight(200)
-        free_pokemon_button = QPushButton("Free Pokemon") #add Details to Moves
+        free_pokemon_button = QPushButton("Release Pokemon") #add Details to Moves
         qconnect(free_pokemon_button.clicked, lambda: PokemonFree(name))
         trade_pokemon_button = QPushButton("Trade Pokemon") #add Details to Moves
         qconnect(trade_pokemon_button.clicked, lambda: PokemonTrade(name, id, level, ability, iv, ev, gender, attacks))
@@ -3571,17 +3571,32 @@ def PokemonTradeIn(number_code, old_pokemon_name):
     trade_pokemon(f"{old_pokemon_name}", pokemon_trade)
     showInfo(f"You have sucessfully traded your {old_pokemon_name} for {name} ")
 
+
 def PokemonFree(name):
     global mypokemon_path
     global mainpokemon_path
+
+    # Confirmation dialog
+    reply = QMessageBox.question(None, "Confirm Release", 
+                                 f"Are you sure you want to release {name}?", 
+                                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, 
+                                 QMessageBox.StandardButton.No)
+
+    if reply == QMessageBox.StandardButton.No:
+        showInfo("Release cancelled.")
+        return
+
     # Load the data from the file
     with open(mainpokemon_path, 'r') as file:
         pokemon_data = json.load(file)
 
+    found = False
     for pokemons in pokemon_data:
-        pokemon_name = pokemons["name"]
+        if pokemons["name"] == name:
+            found = True
+            break
 
-    if pokemon_name != name:
+    if not found:
         with open(mypokemon_path, 'r') as file:
             pokemon_list = json.load(file)
 
@@ -3591,14 +3606,9 @@ def PokemonFree(name):
         # Write the updated data back to the file
         with open(mypokemon_path, 'w') as file:
             json.dump(pokemon_list, file, indent=2)
-        # Find and remove the Pokemon with the given name
-        #pokemon_data = [p for p in pokemons if p['name'] != name]
-        # Write the updated data back to the file
-        #with open(mainpokemon_path, 'w') as file:
-        #   json.dump(pokemon_data, file, indent=2)
         showInfo(f"{name.capitalize()} has been let free.")
     else:
-        showWarning("You can't free your Main Pokemon !")
+        showWarning("You can't free your Main Pokemon!")
 
 def createStatBar(color, value):
     pixmap = QPixmap(200, 10)
