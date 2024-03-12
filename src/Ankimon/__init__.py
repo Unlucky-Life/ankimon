@@ -2923,10 +2923,10 @@ def rename_pkmn(nickname, pkmn_name):
 def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname):
     global frontdefault, type_style_file
     # Create the dialog
-    lang_name = get_pokemon_diff_lang_name(int(id)).capitalize()
-    lang_desc = get_pokemon_descriptions(int(id)).capitalize()
-    description = lang_desc
     try:
+        lang_name = get_pokemon_diff_lang_name(int(id)).capitalize()
+        lang_desc = get_pokemon_descriptions(int(id))
+        description = lang_desc
         wpkmn_details = QDialog(mw)
         if nickname is None:
             wpkmn_details.setWindowTitle(f"Infos to : {lang_name} ")
