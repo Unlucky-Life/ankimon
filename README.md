@@ -39,4 +39,4 @@ Start your Pokémon journey with Ankimon and make learning an adventure!
 
 Support my Caffeine Addiction (something that helps building this Addon):
 
-[![Buy Me a Coffee](https://storage.ko-fi.com/cdn/kofi2.png?v=3)](https://ko-fi.com/A0A7SGLI8)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/A0A7SGLI8)
