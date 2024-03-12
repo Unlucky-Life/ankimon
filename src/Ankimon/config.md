@@ -28,3 +28,21 @@ You can decide if you want Pokemon Battle Cries in the anki reviewer if you firs
 - In Game Battle Sounds:
 You can decide if you want Pokemon Battle Cries to be replayed every 10 cards.
 - `battle_sounds` [True/False]
+
+- Language Option (Select a Number from the ones below to the corresponding language you would like to read your pokemon names and descriptions):
+
+    | ID  | Language               | Official |
+    |-----|------------------------|----------|
+    | 1   | Japanese (Hiragana & Katakana) | Yes      |
+    | 2   | Japanese (Roomaji)     | Yes      |
+    | 3   | Korean                 | Yes      |
+    | 4   | Chinese (Traditional)  | Yes      |
+    | 5   | French                 | Yes      |
+    | 6   | German                 | Yes      |
+    | 7   | Spanish                | Yes      |
+    | 8   | Italian                | Yes      |
+    | 9   | English                | Yes      |
+    | 10  | Czech                  | No       |
+    | 11  | Japanese               | Yes      |
+    | 12  | Chinese (Simplified)   | Yes      |
+    | 13  | Portuguese (Brazil)    | No       |
