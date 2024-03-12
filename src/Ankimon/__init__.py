@@ -102,6 +102,8 @@ items_path = addon_dir / "pokemon_sprites" / "items"
 badges_path = addon_dir / "pokemon_sprites" / "badges"
 itembag_path = addon_dir / "user_files" / "items.json"
 badgebag_path = addon_dir / "user_files" / "badges.json"
+pokenames_lang_path = addon_dir / "user_files" / "pokemon_species_names.csv"
+pokedesc_lang_path = addon_dir / "user_files" / "pokemon_species_flavor_text.csv"
 # Get the profile folder
 profilename = mw.pm.name
 #profilefolder = Path(mw.pm.profileFolder())
@@ -178,6 +180,7 @@ cards_per_round = config["cards_per_round"]
 reviewer_image_gif = config["reviewer_image_gif"]
 sounds = config["sounds"]
 battle_sounds = config["battle_sounds"]
+language = config["language"]
 
 def test_online_connectivity(url='http://www.google.com', timeout=5):
     try:
@@ -1912,6 +1915,38 @@ def search_pokedex(pokemon_name,variable):
             else:
                 return []
 
+def get_pokemon_diff_lang_name(pokemon_id):
+    global language
+    global pokenames_lang_path
+    with open(pokenames_lang_path, mode='r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header row if there is one
+        for row in reader:
+            # Assuming the CSV structure is: pokemon_species_id,local_language_id,name,genus
+            species_id, lang_id, name, genus = row
+            if int(species_id) == pokemon_id and int(lang_id) == language:
+                return name
+    return None  # Return None if no match is found
+
+def get_pokemon_descriptions(species_id):
+    global language
+    global pokedesc_lang_path
+    descriptions = []  # Initialize an empty list to store matching descriptions
+    with open(pokedesc_lang_path, mode='r', encoding='utf-8') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        for row in csv_reader:
+            if int(row['species_id']) == species_id and int(row['language_id']) == language:
+                # Replace control characters for readability, if necessary
+                flavor_text = row['flavor_text'].replace('\x0c', ' ')
+                descriptions.append(flavor_text)  # Add the matching description to the list
+    if descriptions:
+        if len(descriptions) > 1:
+            return random.choice(descriptions)
+        else:
+            return descriptions
+    else:
+        ["Description not found."]
+
 def search_pokeapi_db(pokemon_name,variable):
     global addon_dir
     pokemon_name = special_pokemon_names_for_pokedex_to_poke_api_db(pokemon_name)
@@ -2709,6 +2744,7 @@ def ShowPokemonCollection():
                     pokemon_container = QWidget()
                     image_label = QLabel()
                     pixmap = QPixmap()
+                    pokemon_id = pokemon['id']
                     pokemon_name = pokemon['name']
                     if not pokemon.get('nickname') or pokemon.get('nickname') is None:
                         pokemon_nickname = None
@@ -2716,7 +2752,6 @@ def ShowPokemonCollection():
                         pokemon_nickname = pokemon['nickname']
                     pokemon_gender = pokemon['gender']
                     pokemon_level = pokemon['level']
-                    pokemon_id = pokemon['id']
                     pokemon_ability = pokemon['ability']
                     pokemon_type = pokemon['type']
                     pokemon_stats = pokemon['stats']
@@ -2746,7 +2781,7 @@ def ShowPokemonCollection():
 
                     # Capitalize the first letter of the Pokémon's name
                     if pokemon_nickname is None:
-                        capitalized_name = f"{pokemon_name.capitalize()} ({pokemon_gender})"
+                        capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id)).capitalize()} ({pokemon_gender})"
                     else:
                         capitalized_name = f"{pokemon_nickname.capitalize()} ({pokemon_gender})"
                     # Create level text
@@ -2888,12 +2923,15 @@ def rename_pkmn(nickname, pkmn_name):
 def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname):
     global frontdefault, type_style_file
     # Create the dialog
+    lang_name = get_pokemon_diff_lang_name(int(id)).capitalize()
+    lang_desc = get_pokemon_descriptions(int(id)).capitalize()
+    description = lang_desc
     try:
         wpkmn_details = QDialog(mw)
         if nickname is None:
-            wpkmn_details.setWindowTitle(f"Infos to : {name} ")
+            wpkmn_details.setWindowTitle(f"Infos to : {lang_name} ")
         else:
-            wpkmn_details.setWindowTitle(f"Infos to : {nickname} ({name}) ")
+            wpkmn_details.setWindowTitle(f"Infos to : {nickname} ({lang_name}) ")
 
         wpkmn_details.setFixedWidth(500)
         wpkmn_details.setMaximumHeight(400)
@@ -2935,9 +2973,9 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
 
         # Capitalize the first letter of the Pokémon's name
         if nickname is None:
-            capitalized_name = f"{name.capitalize()}"
+            capitalized_name = f"{lang_name.capitalize()}"
         else:
-            capitalized_name = f"{nickname} ({name.capitalize()})"
+            capitalized_name = f"{nickname} ({lang_name.capitalize()})"
         # Create level text
         result = list(split_string_by_length(description, 65))
         description_formated = '\n'.join(result)
@@ -4931,7 +4969,7 @@ class TestWindow(QWidget):
             global addon_dir
             layout = QVBoxLayout()
             image_file = f"ankimon_logo.png"
-            image_path = addon_dir / image_file
+            image_path = str(addon_dir) + "/" + image_file
             image_label = QLabel()
             pixmap = QPixmap()
             pixmap.load(str(image_path))
@@ -4969,10 +5007,11 @@ class TestWindow(QWidget):
         caught = 0
         id = int(search_pokedex(name.lower(), "num"))
         # Capitalize the first letter of the Pokémon's name
+        lang_name = get_pokemon_diff_lang_name(int(id))
         name = name.capitalize()
         # calculate wild pokemon max hp
         max_hp = calculate_hp(stats["hp"], level, ev, iv)
-        message_box_text = (f"A wild {name} appeared !")
+        message_box_text = (f"A wild {lang_name.capitalize()} appeared !")
         if pokemon_encounter == 0:
             bckgimage_path = battlescene_path / battlescene_file
         elif pokemon_encounter > 0:
@@ -5070,13 +5109,13 @@ class TestWindow(QWidget):
             # custom font
             custom_font = load_custom_font(font_file, 26)
             msg_font = load_custom_font(font_file, 32)
-
+            mainpokemon_lang_name = get_pokemon_diff_lang_name(int(mainpokemon_id))
             # Draw the text on top of the image
             # Adjust the font size as needed
             painter.setFont(custom_font)
             painter.setPen(QColor(31, 31, 39))  # Text color
-            painter.drawText(48, 67, f"{name} ({gender})")
-            painter.drawText(326, 200, mainpokemon_name)
+            painter.drawText(48, 67, f"{lang_name} ({gender})")
+            painter.drawText(326, 200, mainpokemon_lang_name)
             painter.drawText(208, 67, lvl)
             #painter.drawText(55, 85, gender_text)
             painter.drawText(490, 199, mainlvl)
@@ -5194,8 +5233,10 @@ class TestWindow(QWidget):
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(31, 31, 39))  # Text color
-        painter.drawText(48, 67, name)
-        painter.drawText(326, 200, mainpokemon_name)
+        lang_name = get_pokemon_diff_lang_name(int(id))
+        painter.drawText(48, 67, lang_name)
+        mainpokemon_lang_name = get_pokemon_diff_lang_name(int(mainpokemon_id))
+        painter.drawText(326, 200, mainpokemon_lang_name)
         painter.drawText(208, 67, lvl)
         painter.drawText(490, 199, mainlvl)
         painter.drawText(487, 238, f"{mainpokemon_hp}")
@@ -5343,7 +5384,8 @@ class TestWindow(QWidget):
     def pokemon_display_dead_pokemon(self):
         global pokemon_hp, name, id, level, type, caught_pokemon, pkmnimgfolder, frontdefault, addon_dir, caught, pokedex_image_path
         # Create the dialog
-        window_title = (f"Would you want let the  wild {name} free or catch the wild {name} ?")
+        lang_name = get_pokemon_diff_lang_name(int(id))
+        window_title = (f"Would you want let the  wild {lang_name} free or catch the wild {lang_name} ?")
         # Display the Pokémon image
         pkmnimage_file = f"{int(search_pokedex(name.lower(),'num'))}.png"
         pkmnimage_path = addon_dir / frontdefault / pkmnimage_file
@@ -5359,7 +5401,7 @@ class TestWindow(QWidget):
         painter2 = QPainter(pkmnpixmap_bckg)
         painter2.drawPixmap(15,15,pkmnpixmap)
         # Capitalize the first letter of the Pokémon's name
-        capitalized_name = name.capitalize()
+        capitalized_name = lang_name.capitalize()
         # Create level text
         lvl = (f" Level: {level}")
 
@@ -5367,7 +5409,7 @@ class TestWindow(QWidget):
         font = QFont()
         font.setPointSize(20)  # Adjust the font size as needed
         painter2.setFont(font)
-        painter2.drawText(270,107,f"{capitalized_name}")
+        painter2.drawText(270,107,f"{lang_name}")
         font.setPointSize(17)  # Adjust the font size as needed
         painter2.setFont(font)
         painter2.drawText(315,192,f"{lvl}")
@@ -6085,6 +6127,7 @@ class ItemWindow(QWidget):
         self.setLayout(self.layout)
 
     def renewWidgets(self):
+        self.read_item_file()
         # Clear the existing widgets from the layout
         for i in reversed(range(self.layout.count())):
             widget = self.layout.itemAt(i).widget()
