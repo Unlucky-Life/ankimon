@@ -14,7 +14,6 @@
 import os, sys
 from aqt.utils import *
 from typing import Optional
-#showInfo, qconnect, showWarning
 from aqt.qt import *
 import anki
 import threading
@@ -49,7 +48,6 @@ from anki.collection import Collection
 import csv
 import time, wave
 #from .download_pokeapi_db import create_pokeapidb
-
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
 
@@ -97,6 +95,7 @@ evolve_image_path = addon_dir / "evo_temp.jpg"
 learnset_path = addon_dir / "learnsets.json"
 pokedex_path = addon_dir / "pokedex.json"
 all_species_path = addon_dir / "all_species.json"
+id_species_path = addon_dir / "species_with_ids.json"
 species_path = addon_dir / "species.json"
 items_path = addon_dir / "pokemon_sprites" / "items"
 badges_path = addon_dir / "pokemon_sprites" / "badges"
@@ -104,6 +103,13 @@ itembag_path = addon_dir / "user_files" / "items.json"
 badgebag_path = addon_dir / "user_files" / "badges.json"
 pokenames_lang_path = addon_dir / "user_files" / "pokemon_species_names.csv"
 pokedesc_lang_path = addon_dir / "user_files" / "pokemon_species_flavor_text.csv"
+
+#pokemon species id files
+pokemon_species_normal_path = addon_dir / "user_files" / "pkmn_data" / "normal.json"
+pokemon_species_legendary_path = addon_dir / "user_files" / "pkmn_data" / "legendary.json"
+pokemon_species_ultra_path = addon_dir / "user_files" / "pkmn_data" / "ultra.json"
+pokemon_species_mythical_path = addon_dir / "user_files" / "pkmn_data" / "mythical.json"
+pokemon_species_baby_path = addon_dir / "user_files" / "pkmn_data" / "baby.json"
 # Get the profile folder
 profilename = mw.pm.name
 #profilefolder = Path(mw.pm.profileFolder())
@@ -335,6 +341,14 @@ for i in range(1,10):
     gen_config.append(config[f"gen{i}"])
 
 def check_id_ok(id_num):
+    if isinstance(id_num, int):
+        pass
+    elif isinstance(id_num, list):
+        if len(id_num) > 0:
+            id_num = id_num[0]
+            showInfo(f"{id_num}")
+        else:
+            return False
     # Determine the generation of the given ID
     if id_num < 898:
         generation = 0
@@ -998,7 +1012,6 @@ def get_pokemon_names_by_category_from_file(category_name):
     return pokemon_in_category
 
 def check_min_generate_level(pkmn_name):
-    name = f"{pkmn_name}"
     # Update mainpokemon_evolution and handle evolution logic
     #mainpokemon_evolution = search_pokedex(name.lower(), "evos")
     #if mainpokemon_evolution is not None:
@@ -1109,47 +1122,37 @@ if database_complete != False:
         pokemon_species = None
         #generation_file = ("pokeapi_db.json")
         try:
-            if card_counter < (40*cards_per_round):
-                name = get_pokemon_by_category("Normal")
-                pokemon_species = "Normal"
-            if card_counter < (60*cards_per_round):
-                name = get_pokemon_by_category("Normal")
-                pokemon_species = "Normal"
-            elif card_counter < (80*cards_per_round):
-                name = get_pokemon_by_category("Ultra")
-                pokemon_species = "Ultra"
-            elif card_counter < (100*cards_per_round):
-                name = get_pokemon_by_category("Legendary")
-                pokemon_species = "Legendary"
-            elif card_counter < (120*cards_per_round):
-                name = get_pokemon_by_category("Mythical")
-                pokemon_species = "Mythical"
-            var_level = 3
+            id, pokemon_species = choose_random_pkmn_from_tier()
+            name = search_pokedex_by_id(id)
+            if name is list:
+                name = name[0]
             try:
-                level = random.randint((mainpokemon_level - (random.randint(0, var_level))), (
-                        mainpokemon_level + (random.randint(0, var_level))))  # Random level between 1 and 100
+                min_level = int(check_min_generate_level(str(name.lower())))
             except:
-                mainpokemon_level = 5
-                level = 5
-            if level < 0:
-                level = 1
-            try:
-                min_level = check_min_generate_level(name.lower())
-            except:
-                # showInfo(f"{name}")
                 generate_random_pokemon()
-            if min_level is not None:
-                min_level = int(min_level)
-            elif min_level is None or not min_level:
-                # showInfo(f"{min_level}, {name}")
+            var_level = 3
+            if mainpokemon_level or mainpokemon_level != None:
+                try:
+                    level = random.randint((mainpokemon_level - (random.randint(0, var_level))), (mainpokemon_level + (random.randint(0, var_level))))  # Random level between 1 and 100
+                    if mainpokemon_level == 100:
+                        level = 100
+                    if level < 0:
+                        level = 1
+                except:
+                    mainpokemon_level = 5
+                    level = 5
+            else:
                 level = 5
                 min_level = 0
-            if mainpokemon_level is None:
+            if min_level is None or not min_level or mainpokemon_level is None:
                 level = 5
                 min_level = 0
             if min_level < level:
-                id = search_pokedex(name, "num")
-                id_check = check_id_ok(id)
+                id = search_pokedex_by_name_for_id(name, "num")
+                if id is None:
+                    return generate_random_pokemon()
+                else:
+                    id_check = check_id_ok(id)
                 if id_check:
                     pass
                 else:
@@ -1324,6 +1327,49 @@ def get_pokemon_by_category(category_name):
     random_pokemon_name_from_tier = f"{(random.choice(pokemon_in_tier)).lower()}"
     random_pokemon_name_from_tier = special_pokemon_names_for_min_level(random_pokemon_name_from_tier)
     return random_pokemon_name_from_tier #return random pokemon name from that category
+
+def choose_random_pkmn_from_tier():
+    global cards_per_round, card_counter
+    possible_tiers = []
+    try:
+        if card_counter < (40*cards_per_round):
+            possible_tiers.append("Normal")
+        elif card_counter < (60*cards_per_round):
+            possible_tiers.extend(["Baby", "Normal", "Normal", "Normal", "Normal"])
+        elif card_counter < (80*cards_per_round):
+            possible_tiers.extend(["Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Ultra"])
+        elif card_counter < (100*cards_per_round):
+            possible_tiers.extend(["Baby", "Legendary", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
+        else:
+            possible_tiers.extend(["Baby", "Legendary","Mythical", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
+        tier = random.choice(possible_tiers)
+        id, pokemon_species = get_pokemon_id_by_tier(tier)
+        return id, pokemon_species
+    except:
+        showWarning(f" An error occured with generating following Pkmn Info: {id}{pokemon_species} \n Please post this error message over the Report Bug Issue")
+
+def get_pokemon_id_by_tier(tier):
+    #showInfo(f"{tier}")
+    global pokemon_species_normal_path, pokemon_species_baby_path, pokemon_species_mythical_path, pokemon_species_ultra_path, pokemon_species_legendary_path
+    id_species_path = None
+    if tier == "Normal":
+        id_species_path = pokemon_species_normal_path
+    elif tier == "Baby":
+        id_species_path = pokemon_species_baby_path
+    elif tier == "Ultra":
+        id_species_path = pokemon_species_ultra_path
+    elif tier == "Legendary":
+        id_species_path = pokemon_species_legendary_path
+    elif tier == "Mythical":
+        id_species_path = pokemon_species_mythical_path
+
+    with open(id_species_path, 'r') as file:
+        id_data = json.load(file)
+
+    pokemon_species = f"{tier}"
+    # Select a random Pokemon ID from those in the tier
+    random_pokemon_id = random.choice(id_data)
+    return random_pokemon_id, pokemon_species
 
 def save_caught_pokemon(nickname):
     # Create a dictionary to store the Pokémon's data
@@ -1914,6 +1960,27 @@ def search_pokedex(pokemon_name,variable):
                 return var
             else:
                 return []
+
+def search_pokedex_by_name_for_id(pokemon_name, variable):
+    global pokedex_path
+    pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
+    with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
+            pokedex_data = json.load(json_file)
+            if pokemon_name in pokedex_data:
+                pokemon_info = pokedex_data[pokemon_name]
+                var = pokemon_info.get("num", None)
+                return var
+            else:
+                return None
+
+def search_pokedex_by_id(pokemon_id):
+    global pokedex_path
+    with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
+            pokedex_data = json.load(json_file) 
+            for entry_name, attributes in pokedex_data.items():
+                if attributes['num'] == pokemon_id:
+                    return entry_name
+    return 'Pokémon not found'
 
 def get_pokemon_diff_lang_name(pokemon_id):
     global language
@@ -3809,6 +3876,12 @@ class Downloader(QObject):
                 "https://play.pokemonshowdown.com/data/learnsets.json",
                 "https://play.pokemonshowdown.com/data/pokedex.json",
                 "https://play.pokemonshowdown.com/data/moves.json",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/item_names.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_flavor_text.csv"
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/item_flavor_text.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/move_flavor_text.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/item_flag_map.csv",
                 "POKEAPI"
             ]
             num_files = len(urls)
@@ -3817,7 +3890,7 @@ class Downloader(QObject):
                     response = requests.get(url)
                     if response.status_code == 200:
                         data = response.json()
-                        file_path = self.addon_dir / f"{url.split('/')[-1]}"
+                        file_path = self.addon_dir / "user_files" / f"{url.split('/')[-1]}"
                         with open(file_path, 'w') as json_file:
                             json.dump(data, json_file, indent=2)
                     else:
@@ -5516,6 +5589,11 @@ class TestWindow(QWidget):
         # Close the main window when the spacebar is pressed
         if event.key() == Qt.Key.Key_N and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             self.close()
+        if event.key() == Qt.Key.Key_I and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            global card_counter
+            card_counter += 100
+            new_pokemon()
+            self.display_first_encounter()
 
     def clear_layout(self, layout):
         while layout.count():
