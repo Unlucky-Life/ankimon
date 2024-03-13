@@ -387,7 +387,7 @@ badges = {
   "15": "Hatched a Pokemon Egg",
   "16": "Evolved a Pokemon !",
   "17": "Caught first Normal Pokemon",
-  "18": "changed",
+  "18": "Caught first Baby Pokemon",
   "19": "changed",
   "20": "changed",
   "21": "changed",
@@ -738,6 +738,68 @@ if learnsets_data != False:
                 attacks.append(f"{move}")
 
         return attacks
+    
+    def get_all_pokemon_moves(pokemon_name, level):
+        """
+        Args:
+            json_file_name (str): The name of the JSON file containing Pokémon learnset data.
+            pokemon_name (str): The name of the Pokémon.
+            level (int): The level at which to check for moves.
+
+        Returns:
+            list: A list of up to 4 random moves and their highest levels.
+        """
+        global learnset_path
+        # Load the JSON file
+        with open(learnset_path, 'r') as file:
+            learnsets = json.load(file)
+
+        # Normalize the Pokémon name to lowercase for consistency
+        pokemon_name = pokemon_name.lower()
+
+        # Retrieve the learnset for the specified Pokémon
+        pokemon_learnset = learnsets.get(pokemon_name, {})
+
+        # Create a dictionary to store moves and their corresponding highest levels
+        moves_at_level_and_lower = {}
+
+        # Loop through the learnset dictionary
+        for move, levels in pokemon_learnset.get('learnset', {}).items():
+            highest_level = float('-inf')  # Initialize with negative infinity
+            eligible_moves = []  # Store moves eligible for inclusion
+
+            for move_level in levels:
+                # Check if the move_level string contains 'L'
+                if 'L' in move_level:
+                    # Extract the level from the move_level string
+                    move_level_int = int(move_level.split('L')[1])
+
+                    # Check if the move can be learned at the specified level or lower
+                    if move_level_int <= level:
+                        # Update the highest_level if a higher level is found
+                        highest_level = max(highest_level, move_level_int)
+                        eligible_moves.append(move)
+
+            # Check if the eligible moves can be learned at a higher level
+            if highest_level != float('-inf'):
+                can_learn_at_higher_level = any(
+                    int(move_level.split('L')[1]) > highest_level
+                    for move_level in levels
+                    if 'L' in move_level
+                )
+                if not can_learn_at_higher_level:
+                    moves_at_level_and_lower[move] = highest_level
+
+        attacks = []
+        if moves_at_level_and_lower:
+            # Convert the dictionary into a list of tuples for random selection
+            moves_and_levels_list = list(moves_at_level_and_lower.items())
+
+            # Pick up to 4 random moves and append them to the attacks list
+            for move, highest_level in moves_and_levels_list:
+                attacks.append(f"{move}")
+
+        return attacks
 
 def pick_random_gender(pokemon_name):
     """
@@ -1012,19 +1074,6 @@ def get_pokemon_names_by_category_from_file(category_name):
     return pokemon_in_category
 
 def check_min_generate_level(pkmn_name):
-    # Update mainpokemon_evolution and handle evolution logic
-    #mainpokemon_evolution = search_pokedex(name.lower(), "evos")
-    #if mainpokemon_evolution is not None:
-    #    try:
-    #        for pokemon in mainpokemon_evolution:
-    #            mainpokemon_evolution_type = search_pokedex(pokemon.lower(), "evoType")
-    #            min_level = search_pokedex(pokemon.lower(), "evoLevel")
-    #            if mainpokemon_evolution_type is not None:
-    #                min_level = 100
-    #            return min_level
-    #    except Exception as e:
-    #        showInfo(f"An error occurred: {e}")
-    #        return None
     evoType = search_pokedex(name.lower(), "evoType")
     evoLevel = search_pokedex(name.lower(), "evoLevel")
     #showInfo(f"{evoLevel}, {evoType}")
@@ -1144,15 +1193,11 @@ if database_complete != False:
             else:
                 level = 5
                 min_level = 0
-            if min_level is None or not min_level or mainpokemon_level is None:
+            if min_level is None or not min_level or mainpokemon_level is None or not mainpokemon_level:
                 level = 5
                 min_level = 0
             if min_level < level:
-                id = search_pokedex_by_name_for_id(name, "num")
-                if id is None:
-                    return generate_random_pokemon()
-                else:
-                    id_check = check_id_ok(id)
+                id_check = check_id_ok(id)
                 if id_check:
                     pass
                 else:
@@ -1180,9 +1225,8 @@ if database_complete != False:
                 type = search_pokedex(name, "types")
                 stats = search_pokedex(name, "baseStats")
                 enemy_attacks = get_random_moves_for_pokemon(name, level)
-                # base_experience = search_pokeapi_db(name, "base_experience")
-                base_experience = 100
-                growth_rate = search_pokeapi_db(f"{name.lower()}", "growth_rate")
+                base_experience = search_pokeapi_db_by_id(id, "base_experience")
+                growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
                 if gender is None:
                     gender = pick_random_gender(name)
                 iv = {
@@ -1201,10 +1245,6 @@ if database_complete != False:
                     "spd": 0,
                     "spe": 0
                 }
-                # battle_stats = {}
-                # for d in [stats, iv, ev]:
-                #    for key, value in d.items():
-                #        battle_stats[key] = value
                 battle_stats = stats
                 battle_status = "fighting"
                 try:
@@ -1214,7 +1254,7 @@ if database_complete != False:
                 hp = calculate_hp(hp_stat, level, ev, iv)
                 max_hp = hp
                 global ev_yield
-                ev_yield = search_pokeapi_db(f"{name.lower()}", "effort_values")
+                ev_yield = search_pokeapi_db_by_id(id, "effort_values")
                 return name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats
             else:
                 return generate_random_pokemon()  # Return the result of the recursive call
@@ -1382,12 +1422,17 @@ def save_caught_pokemon(nickname):
             if check is False:
                 achievements = receive_badge(17,achievements)
                 test_window.display_badge(17)
+        elif pokemon_species == "Baby":
+            check = check_for_badge(achievements,18)
+            if check is False:
+                achievements = receive_badge(18,achievements)
+                test_window.display_badge(18)
         elif pokemon_species == "Ultra":
             check = check_for_badge(achievements,8)
             if check is False:
                 achievements = receive_badge(8,achievements)
                 test_window.display_badge(8)
-        elif pokemon_species == "Ultra":
+        elif pokemon_species == "Legendary":
             check = check_for_badge(achievements,9)
             if check is False:
                 achievements = receive_badge(9,achievements)
@@ -2026,7 +2071,20 @@ def search_pokeapi_db(pokemon_name,variable):
                     var = pokemon_data.get(variable, None)
                     return var
             else:
-                return []
+                return None
+
+def search_pokeapi_db_by_id(pkmn_id,variable):
+    global addon_dir
+    pokeapi_db_path = addon_dir / "pokeapi_db.json"
+    with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
+            pokedex_data = json.load(json_file)
+            for pokemon_data in pokedex_data:
+                if pokemon_data["id"] == pkmn_id:
+                    var = pokemon_data.get(variable, None)
+                    return var
+            else:
+                return None
+            
 def mainpokemon_data():
     global mainpkmn
     global mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender
@@ -2828,7 +2886,7 @@ def ShowPokemonCollection():
                     pokemon_growth_rate = pokemon['growth_rate']
                     pokemon_ev = pokemon['ev']
                     pokemon_iv = pokemon['iv']
-                    pokemon_description = search_pokeapi_db(f"{pokemon_name.lower()}", "description")
+                    pokemon_description = search_pokeapi_db_by_id(pokemon_id, "description")
                     pokemon_imagefile = f"{pokemon_id}.png"
                     pixmap.load(str(frontdefault / pokemon_imagefile))
 
@@ -3156,10 +3214,15 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         #attackslayout.addWidget(attacks_label)
         attacks_details_button = QPushButton("Attack Details") #add Details to Moves
         qconnect(attacks_details_button.clicked, lambda: attack_details_window(attacks))
+        remember_attacks_details_button = QPushButton("Remember Attacks") #add Details to Moves
+        all_attacks = get_all_pokemon_moves(name, level)
+        qconnect(remember_attacks_details_button.clicked, lambda: remember_attack_details_window(id, attacks, all_attacks))
+        
         #free_pokemon_button = QPushButton("Release Pokemon") #add Details to Moves unneeded button
         attacks_label.setFixedHeight(150)
         TopR_layout_Box.addWidget(attacks_label)
         TopR_layout_Box.addWidget(attacks_details_button)
+        TopR_layout_Box.addWidget(remember_attacks_details_button)
         first_layout.addLayout(TopL_layout_Box)
         first_layout.addLayout(TopR_layout_Box)
         layout.addLayout(first_layout)
@@ -3300,6 +3363,162 @@ def attack_details_window(attacks):
     window.setLayout(layout)
     window.exec()
 
+def remember_attack_details_window(id, attack_set, all_attacks):
+    window = QDialog()
+    layout = QHBoxLayout()
+    # HTML content
+    html_content = """
+    <style>
+      .pokemon-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        margin-bottom: 20px;
+      }
+
+      .pokemon-table th, .pokemon-table td {
+        padding: 8px;
+        border: 1px solid #ddd; /* light grey border */
+      }
+
+      .pokemon-table th {
+        background-color: #040D12;
+      }
+
+      .pokemon-table tr:nth-child(even) {background-color: #f9f9f9;}
+
+      .pokemon-table .move-name {
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .pokemon-table .basePower {
+        font-weight: bold;
+        text-align: center;
+      }
+
+      .pokemon-table .no-accuracy {
+        text-align: center;
+        color: yellow;
+      }
+    </style>
+    </head>
+    <body>
+
+    <table class="pokemon-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>Power</th>
+          <th>Accuracy</th>
+          <th>PP</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+    """
+    # Loop through the list of attacks and add them to the HTML content
+    for attack in all_attacks:
+        move = find_details_move(attack)
+
+        html_content += f"""
+        <tr>
+          <td class="move-name">{move['name']}</td>
+          <td><img src="{type_icon_path(move['type'])}" alt="{move['type']}"/></td>
+          <td><img src="{move_category_path(move['category'].lower())}" alt="{move['category']}"/></td>
+          <td class="basePower">{move['basePower']}</td>
+          <td class="no-accuracy">{move['accuracy']}</td>
+          <td>{move['pp']}</td>
+          <td>{move['shortDesc']}</td>
+        </tr>
+        """
+
+    html_content += """
+      </tbody>
+    </table>
+
+    </body>
+    </html>
+    """
+
+    # Create a QLabel to display the HTML content
+    label = QLabel(html_content)
+    label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align the label's content to the top
+    label.setScaledContents(True)  # Enable scaling of the pixmap
+    attack_layout = QVBoxLayout()
+    for attack in all_attacks:
+        move = find_details_move(attack)
+        remember_attack_button = QPushButton(f"Remember {attack}") #add Details to Moves
+        remember_attack_button.clicked.connect(lambda checked, a=attack: remember_attack(id, attack_set, a))
+        attack_layout.addWidget(remember_attack_button)
+    attack_layout_widget = QWidget()
+    attack_layout_widget.setLayout(attack_layout)
+    layout.addWidget(label)
+    layout.addWidget(attack_layout_widget)
+    window.setLayout(layout)
+    window.exec()
+
+def remember_attack(id, attacks, new_attack):
+    global mainpokemon_path
+    if mainpokemon_path.is_file():
+        with open(mainpokemon_path, "r") as json_file:
+            main_pokemon_data = json.load(json_file)
+        for mainpkmndata in main_pokemon_data:
+            if mainpkmndata["id"] == id:
+                mainpokemon_name = mainpkmndata["name"]
+                attacks = mainpkmndata["attacks"]
+                if new_attack:
+                    msg = ""
+                    msg += f"Your {mainpkmndata['name'].capitalize()} can learn a new attack !"
+                    if len(attacks) < 4:
+                            attacks.append(new_attack)
+                            msg += f"\n Your {mainpkmndata['name'].capitalize()} has learned {new_attack} !"
+                            showInfo(f"{msg}")
+                    else:
+                            dialog = AttackDialog(attacks, new_attack)
+                            if dialog.exec() == QDialog.DialogCode.Accepted:
+                                selected_attack = dialog.selected_attack
+                                index_to_replace = None
+                                for index, attack in enumerate(attacks):
+                                    if attack == selected_attack:
+                                        index_to_replace = index
+                                        pass
+                                    else:
+                                        pass
+                                # If the attack is found, replace it with 'new_attack'
+                                if index_to_replace is not None:
+                                    attacks[index_to_replace] = new_attack
+                                    showInfo(f"Replaced '{selected_attack}' with '{new_attack}'")
+                                else:
+                                    # Handle the case where the user cancels the dialog
+                                    showInfo(f"{new_attack} will be discarded.")
+                mainpkmndata["attacks"] = attacks
+                break
+            else:
+                showInfo("Please Select This Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
+        mypkmndata = mainpkmndata
+        mainpkmndata = [mainpkmndata]
+        # Save the caught Pokémon's data to a JSON file
+        with open(str(mainpokemon_path), "w") as json_file:
+            json.dump(mainpkmndata, json_file, indent=2)
+        
+        with open(str(mypokemon_path), "r") as output_file:
+            mypokemondata = json.load(output_file)
+
+        # Find and replace the specified Pokémon's data in mypokemondata
+        for index, pokemon_data in enumerate(mypokemondata):
+            if pokemon_data["name"] == mainpokemon_name:
+                mypokemondata[index] = mypkmndata
+                break
+        # Save the modified data to the output JSON file
+        with open(str(mypokemon_path), "w") as output_file:
+            json.dump(mypokemondata, output_file, indent=2)
+
+    else:
+        showWarning("Missing Mainpokemon Data !")
+    
 def type_colors(type):
     type_colors = {
         "Normal": "#A8A77A",
@@ -3323,6 +3542,7 @@ def type_colors(type):
     }
 
     return type_colors.get(type, "Unknown")
+
 def type_icon_path(type):
     global addon_dir
     png_file = f"{type}.png"
@@ -4761,9 +4981,9 @@ def choose_pokemon(starter_name):
     type = search_pokedex(starter_name, "types")
     name = search_pokedex(starter_name, "name")
     generation_file = "pokeapi_db.json"
-    growth_rate = search_pokeapi_db(f"{name.lower()}", "growth_rate")
-    base_experience = search_pokeapi_db(f"{name.lower()}", "base_experience")
-    description= search_pokeapi_db(f"{name.lower()}", "description")
+    growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
+    base_experience = search_pokeapi_db_by_id(id, "base_experience")
+    description= search_pokeapi_db_by_id(id, "description")
     level = 5
     attacks = get_random_moves_for_pokemon(starter_name, level)
     stats["xp"] = 0
@@ -5018,10 +5238,26 @@ class TestWindow(QWidget):
     def init_ui(self):
         global test
         global addon_dir
-        basic_layout = QVBoxLayout()
-        self.setLayout(basic_layout)
+        layout = QVBoxLayout()
+        # Main window layout
+        global addon_dir
+        layout = QVBoxLayout()
+        image_file = f"ankimon_logo.png"
+        image_path = str(addon_dir) + "/" + image_file
+        image_label = QLabel()
+        pixmap = QPixmap()
+        pixmap.load(str(image_path))
+        if pixmap.isNull():
+            showWarning("Failed to load image")
+        else:
+            image_label.setPixmap(pixmap)
+        scaled_pixmap = pixmap.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio)
+        image_label.setPixmap(scaled_pixmap)
+        layout.addWidget(image_label)
+        first_start = True
+        self.setLayout(layout)
         # Set window
-        self.setWindowTitle('Pokemon Window')
+        self.setWindowTitle('Ankimon Window')
         # Display the Pokémon image
 
     def open_dynamic_window(self):
@@ -5038,23 +5274,12 @@ class TestWindow(QWidget):
     def display_first_start_up(self):
         global first_start, pkmn_window
         if first_start == False:
-            # Main window layout
-            global addon_dir
-            layout = QVBoxLayout()
-            image_file = f"ankimon_logo.png"
-            image_path = str(addon_dir) + "/" + image_file
-            image_label = QLabel()
-            pixmap = QPixmap()
-            pixmap.load(str(image_path))
-            if pixmap.isNull():
-                showWarning("Failed to load image")
-            else:
-                image_label.setPixmap(pixmap)
-            scaled_pixmap = pixmap.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio)
-            image_label.setPixmap(scaled_pixmap)
-            layout.addWidget(image_label)
-            first_start = True
-            self.setLayout(layout)
+            from aqt import mw
+            mw_x = mw.x()
+            mw_y = mw.y()
+            width = mw.width()
+            height = mw.height()
+            self.setGeometry(mw_x, mw_y + height/4, 256, 256 )
             self.show()
         global pkmn_window
         pkmn_window = True
@@ -5536,11 +5761,15 @@ class TestWindow(QWidget):
         #self.setFixedHeight(371)
         layout = self.layout()
         battle_widget = self.pokemon_display_first_encounter()
+        battle_widget.setScaledContents(True) #scalable ankimon window
         layout.addWidget(battle_widget)
         self.setStyleSheet("background-color: rgb(44,44,44);")
         self.setLayout(layout)
-        self.setMaximumWidth(556)
-        self.setMaximumHeight(300)
+        #self.setMinimumWidth(556)
+        #self.setMinimumHeight(300)
+        akw_y = self.y()
+        akw_x = self.x()
+        self.setGeometry(akw_x, akw_y, 556, 300)
 
     def display_item(self):
         Receive_Window = QDialog(mw)
@@ -5589,9 +5818,7 @@ class TestWindow(QWidget):
         # Close the main window when the spacebar is pressed
         if event.key() == Qt.Key.Key_N and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             self.close()
-        if event.key() == Qt.Key.Key_I and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-            global card_counter
-            card_counter += 100
+        if event.key() == Qt.Key.Key_R and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             new_pokemon()
             self.display_first_encounter()
 
@@ -6507,3 +6734,26 @@ mw.pokemenu.addAction(test_action16)
     #https://goo.gl/uhAxsg
     #https://www.reddit.com/r/PokemonROMhacks/comments/9xgl7j/pokemon_sound_effects_collection_over_3200_sfx/
     #https://archive.org/details/pokemon-dp-sound-library-disc-2_202205
+
+"""
+Future Code Notes
+
+       mw_x = mw.x()
+        mw_y = mw.y()
+        width = mw.width()
+        height = mw.height()
+        akw_height = self.height()
+        akw_width = self.width()
+
+        amw_center = True
+        if amw_center is True:
+            if height > akw_height:
+                y = int(mw_y + ((height/2) - (akw_height/2)))
+            else:
+                y = int(mw_y + ((akw_height/2) - (height/2)))
+        amw_left = True
+        amw_right = False
+        if amw_right is True:
+            x = int(mw_x + width)
+        elif amw_left is True:
+            x = int(mw_x-(akw_width))"""
