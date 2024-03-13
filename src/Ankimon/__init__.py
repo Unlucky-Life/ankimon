@@ -3495,27 +3495,25 @@ def remember_attack(id, attacks, new_attack):
                                     # Handle the case where the user cancels the dialog
                                     showInfo(f"{new_attack} will be discarded.")
                 mainpkmndata["attacks"] = attacks
-                break
+                mypkmndata = mainpkmndata
+                mainpkmndata = [mainpkmndata]
+                # Save the caught Pokémon's data to a JSON file
+                with open(str(mainpokemon_path), "w") as json_file:
+                    json.dump(mainpkmndata, json_file, indent=2)
+                
+                with open(str(mypokemon_path), "r") as output_file:
+                    mypokemondata = json.load(output_file)
+
+                # Find and replace the specified Pokémon's data in mypokemondata
+                for index, pokemon_data in enumerate(mypokemondata):
+                    if pokemon_data["name"] == mainpokemon_name:
+                        mypokemondata[index] = mypkmndata
+                        break
+                # Save the modified data to the output JSON file
+                with open(str(mypokemon_path), "w") as output_file:
+                    json.dump(mypokemondata, output_file, indent=2)
             else:
-                showInfo("Please Select This Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
-        mypkmndata = mainpkmndata
-        mainpkmndata = [mainpkmndata]
-        # Save the caught Pokémon's data to a JSON file
-        with open(str(mainpokemon_path), "w") as json_file:
-            json.dump(mainpkmndata, json_file, indent=2)
-        
-        with open(str(mypokemon_path), "r") as output_file:
-            mypokemondata = json.load(output_file)
-
-        # Find and replace the specified Pokémon's data in mypokemondata
-        for index, pokemon_data in enumerate(mypokemondata):
-            if pokemon_data["name"] == mainpokemon_name:
-                mypokemondata[index] = mypkmndata
-                break
-        # Save the modified data to the output JSON file
-        with open(str(mypokemon_path), "w") as output_file:
-            json.dump(mypokemondata, output_file, indent=2)
-
+                showInfo("Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
     else:
         showWarning("Missing Mainpokemon Data !")
     
@@ -3969,6 +3967,8 @@ def find_experience_for_level(group_growth_rate, level):
     if group_growth_rate == "medium":
         group_growth_rate = "medium-fast"
     elif group_growth_rate == "slow-then-very-fast":
+        group_growth_rate = "fluctuating"
+    elif group_growth_rate == "fast-then-very-slow":
         group_growth_rate = "fluctuating"
     global next_lvl_file_path
     next_lvl_xp_file = 'ExpPokemonAddon.csv'
