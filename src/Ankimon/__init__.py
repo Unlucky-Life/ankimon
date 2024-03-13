@@ -739,7 +739,7 @@ if learnsets_data != False:
 
         return attacks
     
-    def get_all_pokemon_moves(pokemon_name, level):
+    def get_all_pokemon_moves(pk_name, level):
         """
         Args:
             json_file_name (str): The name of the JSON file containing Pokémon learnset data.
@@ -755,10 +755,10 @@ if learnsets_data != False:
             learnsets = json.load(file)
 
         # Normalize the Pokémon name to lowercase for consistency
-        pokemon_name = pokemon_name.lower()
+        pk_name = pk_name.lower()
 
         # Retrieve the learnset for the specified Pokémon
-        pokemon_learnset = learnsets.get(pokemon_name, {})
+        pokemon_learnset = learnsets.get(pk_name, {})
 
         # Create a dictionary to store moves and their corresponding highest levels
         moves_at_level_and_lower = {}
@@ -1224,7 +1224,12 @@ if database_complete != False:
                 #    ability = abilities.get("H", None)
                 type = search_pokedex(name, "types")
                 stats = search_pokedex(name, "baseStats")
-                enemy_attacks = get_random_moves_for_pokemon(name, level)
+                enemy_attacks_list = get_all_pokemon_moves(name, level)
+                enemy_attacks = []
+                if len(enemy_attacks_list) <= 4:
+                    enemy_attacks = enemy_attacks_list
+                else:
+                    enemy_attacks = random.sample(enemy_attacks_list, 4)
                 base_experience = search_pokeapi_db_by_id(id, "base_experience")
                 growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
                 if gender is None:
@@ -2038,7 +2043,7 @@ def get_pokemon_diff_lang_name(pokemon_id):
             species_id, lang_id, name, genus = row
             if int(species_id) == pokemon_id and int(lang_id) == language:
                 return name
-    return None  # Return None if no match is found
+    return "No Translation in this language"  # Return None if no match is found
 
 def get_pokemon_descriptions(species_id):
     global language
