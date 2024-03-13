@@ -5281,6 +5281,7 @@ class TestWindow(QWidget):
             height = mw.height()
             self.setGeometry(mw_x, mw_y + height/4, 256, 256 )
             self.show()
+            first_start = True
         global pkmn_window
         pkmn_window = True
 
@@ -5765,11 +5766,8 @@ class TestWindow(QWidget):
         layout.addWidget(battle_widget)
         self.setStyleSheet("background-color: rgb(44,44,44);")
         self.setLayout(layout)
-        #self.setMinimumWidth(556)
-        #self.setMinimumHeight(300)
-        akw_y = self.y()
-        akw_x = self.x()
-        self.setGeometry(akw_x, akw_y, 556, 300)
+        self.setMinimumWidth(556)
+        self.setMinimumHeight(300)
 
     def display_item(self):
         Receive_Window = QDialog(mw)
