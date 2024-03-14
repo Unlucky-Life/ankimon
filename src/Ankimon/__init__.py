@@ -940,6 +940,22 @@ def split_string_by_length(input_string, max_length):
 
     yield ' '.join(current_line)
 
+def split_japanese_string_by_length(input_string, max_length):
+    max_length = 30
+    current_length = 0
+    current_line = ""
+
+    for char in input_string:
+        if current_length + 1 <= max_length:
+            current_line += char
+            current_length += 1
+        else:
+            yield current_line
+            current_line = char
+            current_length = 1
+
+    if current_line:  # Ensure the last line is also yielded
+        yield current_line
 
 def resize_pixmap_img(pixmap, max_width):
     original_width = pixmap.width()
@@ -3051,7 +3067,7 @@ def rename_pkmn(nickname, pkmn_name):
         showWarning(f"An error occured: {e}")
 
 def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname):
-    global frontdefault, type_style_file
+    global frontdefault, type_style_file, language
     # Create the dialog
     try:
         lang_name = get_pokemon_diff_lang_name(int(id)).capitalize()
@@ -3107,7 +3123,10 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         else:
             capitalized_name = f"{nickname} ({lang_name.capitalize()})"
         # Create level text
-        result = list(split_string_by_length(description, 65))
+        if language == 11 or language == 12 or language == 4 or language == 3 or language == 2 or language == 1:
+            result = list(split_string_by_length(description, 30))
+        else:
+            result = list(split_string_by_length(description, 65))
         description_formated = '\n'.join(result)
         description_txt = f"Description: \n {description_formated}"
         #curr_hp_txt = (f"Current Hp:{current_hp}")
