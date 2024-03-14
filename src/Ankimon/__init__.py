@@ -73,9 +73,9 @@ def check_file_exists(folder, filename):
         return False
 
 # Assign Pokemon Image folder directory name
-pkmnimgfolder = addon_dir / "pokemon_sprites"
-backdefault = addon_dir / "pokemon_sprites" / "back_default"
-frontdefault = addon_dir / "pokemon_sprites" / "front_default"
+pkmnimgfolder = addon_dir / "user_files" / "sprites"
+backdefault = addon_dir / "user_files" / "sprites" / "back_default"
+frontdefault = addon_dir / "user_files" / "sprites" / "front_default"
 #Assign saved Pokemon Directory
 mypokemon_path = addon_dir / "user_files" / "mypokemon.json"
 mainpokemon_path = addon_dir / "user_files" / "mainpokemon.json"
@@ -86,23 +86,20 @@ battle_ui_path_without_dialog = addon_dir / "pkmnbattlescene - UI_transp.png - w
 type_style_file = addon_dir / "types.json"
 allxp_file_path = addon_dir / "TotalExpPokemonAddon.csv"
 next_lvl_file_path = addon_dir / "ExpPokemonAddon.csv"
-berries_path = addon_dir / "berries"
+berries_path = addon_dir / "user_files" / "sprites" / "berries"
 background_dialog_image_path  = addon_dir / "background_dialog_image.png"
-attack_animation_path = addon_dir / "grass_bind_animation.gif"
-min_level_file_path = addon_dir / "evolution_info_sorted.json"
 pokedex_image_path = addon_dir / "pokedex_template.jpg"
 evolve_image_path = addon_dir / "evo_temp.jpg"
-learnset_path = addon_dir / "learnsets.json"
-pokedex_path = addon_dir / "pokedex.json"
-all_species_path = addon_dir / "all_species.json"
-id_species_path = addon_dir / "species_with_ids.json"
-species_path = addon_dir / "species.json"
+learnset_path = addon_dir / "user_files" / "data_files" / "learnsets.json"
+pokedex_path = addon_dir / "user_files" / "data_files" / "pokedex.json"
+moves_file_path = addon_dir / "user_files" / "data_files" / "moves.json"
+all_species_path = addon_dir / "user_files" / "data_files" /"all_species.json"
 items_path = addon_dir / "pokemon_sprites" / "items"
 badges_path = addon_dir / "pokemon_sprites" / "badges"
 itembag_path = addon_dir / "user_files" / "items.json"
 badgebag_path = addon_dir / "user_files" / "badges.json"
-pokenames_lang_path = addon_dir / "user_files" / "pokemon_species_names.csv"
-pokedesc_lang_path = addon_dir / "user_files" / "pokemon_species_flavor_text.csv"
+pokenames_lang_path = addon_dir / "user_files" / "data_files" / "pokemon_species_names.csv"
+pokedesc_lang_path = addon_dir / "user_files" / "data_files" / "pokemon_species_flavor_text.csv"
 
 #pokemon species id files
 pokemon_species_normal_path = addon_dir / "user_files" / "pkmn_data" / "normal.json"
@@ -121,7 +118,6 @@ mainpokemon_hp = 100
 #test mainpokemon
 #battlescene_file = "pkmnbattlescene.png"
 pokemon_encounter = 0
-moves_file_path = addon_dir / "moves.json"
 effectiveness_chart_file_path = addon_dir / "eff_chart.json"
 
 # check for sprites, data
@@ -1104,30 +1100,6 @@ def check_min_generate_level(pkmn_name):
     else:
         min_level = 1
         return min_level
-
-def check_evo_level(pkmn_name):
-    global min_level_file_path
-    try:
-        with open(min_level_file_path, 'r') as file:
-            data = json.load(file)
-
-        pokemon_info = data.get(pkmn_name.lower())
-
-        if pokemon_info:
-            evolution_level = pokemon_info.get('evolution_level')
-            evolution_type = pokemon_info.get('evolution_type')
-            evolution_condition = pokemon_info.get('evolution_condition')
-            # Check if the evolution level is a number or "None"
-            if evolution_level == "None":
-                evolution_level = 0
-        else:
-            evolution_level = 0
-        return evolution_level
-            #showInfo(f"Pokemon '{pkmn_name}' not found in the file.")
-            #return None
-    except Exception as e:
-        showInfo(f"An error occurred: {e}")
-        return None
 
 def customCloseTooltip(tooltipLabel):
 	if tooltipLabel:
@@ -4109,7 +4081,6 @@ class Downloader(QObject):
                 "base_experience": pokemon_data["base_experience"],
                 "height": pokemon_data["height"],
                 "weight": pokemon_data["weight"],
-                "description": species_data["flavor_text_entries"][0]["flavor_text"].replace("\n", " "),
                 "growth_rate": species_data["growth_rate"]["name"]
             }
             self.pokedex.append(entry)
@@ -4120,13 +4091,14 @@ class Downloader(QObject):
                 "https://play.pokemonshowdown.com/data/learnsets.json",
                 "https://play.pokemonshowdown.com/data/pokedex.json",
                 "https://play.pokemonshowdown.com/data/moves.json",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/item_names.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_flavor_text.csv"
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/item_flavor_text.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/move_flavor_text.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/item_flag_map.csv",
                 "POKEAPI"
+            ]
+            csv_url = [
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/item_names.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_flavor_text.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/move_flavor_text.csv",
+                "https://github.com/PokeAPI/pokeapi/blob/master/data/v2/csv/pokemon.csv"
             ]
             num_files = len(urls)
             for i, url in enumerate(urls, start=1):
@@ -4134,7 +4106,7 @@ class Downloader(QObject):
                     response = requests.get(url)
                     if response.status_code == 200:
                         data = response.json()
-                        file_path = self.addon_dir / "user_files" / f"{url.split('/')[-1]}"
+                        file_path = self.addon_dir / "user_files" / "data_files" / f"{url.split('/')[-1]}"
                         with open(file_path, 'w') as json_file:
                             json.dump(data, json_file, indent=2)
                     else:
@@ -4148,7 +4120,16 @@ class Downloader(QObject):
                         self.create_pokedex(pokemon_id)
                         progress = int((pokemon_id / id) * 100)
                         self.progress_updated.emit(progress)
-                    self.save_to_json(self.pokedex, self.addon_dir / "pokeapi_db.json")
+                    self.save_to_json(self.pokedex, self.addon_dir / "user_files" / "data_files" / "pokeapi_db.json")
+            num_files = len(csv_url)
+            for i, url in enumerate(csv_url, start=1):
+                with requests.get(url, stream=True) as r:
+                    file_path = self.addon_dir / "user_files" / "data_files" / f"{url.split('/')[-1]}"
+                    with open(file_path, 'wb') as f:
+                        for chunk in r.iter_content(chunk_size=8192): 
+                            f.write(chunk)
+                progress = int((i / num_files) * 100)
+                self.progress_updated.emit(progress)
             self.download_complete.emit()
         except Exception as e:
             showWarning(f"An error occurred: {e}")  # Replace with a signal if needed
