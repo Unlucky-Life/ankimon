@@ -1666,7 +1666,7 @@ def evolve_pokemon(pkmn_name):
                             pokemon["current_hp"] = int(hp)
                             #pokemon["gender"] = pick_random_gender(evoName.lower()) dont replace gender
                             pokemon["growth_rate"] = search_pokeapi_db_by_id(evoId,"growth_rate")
-                            pokemon["base_experience"] = search_pokeapi_db_by_id(evoId,"growth_rate")
+                            pokemon["base_experience"] = search_pokeapi_db_by_id(evoId,"base_experience")
                             #pokemon["growth_rate"] = search_pokeapi_db(evoName.lower(), "growth_rate")
                             #pokemon["base_experience"] = search_pokeapi_db(evoName.lower(), "base_experience")
                             abilities = search_pokedex(evoName.lower(), "abilities")
