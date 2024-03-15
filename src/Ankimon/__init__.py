@@ -88,18 +88,17 @@ battlescene_path = addon_dir / "battle_scenes"
 battlescene_path_without_dialog = addon_dir / "battle_scenes_without_dialog"
 battle_ui_path = addon_dir / "pkmnbattlescene - UI_transp"
 battle_ui_path_without_dialog = addon_dir / "pkmnbattlescene - UI_transp.png - without dialog.png"
-type_style_file = addon_dir / "types.json"
-allxp_file_path = addon_dir / "TotalExpPokemonAddon.csv"
+type_style_file = addon_dir / "addon_files" / "types.json"
 next_lvl_file_path = addon_dir / "ExpPokemonAddon.csv"
 berries_path = addon_dir / "user_files" / "sprites" / "berries"
 background_dialog_image_path  = addon_dir / "background_dialog_image.png"
-pokedex_image_path = addon_dir / "pokedex_template.jpg"
-evolve_image_path = addon_dir / "evo_temp.jpg"
+pokedex_image_path = addon_dir / "addon_sprites" / "pokedex_template.jpg"
+evolve_image_path = addon_dir / "addon_sprites" / "evo_temp.jpg"
 learnset_path = addon_dir / "user_files" / "data_files" / "learnsets.json"
 pokedex_path = addon_dir / "user_files" / "data_files" / "pokedex.json"
 moves_file_path = addon_dir / "user_files" / "data_files" / "moves.json"
-items_path = addon_dir / "pokemon_sprites" / "items"
-badges_path = addon_dir / "pokemon_sprites" / "badges"
+items_path = addon_dir / "user_files" / "sprites" / "items"
+badges_path = addon_dir / "user_files" / "sprites" / "badges"
 itembag_path = addon_dir / "user_files" / "items.json"
 badgebag_path = addon_dir / "user_files" / "badges.json"
 pokenames_lang_path = addon_dir / "user_files" / "data_files" / "pokemon_species_names.csv"
@@ -128,20 +127,22 @@ pokemon_encounter = 0
 effectiveness_chart_file_path = addon_dir / "eff_chart.json"
 
 # check for sprites, data
+sound_files = check_folders_exist(pkmnimgfolder, "sounds")
 back_sprites = check_folders_exist(pkmnimgfolder, "back_default")
+back_default_gif = check_folders_exist(pkmnimgfolder, "back_default_gif")
 front_sprites = check_folders_exist(pkmnimgfolder, "front_default")
+front_default_gif = check_folders_exist(pkmnimgfolder, "front_default_gif")
 item_sprites = check_folders_exist(pkmnimgfolder, "items")
 badges_sprites = check_folders_exist(pkmnimgfolder, "badges")
 berries_sprites = check_folders_exist(addon_dir, "berries")
 poke_api_data = check_file_exists(user_path_data, "pokeapi_db.json")
 pokedex_data = check_file_exists(user_path_data, "pokedex.json")
 learnsets_data = check_file_exists(user_path_data, "learnsets.json")
+poke_api_data = check_file_exists(user_path_data, "pokeapi_db.json")
+pokedex_data = check_file_exists(user_path_data, "pokedex.json")
+moves_data = check_file_exists(user_path_data, "moves.json")
 
-if back_sprites and front_sprites and item_sprites and badges_sprites == True:
-    sprites_complete = True
-else:
-    sprites_complete = False
-if pokedex_data and learnsets_data == True:
+if pokedex_data and learnsets_data and moves_data and back_sprites and front_sprites and front_default_gif and back_default_gif and item_sprites and badges_sprites  == True:
     database_complete = True
 else:
     database_complete = False
@@ -150,10 +151,6 @@ class CheckFiles(QDialog):
     def __init__(self):
         super().__init__()
         check_files_message = "Ankimon Files:"
-        if sprites_complete != True:
-            check_files_message += " \n Sprite Files incomplete. \n  Please go to Ankimon => 'Download Sprite Files' to download the needed files"
-        if item_sprites and badges_sprites != True:
-            check_files_message += " \n Item and Badges Sprite Files incomplete. \n  Please go to Ankimon => 'Download Sounds, Badges and Item Sprites' to download the needed files"
         if database_complete != True:
             check_files_message += " \n File Collection incomplete. \n  Please go to Ankimon => 'Download Database Files' to download the needed files"
         check_files_message += "\n Once all files have been downloaded: Restart Anki"
@@ -174,8 +171,6 @@ class CheckFiles(QDialog):
 
 dialog = CheckFiles()
 if database_complete != True:
-    dialog.show()
-elif sprites_complete != True:
     dialog.show()
 
 window = None
@@ -1006,20 +1001,6 @@ if item_sprites != False:
         #distutils.dir_util.copy_tree(str(fromdir), str(todir))
 
 caught_pokemon = {} #pokemon not caught
-
-def get_pokemon_names_by_category_from_file(category_name):
-    global all_species_path
-    # Load the JSON data from the file
-    with open(all_species_path, 'r') as file:
-        pokemon_data = json.load(file)
-    # Convert the input to lowercase to match the keys in our JSON data
-    category_name = category_name.lower()
-    # Filter the Pokémon data to only include those in the given category
-    pokemon_in_category = [
-        name for name, details in pokemon_data.items()
-        if details['Species'].lower() == category_name
-    ]
-    return pokemon_in_category
 
 def check_min_generate_level(pkmn_name):
     evoType = search_pokedex(name.lower(), "evoType")
@@ -2053,7 +2034,7 @@ def mainpokemon_data():
     except:
             pass
 #get main pokemon details:
-if database_complete and sprites_complete != False:
+if database_complete != False:
     try:
         mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender = mainpokemon_data()
         starter = True
@@ -4268,86 +4249,6 @@ def pokeapi_db_downloader():
     dlg = LoadingDialog(addon_dir)
     dlg.exec()
 
-def show_agreement_and_downloadspritespokeshowdown():
-    # Show the agreement dialog
-    dialog = AgreementDialog()
-    if dialog.exec() == QDialog.DialogCode.Accepted:
-        #pyqt6.6.1 difference
-        # User agreed, proceed with download
-        download_gifsprites()
-
-class SpriteGifDownloader(QThread):
-    progress_updated = pyqtSignal(int)
-    download_complete = pyqtSignal()
-    def __init__(self, sprites_path, id_to):
-        super().__init__()
-        self.sprites_path = sprites_path
-        self.id_to = id_to
-        self.front_dir = os.path.join(self.sprites_path, "front_default_gif")
-        self.back_dir = os.path.join(self.sprites_path, "back_default_gif")
-        os.makedirs(self.front_dir, exist_ok=True)
-        os.makedirs(self.back_dir, exist_ok=True)
-
-    def run(self):
-        base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
-        total_downloaded = 0
-        for pokemon_id in range(1, self.id_to + 1):
-            for sprite_type in ["front_showdown", "back_showdown"]:
-                front_sprite_url = f"{base_url}other/showdown/{pokemon_id}.gif"
-                response = requests.get(front_sprite_url)
-                if response.status_code == 200:
-                    with open(os.path.join(self.front_dir, f"{pokemon_id}.gif"), 'wb') as file:
-                        file.write(response.content)
-                total_downloaded += 1
-                self.progress_updated.emit(total_downloaded)
-
-                # Download back sprite
-                back_sprite_url = f"{base_url}other/showdown/back/{pokemon_id}.gif"
-                response = requests.get(back_sprite_url)
-                if response.status_code == 200:
-                    with open(os.path.join(self.back_dir, f"{pokemon_id}.gif"), 'wb') as file:
-                        file.write(response.content)
-                total_downloaded += 1
-                self.progress_updated.emit(total_downloaded)
-        self.download_complete.emit()
-
-def download_gifsprites():
-    global addon_dir
-    global pkmnimgfolder
-    # (Your existing setup code)
-    sprites_path = str(pkmnimgfolder)
-    id_to = 2034
-    total_images_expected = id_to * 2
-    max_id = 1017
-    max_total_images_expected = id_to * 2
-
-    def show_loading_window():
-        window = QDialog()
-        window.setWindowTitle("Loading Images")
-        window.label = QLabel("Loading Images... \n This may take several minutes", window)
-        window.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        window.progress = QProgressBar(window)
-        window.progress.setRange(0, total_images_expected)
-        layout = QVBoxLayout()
-        layout.addWidget(window.label)
-        layout.addWidget(window.progress)
-        window.setLayout(layout)
-
-        def update_progress(value):
-            window.progress.setValue(value)
-
-        def on_download_complete():
-            window.label.setText("All Images have been downloaded. \n Please close this window now and once all needed files have been installed \n => Restart Anki.")
-
-        sprite_downloader = SpriteGifDownloader(sprites_path, id_to)
-        sprite_downloader.progress_updated.connect(update_progress)
-        sprite_downloader.download_complete.connect(on_download_complete)
-        sprite_downloader.start()
-
-        window.exec()
-
-    show_loading_window()
-
 class AgreementDialog(QDialog):
     def __init__(self):
         super().__init__()
@@ -4394,7 +4295,7 @@ Check out https://pokeapi.co/docs/v2#fairuse and https://github.com/smogon/pokem
 
 life_bar_injected = False
 
-if sprites_complete and database_complete != False:
+if database_complete != False:
     def reviewer_reset_life_bar_inject():
         global life_bar_injected
         life_bar_injected = False
@@ -5881,7 +5782,7 @@ class IDTableWidget(QWidget):
     def show_gen_chart(self):
         self.show()
 
-if sprites_complete and database_complete!= False:
+if database_complete!= False:
     if mypokemon_path.is_file() is False:
         starter_window.display_starter_pokemon()
     else:
@@ -6240,7 +6141,7 @@ mw.pokemenu = QMenu('&Ankimon', mw)
 # and add it to the tools menu
 mw.form.menubar.addMenu(mw.pokemenu)
 
-if sprites_complete and database_complete != False:
+if database_complete != False:
     pokecol_action = QAction("Show Pokemon Collection", mw)
     # set it to call testFunction when it's clicked
     mw.pokemenu.addAction(pokecol_action)
@@ -6283,10 +6184,6 @@ mw.pokemenu.addAction(test_action12)
 test_action3 = QAction("Download Resources", mw)
 qconnect(test_action3.triggered, show_agreement_and_download_database)
 mw.pokemenu.addAction(test_action3)
-
-test_action4 = QAction("Download Gif PokemonShowDownSprites", mw)
-qconnect(test_action4.triggered, show_agreement_and_downloadspritespokeshowdown)
-mw.pokemenu.addAction(test_action4)
 
 test_action14 = QAction("Credits", mw)
 test_action14.triggered.connect(credits.show_window)
