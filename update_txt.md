@@ -7,6 +7,8 @@ Feature B: **Language Support for Pokémon Names and Descriptions** - Upcoming u
 
 Feature C: **Dialog Window for Ankimon News/Events/Update Infos** - The next update will introduce a new dialog window that displays the latest Ankimon news, events, and information about updates, keeping players informed about what's new.
 
+Feature D: **Can now remember old Attacks** - The next update will introduce a new feature, where Pokemons can learn their old / once forgotten moves!
+
 ### Bug Fixes:
 
 - Fix for the issue with deletion of Pokémon, Items, Badges collection files.
