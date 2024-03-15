@@ -84,12 +84,11 @@ frontdefault = addon_dir / "user_files" / "sprites" / "front_default"
 #Assign saved Pokemon Directory
 mypokemon_path = addon_dir / "user_files" / "mypokemon.json"
 mainpokemon_path = addon_dir / "user_files" / "mainpokemon.json"
-battlescene_path = addon_dir / "battle_scenes"
-battlescene_path_without_dialog = addon_dir / "battle_scenes_without_dialog"
+battlescene_path = addon_dir / "addon_sprites" / "battle_scenes"
+battlescene_path_without_dialog = addon_dir / "addon_sprites" / "battle_scenes_without_dialog"
 battle_ui_path = addon_dir / "pkmnbattlescene - UI_transp"
-battle_ui_path_without_dialog = addon_dir / "pkmnbattlescene - UI_transp.png - without dialog.png"
 type_style_file = addon_dir / "addon_files" / "types.json"
-next_lvl_file_path = addon_dir / "ExpPokemonAddon.csv"
+next_lvl_file_path = addon_dir / "addon_files" / "ExpPokemonAddon.csv"
 berries_path = addon_dir / "user_files" / "sprites" / "berries"
 background_dialog_image_path  = addon_dir / "background_dialog_image.png"
 pokedex_image_path = addon_dir / "addon_sprites" / "pokedex_template.jpg"
@@ -104,6 +103,10 @@ badgebag_path = addon_dir / "user_files" / "badges.json"
 pokenames_lang_path = addon_dir / "user_files" / "data_files" / "pokemon_species_names.csv"
 pokedesc_lang_path = addon_dir / "user_files" / "data_files" / "pokemon_species_flavor_text.csv"
 pokeapi_db_path = user_path_data / "pokeapi_db.json"
+starters_path = addon_dir / "addon_files" / "starters.json"
+eff_chart_html_path = addon_dir / "addon_files" / "eff_chart_html.html"
+effectiveness_chart_file_path = addon_dir / "addon_files" / "eff_chart.json"
+table_gen_id_html_path = addon_dir / "addon_files" / "table_gen_id.html"
 
 #pokemon species id files
 pokemon_species_normal_path = addon_dir / "user_files" / "pkmn_data" / "normal.json"
@@ -119,12 +122,13 @@ profilename = mw.pm.name
 #mediafolder = Path(mw.col.media.dir())
 font_name = "Axolotl"
 font_file = "Axolotl.ttf"
+font_path = addon_dir / "addon_files" / font_file
+
 mainpkmn = 0
 mainpokemon_hp = 100
 #test mainpokemon
 #battlescene_file = "pkmnbattlescene.png"
 pokemon_encounter = 0
-effectiveness_chart_file_path = addon_dir / "eff_chart.json"
 
 # check for sprites, data
 sound_files = check_folders_exist(pkmnimgfolder, "sounds")
@@ -152,7 +156,7 @@ class CheckFiles(QDialog):
         super().__init__()
         check_files_message = "Ankimon Files:"
         if database_complete != True:
-            check_files_message += " \n File Collection incomplete. \n  Please go to Ankimon => 'Download Database Files' to download the needed files"
+            check_files_message += " \n Resource Files incomplete. \n  Please go to Ankimon => 'Download Resources' to download the needed files"
         check_files_message += "\n Once all files have been downloaded: Restart Anki"
         # Set the window title for the dialog
         self.setWindowTitle("Ankimon Files Checker")
@@ -1806,9 +1810,7 @@ def catch_pokemon(nickname):
         showInfo("You have already caught the pokemon. Please close this window!") # Display a message when the Pokémon is caught
 
 def get_random_starter():
-    global addon_dir
-    starters_path = addon_dir / "starters.json"
-    # event if pokemon
+    global addon_dir, starters_path    # event if pokemon
     category = "Starter"
     try:
         # Reload the JSON data from the file
@@ -2042,194 +2044,6 @@ if database_complete != False:
         starter = False
     name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
     battlescene_file = random_battle_scene()
-
-def show_random_pokemon():
-    global hp, name, id, stats, level, max_hp, base_experience, ev, iv
-    global caught_pokemon
-    global pkmnimgfolder, backdefault, addon_dir
-    global caught
-    global mainpkmn, mainpokemon_path
-    global mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_ability, mainpokemon_type, mainpokemon_xp, mainpokemon_stats, mainpokemon_attacks, mainpokemon_base_experience, mainpokemon_ev, mainpokemon_iv, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate
-    global battlescene_path, battlescene_path_without_dialog, battlescene_file, battle_ui_path, battle_ui_path_without_dialog
-    global pokemon_encounter, attack_counter, merged_pixmap, window
-    attack_counter = 0
-    pokemon_encounter += 1
-    if pokemon_encounter == 1:
-        bckgimage_path = battlescene_path / battlescene_file
-    elif pokemon_encounter > 1:
-        bckgimage_path = battlescene_path_without_dialog / battlescene_file
-    # get main pokemon details:
-    mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender = mainpokemon_data()
-    caught = 0
-    # Capitalize the first letter of the Pokémon's name
-    name = name.capitalize()
-    #calculate wild pokemon max hp
-    max_hp = calculate_hp(stats["hp"], level, ev, iv)
-
-    # Create the dialog
-    window = QDialog(mw)
-    window.setWindowTitle(f"{name} appeared in the wild grass !")
-    # Create a layout for the dialog
-    layout = QVBoxLayout()
-    message_box_text = (f"{name} appeared in the wild grass !")
-    def window_show():
-        ui_path = battle_ui_path
-
-        pixmap_ui = QPixmap()
-        pixmap_ui.load(str(ui_path))
-
-        # Load the background image
-        pixmap_bckg = QPixmap()
-        pixmap_bckg.load(str(bckgimage_path))
-
-        # Display the Pokémon image
-        pkmnimage_file = f"{id}.png"
-        pkmnimage_path = frontdefault / pkmnimage_file
-        image_label = QLabel()
-        pixmap = QPixmap()
-        pixmap.load(str(pkmnimage_path))
-
-        # Display the Main Pokémon image
-        pkmnimage_file2 = f"{mainpokemon_id}.png"
-        pkmnimage_path2 = backdefault / pkmnimage_file2
-        pixmap2 = QPixmap()
-        pixmap2.load(str(pkmnimage_path2))
-
-        # Calculate the new dimensions to maintain the aspect ratio
-        max_width = 150
-        original_width = pixmap.width()
-        original_height = pixmap.height()
-        new_width = max_width
-        new_height = (original_height * max_width) // original_width
-        pixmap = pixmap.scaled(new_width, new_height)
-
-        # Calculate the new dimensions to maintain the aspect ratio
-        max_width = 150
-        original_width2 = pixmap2.width()
-        original_height2 = pixmap2.height()
-
-        new_width2 = max_width
-        new_height2 = (original_height2 * max_width) // original_width2
-        pixmap2 = pixmap2.scaled(new_width2, new_height2)
-
-        # Merge the background image and the Pokémon image
-        merged_pixmap = QPixmap(pixmap_bckg.size())
-        merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
-        #merged_pixmap.fill(Qt.transparent)
-        # merge both images together
-        painter = QPainter(merged_pixmap)
-        # draw background to a specific pixel
-        painter.drawPixmap(0, 0, pixmap_bckg)
-        def draw_hp_bar(x, y, h, w, hp, max_hp):
-            pokemon_hp_percent = (hp / max_hp) * 100
-            hp_bar_value = (w * (hp / max_hp))
-            # Draw the HP bar
-            if pokemon_hp_percent < 25:
-                hp_color = QColor(255, 0, 0)  # Red
-            elif pokemon_hp_percent < 50:
-                hp_color = QColor(255, 140, 0)  # Orange
-            elif pokemon_hp_percent < 75:
-                hp_color = QColor(255, 255, 0)  # Yellow
-            else:
-                hp_color = QColor(110, 218, 163)  # Green
-            painter.setBrush(hp_color)
-            painter.drawRect(x, y, hp_bar_value, h)
-        draw_hp_bar(118,76,8, 116, hp, max_hp) #enemy pokemon hp_bar
-        draw_hp_bar(401,208,8,116,mainpokemon_current_hp,mainpokemon_hp) #main pokemon hp_bar
-
-        painter.drawPixmap(0, 0, pixmap_ui)
-        #Find the Pokemon Images Height and Width
-        wpkmn_width = (new_width / 2)
-        wpkmn_height = new_height
-        mpkmn_width = (new_width2 / 2)
-        mpkmn_height = new_height2
-        # draw pokemon image to a specific pixel
-        painter.drawPixmap((410 - wpkmn_width), (170 - wpkmn_height), pixmap)
-        painter.drawPixmap((144 - mpkmn_width), (290 - mpkmn_height), pixmap2)
-
-        experience = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
-        experience = int(experience)
-        mainxp_bar_width = 5
-        mainpokemon_xp_value = int((mainpokemon_xp / experience) * 148)
-        #Paint XP Bar
-        painter.setBrush(QColor(58,155,220))
-        painter.drawRect(366, 246, mainpokemon_xp_value, mainxp_bar_width)
-
-        #create level text
-        lvl = (f"{level}")
-        mainlvl = (f"{mainpokemon_level}")
-
-        #custom font
-        custom_font = load_custom_font(font_file, 28)
-        msg_font = load_custom_font(font_file, 32)
-
-        # Draw the text on top of the image
-        # Adjust the font size as needed
-        painter.setFont(custom_font)
-        painter.setPen(QColor(31,31,39))  # Text color
-        painter.drawText(48, 67, name)
-        painter.drawText(326, 200, mainpokemon_name)
-        painter.drawText(208, 67, lvl)
-        painter.drawText(490, 199, mainlvl)
-        painter.drawText(487, 238, f"{mainpokemon_hp}")
-        painter.drawText(442, 238, f"{mainpokemon_current_hp}")
-        painter.setFont(msg_font)
-        painter.setPen(QColor(240,240,208))  # Text color
-        painter.drawText(40, 320, message_box_text)
-        painter.end()
-        # Set the merged image as the pixmap for the QLabel
-        image_label.setPixmap(merged_pixmap)
-        return image_label, msg_font
-    image_label, msg_font = window_show()
-    layout.addWidget(image_label)
-    if pokemon_encounter > 1:
-        attack_label = QLabel("Choose a Move: ")
-        attack_label.setFont(msg_font)
-        def choose_move(mainpokemon_attacks, image_label, layout, attack_label):
-            widget = QWidget()
-            grid_layout = QGridLayout()
-            button_width = 250  # Set your desired width
-            button_height = 40  # Set your desired height
-            row, col = 0, 0
-            for attack in mainpokemon_attacks:
-                attack = attack.capitalize()
-                button = QPushButton(attack)
-                button.clicked.connect(lambda checked, attack=attack, image_label=image_label, layout=layout, attack_label=attack_label : on_attack_button_clicked(attack, image_label, layout, attack_label))
-                # Set fixed size for the button
-                button.setFixedSize(button_width, button_height)
-                grid_layout.addWidget(button, row, col)
-                col += 1
-                if col > 1:
-                    col = 0
-                    row += 1
-
-            # Add the grid layout to the parent widget
-            widget.setLayout(grid_layout)
-            return widget
-        pokemon_attacks_widget = choose_move(mainpokemon_attacks, image_label, layout, attack_label)
-        pokemon_attacks_widget.setFont(msg_font)
-        layout.addWidget(attack_label)
-        layout.addWidget(pokemon_attacks_widget)
-
-    def update_hp_bar(image_label, layout, attack_label):
-        image_label2, msg_font = window_show()
-        layout.replaceWidget(image_label, image_label2)
-        def create_gif_widget():
-            widget = QWidget()
-            vbox = QVBoxLayout(widget)
-
-            label = QLabel(widget)
-            vbox.addWidget(label)
-            widget.setLayout(vbox)
-            widget.setGeometry(100, 100, 400, 300)
-            return widget
-
-        gif_widget = create_gif_widget()
-        gif_widget.move(-200,-400)
-        layout.addWidget(gif_widget)
-        # Use QTimer for a delay instead of time.sleep
-        #delay_timer = QTimer()
-        #delay_timer.singleShot(50, lambda: layout.replaceWidget(image_label3, image_label2))
 
     def calc_atk_dmg(level, critical, power, stat_atk, wild_stat_def, main_type, move_type, wild_type):
         if power is None:
@@ -3881,8 +3695,7 @@ def createStatBar(color, value):
     return pixmap
 
 def load_custom_font(font_file, font_size):
-    global addon_dir
-    font_path = addon_dir / font_file
+    global font_path
     # Register the custom font with its file path
     QFontDatabase.addApplicationFont(str(font_path))
     custom_font = QFont(font_name)  # Use the font family name you specified in the font file
@@ -3900,7 +3713,6 @@ def find_experience_for_level(group_growth_rate, level):
     elif group_growth_rate == "fast-then-very-slow":
         group_growth_rate = "fluctuating"
     global next_lvl_file_path
-    next_lvl_xp_file = 'ExpPokemonAddon.csv'
     # Specify the growth rate and level you're interested in
     growth_rate = f'{group_growth_rate}'
     # Open the CSV file
@@ -3931,7 +3743,6 @@ def find_experience_for_mainpokemon():
     if mainpokemon_growth_rate == "medium":
         mainpokemon_growth_rate = "medium-fast"
     level = mainpokemon_level
-    next_lvl_xp_file = 'ExpPokemonAddon.csv'
     # Specify the growth rate and level you're interested in
     growth_rate = f'{mainpokemon_growth_rate}'
     # Open the CSV file
@@ -4772,7 +4583,7 @@ class TestWindow(QWidget):
         global caught
         global mainpkmn, mainpokemon_path
         global mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_ability, mainpokemon_type, mainpokemon_xp, mainpokemon_stats, mainpokemon_attacks, mainpokemon_base_experience, mainpokemon_ev, mainpokemon_iv, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate
-        global battlescene_path, battlescene_path_without_dialog, battlescene_file, battle_ui_path, battle_ui_path_without_dialog
+        global battlescene_path, battlescene_path_without_dialog, battlescene_file, battle_ui_path
         global attack_counter, merged_pixmap, window
         attack_counter = 0
         # get main pokemon details:
@@ -5736,10 +5547,11 @@ class TableWidget(QWidget):
     def initUI(self):
         self.setWindowTitle("Pokémon Type Effectiveness Table")
         global addon_dir
+        global eff_chart_html_path
 
         # Create a label and set HTML content
         label = QLabel()
-        html_content = self.read_html_file(f"{addon_dir}/eff_chart_html.html")  # Replace with the path to your HTML file
+        html_content = self.read_html_file(f"{eff_chart_html_path}")  # Replace with the path to your HTML file
         label.setText(html_content)  # 'html_table' contains the HTML table string
         label.setWordWrap(True)
 
@@ -5761,11 +5573,10 @@ class IDTableWidget(QWidget):
 
     def initUI(self):
         self.setWindowTitle("Pokémon - Generations and ID")
-        global addon_dir
-
+        global table_gen_id_html_path
         # Create a label and set HTML content
         label = QLabel()
-        html_content = self.read_html_file(f"{addon_dir}/table_gen_id.html")  # Replace with the path to your HTML file
+        html_content = self.read_html_file(f"{table_gen_id_html_path}")  # Replace with the path to your HTML file
         label.setText(html_content)  # 'html_table' contains the HTML table string
         label.setWordWrap(True)
         label.setStyleSheet("background-color: rgb(44,44,44);")
