@@ -72,6 +72,11 @@ def check_file_exists(folder, filename):
         #showInfo(f"File '{filename}' does not exist in '{folder}'.")
         return False
 
+#safe route for updates
+user_path = addon_dir / "user_files"
+user_path_data = addon_dir / "user_files" / "data_files"
+user_path_sprites = addon_dir / "user_files" / "sprites"
+
 # Assign Pokemon Image folder directory name
 pkmnimgfolder = addon_dir / "user_files" / "sprites"
 backdefault = addon_dir / "user_files" / "sprites" / "back_default"
@@ -93,13 +98,13 @@ evolve_image_path = addon_dir / "evo_temp.jpg"
 learnset_path = addon_dir / "user_files" / "data_files" / "learnsets.json"
 pokedex_path = addon_dir / "user_files" / "data_files" / "pokedex.json"
 moves_file_path = addon_dir / "user_files" / "data_files" / "moves.json"
-all_species_path = addon_dir / "user_files" / "data_files" /"all_species.json"
 items_path = addon_dir / "pokemon_sprites" / "items"
 badges_path = addon_dir / "pokemon_sprites" / "badges"
 itembag_path = addon_dir / "user_files" / "items.json"
 badgebag_path = addon_dir / "user_files" / "badges.json"
 pokenames_lang_path = addon_dir / "user_files" / "data_files" / "pokemon_species_names.csv"
 pokedesc_lang_path = addon_dir / "user_files" / "data_files" / "pokemon_species_flavor_text.csv"
+pokeapi_db_path = user_path_data / "pokeapi_db.json"
 
 #pokemon species id files
 pokemon_species_normal_path = addon_dir / "user_files" / "pkmn_data" / "normal.json"
@@ -107,6 +112,8 @@ pokemon_species_legendary_path = addon_dir / "user_files" / "pkmn_data" / "legen
 pokemon_species_ultra_path = addon_dir / "user_files" / "pkmn_data" / "ultra.json"
 pokemon_species_mythical_path = addon_dir / "user_files" / "pkmn_data" / "mythical.json"
 pokemon_species_baby_path = addon_dir / "user_files" / "pkmn_data" / "baby.json"
+
+
 # Get the profile folder
 profilename = mw.pm.name
 #profilefolder = Path(mw.pm.profileFolder())
@@ -126,17 +133,15 @@ front_sprites = check_folders_exist(pkmnimgfolder, "front_default")
 item_sprites = check_folders_exist(pkmnimgfolder, "items")
 badges_sprites = check_folders_exist(pkmnimgfolder, "badges")
 berries_sprites = check_folders_exist(addon_dir, "berries")
-item_sprites = check_folders_exist(pkmnimgfolder, "items")
-poke_api_data = check_file_exists(addon_dir, "pokeapi_db.json")
-pokedex_data = check_file_exists(addon_dir, "pokedex.json")
-learnsets_data = check_file_exists(addon_dir, "learnsets.json")
-all_species = check_file_exists(addon_dir, "all_species.json")
+poke_api_data = check_file_exists(user_path_data, "pokeapi_db.json")
+pokedex_data = check_file_exists(user_path_data, "pokedex.json")
+learnsets_data = check_file_exists(user_path_data, "learnsets.json")
 
-if back_sprites and front_sprites == True:
+if back_sprites and front_sprites and item_sprites and badges_sprites == True:
     sprites_complete = True
 else:
     sprites_complete = False
-if pokedex_data and learnsets_data and all_species and poke_api_data and badges_sprites and item_sprites == True:
+if pokedex_data and learnsets_data == True:
     database_complete = True
 else:
     database_complete = False
@@ -591,45 +596,6 @@ def special_pokemon_names_for_min_level(name):
         #showWarning("Error in Handling Pokémon name")
         return name
 
-pokedex_to_poke_api_db = {
-  "mr-mime": "mrmime",
-  "mr-rime": "mrrime",
-  "deoxys": "deosyx-normal",
-  "wormadam-plant": "wormadam",
-  "mimejr": "mime-jr",
-  "giratina": "giratina-altered",
-  "shaymin-land": "shaymin-land",
-  "basculin": "basculin-red-striped",
-  "darmanitan": "darmanitan-standard",
-  "tornadus": "tornadus-incarnate",
-  "thundurus": "thundurus-incarnate",
-  "landorus": "landorus-incarnate",
-  "keldeo": "keldeo-ordinary",
-  "meloetta": "meloetta-aria",
-  "meowstic": "meowstic-male",
-  "meowsticf": "meowstic-male",
-  "aegislash-shield": "aegislash",
-  "aegislashblade": "aegislash",
-  "pumpkaboo": "pumpkaboo-average",
-  "gourgeist": "gourgeist-average",
-  "zygarde": "zygarde-50",
-  "oricorio": "oricorio-baile",
-  "lycanroc": "lycanroc-midday",
-  "wishiwashi": "wishiwashi-solo",
-  "typenull": "type-null",
-  "minior": "minior-red-meteor",
-  "mimikyu": "mimikyu-disguised",
-  "tapukoko": "tapu-koko",
-  "tapulele": "tapu-lele",
-  "tapubulu": "tapu-bulu",
-  "tapufini": "tapu-fini",
-  "toxtricity": "toxtricity-amped",
-  "eiscue": "eiscue-ice",
-  "indeedee": "indeedee-male",
-  "morpeko": "morpeko-full-belly",
-  "urshifu": "urshifu-single-strike"
-}
-
 def special_pokemon_names_for_pokedex_to_poke_api_db(name):
     global pokedex_to_poke_api_db
     return pokedex_to_poke_api_db.get(name, name)
@@ -1027,35 +993,6 @@ if item_sprites != False:
             json.dump(itembag_list, json_file, indent=2)
         return fossil_name
 
-def random_egg():
-    # Fetch random Pokémon data from Generation
-    # Load the JSON file with Pokémon data
-    global addon_dir
-    global pokemon_hp
-    global pokemon_encounter
-    egg_counter = random.randint(200, 1500)
-    generation_file = "merged_file.json"
-    try:
-        with open(str(addon_dir / generation_file), "r") as json_file:
-            wild_pokemon_data = json.load(json_file)
-            # Select 1 Pokémon from the list
-            random_pokemon_list = random.sample(wild_pokemon_data, 1)
-            # Extract information about the selected Pokémon
-            for random_pokemon_data in random_pokemon_list:
-                true_name = random_pokemon_data["name"]
-                name = "Egg"
-                id = random_pokemon_data["id"]
-                ability = random.sample(random_pokemon_data["abilities"], 1)
-                type = random.sample(random_pokemon_data["types"], 1)
-                stats = random_pokemon_data["stats"]
-                level = 0  # Random level between 1 and 100
-                enemy_attacks = get_random_moves_for_pokemon(name, level)
-                base_experience = random_pokemon_data["base_experience"]
-                return name, id, level, ability, type, stats, attacks, base_experience, egg_counter
-    except FileNotFoundError:
-        mw.showInfo("Error", "Can't create egg.")
-        # Set the layout for the dialog
-
 #def copy_directory(dir_addon: str, dir_anki: str = None)
 #       if not dir_anki:
         #dir_anki = dir_addon
@@ -1068,7 +1005,6 @@ def random_egg():
     #else:
         #distutils.dir_util.copy_tree(str(fromdir), str(todir))
 
-#hp = 100
 caught_pokemon = {} #pokemon not caught
 
 def get_pokemon_names_by_category_from_file(category_name):
@@ -1368,13 +1304,13 @@ def choose_random_pkmn_from_tier():
         if card_counter < (40*cards_per_round):
             possible_tiers.append("Normal")
         elif card_counter < (60*cards_per_round):
-            possible_tiers.extend(["Baby", "Normal", "Normal", "Normal", "Normal"])
+            possible_tiers.extend(["Baby", "Normal","Baby", "Normal", "Normal", "Normal", "Normal"])
         elif card_counter < (80*cards_per_round):
-            possible_tiers.extend(["Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Ultra"])
+            possible_tiers.extend(["Baby", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra"])
         elif card_counter < (100*cards_per_round):
-            possible_tiers.extend(["Baby", "Legendary", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
+            possible_tiers.extend(["Baby", "Legendary", "Normal", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
         else:
-            possible_tiers.extend(["Baby", "Legendary","Mythical", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
+            possible_tiers.extend(["Baby", "Legendary","Mythical", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
         tier = random.choice(possible_tiers)
         id, pokemon_species = get_pokemon_id_by_tier(tier)
         return id, pokemon_species
@@ -1686,7 +1622,8 @@ def evolve_pokemon(pkmn_name):
                         pokemon = pokemon_data
                         if pokemon is not None:
                             pokemon["name"] = evoName.capitalize()
-                            pokemon["id"] = int(search_pokedex(evoName.lower(), "num"))
+                            evoId = int(search_pokedex(evoName.lower(), "num"))
+                            pokemon["id"] = evoId
                             # pokemon["ev"] = ev
                             # pokemon["iv"] = iv
                             pokemon["type"] = search_pokedex(evoName.lower(), "types")
@@ -1728,8 +1665,10 @@ def evolve_pokemon(pkmn_name):
                             hp = calculate_hp(hp_stat, level, ev, iv)
                             pokemon["current_hp"] = int(hp)
                             #pokemon["gender"] = pick_random_gender(evoName.lower()) dont replace gender
-                            pokemon["growth_rate"] = search_pokeapi_db(evoName.lower(), "growth_rate")
-                            pokemon["base_experience"] = search_pokeapi_db(evoName.lower(), "base_experience")
+                            pokemon["growth_rate"] = search_pokedex_by_id(evoId,"growth_rate")
+                            pokemon["base_experience"] = search_pokedex_by_id(evoId,"growth_rate")
+                            #pokemon["growth_rate"] = search_pokeapi_db(evoName.lower(), "growth_rate")
+                            #pokemon["base_experience"] = search_pokeapi_db(evoName.lower(), "base_experience")
                             abilities = search_pokedex(evoName.lower(), "abilities")
                             # Filter abilities to include only those with numeric keys
                             # numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
@@ -2052,15 +1991,14 @@ def get_pokemon_descriptions(species_id):
     else:
         ["Description not found."]
 
-def search_pokeapi_db(pokemon_name,variable):
+def search_pokeapi_db(pkmn_name,variable):
     global addon_dir
-    pokemon_name = special_pokemon_names_for_pokedex_to_poke_api_db(pokemon_name)
-    pokeapi_db_path = addon_dir / "pokeapi_db.json"
+    global pokeapi_db_path
     with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
             for pokemon_data in pokedex_data:
                 name = pokemon_data["name"]
-                if pokemon_data["name"] == pokemon_name:
+                if pokemon_data["name"] == pkmn_name:
                     var = pokemon_data.get(variable, None)
                     return var
             else:
@@ -2068,7 +2006,7 @@ def search_pokeapi_db(pokemon_name,variable):
 
 def search_pokeapi_db_by_id(pkmn_id,variable):
     global addon_dir
-    pokeapi_db_path = addon_dir / "pokeapi_db.json"
+    global pokeapi_db_path
     with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
             for pokemon_data in pokedex_data:
@@ -3652,83 +3590,97 @@ def PokemonDetailsStats(detail_stats, growth_rate, level):
 
 def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks):
     global addon_dir
-    pokemon_trade = []
-    pokemon_trade = [
-        {
-            "name": name,
-            "level": level,
-            "gender": gender,
-            "ability": ability,
-            "type": type,
-            "stats": stats,
-            "ev": ev,
-            "iv": iv,
-            "attacks": attacks,
-            "base_experience": base_experience,
-            "current_hp": 30,
-            "growth_rate": growth_rate
-        }
-    ]
-    # Create a main window
-    window = QDialog()
-    window.setWindowTitle(f"Trade Pokemon {name}")
-    # Create an input field for error code
-    trade_code_input = QLineEdit()
-    trade_code_input.setPlaceholderText("Enter Pokemon Code you want to Trade for")
+    global mainpokemon_path
+     # Load the data from the file
+    with open(mainpokemon_path, 'r') as file:
+        pokemon_data = json.load(file)
 
-    # Create a button to save the input
-    trade_button = QPushButton("Trade Pokemon")
-    qconnect(trade_button.clicked, lambda: PokemonTradeIn(trade_code_input.text(), name))
-    # Information label
-    info = "Pokemon Infos have been Copied to your Clipboard! \nNow simply paste this text into Teambuilder in PokemonShowdown. \nNote: Fight in the [Gen 9] Anything Goes - Battle Mode"
+    found = False
+    for pokemons in pokemon_data:
+        if pokemons["name"] == name:
+            found = True
+            break
 
-    pokemon_ev = ','.join([f"{value}" for stat, value in ev.items()])
-    pokemon_iv = ','.join([f"{value}" for stat, value in iv.items()])
-    if gender == "M":
-        gender = 0
-    elif gender == "F":
-        gender = 1
-    elif gender == "N":
-        gender = 2
+    if not found:
+        pokemon_trade = []
+        pokemon_trade = [
+            {
+                "name": name,
+                "level": level,
+                "gender": gender,
+                "ability": ability,
+                "type": type,
+                "stats": stats,
+                "ev": ev,
+                "iv": iv,
+                "attacks": attacks,
+                "base_experience": base_experience,
+                "current_hp": 30,
+                "growth_rate": growth_rate
+            }
+        ]
+        # Create a main window
+        window = QDialog()
+        window.setWindowTitle(f"Trade Pokemon {name}")
+        # Create an input field for error code
+        trade_code_input = QLineEdit()
+        trade_code_input.setPlaceholderText("Enter Pokemon Code you want to Trade for")
+
+        # Create a button to save the input
+        trade_button = QPushButton("Trade Pokemon")
+        qconnect(trade_button.clicked, lambda: PokemonTradeIn(trade_code_input.text(), name))
+        # Information label
+        info = "Pokemon Infos have been Copied to your Clipboard! \nNow simply paste this text into Teambuilder in PokemonShowdown. \nNote: Fight in the [Gen 9] Anything Goes - Battle Mode"
+
+        pokemon_ev = ','.join([f"{value}" for stat, value in ev.items()])
+        pokemon_iv = ','.join([f"{value}" for stat, value in iv.items()])
+        if gender == "M":
+            gender = 0
+        elif gender == "F":
+            gender = 1
+        elif gender == "N":
+            gender = 2
+        else:
+            gender = 3 #None
+
+        attacks_ids = []
+        for attack in attacks:
+            attack = attack.replace(" ", "").lower()
+            move_details = find_details_move(attack)
+            if move_details:
+                attacks_ids.append(str(move_details["num"]))
+
+        attacks_id_string = ','.join(attacks_ids)  # Concatenated with a delimiter
+
+        # Concatenating details to form a single string
+        info = f"{id},{level},{gender},{pokemon_ev},{pokemon_iv},{attacks_id_string}"
+
+        Trade_Info = QLabel(f"{name} Code: {info}")
+
+        # Create a layout and add the labels
+        layout = QVBoxLayout()
+        layout.addWidget(Trade_Info)
+        layout.addWidget(trade_code_input)
+        layout.addWidget(trade_button)
+        layout.addWidget(trade_code_input)
+        # Set the layout for the main window
+        window.setLayout(layout)
+
+        # Copy text to clipboard in Anki
+        #mw.app.clipboard().setText(pokemon_info)
+        mw.app.clipboard().setText(f"{info}")
+
+        # Write the Id, EV, IV and Attacks ID into numbers, seperated by ,
+        # Place in a QLabel and Copy to clipboard
+        # let player place Number in and find additionally needed data from pokedex
+        # at last append to pokemon_list
+        # check remove mainpokemon
+        # remove pokemon from pokemon_list
+
+        # Show the window
+        window.exec()
     else:
-        gender = 3 #None
-
-    attacks_ids = []
-    for attack in attacks:
-        attack = attack.replace(" ", "").lower()
-        move_details = find_details_move(attack)
-        if move_details:
-            attacks_ids.append(str(move_details["num"]))
-
-    attacks_id_string = ','.join(attacks_ids)  # Concatenated with a delimiter
-
-    # Concatenating details to form a single string
-    info = f"{id},{level},{gender},{pokemon_ev},{pokemon_iv},{attacks_id_string}"
-
-    Trade_Info = QLabel(f"{name} Code: {info}")
-
-    # Create a layout and add the labels
-    layout = QVBoxLayout()
-    layout.addWidget(Trade_Info)
-    layout.addWidget(trade_code_input)
-    layout.addWidget(trade_button)
-    layout.addWidget(trade_code_input)
-    # Set the layout for the main window
-    window.setLayout(layout)
-
-    # Copy text to clipboard in Anki
-    #mw.app.clipboard().setText(pokemon_info)
-    mw.app.clipboard().setText(f"{info}")
-
-    # Write the Id, EV, IV and Attacks ID into numbers, seperated by ,
-    # Place in a QLabel and Copy to clipboard
-    # let player place Number in and find additionally needed data from pokedex
-    # at last append to pokemon_list
-    # check remove mainpokemon
-    # remove pokemon from pokemon_list
-
-    # Show the window
-    window.exec()
+        showWarning("You cant trade your Main Pokemon ! \n Please pick a different Main Pokemon and then you can trade this one.")
 
 def find_move_by_num(move_num):
     global moves_file_path
@@ -3847,8 +3799,8 @@ def PokemonTradeIn(number_code, old_pokemon_name):
     evos = details.get("evos", "None")
     #type = search_pokedex(name, "types")
     #stats = search_pokedex(name, "baseStats")
-    generation_file = "pokeapi_db.json"
-    with open(str(addon_dir / generation_file), "r") as json_file:
+    global pokeapi_db_path
+    with open(str(pokeapi_db_path), "r") as json_file:
         pokemon_data = json.load(json_file)
         for pokemon in pokemon_data:
             if pokemon["id"] == pokemon_id:
@@ -4026,11 +3978,55 @@ def find_experience_for_mainpokemon():
 class Downloader(QObject):
     progress_updated = pyqtSignal(int)  # Signal to update progress bar
     download_complete = pyqtSignal()  # Signal when download is complete
+    downloading_badges_sprites_txt = pyqtSignal()  # Signal when download is complete
+    downloading_sprites_txt = pyqtSignal()  # Signal when download is complete
+    downloading_sounds_txt = pyqtSignal()  # Signal when download is complete
+    downloading_item_sprites_txt = pyqtSignal()  # Signal when download is complete
+    downloading_data_txt = pyqtSignal()  # Signal when download is complete
 
     def __init__(self, addon_dir, parent=None):
         super().__init__(parent)
         self.addon_dir = Path(addon_dir)
         self.pokedex = []
+        global user_path_data, user_path_sprites, pkmnimgfolder, backdefault, frontdefault
+        self.items_destination_to = user_path_sprites / "items"
+        self.badges_destination_to = user_path_sprites / "badges"
+        self.sounds_destination_to = user_path_sprites / "sounds"
+        self.front_dir = os.path.join(user_path_sprites, "front_default")
+        self.back_dir = os.path.join(user_path_sprites, "back_default")
+        self.user_path_data = user_path_data
+        self.badges_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/"
+        self.item_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dream-world/"
+        self.sounds_base_url = "https://play.pokemonshowdown.com/audio/cries/"
+        self.sound_names = ['ababo.mp3', 'abomasnow-mega.mp3', 'abomasnow.mp3', 'abra.mp3', 'absol-mega.mp3', 'absol.mp3', 'accelgor.mp3', 'aegislash.mp3', 'aerodactyl-mega.mp3', 'aerodactyl.mp3', 'aggron-mega.mp3', 'aggron.mp3', 'aipom.mp3', 'alakazam-mega.mp3', 'alakazam.mp3', 'alcremie.mp3', 'alomomola.mp3', 'altaria-mega.mp3', 'altaria.mp3', 'amaura.mp3', 'ambipom.mp3', 'amoonguss.mp3', 'ampharos-mega.mp3', 'ampharos.mp3', 'annihilape.mp3', 'anorith.mp3', 'appletun.mp3', 'applin.mp3', 'araquanid.mp3', 'arbok.mp3', 'arboliva.mp3', 'arcanine.mp3', 'arceus.mp3', 'archaludon.mp3', 'archen.mp3', 'archeops.mp3', 'arctibax.mp3', 'arctovish.mp3', 'arctozolt.mp3', 'argalis.mp3', 'arghonaut.mp3', 'ariados.mp3', 'armaldo.mp3', 'armarouge.mp3', 'aromatisse.mp3', 'aron.mp3', 'arrokuda.mp3', 'articuno.mp3', 'astrolotl.mp3', 'audino-mega.mp3', 'audino.mp3', 'aurorus.mp3', 'aurumoth.mp3', 'avalugg.mp3', 'axew.mp3', 'azelf.mp3', 'azumarill.mp3', 'azurill.mp3', 'bagon.mp3', 'baltoy.mp3', 'banette-mega.mp3', 'banette.mp3', 'barbaracle.mp3', 'barboach.mp3', 'barraskewda.mp3', 'basculegion.mp3', 'basculin.mp3', 'bastiodon.mp3', 'baxcalibur.mp3', 'bayleef.mp3', 'beartic.mp3', 'beautifly.mp3', 'beedrill-mega.mp3', 'beedrill.mp3', 'beheeyem.mp3', 'beldum.mp3', 'bellibolt.mp3', 'bellossom.mp3', 'bellsprout.mp3', 'bergmite.mp3', 'bewear.mp3', 'bibarel.mp3', 'bidoof.mp3', 'binacle.mp3', 'bisharp.mp3', 'blacephalon.mp3', 'blastoise-mega.mp3', 'blastoise.mp3', 'blaziken-mega.mp3', 'blaziken.mp3', 'blipbug.mp3', 'blissey.mp3', 'blitzle.mp3', 'boldore.mp3', 'boltund.mp3', 'bombirdier.mp3', 'bonsly.mp3', 'bouffalant.mp3', 'bounsweet.mp3', 'braixen.mp3', 'brambleghast.mp3', 'bramblin.mp3', 'brattler.mp3', 'braviary.mp3', 'breezi.mp3', 'breloom.mp3', 'brionne.mp3', 'bronzong.mp3', 'bronzor.mp3', 'brutebonnet.mp3', 'bruxish.mp3', 'budew.mp3', 'buizel.mp3', 'bulbasaur.mp3', 'buneary.mp3', 'bunnelby.mp3', 'burmy.mp3', 'butterfree.mp3', 'buzzwole.mp3', 'cacnea.mp3', 'cacturne.mp3', 'caimanoe.mp3', 'calyrex-ice.mp3', 'calyrex-shadow.mp3', 'calyrex.mp3', 'camerupt-mega.mp3', 'camerupt.mp3', 'capsakid.mp3', 'carbink.mp3', 'caribolt.mp3', 'carkol.mp3', 'carnivine.mp3', 'carracosta.mp3', 'carvanha.mp3', 'cascoon.mp3', 'castform.mp3', 'caterpie.mp3', 'cawdet.mp3', 'cawmodore.mp3', 'celebi.mp3', 'celesteela.mp3', 'centiskorch.mp3', 'ceruledge.mp3', 'cetitan.mp3', 'cetoddle.mp3', 'chandelure.mp3', 'chansey.mp3', 'charcadet.mp3', 'charizard-megax.mp3', 'charizard-megay.mp3', 'charizard.mp3', 'charjabug.mp3', 'charmander.mp3', 'charmeleon.mp3', 'chatot.mp3', 'cherrim.mp3', 'cherubi.mp3', 'chesnaught.mp3', 'chespin.mp3', 'chewtle.mp3', 'chienpao.mp3', 'chikorita.mp3', 'chimchar.mp3', 'chimecho.mp3', 'chinchou.mp3', 'chingling.mp3', 'chiyu.mp3', 'chromera.mp3', 'cinccino.mp3', 'cinderace.mp3', 'clamperl.mp3', 'clauncher.mp3', 'clawitzer.mp3', 'claydol.mp3', 'clefable.mp3', 'clefairy.mp3', 'cleffa.mp3', 'clobbopus.mp3', 'clodsire.mp3', 'cloyster.mp3', 'coalossal.mp3', 'cobalion.mp3', 'cofagrigus.mp3', 'colossoil.mp3', 'combee.mp3', 'combusken.mp3', 'comfey.mp3', 'conkeldurr.mp3', 'copperajah.mp3', 'coribalis.mp3', 'corphish.mp3', 'corsola.mp3', 'corviknight.mp3', 'corvisquire.mp3', 'cosmoem.mp3', 'cosmog.mp3', 'cottonee.mp3', 'crabominable.mp3', 'crabrawler.mp3', 'cradily.mp3', 'cramorant-gorging.mp3', 'cramorant-gulping.mp3', 'cramorant.mp3', 'cranidos.mp3', 'crawdaunt.mp3', 'cresselia.mp3', 'croagunk.mp3', 'crobat.mp3', 'crocalor.mp3', 'croconaw.mp3', 'crucibelle-mega.mp3', 'crucibelle.mp3', 'crustle.mp3', 'cryogonal.mp3', 'cubchoo.mp3', 'cubone.mp3', 'cufant.mp3', 'cupra.mp3', 'cursola.mp3', 'cutiefly.mp3', 'cyclizar.mp3', 'cyclohm.mp3', 'cyndaquil.mp3', 'dachsbun.mp3', 'darkrai.mp3', 'darmanitan.mp3', 'dartrix.mp3', 'darumaka.mp3', 'decidueye.mp3', 'dedenne.mp3', 'deerling.mp3', 'deino.mp3', 'delcatty.mp3', 'delibird.mp3', 'delphox.mp3', 'deoxys.mp3', 'dewgong.mp3', 'dewott.mp3', 'dewpider.mp3', 'dhelmise.mp3', 'dialga.mp3', 'diancie-mega.mp3', 'diancie.mp3', 'diggersby.mp3', 'diglett.mp3', 'dipplin.mp3', 'ditto.mp3', 'dodrio.mp3', 'doduo.mp3', 'dolliv.mp3', 'dondozo.mp3', 'donphan.mp3', 'dorsoil.mp3', 'dottler.mp3', 'doublade.mp3', 'dracovish.mp3', 'dracozolt.mp3', 'dragalge.mp3', 'dragapult.mp3', 'dragonair.mp3', 'dragonite.mp3', 'drakloak.mp3', 'drampa.mp3', 'drapion.mp3', 'dratini.mp3', 'drednaw.mp3', 'dreepy.mp3', 'drifblim.mp3', 'drifloon.mp3', 'drilbur.mp3', 'drizzile.mp3', 'drowzee.mp3', 'druddigon.mp3', 'dubwool.mp3', 'ducklett.mp3', 'dudunsparce.mp3', 'dugtrio.mp3', 'dunsparce.mp3', 'duohm.mp3', 'duosion.mp3', 'duraludon.mp3', 'durant.mp3', 'dusclops.mp3', 'dusknoir.mp3', 'duskull.mp3', 'dustox.mp3', 'dwebble.mp3', 'eelektrik.mp3', 'eelektross.mp3', 'eevee-starter.mp3', 'eevee.mp3', 'eiscue-noice.mp3', 'eiscue.mp3', 'ekans.mp3', 'eldegoss.mp3', 'electabuzz.mp3', 'electivire.mp3', 'electrelk.mp3', 'electrike.mp3', 'electrode.mp3', 'elekid.mp3', 'elgyem.mp3', 'embirch.mp3', 'emboar.mp3', 'emolga.mp3', 'empoleon.mp3', 'enamorus-therian.mp3', 'enamorus.mp3', 'entei.mp3', 'equilibra.mp3', 'escavalier.mp3', 'espathra.mp3', 'espeon.mp3', 'espurr.mp3', 'eternatus-eternamax.mp3', 'eternatus.mp3', 'excadrill.mp3', 'exeggcute.mp3', 'exeggutor.mp3', 'exploud.mp3', 'falinks.mp3', 'farfetchd.mp3', 'farigiraf.mp3', 'fawnifer.mp3', 'fearow.mp3', 'feebas.mp3', 'fennekin.mp3', 'feraligatr.mp3', 'ferroseed.mp3', 'ferrothorn.mp3', 'fezandipiti.mp3', 'fidgit.mp3', 'fidough.mp3', 'finizen.mp3', 'finneon.mp3', 'flaaffy.mp3', 'flabebe.mp3', 'flamigo.mp3', 'flapple.mp3', 'flarelm.mp3', 'flareon.mp3', 'fletchinder.mp3', 'fletchling.mp3', 'flittle.mp3', 'floatoy.mp3', 'floatzel.mp3', 'floette-eternal.mp3', 'floette.mp3', 'floragato.mp3', 'florges.mp3', 'fluttermane.mp3', 'flygon.mp3', 'fomantis.mp3', 'foongus.mp3', 'forretress.mp3', 'fraxure.mp3', 'frigibax.mp3', 'frillish.mp3', 'froakie.mp3', 'frogadier.mp3', 'froslass.mp3', 'frosmoth.mp3', 'fuecoco.mp3', 'furfrou.mp3', 'furret.mp3', 'gabite.mp3', 'gallade-mega.mp3', 'gallade.mp3', 'galvantula.mp3', 'garbodor.mp3', 'garchomp-mega.mp3', 'garchomp.mp3', 'gardevoir-mega.mp3', 'gardevoir.mp3', 'garganacl.mp3', 'gastly.mp3', 'gastrodon.mp3', 'genesect.mp3', 'gengar-mega.mp3', 'gengar.mp3', 'geodude.mp3', 'gholdengo.mp3', 'gible.mp3', 'gigalith.mp3', 'gimmighoul-roaming.mp3', 'gimmighoul.mp3', 'girafarig.mp3', 'giratina.mp3', 'glaceon.mp3', 'glalie-mega.mp3', 'glalie.mp3', 'glameow.mp3', 'glastrier.mp3', 'gligar.mp3', 'glimmet.mp3', 'glimmora.mp3', 'gliscor.mp3', 'gloom.mp3', 'gogoat.mp3', 'golbat.mp3', 'goldeen.mp3', 'golduck.mp3', 'golem.mp3', 'golett.mp3', 'golisopod.mp3', 'golurk.mp3', 'goodra.mp3', 'goomy.mp3', 'gorebyss.mp3', 'gossifleur.mp3', 'gothita.mp3', 'gothitelle.mp3', 'gothorita.mp3', 'gougingfire.mp3', 'gourgeist-super.mp3', 'gourgeist.mp3', 'grafaiai.mp3', 'granbull.mp3', 'grapploct.mp3', 'graveler.mp3', 'greattusk.mp3', 'greavard.mp3', 'greedent.mp3', 'greninja.mp3', 'grimer.mp3', 'grimmsnarl.mp3', 'grookey.mp3', 'grotle.mp3', 'groudon-primal.mp3', 'groudon.mp3', 'grovyle.mp3', 'growlithe.mp3', 'grubbin.mp3', 'grumpig.mp3', 'gulpin.mp3', 'gumshoos.mp3', 'gurdurr.mp3', 'guzzlord.mp3', 'gyarados-mega.mp3', 'gyarados.mp3', 'hakamoo.mp3', 'happiny.mp3', 'hariyama.mp3', 'hatenna.mp3', 'hatterene.mp3', 'hattrem.mp3', 'haunter.mp3', 'hawlucha.mp3', 'haxorus.mp3', 'heatmor.mp3', 'heatran.mp3', 'heliolisk.mp3', 'helioptile.mp3', 'hemogoblin.mp3', 'heracross-mega.mp3', 'heracross.mp3', 'herdier.mp3', 'hippopotas.mp3', 'hippowdon.mp3', 'hitmonchan.mp3', 'hitmonlee.mp3', 'hitmontop.mp3', 'honchkrow.mp3', 'honedge.mp3', 'hooh.mp3', 'hoopa-unbound.mp3', 'hoopa.mp3', 'hoothoot.mp3', 'hoppip.mp3', 'horsea.mp3', 'houndoom-mega.mp3', 'houndoom.mp3', 'houndour.mp3', 'houndstone.mp3', 'huntail.mp3', 'hydrapple.mp3', 'hydreigon.mp3', 'hypno.mp3', 'igglybuff.mp3', 'illumise.mp3', 'impidimp.mp3', 'incineroar.mp3', 'indeedee-f.mp3', 'indeedee.mp3', 'infernape.mp3', 'inkay.mp3', 'inteleon.mp3', 'ironboulder.mp3', 'ironbundle.mp3', 'ironcrown.mp3', 'ironhands.mp3', 'ironjugulis.mp3', 'ironleaves.mp3', 'ironmoth.mp3', 'ironthorns.mp3', 'irontreads.mp3', 'ironvaliant.mp3', 'ivysaur.mp3', 'jangmoo.mp3', 'jellicent.mp3', 'jigglypuff.mp3', 'jirachi.mp3', 'jolteon.mp3', 'joltik.mp3', 'jumbao.mp3', 'jumpluff.mp3', 'justyke.mp3', 'jynx.mp3', 'kabuto.mp3', 'kabutops.mp3', 'kadabra.mp3', 'kakuna.mp3', 'kangaskhan-mega.mp3', 'kangaskhan.mp3', 'karrablast.mp3', 'kartana.mp3', 'kecleon.mp3', 'keldeo.mp3', 'kerfluffle.mp3', 'kilowattrel.mp3', 'kingambit.mp3', 'kingdra.mp3', 'kingler.mp3', 'kirlia.mp3', 'kitsunoh.mp3', 'klang.mp3', 'klawf.mp3', 'kleavor.mp3', 'klefki.mp3', 'klink.mp3', 'klinklang.mp3', 'koffing.mp3', 'komala.mp3', 'kommoo.mp3', 'koraidon.mp3', 'krabby.mp3', 'kricketot.mp3', 'kricketune.mp3', 'krilowatt.mp3', 'krokorok.mp3', 'krookodile.mp3', 'kubfu.mp3', 'kyogre-primal.mp3', 'kyogre.mp3', 'kyurem-black.mp3', 'kyurem-white.mp3', 'kyurem.mp3', 'lairon.mp3', 'lampent.mp3', 'landorus-therian.mp3', 'landorus.mp3', 'lanturn.mp3', 'lapras.mp3', 'larvesta.mp3', 'larvitar.mp3', 'latias-mega.mp3', 'latias.mp3', 'latios-mega.mp3', 'latios.mp3', 'leafeon.mp3', 'leavanny.mp3', 'lechonk.mp3', 'ledian.mp3', 'ledyba.mp3', 'lickilicky.mp3', 'lickitung.mp3', 'liepard.mp3', 'lileep.mp3', 'lilligant.mp3', 'lillipup.mp3', 'linoone.mp3', 'litleo.mp3', 'litten.mp3', 'litwick.mp3', 'lokix.mp3', 'lombre.mp3', 'lopunny-mega.mp3', 'lopunny.mp3', 'lotad.mp3', 'loudred.mp3', 'lucario-mega.mp3', 'lucario.mp3', 'ludicolo.mp3', 'lugia.mp3', 'lumineon.mp3', 'lunala.mp3', 'lunatone.mp3', 'lurantis.mp3', 'luvdisc.mp3', 'luxio.mp3', 'luxray.mp3', 'lycanroc-dusk.mp3', 'lycanroc-midnight.mp3', 'lycanroc.mp3', 'mabosstiff.mp3', 'machamp.mp3', 'machoke.mp3', 'machop.mp3', 'magby.mp3', 'magcargo.mp3', 'magearna.mp3', 'magikarp.mp3', 'magmar.mp3', 'magmortar.mp3', 'magnemite.mp3', 'magneton.mp3', 'magnezone.mp3', 'makuhita.mp3', 'malaconda.mp3', 'malamar.mp3', 'mamoswine.mp3', 'manaphy.mp3', 'mandibuzz.mp3', 'manectric-mega.mp3', 'manectric.mp3', 'mankey.mp3', 'mantine.mp3', 'mantyke.mp3', 'maractus.mp3', 'mareanie.mp3', 'mareep.mp3', 'marill.mp3', 'marowak.mp3', 'marshadow.mp3', 'marshtomp.mp3', 'maschiff.mp3', 'masquerain.mp3', 'maushold-four.mp3', 'maushold.mp3', 'mawile-mega.mp3', 'mawile.mp3', 'medicham-mega.mp3', 'medicham.mp3', 'meditite.mp3', 'meganium.mp3', 'melmetal.mp3', 'meloetta.mp3', 'meltan.mp3', 'meowscarada.mp3', 'meowstic.mp3', 'meowth.mp3', 'mesprit.mp3', 'metagross-mega.mp3', 'metagross.mp3', 'metang.mp3', 'metapod.mp3', 'mew.mp3', 'mewtwo-megax.mp3', 'mewtwo-megay.mp3', 'mewtwo.mp3', 'miasmaw.mp3', 'miasmite.mp3', 'mienfoo.mp3', 'mienshao.mp3', 'mightyena.mp3', 'milcery.mp3', 'milotic.mp3', 'miltank.mp3', 'mimejr.mp3', 'mimikyu.mp3', 'minccino.mp3', 'minior.mp3', 'minun.mp3', 'miraidon.mp3', 'misdreavus.mp3', 'mismagius.mp3', 'mollux.mp3', 'moltres.mp3', 'monferno.mp3', 'monohm.mp3', 'morelull.mp3', 'morgrem.mp3', 'morpeko-hangry.mp3', 'morpeko.mp3', 'mothim.mp3', 'mrmime.mp3', 'mrrime.mp3', 'mudbray.mp3', 'mudkip.mp3', 'mudsdale.mp3', 'muk.mp3', 'mumbao.mp3', 'munchlax.mp3', 'munkidori.mp3', 'munna.mp3', 'murkrow.mp3', 'musharna.mp3', 'nacli.mp3', 'naclstack.mp3', 'naganadel.mp3', 'natu.mp3', 'naviathan.mp3', 'necrozma-dawnwings.mp3', 'necrozma-duskmane.mp3', 'necrozma-ultra.mp3', 'necrozma.mp3', 'necturine.mp3', 'necturna.mp3', 'nickit.mp3', 'nidoking.mp3', 'nidoqueen.mp3', 'nidoranf.mp3', 'nidoranm.mp3', 'nidorina.mp3', 'nidorino.mp3', 'nihilego.mp3', 'nincada.mp3', 'ninetales.mp3', 'ninjask.mp3', 'noctowl.mp3', 'nohface.mp3', 'noibat.mp3', 'noivern.mp3', 'nosepass.mp3', 'numel.mp3', 'nuzleaf.mp3', 'nymble.mp3', 'obstagoon.mp3', 'octillery.mp3', 'oddish.mp3', 'ogerpon.mp3', 'oinkologne-f.mp3', 'oinkologne.mp3', 'okidogi.mp3', 'omanyte.mp3', 'omastar.mp3', 'onix.mp3', 'oranguru.mp3', 'orbeetle.mp3', 'oricorio-pau.mp3', 'oricorio-pompom.mp3', 'oricorio-sensu.mp3', 'oricorio.mp3', 'orthworm.mp3', 'oshawott.mp3', 'overqwil.mp3', 'pachirisu.mp3', 'pajantom.mp3', 'palafin-hero.mp3', 'palafin.mp3', 'palkia.mp3', 'palossand.mp3', 'palpitoad.mp3', 'pancham.mp3', 'pangoro.mp3', 'panpour.mp3', 'pansage.mp3', 'pansear.mp3', 'paras.mp3', 'parasect.mp3', 'passimian.mp3', 'patrat.mp3', 'pawmi.mp3', 'pawmo.mp3', 'pawmot.mp3', 'pawniard.mp3', 'pecharunt.mp3', 'pelipper.mp3', 'perrserker.mp3', 'persian.mp3', 'petilil.mp3', 'phanpy.mp3', 'phantump.mp3', 'pheromosa.mp3', 'phione.mp3', 'pichu.mp3', 'pidgeot-mega.mp3', 'pidgeot.mp3', 'pidgeotto.mp3', 'pidgey.mp3', 'pidove.mp3', 'pignite.mp3', 'pikachu-starter.mp3', 'pikachu.mp3', 'pikipek.mp3', 'piloswine.mp3', 'pincurchin.mp3', 'pineco.mp3', 'pinsir-mega.mp3', 'pinsir.mp3', 'piplup.mp3', 'plasmanta.mp3', 'pluffle.mp3', 'plusle.mp3', 'poipole.mp3', 'politoed.mp3', 'poliwag.mp3', 'poliwhirl.mp3', 'poliwrath.mp3', 'poltchageist.mp3', 'polteageist.mp3', 'ponyta.mp3', 'poochyena.mp3', 'popplio.mp3', 'porygon.mp3', 'porygon2.mp3', 'porygonz.mp3', 'primarina.mp3', 'primeape.mp3', 'prinplup.mp3', 'privatyke.mp3', 'probopass.mp3', 'protowatt.mp3', 'psyduck.mp3', 'pumpkaboo-super.mp3', 'pumpkaboo.mp3', 'pupitar.mp3', 'purrloin.mp3', 'purugly.mp3', 'pyroak.mp3', 'pyroar.mp3', 'pyukumuku.mp3', 'quagsire.mp3', 'quaquaval.mp3', 'quaxly.mp3', 'quaxwell.mp3', 'quilava.mp3', 'quilladin.mp3', 'qwilfish.mp3', 'raboot.mp3', 'rabsca.mp3', 'ragingbolt.mp3', 'raichu.mp3', 'raikou.mp3', 'ralts.mp3', 'rampardos.mp3', 'rapidash.mp3', 'raticate.mp3', 'rattata.mp3', 'rayquaza-mega.mp3', 'rayquaza.mp3', 'rebble.mp3', 'regice.mp3', 'regidrago.mp3', 'regieleki.mp3', 'regigigas.mp3', 'regirock.mp3', 'registeel.mp3', 'relicanth.mp3', 'rellor.mp3', 'remoraid.mp3', 'reshiram.mp3', 'reuniclus.mp3', 'revavroom.mp3', 'revenankh.mp3', 'rhydon.mp3', 'rhyhorn.mp3', 'rhyperior.mp3', 'ribombee.mp3', 'rillaboom.mp3', 'riolu.mp3', 'roaringmoon.mp3', 'rockruff.mp3', 'roggenrola.mp3', 'rolycoly.mp3', 'rookidee.mp3', 'roselia.mp3', 'roserade.mp3', 'rotom.mp3', 'rowlet.mp3', 'rufflet.mp3', 'runerigus.mp3', 'sableye-mega.mp3', 'sableye.mp3', 'saharaja.mp3', 'saharascal.mp3', 'salamence-mega.mp3', 'salamence.mp3', 'salandit.mp3', 'salazzle.mp3', 'samurott.mp3', 'sandaconda.mp3', 'sandile.mp3', 'sandshrew.mp3', 'sandslash.mp3', 'sandygast.mp3', 'sandyshocks.mp3', 'sawk.mp3', 'sawsbuck.mp3', 'scatterbug.mp3', 'scattervein.mp3', 'sceptile-mega.mp3', 'sceptile.mp3', 'scizor-mega.mp3', 'scizor.mp3', 'scolipede.mp3', 'scorbunny.mp3', 'scovillain.mp3', 'scrafty.mp3', 'scraggy.mp3', 'scratchet.mp3', 'screamtail.mp3', 'scyther.mp3', 'seadra.mp3', 'seaking.mp3', 'sealeo.mp3', 'seedot.mp3', 'seel.mp3', 'seismitoad.mp3', 'sentret.mp3', 'serperior.mp3', 'servine.mp3', 'seviper.mp3', 'sewaddle.mp3', 'sharpedo-mega.mp3', 'sharpedo.mp3', 'shaymin-sky.mp3', 'shaymin.mp3', 'shedinja.mp3', 'shelgon.mp3', 'shellder.mp3', 'shellos.mp3', 'shelmet.mp3', 'shieldon.mp3', 'shiftry.mp3', 'shiinotic.mp3', 'shinx.mp3', 'shroodle.mp3', 'shroomish.mp3', 'shuckle.mp3', 'shuppet.mp3', 'sigilyph.mp3', 'silcoon.mp3', 'silicobra.mp3', 'silvally.mp3', 'simipour.mp3', 'simisage.mp3', 'simisear.mp3', 'sinistcha.mp3', 'sinistea.mp3', 'sirfetchd.mp3', 'sizzlipede.mp3', 'skarmory.mp3', 'skeledirge.mp3', 'skiddo.mp3', 'skiploom.mp3', 'skitty.mp3', 'skorupi.mp3', 'skrelp.mp3', 'skuntank.mp3', 'skwovet.mp3', 'slaking.mp3', 'slakoth.mp3', 'sliggoo.mp3', 'slitherwing.mp3', 'slowbro-mega.mp3', 'slowbro.mp3', 'slowking.mp3', 'slowpoke-galar.mp3', 'slowpoke.mp3', 'slugma.mp3', 'slurpuff.mp3', 'smeargle.mp3', 'smogecko.mp3', 'smoguana.mp3', 'smokomodo.mp3', 'smoliv.mp3', 'smoochum.mp3', 'snaelstrom.mp3', 'sneasel.mp3', 'sneasler.mp3', 'snivy.mp3', 'snom.mp3', 'snorlax.mp3', 'snorunt.mp3', 'snover.mp3', 'snubbull.mp3', 'snugglow.mp3', 'sobble.mp3', 'solgaleo.mp3', 'solosis.mp3', 'solotl.mp3', 'solrock.mp3', 'spearow.mp3', 'spectrier.mp3', 'spewpa.mp3', 'spheal.mp3', 'spidops.mp3', 'spinarak.mp3', 'spinda.mp3', 'spiritomb.mp3', 'spoink.mp3', 'sprigatito.mp3', 'spritzee.mp3', 'squawkabilly.mp3', 'squirtle.mp3', 'stakataka.mp3', 'stantler.mp3', 'staraptor.mp3', 'staravia.mp3', 'starly.mp3', 'starmie.mp3', 'staryu.mp3', 'steelix-mega.mp3', 'steelix.mp3', 'steenee.mp3', 'stonjourner.mp3', 'stoutland.mp3', 'stratagem.mp3', 'stufful.mp3', 'stunfisk.mp3', 'stunky.mp3', 'sudowoodo.mp3', 'suicune.mp3', 'sunflora.mp3', 'sunkern.mp3', 'surskit.mp3', 'swablu.mp3', 'swadloon.mp3', 'swalot.mp3', 'swampert-mega.mp3', 'swampert.mp3', 'swanna.mp3', 'swellow.mp3', 'swinub.mp3', 'swirlix.mp3', 'swirlpool.mp3', 'swoobat.mp3', 'syclant.mp3', 'syclar.mp3', 'sylveon.mp3', 'tactite.mp3', 'tadbulb.mp3', 'taillow.mp3', 'talonflame.mp3', 'tandemaus.mp3', 'tangela.mp3', 'tangrowth.mp3', 'tapubulu.mp3', 'tapufini.mp3', 'tapukoko.mp3', 'tapulele.mp3', 'tarountula.mp3', 'tatsugiri-droopy.mp3', 'tatsugiri-stretchy.mp3', 'tatsugiri.mp3', 'tauros.mp3', 'teddiursa.mp3', 'tentacool.mp3', 'tentacruel.mp3', 'tepig.mp3', 'terapagos.mp3', 'terrakion.mp3', 'thievul.mp3', 'throh.mp3', 'thundurus-therian.mp3', 'thundurus.mp3', 'thwackey.mp3', 'timburr.mp3', 'tinglu.mp3', 'tinkatink.mp3', 'tinkaton.mp3', 'tinkatuff.mp3', 'tirtouga.mp3', 'toedscool.mp3', 'toedscruel.mp3', 'togedemaru.mp3', 'togekiss.mp3', 'togepi.mp3', 'togetic.mp3', 'tomohawk.mp3', 'torchic.mp3', 'torkoal.mp3', 'tornadus-therian.mp3', 'tornadus.mp3', 'torracat.mp3', 'torterra.mp3', 'totodile.mp3', 'toucannon.mp3', 'toxapex.mp3', 'toxel.mp3', 'toxicroak.mp3', 'toxtricity-lowkey.mp3', 'toxtricity.mp3', 'tranquill.mp3', 'trapinch.mp3', 'treecko.mp3', 'trevenant.mp3', 'tropius.mp3', 'trubbish.mp3', 'trumbeak.mp3', 'tsareena.mp3', 'turtonator.mp3', 'turtwig.mp3', 'tympole.mp3', 'tynamo.mp3', 'typenull.mp3', 'typhlosion.mp3', 'tyranitar-mega.mp3', 'tyranitar.mp3', 'tyrantrum.mp3', 'tyrogue.mp3', 'tyrunt.mp3', 'umbreon.mp3', 'unfezant.mp3', 'unown.mp3', 'ursaluna.mp3', 'ursaring.mp3', 'urshifu-rapidstrike.mp3', 'urshifu.mp3', 'uxie.mp3', 'vanillish.mp3', 'vanillite.mp3', 'vanilluxe.mp3', 'vaporeon.mp3', 'varoom.mp3', 'veluza.mp3', 'venipede.mp3', 'venomicon.mp3', 'venomoth.mp3', 'venonat.mp3', 'venusaur-mega.mp3', 'venusaur.mp3', 'vespiquen.mp3', 'vibrava.mp3', 'victini.mp3', 'victreebel.mp3', 'vigoroth.mp3', 'vikavolt.mp3', 'vileplume.mp3', 'virizion.mp3', 'vivillon.mp3', 'volbeat.mp3', 'volcanion.mp3', 'volcarona.mp3', 'volkraken.mp3', 'volkritter.mp3', 'voltorb.mp3', 'voodoll.mp3', 'voodoom.mp3', 'vullaby.mp3', 'vulpix.mp3', 'wailmer.mp3', 'wailord.mp3', 'walkingwake.mp3', 'walrein.mp3', 'wartortle.mp3', 'watchog.mp3', 'wattrel.mp3', 'weavile.mp3', 'weedle.mp3', 'weepinbell.mp3', 'weezing.mp3', 'whimsicott.mp3', 'whirlipede.mp3', 'whiscash.mp3', 'whismur.mp3', 'wigglytuff.mp3', 'wiglett.mp3', 'wimpod.mp3', 'wingull.mp3', 'wishiwashi-school.mp3', 'wishiwashi.mp3', 'wobbuffet.mp3', 'wochien.mp3', 'woobat.mp3', 'wooloo.mp3', 'wooper.mp3', 'wormadam.mp3', 'wugtrio.mp3', 'wurmple.mp3', 'wynaut.mp3', 'wyrdeer.mp3', 'xatu.mp3', 'xerneas.mp3', 'xurkitree.mp3', 'yamask.mp3', 'yamper.mp3', 'yanma.mp3', 'yanmega.mp3', 'yungoos.mp3', 'yveltal.mp3', 'zacian-crowned.mp3', 'zacian.mp3', 'zamazenta-crowned.mp3', 'zamazenta.mp3', 'zangoose.mp3', 'zapdos.mp3', 'zarude.mp3', 'zebstrika.mp3', 'zekrom.mp3', 'zeraora.mp3', 'zigzagoon.mp3', 'zoroark.mp3', 'zorua.mp3', 'zubat.mp3', 'zweilous.mp3', 'zygarde-10.mp3', 'zygarde-complete.mp3', 'zygarde.mp3']
+        self.item_names = ["absorb-bulb.png","aguav-berry.png","air-balloon.png","amulet-coin.png","antidote.png","apicot-berry.png","armor-fossil.png","aspear-berry.png","awakening.png","babiri-berry.png","balm-mushroom.png","belue-berry.png","berry-juice.png","big-mushroom.png","big-nugget.png","big-pearl.png","big-root.png","binding-band.png","black-belt.png","black-flute.png","black-glasses.png","black-sludge.png","blue-flute.png","blue-scarf.png","blue-shard.png","bluk-berry.png","bright-powder.png","bug-gem.png","burn-heal.png","calcium.png","carbos.png","casteliacone.png","cell-battery.png","charcoal.png","charti-berry.png","cheri-berry.png","chesto-berry.png","chilan-berry.png","choice-band.png","choice-scarf.png","choice-specs.png","chople-berry.png","claw-fossil.png","cleanse-tag.png","clever-wing.png","coba-berry.png","colbur-berry.png","comet-shard.png","cornn-berry.png","cover-fossil.png","custap-berry.png","damp-rock.png","dark-gem.png","dawn-stone.png","deep-sea-scale.png","deep-sea-tooth.png","destiny-knot.png","dire-hit.png","dive-ball.png","dome-fossil.png","draco-plate.png","dragon-fang.png","dragon-gem.png","dragon-scale.png","dread-plate.png","dubious-disc.png","durin-berry.png","dusk-ball.png","dusk-stone.png","earth-plate.png","eject-button.png","electirizer.png","electric-gem.png","elixir.png","energy-powder.png","energy-root.png","enigma-berry.png","escape-rope.png","ether.png","everstone.png","eviolite.png","exp-share.png","expert-belt.png","fighting-gem.png","figy-berry.png","fire-gem.png","fire-stone.png","fist-plate.png","flame-orb.png","flame-plate.png","float-stone.png","fluffy-tail.png","flying-gem.png","focus-band.png","focus-sash.png","fresh-water.png","full-heal.png","full-incense.png","full-restore.png","ganlon-berry.png","genius-wing.png","ghost-gem.png","grass-gem.png","great-ball.png","green-scarf.png","green-shard.png","grepa-berry.png","grip-claw.png","ground-gem.png","guard-spec.png","haban-berry.png","hard-stone.png","heal-ball.png","heal-powder.png","health-wing.png","heart-scale.png","heat-rock.png","helix-fossil.png","hondew-berry.png","honey.png","hp-up.png","hyper-potion.png","iapapa-berry.png","ice-gem.png","ice-heal.png","icicle-plate.png","icy-rock.png","insect-plate.png","iron-ball.png","iron-plate.png","iron.png","jaboca-berry.png","kasib-berry.png","kebia-berry.png","kelpsy-berry.png","kings-rock.png","lagging-tail.png","lansat-berry.png","lava-cookie.png","lax-incense.png","leaf-stone.png","leftovers.png","lemonade.png","leppa-berry.png","liechi-berry.png","life-orb.png","light-ball.png","light-clay.png","luck-incense.png","lucky-egg.png","lucky-punch.png","lum-berry.png","luxury-ball.png","macho-brace.png","magmarizer.png","magnet.png","mago-berry.png","magost-berry.png","master-ball.png","max-elixir.png","max-ether.png","max-potion.png","max-repel.png","max-revive.png","meadow-plate.png","mental-herb.png","metal-coat.png","metal-powder.png","metronome.png","micle-berry.png","mind-plate.png","miracle-seed.png","moomoo-milk.png","moon-stone.png","muscle-band.png","muscle-wing.png","mystic-water.png","nanab-berry.png","nest-ball.png","net-ball.png","never-melt-ice.png","nomel-berry.png","normal-gem.png","nugget.png","occa-berry.png","odd-incense.png","old-amber.png","old-gateau.png","oran-berry.png","oval-stone.png","pamtre-berry.png","paralyze-heal.png","pass-orb.png","passho-berry.png","payapa-berry.png","pearl-string.png","pearl.png","pecha-berry.png","persim-berry.png","petaya-berry.png","pinap-berry.png","pink-scarf.png","plume-fossil.png","poison-barb.png","poison-gem.png","poke-ball.png","poke-doll.png","poke-toy.png","pomeg-berry.png","potion.png","power-anklet.png","power-band.png","power-belt.png","power-bracer.png","power-herb.png","power-lens.png","power-weight.png","pp-max.png","pp-up.png","premier-ball.png","pretty-wing.png","prism-scale.png","protector.png","protein.png","psychic-gem.png","pure-incense.png","qualot-berry.png","quick-ball.png","quick-claw.png","quick-powder.png","rabuta-berry.png","rare-bone.png","rare-candy.png","rawst-berry.png","razor-claw.png","razor-fang.png","razz-berry.png","reaper-cloth.png","red-card.png","red-flute.png","red-scarf.png","red-shard.png","relic-band.png","relic-copper.png","relic-crown.png","relic-gold.png","relic-silver.png","relic-statue.png","relic-vase.png","repeat-ball.png","repel.png","resist-wing.png","revival-herb.png","revive.png","rindo-berry.png","ring-target.png","rock-gem.png","rock-incense.png","rocky-helmet.png","root-fossil.png","rose-incense.png","rowap-berry.png","sacred-ash.png","safari-ball.png","salac-berry.png","scope-lens.png","sea-incense.png","sharp-beak.png","shed-shell.png","shell-bell.png","shiny-stone.png","shoal-salt.png","shoal-shell.png","shuca-berry.png","silk-scarf.png","silver-powder.png","sitrus-berry.png","skull-fossil.png","sky-plate.png","smoke-ball.png","smooth-rock.png","soda-pop.png","soft-sand.png","soothe-bell.png","soul-dew.png","spell-tag.png","spelon-berry.png","splash-plate.png","spooky-plate.png","star-piece.png","stardust.png","starf-berry.png","steel-gem.png","stick.png","sticky-barb.png","stone-plate.png","sun-stone.png","super-potion.png","super-repel.png","sweet-heart.png","swift-wing.png","tamato-berry.png","tanga-berry.png","thick-club.png","thunder-stone.png","timer-ball.png","tiny-mushroom.png","toxic-orb.png","toxic-plate.png","twisted-spoon.png","ultra-ball.png","up-grade.png","wacan-berry.png","water-gem.png","water-stone.png","watmel-berry.png","wave-incense.png","wepear-berry.png","white-flute.png","white-herb.png","wide-lens.png","wiki-berry.png","wise-glasses.png","x-accuracy.png","x-attack.png","x-defense.png","x-sp-atk.png","x-sp-def.png","x-speed.png","yache-berry.png","yellow-flute.png","yellow-scarf.png","yellow-shard.png","zap-plate.png","zinc.png","zoom-lens.png"]
+        if not os.path.exists(self.items_destination_to):
+            os.makedirs(self.items_destination_to)
+        if not os.path.exists(self.badges_destination_to):
+            os.makedirs(self.badges_destination_to)
+        if not os.path.exists(self.sounds_destination_to):
+            os.makedirs(self.sounds_destination_to)
+        if not os.path.exists(self.front_dir):
+            os.makedirs(self.front_dir)
+        if not os.path.exists(self.back_dir):
+            os.makedirs(self.back_dir)
+        if not os.path.exists(self.user_path_data):
+            os.makedirs(self.user_path_data)
+
+        self.urls = [
+                "https://play.pokemonshowdown.com/data/learnsets.json",
+                "https://play.pokemonshowdown.com/data/pokedex.json",
+                "https://play.pokemonshowdown.com/data/moves.json",
+                "POKEAPI"
+        ]
+        self.csv_url = [
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/item_names.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_flavor_text.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/move_flavor_text.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon.csv",
+                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_stats.csv"
+        ]
 
     def save_to_json(self, pokedex, filename):
         with open(filename, 'w') as json_file:
@@ -4060,7 +4056,6 @@ class Downloader(QObject):
 
     def fetch_pokemon_data(self,url):
         response = requests.get(url)
-
         if response.status_code == 200:
             data = response.json()
             return data
@@ -4079,34 +4074,21 @@ class Downloader(QObject):
                     stat["stat"]["name"]: stat["effort"] for stat in pokemon_data["stats"]
                 },
                 "base_experience": pokemon_data["base_experience"],
-                "height": pokemon_data["height"],
-                "weight": pokemon_data["weight"],
                 "growth_rate": species_data["growth_rate"]["name"]
             }
             self.pokedex.append(entry)
 
     def download_pokemon_data(self):
         try:
-            urls = [
-                "https://play.pokemonshowdown.com/data/learnsets.json",
-                "https://play.pokemonshowdown.com/data/pokedex.json",
-                "https://play.pokemonshowdown.com/data/moves.json",
-                "POKEAPI"
-            ]
-            csv_url = [
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/item_names.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_flavor_text.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/move_flavor_text.csv",
-                "https://github.com/PokeAPI/pokeapi/blob/master/data/v2/csv/pokemon.csv"
-            ]
-            num_files = len(urls)
-            for i, url in enumerate(urls, start=1):
+            global user_path_sprites, pkmnimgfolder, backdefault, frontdefault, pokeapi_db_path
+            num_files = len(self.urls)
+            self.downloading_data_txt.emit()
+            for i, url in enumerate(self.urls, start=1):
                 if url != "POKEAPI":
                     response = requests.get(url)
                     if response.status_code == 200:
                         data = response.json()
-                        file_path = self.addon_dir / "user_files" / "data_files" / f"{url.split('/')[-1]}"
+                        file_path = self.user_path_data / f"{url.split('/')[-1]}"
                         with open(file_path, 'w') as json_file:
                             json.dump(data, json_file, indent=2)
                     else:
@@ -4120,15 +4102,74 @@ class Downloader(QObject):
                         self.create_pokedex(pokemon_id)
                         progress = int((pokemon_id / id) * 100)
                         self.progress_updated.emit(progress)
-                    self.save_to_json(self.pokedex, self.addon_dir / "user_files" / "data_files" / "pokeapi_db.json")
-            num_files = len(csv_url)
-            for i, url in enumerate(csv_url, start=1):
+                    self.save_to_json(self.pokedex, pokeapi_db_path)
+            num_files = len(self.csv_url)
+            for i, url in enumerate(self.csv_url, start=1):
                 with requests.get(url, stream=True) as r:
                     file_path = self.addon_dir / "user_files" / "data_files" / f"{url.split('/')[-1]}"
                     with open(file_path, 'wb') as f:
                         for chunk in r.iter_content(chunk_size=8192): 
                             f.write(chunk)
                 progress = int((i / num_files) * 100)
+                self.progress_updated.emit(progress)
+            total_downloaded = 0
+            self.id_to = 898
+            self.downloading_sprites_txt.emit()
+            for pokemon_id in range(1, self.id_to + 1):
+                    for sprite_type in ["front_default", "back_default"]:
+                        #showInfo("PokemonID - +659")
+                        if sprite_type == "front_default":
+                            base_url = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{pokemon_id}.png"
+                            response = requests.get(base_url)
+                            if response.status_code == 200:
+                                save_dir = self.front_dir
+                                with open(os.path.join(save_dir, f"{pokemon_id}.png"), "wb") as f:
+                                    f.write(response.content)
+                        elif sprite_type == "back_default":
+                            base_url = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/{pokemon_id}.png"
+                            response = requests.get(base_url)
+                            if response.status_code == 200:
+                                save_dir = self.back_dir
+                                with open(os.path.join(save_dir, f"{pokemon_id}.png"), "wb") as f:
+                                    f.write(response.content)
+                        total_downloaded += 1
+                        progress = int((pokemon_id / self.id_to) * 100)
+                        self.progress_updated.emit(progress)
+            self.downloading_item_sprites_txt.emit()
+            item_files = 336
+            i = 0
+            for item_name in self.item_names:
+                i += 1
+                item_url = self.item_base_url + item_name
+                response = requests.get(item_url)
+                if response.status_code == 200:
+                    with open(os.path.join(self.items_destination_to, item_name), 'wb') as file:
+                        file.write(response.content)
+                progress = int((i / item_files) * 100)
+                self.progress_updated.emit(progress)
+            # Emit the download_complete signal at the end of the download process
+            max_badges = 68
+            self.downloading_badges_sprites_txt.emit()
+            for badge_num in range(1,68):
+                badge_file = f"{badge_num}.png"
+                badge_url = self.badges_base_url + badge_file
+                response = requests.get(badge_url)
+                if response.status_code == 200:
+                    with open(os.path.join(self.badges_destination_to, badge_file), 'wb') as file:
+                        file.write(response.content)
+                progress = int((badge_num / max_badges) * 100)
+                self.progress_updated.emit(progress)
+            self.downloading_sounds_txt.emit()
+            num_sound_files = len(self.sound_names)
+            i = 0
+            for sound in self.sound_names:
+                i += 1
+                sounds_url = self.sounds_base_url + sound
+                response = requests.get(sounds_url)
+                if response.status_code == 200:
+                    with open(os.path.join(self.sounds_destination_to, sound), 'wb') as file:
+                        file.write(response.content)
+                progress = int((i / num_sound_files) * 100)
                 self.progress_updated.emit(progress)
             self.download_complete.emit()
         except Exception as e:
@@ -4137,7 +4178,7 @@ class Downloader(QObject):
 class LoadingDialog(QDialog):
     def __init__(self, addon_dir, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Downloading Pokemon Data")
+        self.setWindowTitle("Downloading Resources")
         self.label = QLabel("Downloading... \nThis may take several minutes.", self)
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.progress = QProgressBar(self)
@@ -4154,6 +4195,12 @@ class LoadingDialog(QDialog):
         self.downloader.moveToThread(self.thread)
         self.thread.started.connect(self.downloader.download_pokemon_data)
         self.downloader.progress_updated.connect(self.progress.setValue)
+        self.downloader.downloading_data_txt.connect(self.downloading_data_txt)
+        self.downloader.downloading_sprites_txt.connect(self.downloading_sprite_txt)
+        self.downloader.downloading_item_sprites_txt.connect(self.downloading_item_sprites_txt)
+        self.downloader.downloading_badges_sprites_txt.connect(self.downloading_badges_sprites_txt)
+        self.downloader.downloading_sounds_txt.connect(self.downloading_sounds_txt)
+        self.downloader.progress_updated.connect(self.progress.setValue)
         self.downloader.download_complete.connect(self.on_download_complete)
         self.downloader.download_complete.connect(self.thread.quit)
         self.downloader.download_complete.connect(self.downloader.deleteLater)
@@ -4162,6 +4209,21 @@ class LoadingDialog(QDialog):
 
     def on_download_complete(self):
         self.label.setText("Download complete! You can now close this window.")
+    
+    def downloading_data_txt(self):
+        self.label.setText("Now Downloading Data Files")
+
+    def downloading_sprite_txt(self):
+        self.label.setText("Now Downloading Sprite Files")
+
+    def downloading_sounds_txt(self):
+        self.label.setText("Now Downloading Sound Files")
+        
+    def downloading_item_sprites_txt(self):
+        self.label.setText("Now Downloading Item Sprites...")
+
+    def downloading_badges_sprites_txt(self):
+        self.label.setText("Now Downloading Badges...")
 
 def show_agreement_and_download_database():
     # Show the agreement dialog
@@ -4175,110 +4237,6 @@ def pokeapi_db_downloader():
     global addon_dir
     dlg = LoadingDialog(addon_dir)
     dlg.exec()
-
-def count_images_in_folder(folder_path):
-    #Counts the number of images in the specified folder.
-    return len([name for name in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, name))])
-
-def show_agreement_and_downloadsprites():
-    # Show the agreement dialog
-    dialog = AgreementDialog()
-    if dialog.exec() == QDialog.DialogCode.Accepted:
-        # User agreed, proceed with download
-        download_sprites()
-
-class SpriteDownloader(QThread):
-    progress_updated = pyqtSignal(int)
-    download_complete = pyqtSignal()
-    def __init__(self, sprites_path, id_to):
-        super().__init__()
-        self.sprites_path = sprites_path
-        self.id_to = id_to
-        self.front_dir = os.path.join(self.sprites_path, "front_default")
-        self.back_dir = os.path.join(self.sprites_path, "back_default")
-        os.makedirs(self.front_dir, exist_ok=True)
-        os.makedirs(self.back_dir, exist_ok=True)
-
-    def run(self):
-        base_url = "https://pokeapi.co/api/v2/pokemon"
-        total_downloaded = 0
-        for pokemon_id in range(1, self.id_to + 1):
-            if pokemon_id < 5:
-                for sprite_type in ["front_default", "back_default"]:
-                    url = f"{base_url}/{pokemon_id}"
-                    response = requests.get(url)
-                    if response.status_code == 200:
-                        pokemon_data = response.json()
-                        if sprite_type in pokemon_data["sprites"]:
-                            sprite_url = pokemon_data["sprites"][sprite_type]
-                            response = requests.get(sprite_url)
-                            if response.status_code == 200:
-                                # Determine the directory to save the image based on sprite type
-                                save_dir = self.front_dir if sprite_type == "front_default" else self.back_dir
-                                with open(os.path.join(save_dir, f"{pokemon_id}.png"), "wb") as f:
-                                    f.write(response.content)
-                                    total_downloaded += 1
-                                    self.progress_updated.emit(total_downloaded)
-            else:
-                for sprite_type in ["front_default", "back_default"]:
-                    #showInfo("PokemonID - +659")
-                    if sprite_type == "front_default":
-                        base_url = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{pokemon_id}.png"
-                        response = requests.get(base_url)
-                        if response.status_code == 200:
-                            save_dir = self.front_dir
-                            with open(os.path.join(save_dir, f"{pokemon_id}.png"), "wb") as f:
-                                f.write(response.content)
-                    elif sprite_type == "back_default":
-                        base_url = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/{pokemon_id}.png"
-                        response = requests.get(base_url)
-                        if response.status_code == 200:
-                            save_dir = self.back_dir
-                            with open(os.path.join(save_dir, f"{pokemon_id}.png"), "wb") as f:
-                                f.write(response.content)
-                    total_downloaded += 1
-                    self.progress_updated.emit(total_downloaded)
-        self.download_complete.emit()
-
-def download_sprites():
-    try:
-        global addon_dir
-        # (Your existing setup code)
-        sprites_path = str(addon_dir / "pokemon_sprites")
-        id_to = 898 #pokeapi free to uses
-        total_images_expected = id_to * 2
-        max_id = 898 #latest backdefaults
-        max_total_images_expected = id_to * 2
-        def show_loading_window():
-            try:
-                window = QDialog()
-                window.setWindowTitle("Loading Images")
-                window.label = QLabel("Loading Images... \n This may take several minutes", window)
-                window.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                window.progress = QProgressBar(window)
-                window.progress.setRange(0, total_images_expected)
-                layout = QVBoxLayout()
-                layout.addWidget(window.label)
-                layout.addWidget(window.progress)
-                window.setLayout(layout)
-
-                def update_progress(value):
-                    window.progress.setValue(value)
-
-                def on_download_complete():
-                    window.label.setText("All Images have been downloaded. \n Please close this window now and once all needed files have been installed \n => Restart Anki.")
-
-                sprite_downloader = SpriteDownloader(sprites_path, id_to)
-                sprite_downloader.progress_updated.connect(update_progress)
-                sprite_downloader.download_complete.connect(on_download_complete)
-                sprite_downloader.start()
-                window.exec()
-            except Exception as e:
-                showWarning(f"An error occured in download window: {e}")
-        
-        show_loading_window()
-    except Exception as e:
-        showWarning(f"An error occured in the download process of the sprites: {e}")
 
 def show_agreement_and_downloadspritespokeshowdown():
     # Show the agreement dialog
@@ -4325,8 +4283,9 @@ class SpriteGifDownloader(QThread):
 
 def download_gifsprites():
     global addon_dir
+    global pkmnimgfolder
     # (Your existing setup code)
-    sprites_path = str(addon_dir / "pokemon_sprites")
+    sprites_path = str(pkmnimgfolder)
     id_to = 2034
     total_images_expected = id_to * 2
     max_id = 1017
@@ -4358,425 +4317,6 @@ def download_gifsprites():
         window.exec()
 
     show_loading_window()
-
-class ItemSpriteDownloader(QThread):
-    progress_updated = pyqtSignal(int)
-    download_complete = pyqtSignal()  # Signal to indicate download completion
-    downloading_sounds_txt = pyqtSignal()
-    downloading_item_sprites_txt = pyqtSignal()
-    downloading_badges_sprites_txt = pyqtSignal()  # Signal to indicate download completion
-
-    def __init__(self, destination_to):
-        super().__init__()
-        global addon_dir
-        self.items_destination_to = addon_dir / "pokemon_sprites" / "items"
-        self.badges_destination_to = addon_dir / "pokemon_sprites" / "badges"
-        self.sounds_destination_to = addon_dir / "pokemon_sprites" / "sounds"
-        self.badges_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/"
-        self.item_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dream-world/"
-        self.sounds_base_url = "https://play.pokemonshowdown.com/audio/cries/"
-        self.sound_names = ['ababo.mp3', 'abomasnow-mega.mp3', 'abomasnow.mp3', 'abra.mp3', 'absol-mega.mp3', 'absol.mp3', 'accelgor.mp3', 'aegislash.mp3', 'aerodactyl-mega.mp3', 'aerodactyl.mp3', 'aggron-mega.mp3', 'aggron.mp3', 'aipom.mp3', 'alakazam-mega.mp3', 'alakazam.mp3', 'alcremie.mp3', 'alomomola.mp3', 'altaria-mega.mp3', 'altaria.mp3', 'amaura.mp3', 'ambipom.mp3', 'amoonguss.mp3', 'ampharos-mega.mp3', 'ampharos.mp3', 'annihilape.mp3', 'anorith.mp3', 'appletun.mp3', 'applin.mp3', 'araquanid.mp3', 'arbok.mp3', 'arboliva.mp3', 'arcanine.mp3', 'arceus.mp3', 'archaludon.mp3', 'archen.mp3', 'archeops.mp3', 'arctibax.mp3', 'arctovish.mp3', 'arctozolt.mp3', 'argalis.mp3', 'arghonaut.mp3', 'ariados.mp3', 'armaldo.mp3', 'armarouge.mp3', 'aromatisse.mp3', 'aron.mp3', 'arrokuda.mp3', 'articuno.mp3', 'astrolotl.mp3', 'audino-mega.mp3', 'audino.mp3', 'aurorus.mp3', 'aurumoth.mp3', 'avalugg.mp3', 'axew.mp3', 'azelf.mp3', 'azumarill.mp3', 'azurill.mp3', 'bagon.mp3', 'baltoy.mp3', 'banette-mega.mp3', 'banette.mp3', 'barbaracle.mp3', 'barboach.mp3', 'barraskewda.mp3', 'basculegion.mp3', 'basculin.mp3', 'bastiodon.mp3', 'baxcalibur.mp3', 'bayleef.mp3', 'beartic.mp3', 'beautifly.mp3', 'beedrill-mega.mp3', 'beedrill.mp3', 'beheeyem.mp3', 'beldum.mp3', 'bellibolt.mp3', 'bellossom.mp3', 'bellsprout.mp3', 'bergmite.mp3', 'bewear.mp3', 'bibarel.mp3', 'bidoof.mp3', 'binacle.mp3', 'bisharp.mp3', 'blacephalon.mp3', 'blastoise-mega.mp3', 'blastoise.mp3', 'blaziken-mega.mp3', 'blaziken.mp3', 'blipbug.mp3', 'blissey.mp3', 'blitzle.mp3', 'boldore.mp3', 'boltund.mp3', 'bombirdier.mp3', 'bonsly.mp3', 'bouffalant.mp3', 'bounsweet.mp3', 'braixen.mp3', 'brambleghast.mp3', 'bramblin.mp3', 'brattler.mp3', 'braviary.mp3', 'breezi.mp3', 'breloom.mp3', 'brionne.mp3', 'bronzong.mp3', 'bronzor.mp3', 'brutebonnet.mp3', 'bruxish.mp3', 'budew.mp3', 'buizel.mp3', 'bulbasaur.mp3', 'buneary.mp3', 'bunnelby.mp3', 'burmy.mp3', 'butterfree.mp3', 'buzzwole.mp3', 'cacnea.mp3', 'cacturne.mp3', 'caimanoe.mp3', 'calyrex-ice.mp3', 'calyrex-shadow.mp3', 'calyrex.mp3', 'camerupt-mega.mp3', 'camerupt.mp3', 'capsakid.mp3', 'carbink.mp3', 'caribolt.mp3', 'carkol.mp3', 'carnivine.mp3', 'carracosta.mp3', 'carvanha.mp3', 'cascoon.mp3', 'castform.mp3', 'caterpie.mp3', 'cawdet.mp3', 'cawmodore.mp3', 'celebi.mp3', 'celesteela.mp3', 'centiskorch.mp3', 'ceruledge.mp3', 'cetitan.mp3', 'cetoddle.mp3', 'chandelure.mp3', 'chansey.mp3', 'charcadet.mp3', 'charizard-megax.mp3', 'charizard-megay.mp3', 'charizard.mp3', 'charjabug.mp3', 'charmander.mp3', 'charmeleon.mp3', 'chatot.mp3', 'cherrim.mp3', 'cherubi.mp3', 'chesnaught.mp3', 'chespin.mp3', 'chewtle.mp3', 'chienpao.mp3', 'chikorita.mp3', 'chimchar.mp3', 'chimecho.mp3', 'chinchou.mp3', 'chingling.mp3', 'chiyu.mp3', 'chromera.mp3', 'cinccino.mp3', 'cinderace.mp3', 'clamperl.mp3', 'clauncher.mp3', 'clawitzer.mp3', 'claydol.mp3', 'clefable.mp3', 'clefairy.mp3', 'cleffa.mp3', 'clobbopus.mp3', 'clodsire.mp3', 'cloyster.mp3', 'coalossal.mp3', 'cobalion.mp3', 'cofagrigus.mp3', 'colossoil.mp3', 'combee.mp3', 'combusken.mp3', 'comfey.mp3', 'conkeldurr.mp3', 'copperajah.mp3', 'coribalis.mp3', 'corphish.mp3', 'corsola.mp3', 'corviknight.mp3', 'corvisquire.mp3', 'cosmoem.mp3', 'cosmog.mp3', 'cottonee.mp3', 'crabominable.mp3', 'crabrawler.mp3', 'cradily.mp3', 'cramorant-gorging.mp3', 'cramorant-gulping.mp3', 'cramorant.mp3', 'cranidos.mp3', 'crawdaunt.mp3', 'cresselia.mp3', 'croagunk.mp3', 'crobat.mp3', 'crocalor.mp3', 'croconaw.mp3', 'crucibelle-mega.mp3', 'crucibelle.mp3', 'crustle.mp3', 'cryogonal.mp3', 'cubchoo.mp3', 'cubone.mp3', 'cufant.mp3', 'cupra.mp3', 'cursola.mp3', 'cutiefly.mp3', 'cyclizar.mp3', 'cyclohm.mp3', 'cyndaquil.mp3', 'dachsbun.mp3', 'darkrai.mp3', 'darmanitan.mp3', 'dartrix.mp3', 'darumaka.mp3', 'decidueye.mp3', 'dedenne.mp3', 'deerling.mp3', 'deino.mp3', 'delcatty.mp3', 'delibird.mp3', 'delphox.mp3', 'deoxys.mp3', 'dewgong.mp3', 'dewott.mp3', 'dewpider.mp3', 'dhelmise.mp3', 'dialga.mp3', 'diancie-mega.mp3', 'diancie.mp3', 'diggersby.mp3', 'diglett.mp3', 'dipplin.mp3', 'ditto.mp3', 'dodrio.mp3', 'doduo.mp3', 'dolliv.mp3', 'dondozo.mp3', 'donphan.mp3', 'dorsoil.mp3', 'dottler.mp3', 'doublade.mp3', 'dracovish.mp3', 'dracozolt.mp3', 'dragalge.mp3', 'dragapult.mp3', 'dragonair.mp3', 'dragonite.mp3', 'drakloak.mp3', 'drampa.mp3', 'drapion.mp3', 'dratini.mp3', 'drednaw.mp3', 'dreepy.mp3', 'drifblim.mp3', 'drifloon.mp3', 'drilbur.mp3', 'drizzile.mp3', 'drowzee.mp3', 'druddigon.mp3', 'dubwool.mp3', 'ducklett.mp3', 'dudunsparce.mp3', 'dugtrio.mp3', 'dunsparce.mp3', 'duohm.mp3', 'duosion.mp3', 'duraludon.mp3', 'durant.mp3', 'dusclops.mp3', 'dusknoir.mp3', 'duskull.mp3', 'dustox.mp3', 'dwebble.mp3', 'eelektrik.mp3', 'eelektross.mp3', 'eevee-starter.mp3', 'eevee.mp3', 'eiscue-noice.mp3', 'eiscue.mp3', 'ekans.mp3', 'eldegoss.mp3', 'electabuzz.mp3', 'electivire.mp3', 'electrelk.mp3', 'electrike.mp3', 'electrode.mp3', 'elekid.mp3', 'elgyem.mp3', 'embirch.mp3', 'emboar.mp3', 'emolga.mp3', 'empoleon.mp3', 'enamorus-therian.mp3', 'enamorus.mp3', 'entei.mp3', 'equilibra.mp3', 'escavalier.mp3', 'espathra.mp3', 'espeon.mp3', 'espurr.mp3', 'eternatus-eternamax.mp3', 'eternatus.mp3', 'excadrill.mp3', 'exeggcute.mp3', 'exeggutor.mp3', 'exploud.mp3', 'falinks.mp3', 'farfetchd.mp3', 'farigiraf.mp3', 'fawnifer.mp3', 'fearow.mp3', 'feebas.mp3', 'fennekin.mp3', 'feraligatr.mp3', 'ferroseed.mp3', 'ferrothorn.mp3', 'fezandipiti.mp3', 'fidgit.mp3', 'fidough.mp3', 'finizen.mp3', 'finneon.mp3', 'flaaffy.mp3', 'flabebe.mp3', 'flamigo.mp3', 'flapple.mp3', 'flarelm.mp3', 'flareon.mp3', 'fletchinder.mp3', 'fletchling.mp3', 'flittle.mp3', 'floatoy.mp3', 'floatzel.mp3', 'floette-eternal.mp3', 'floette.mp3', 'floragato.mp3', 'florges.mp3', 'fluttermane.mp3', 'flygon.mp3', 'fomantis.mp3', 'foongus.mp3', 'forretress.mp3', 'fraxure.mp3', 'frigibax.mp3', 'frillish.mp3', 'froakie.mp3', 'frogadier.mp3', 'froslass.mp3', 'frosmoth.mp3', 'fuecoco.mp3', 'furfrou.mp3', 'furret.mp3', 'gabite.mp3', 'gallade-mega.mp3', 'gallade.mp3', 'galvantula.mp3', 'garbodor.mp3', 'garchomp-mega.mp3', 'garchomp.mp3', 'gardevoir-mega.mp3', 'gardevoir.mp3', 'garganacl.mp3', 'gastly.mp3', 'gastrodon.mp3', 'genesect.mp3', 'gengar-mega.mp3', 'gengar.mp3', 'geodude.mp3', 'gholdengo.mp3', 'gible.mp3', 'gigalith.mp3', 'gimmighoul-roaming.mp3', 'gimmighoul.mp3', 'girafarig.mp3', 'giratina.mp3', 'glaceon.mp3', 'glalie-mega.mp3', 'glalie.mp3', 'glameow.mp3', 'glastrier.mp3', 'gligar.mp3', 'glimmet.mp3', 'glimmora.mp3', 'gliscor.mp3', 'gloom.mp3', 'gogoat.mp3', 'golbat.mp3', 'goldeen.mp3', 'golduck.mp3', 'golem.mp3', 'golett.mp3', 'golisopod.mp3', 'golurk.mp3', 'goodra.mp3', 'goomy.mp3', 'gorebyss.mp3', 'gossifleur.mp3', 'gothita.mp3', 'gothitelle.mp3', 'gothorita.mp3', 'gougingfire.mp3', 'gourgeist-super.mp3', 'gourgeist.mp3', 'grafaiai.mp3', 'granbull.mp3', 'grapploct.mp3', 'graveler.mp3', 'greattusk.mp3', 'greavard.mp3', 'greedent.mp3', 'greninja.mp3', 'grimer.mp3', 'grimmsnarl.mp3', 'grookey.mp3', 'grotle.mp3', 'groudon-primal.mp3', 'groudon.mp3', 'grovyle.mp3', 'growlithe.mp3', 'grubbin.mp3', 'grumpig.mp3', 'gulpin.mp3', 'gumshoos.mp3', 'gurdurr.mp3', 'guzzlord.mp3', 'gyarados-mega.mp3', 'gyarados.mp3', 'hakamoo.mp3', 'happiny.mp3', 'hariyama.mp3', 'hatenna.mp3', 'hatterene.mp3', 'hattrem.mp3', 'haunter.mp3', 'hawlucha.mp3', 'haxorus.mp3', 'heatmor.mp3', 'heatran.mp3', 'heliolisk.mp3', 'helioptile.mp3', 'hemogoblin.mp3', 'heracross-mega.mp3', 'heracross.mp3', 'herdier.mp3', 'hippopotas.mp3', 'hippowdon.mp3', 'hitmonchan.mp3', 'hitmonlee.mp3', 'hitmontop.mp3', 'honchkrow.mp3', 'honedge.mp3', 'hooh.mp3', 'hoopa-unbound.mp3', 'hoopa.mp3', 'hoothoot.mp3', 'hoppip.mp3', 'horsea.mp3', 'houndoom-mega.mp3', 'houndoom.mp3', 'houndour.mp3', 'houndstone.mp3', 'huntail.mp3', 'hydrapple.mp3', 'hydreigon.mp3', 'hypno.mp3', 'igglybuff.mp3', 'illumise.mp3', 'impidimp.mp3', 'incineroar.mp3', 'indeedee-f.mp3', 'indeedee.mp3', 'infernape.mp3', 'inkay.mp3', 'inteleon.mp3', 'ironboulder.mp3', 'ironbundle.mp3', 'ironcrown.mp3', 'ironhands.mp3', 'ironjugulis.mp3', 'ironleaves.mp3', 'ironmoth.mp3', 'ironthorns.mp3', 'irontreads.mp3', 'ironvaliant.mp3', 'ivysaur.mp3', 'jangmoo.mp3', 'jellicent.mp3', 'jigglypuff.mp3', 'jirachi.mp3', 'jolteon.mp3', 'joltik.mp3', 'jumbao.mp3', 'jumpluff.mp3', 'justyke.mp3', 'jynx.mp3', 'kabuto.mp3', 'kabutops.mp3', 'kadabra.mp3', 'kakuna.mp3', 'kangaskhan-mega.mp3', 'kangaskhan.mp3', 'karrablast.mp3', 'kartana.mp3', 'kecleon.mp3', 'keldeo.mp3', 'kerfluffle.mp3', 'kilowattrel.mp3', 'kingambit.mp3', 'kingdra.mp3', 'kingler.mp3', 'kirlia.mp3', 'kitsunoh.mp3', 'klang.mp3', 'klawf.mp3', 'kleavor.mp3', 'klefki.mp3', 'klink.mp3', 'klinklang.mp3', 'koffing.mp3', 'komala.mp3', 'kommoo.mp3', 'koraidon.mp3', 'krabby.mp3', 'kricketot.mp3', 'kricketune.mp3', 'krilowatt.mp3', 'krokorok.mp3', 'krookodile.mp3', 'kubfu.mp3', 'kyogre-primal.mp3', 'kyogre.mp3', 'kyurem-black.mp3', 'kyurem-white.mp3', 'kyurem.mp3', 'lairon.mp3', 'lampent.mp3', 'landorus-therian.mp3', 'landorus.mp3', 'lanturn.mp3', 'lapras.mp3', 'larvesta.mp3', 'larvitar.mp3', 'latias-mega.mp3', 'latias.mp3', 'latios-mega.mp3', 'latios.mp3', 'leafeon.mp3', 'leavanny.mp3', 'lechonk.mp3', 'ledian.mp3', 'ledyba.mp3', 'lickilicky.mp3', 'lickitung.mp3', 'liepard.mp3', 'lileep.mp3', 'lilligant.mp3', 'lillipup.mp3', 'linoone.mp3', 'litleo.mp3', 'litten.mp3', 'litwick.mp3', 'lokix.mp3', 'lombre.mp3', 'lopunny-mega.mp3', 'lopunny.mp3', 'lotad.mp3', 'loudred.mp3', 'lucario-mega.mp3', 'lucario.mp3', 'ludicolo.mp3', 'lugia.mp3', 'lumineon.mp3', 'lunala.mp3', 'lunatone.mp3', 'lurantis.mp3', 'luvdisc.mp3', 'luxio.mp3', 'luxray.mp3', 'lycanroc-dusk.mp3', 'lycanroc-midnight.mp3', 'lycanroc.mp3', 'mabosstiff.mp3', 'machamp.mp3', 'machoke.mp3', 'machop.mp3', 'magby.mp3', 'magcargo.mp3', 'magearna.mp3', 'magikarp.mp3', 'magmar.mp3', 'magmortar.mp3', 'magnemite.mp3', 'magneton.mp3', 'magnezone.mp3', 'makuhita.mp3', 'malaconda.mp3', 'malamar.mp3', 'mamoswine.mp3', 'manaphy.mp3', 'mandibuzz.mp3', 'manectric-mega.mp3', 'manectric.mp3', 'mankey.mp3', 'mantine.mp3', 'mantyke.mp3', 'maractus.mp3', 'mareanie.mp3', 'mareep.mp3', 'marill.mp3', 'marowak.mp3', 'marshadow.mp3', 'marshtomp.mp3', 'maschiff.mp3', 'masquerain.mp3', 'maushold-four.mp3', 'maushold.mp3', 'mawile-mega.mp3', 'mawile.mp3', 'medicham-mega.mp3', 'medicham.mp3', 'meditite.mp3', 'meganium.mp3', 'melmetal.mp3', 'meloetta.mp3', 'meltan.mp3', 'meowscarada.mp3', 'meowstic.mp3', 'meowth.mp3', 'mesprit.mp3', 'metagross-mega.mp3', 'metagross.mp3', 'metang.mp3', 'metapod.mp3', 'mew.mp3', 'mewtwo-megax.mp3', 'mewtwo-megay.mp3', 'mewtwo.mp3', 'miasmaw.mp3', 'miasmite.mp3', 'mienfoo.mp3', 'mienshao.mp3', 'mightyena.mp3', 'milcery.mp3', 'milotic.mp3', 'miltank.mp3', 'mimejr.mp3', 'mimikyu.mp3', 'minccino.mp3', 'minior.mp3', 'minun.mp3', 'miraidon.mp3', 'misdreavus.mp3', 'mismagius.mp3', 'mollux.mp3', 'moltres.mp3', 'monferno.mp3', 'monohm.mp3', 'morelull.mp3', 'morgrem.mp3', 'morpeko-hangry.mp3', 'morpeko.mp3', 'mothim.mp3', 'mrmime.mp3', 'mrrime.mp3', 'mudbray.mp3', 'mudkip.mp3', 'mudsdale.mp3', 'muk.mp3', 'mumbao.mp3', 'munchlax.mp3', 'munkidori.mp3', 'munna.mp3', 'murkrow.mp3', 'musharna.mp3', 'nacli.mp3', 'naclstack.mp3', 'naganadel.mp3', 'natu.mp3', 'naviathan.mp3', 'necrozma-dawnwings.mp3', 'necrozma-duskmane.mp3', 'necrozma-ultra.mp3', 'necrozma.mp3', 'necturine.mp3', 'necturna.mp3', 'nickit.mp3', 'nidoking.mp3', 'nidoqueen.mp3', 'nidoranf.mp3', 'nidoranm.mp3', 'nidorina.mp3', 'nidorino.mp3', 'nihilego.mp3', 'nincada.mp3', 'ninetales.mp3', 'ninjask.mp3', 'noctowl.mp3', 'nohface.mp3', 'noibat.mp3', 'noivern.mp3', 'nosepass.mp3', 'numel.mp3', 'nuzleaf.mp3', 'nymble.mp3', 'obstagoon.mp3', 'octillery.mp3', 'oddish.mp3', 'ogerpon.mp3', 'oinkologne-f.mp3', 'oinkologne.mp3', 'okidogi.mp3', 'omanyte.mp3', 'omastar.mp3', 'onix.mp3', 'oranguru.mp3', 'orbeetle.mp3', 'oricorio-pau.mp3', 'oricorio-pompom.mp3', 'oricorio-sensu.mp3', 'oricorio.mp3', 'orthworm.mp3', 'oshawott.mp3', 'overqwil.mp3', 'pachirisu.mp3', 'pajantom.mp3', 'palafin-hero.mp3', 'palafin.mp3', 'palkia.mp3', 'palossand.mp3', 'palpitoad.mp3', 'pancham.mp3', 'pangoro.mp3', 'panpour.mp3', 'pansage.mp3', 'pansear.mp3', 'paras.mp3', 'parasect.mp3', 'passimian.mp3', 'patrat.mp3', 'pawmi.mp3', 'pawmo.mp3', 'pawmot.mp3', 'pawniard.mp3', 'pecharunt.mp3', 'pelipper.mp3', 'perrserker.mp3', 'persian.mp3', 'petilil.mp3', 'phanpy.mp3', 'phantump.mp3', 'pheromosa.mp3', 'phione.mp3', 'pichu.mp3', 'pidgeot-mega.mp3', 'pidgeot.mp3', 'pidgeotto.mp3', 'pidgey.mp3', 'pidove.mp3', 'pignite.mp3', 'pikachu-starter.mp3', 'pikachu.mp3', 'pikipek.mp3', 'piloswine.mp3', 'pincurchin.mp3', 'pineco.mp3', 'pinsir-mega.mp3', 'pinsir.mp3', 'piplup.mp3', 'plasmanta.mp3', 'pluffle.mp3', 'plusle.mp3', 'poipole.mp3', 'politoed.mp3', 'poliwag.mp3', 'poliwhirl.mp3', 'poliwrath.mp3', 'poltchageist.mp3', 'polteageist.mp3', 'ponyta.mp3', 'poochyena.mp3', 'popplio.mp3', 'porygon.mp3', 'porygon2.mp3', 'porygonz.mp3', 'primarina.mp3', 'primeape.mp3', 'prinplup.mp3', 'privatyke.mp3', 'probopass.mp3', 'protowatt.mp3', 'psyduck.mp3', 'pumpkaboo-super.mp3', 'pumpkaboo.mp3', 'pupitar.mp3', 'purrloin.mp3', 'purugly.mp3', 'pyroak.mp3', 'pyroar.mp3', 'pyukumuku.mp3', 'quagsire.mp3', 'quaquaval.mp3', 'quaxly.mp3', 'quaxwell.mp3', 'quilava.mp3', 'quilladin.mp3', 'qwilfish.mp3', 'raboot.mp3', 'rabsca.mp3', 'ragingbolt.mp3', 'raichu.mp3', 'raikou.mp3', 'ralts.mp3', 'rampardos.mp3', 'rapidash.mp3', 'raticate.mp3', 'rattata.mp3', 'rayquaza-mega.mp3', 'rayquaza.mp3', 'rebble.mp3', 'regice.mp3', 'regidrago.mp3', 'regieleki.mp3', 'regigigas.mp3', 'regirock.mp3', 'registeel.mp3', 'relicanth.mp3', 'rellor.mp3', 'remoraid.mp3', 'reshiram.mp3', 'reuniclus.mp3', 'revavroom.mp3', 'revenankh.mp3', 'rhydon.mp3', 'rhyhorn.mp3', 'rhyperior.mp3', 'ribombee.mp3', 'rillaboom.mp3', 'riolu.mp3', 'roaringmoon.mp3', 'rockruff.mp3', 'roggenrola.mp3', 'rolycoly.mp3', 'rookidee.mp3', 'roselia.mp3', 'roserade.mp3', 'rotom.mp3', 'rowlet.mp3', 'rufflet.mp3', 'runerigus.mp3', 'sableye-mega.mp3', 'sableye.mp3', 'saharaja.mp3', 'saharascal.mp3', 'salamence-mega.mp3', 'salamence.mp3', 'salandit.mp3', 'salazzle.mp3', 'samurott.mp3', 'sandaconda.mp3', 'sandile.mp3', 'sandshrew.mp3', 'sandslash.mp3', 'sandygast.mp3', 'sandyshocks.mp3', 'sawk.mp3', 'sawsbuck.mp3', 'scatterbug.mp3', 'scattervein.mp3', 'sceptile-mega.mp3', 'sceptile.mp3', 'scizor-mega.mp3', 'scizor.mp3', 'scolipede.mp3', 'scorbunny.mp3', 'scovillain.mp3', 'scrafty.mp3', 'scraggy.mp3', 'scratchet.mp3', 'screamtail.mp3', 'scyther.mp3', 'seadra.mp3', 'seaking.mp3', 'sealeo.mp3', 'seedot.mp3', 'seel.mp3', 'seismitoad.mp3', 'sentret.mp3', 'serperior.mp3', 'servine.mp3', 'seviper.mp3', 'sewaddle.mp3', 'sharpedo-mega.mp3', 'sharpedo.mp3', 'shaymin-sky.mp3', 'shaymin.mp3', 'shedinja.mp3', 'shelgon.mp3', 'shellder.mp3', 'shellos.mp3', 'shelmet.mp3', 'shieldon.mp3', 'shiftry.mp3', 'shiinotic.mp3', 'shinx.mp3', 'shroodle.mp3', 'shroomish.mp3', 'shuckle.mp3', 'shuppet.mp3', 'sigilyph.mp3', 'silcoon.mp3', 'silicobra.mp3', 'silvally.mp3', 'simipour.mp3', 'simisage.mp3', 'simisear.mp3', 'sinistcha.mp3', 'sinistea.mp3', 'sirfetchd.mp3', 'sizzlipede.mp3', 'skarmory.mp3', 'skeledirge.mp3', 'skiddo.mp3', 'skiploom.mp3', 'skitty.mp3', 'skorupi.mp3', 'skrelp.mp3', 'skuntank.mp3', 'skwovet.mp3', 'slaking.mp3', 'slakoth.mp3', 'sliggoo.mp3', 'slitherwing.mp3', 'slowbro-mega.mp3', 'slowbro.mp3', 'slowking.mp3', 'slowpoke-galar.mp3', 'slowpoke.mp3', 'slugma.mp3', 'slurpuff.mp3', 'smeargle.mp3', 'smogecko.mp3', 'smoguana.mp3', 'smokomodo.mp3', 'smoliv.mp3', 'smoochum.mp3', 'snaelstrom.mp3', 'sneasel.mp3', 'sneasler.mp3', 'snivy.mp3', 'snom.mp3', 'snorlax.mp3', 'snorunt.mp3', 'snover.mp3', 'snubbull.mp3', 'snugglow.mp3', 'sobble.mp3', 'solgaleo.mp3', 'solosis.mp3', 'solotl.mp3', 'solrock.mp3', 'spearow.mp3', 'spectrier.mp3', 'spewpa.mp3', 'spheal.mp3', 'spidops.mp3', 'spinarak.mp3', 'spinda.mp3', 'spiritomb.mp3', 'spoink.mp3', 'sprigatito.mp3', 'spritzee.mp3', 'squawkabilly.mp3', 'squirtle.mp3', 'stakataka.mp3', 'stantler.mp3', 'staraptor.mp3', 'staravia.mp3', 'starly.mp3', 'starmie.mp3', 'staryu.mp3', 'steelix-mega.mp3', 'steelix.mp3', 'steenee.mp3', 'stonjourner.mp3', 'stoutland.mp3', 'stratagem.mp3', 'stufful.mp3', 'stunfisk.mp3', 'stunky.mp3', 'sudowoodo.mp3', 'suicune.mp3', 'sunflora.mp3', 'sunkern.mp3', 'surskit.mp3', 'swablu.mp3', 'swadloon.mp3', 'swalot.mp3', 'swampert-mega.mp3', 'swampert.mp3', 'swanna.mp3', 'swellow.mp3', 'swinub.mp3', 'swirlix.mp3', 'swirlpool.mp3', 'swoobat.mp3', 'syclant.mp3', 'syclar.mp3', 'sylveon.mp3', 'tactite.mp3', 'tadbulb.mp3', 'taillow.mp3', 'talonflame.mp3', 'tandemaus.mp3', 'tangela.mp3', 'tangrowth.mp3', 'tapubulu.mp3', 'tapufini.mp3', 'tapukoko.mp3', 'tapulele.mp3', 'tarountula.mp3', 'tatsugiri-droopy.mp3', 'tatsugiri-stretchy.mp3', 'tatsugiri.mp3', 'tauros.mp3', 'teddiursa.mp3', 'tentacool.mp3', 'tentacruel.mp3', 'tepig.mp3', 'terapagos.mp3', 'terrakion.mp3', 'thievul.mp3', 'throh.mp3', 'thundurus-therian.mp3', 'thundurus.mp3', 'thwackey.mp3', 'timburr.mp3', 'tinglu.mp3', 'tinkatink.mp3', 'tinkaton.mp3', 'tinkatuff.mp3', 'tirtouga.mp3', 'toedscool.mp3', 'toedscruel.mp3', 'togedemaru.mp3', 'togekiss.mp3', 'togepi.mp3', 'togetic.mp3', 'tomohawk.mp3', 'torchic.mp3', 'torkoal.mp3', 'tornadus-therian.mp3', 'tornadus.mp3', 'torracat.mp3', 'torterra.mp3', 'totodile.mp3', 'toucannon.mp3', 'toxapex.mp3', 'toxel.mp3', 'toxicroak.mp3', 'toxtricity-lowkey.mp3', 'toxtricity.mp3', 'tranquill.mp3', 'trapinch.mp3', 'treecko.mp3', 'trevenant.mp3', 'tropius.mp3', 'trubbish.mp3', 'trumbeak.mp3', 'tsareena.mp3', 'turtonator.mp3', 'turtwig.mp3', 'tympole.mp3', 'tynamo.mp3', 'typenull.mp3', 'typhlosion.mp3', 'tyranitar-mega.mp3', 'tyranitar.mp3', 'tyrantrum.mp3', 'tyrogue.mp3', 'tyrunt.mp3', 'umbreon.mp3', 'unfezant.mp3', 'unown.mp3', 'ursaluna.mp3', 'ursaring.mp3', 'urshifu-rapidstrike.mp3', 'urshifu.mp3', 'uxie.mp3', 'vanillish.mp3', 'vanillite.mp3', 'vanilluxe.mp3', 'vaporeon.mp3', 'varoom.mp3', 'veluza.mp3', 'venipede.mp3', 'venomicon.mp3', 'venomoth.mp3', 'venonat.mp3', 'venusaur-mega.mp3', 'venusaur.mp3', 'vespiquen.mp3', 'vibrava.mp3', 'victini.mp3', 'victreebel.mp3', 'vigoroth.mp3', 'vikavolt.mp3', 'vileplume.mp3', 'virizion.mp3', 'vivillon.mp3', 'volbeat.mp3', 'volcanion.mp3', 'volcarona.mp3', 'volkraken.mp3', 'volkritter.mp3', 'voltorb.mp3', 'voodoll.mp3', 'voodoom.mp3', 'vullaby.mp3', 'vulpix.mp3', 'wailmer.mp3', 'wailord.mp3', 'walkingwake.mp3', 'walrein.mp3', 'wartortle.mp3', 'watchog.mp3', 'wattrel.mp3', 'weavile.mp3', 'weedle.mp3', 'weepinbell.mp3', 'weezing.mp3', 'whimsicott.mp3', 'whirlipede.mp3', 'whiscash.mp3', 'whismur.mp3', 'wigglytuff.mp3', 'wiglett.mp3', 'wimpod.mp3', 'wingull.mp3', 'wishiwashi-school.mp3', 'wishiwashi.mp3', 'wobbuffet.mp3', 'wochien.mp3', 'woobat.mp3', 'wooloo.mp3', 'wooper.mp3', 'wormadam.mp3', 'wugtrio.mp3', 'wurmple.mp3', 'wynaut.mp3', 'wyrdeer.mp3', 'xatu.mp3', 'xerneas.mp3', 'xurkitree.mp3', 'yamask.mp3', 'yamper.mp3', 'yanma.mp3', 'yanmega.mp3', 'yungoos.mp3', 'yveltal.mp3', 'zacian-crowned.mp3', 'zacian.mp3', 'zamazenta-crowned.mp3', 'zamazenta.mp3', 'zangoose.mp3', 'zapdos.mp3', 'zarude.mp3', 'zebstrika.mp3', 'zekrom.mp3', 'zeraora.mp3', 'zigzagoon.mp3', 'zoroark.mp3', 'zorua.mp3', 'zubat.mp3', 'zweilous.mp3', 'zygarde-10.mp3', 'zygarde-complete.mp3', 'zygarde.mp3']
-        self.item_names = [ "absorb-bulb.png",  "aguav-berry.png",  "air-balloon.png", "amulet-coin.png", "antidote.png", "apicot-berry.png", "armor-fossil.png",
-        "aspear-berry.png",
-        "awakening.png",
-        "babiri-berry.png",
-        "balm-mushroom.png",
-        "belue-berry.png",
-        "berry-juice.png",
-        "big-mushroom.png",
-        "big-nugget.png",
-        "big-pearl.png",
-        "big-root.png",
-        "binding-band.png",
-        "black-belt.png",
-        "black-flute.png",
-        "black-glasses.png",
-        "black-sludge.png",
-        "blue-flute.png",
-        "blue-scarf.png",
-        "blue-shard.png",
-        "bluk-berry.png",
-        "bright-powder.png",
-        "bug-gem.png",
-        "burn-heal.png",
-        "calcium.png",
-        "carbos.png",
-        "casteliacone.png",
-        "cell-battery.png",
-        "charcoal.png",
-        "charti-berry.png",
-        "cheri-berry.png",
-        "chesto-berry.png",
-        "chilan-berry.png",
-        "choice-band.png",
-        "choice-scarf.png",
-        "choice-specs.png",
-        "chople-berry.png",
-        "claw-fossil.png",
-        "cleanse-tag.png",
-        "clever-wing.png",
-        "coba-berry.png",
-        "colbur-berry.png",
-        "comet-shard.png",
-        "cornn-berry.png",
-        "cover-fossil.png",
-        "custap-berry.png",
-        "damp-rock.png",
-        "dark-gem.png",
-        "dawn-stone.png",
-        "deep-sea-scale.png",
-        "deep-sea-tooth.png",
-        "destiny-knot.png",
-        "dire-hit.png",
-        "dive-ball.png",
-        "dome-fossil.png",
-        "draco-plate.png",
-        "dragon-fang.png",
-        "dragon-gem.png",
-        "dragon-scale.png",
-        "dread-plate.png",
-        "dubious-disc.png",
-        "durin-berry.png",
-        "dusk-ball.png",
-        "dusk-stone.png",
-        "earth-plate.png",
-        "eject-button.png",
-        "electirizer.png",
-        "electric-gem.png",
-        "elixir.png",
-        "energy-powder.png",
-        "energy-root.png",
-        "enigma-berry.png",
-        "escape-rope.png",
-        "ether.png",
-        "everstone.png",
-        "eviolite.png",
-        "exp-share.png",
-        "expert-belt.png",
-        "fighting-gem.png",
-        "figy-berry.png",
-        "fire-gem.png",
-        "fire-stone.png",
-        "fist-plate.png",
-        "flame-orb.png",
-        "flame-plate.png",
-        "float-stone.png",
-        "fluffy-tail.png",
-        "flying-gem.png",
-        "focus-band.png",
-        "focus-sash.png",
-        "fresh-water.png",
-        "full-heal.png",
-        "full-incense.png",
-        "full-restore.png",
-        "ganlon-berry.png",
-        "genius-wing.png",
-        "ghost-gem.png",
-        "grass-gem.png",
-        "great-ball.png",
-        "green-scarf.png",
-        "green-shard.png",
-        "grepa-berry.png",
-        "grip-claw.png",
-        "ground-gem.png",
-        "guard-spec.png",
-        "haban-berry.png",
-        "hard-stone.png",
-        "heal-ball.png",
-        "heal-powder.png",
-        "health-wing.png",
-        "heart-scale.png",
-        "heat-rock.png",
-        "helix-fossil.png",
-        "hondew-berry.png",
-        "honey.png",
-        "hp-up.png",
-        "hyper-potion.png",
-        "iapapa-berry.png",
-        "ice-gem.png",
-        "ice-heal.png",
-        "icicle-plate.png",
-        "icy-rock.png",
-        "insect-plate.png",
-        "iron-ball.png",
-        "iron-plate.png",
-        "iron.png",
-        "jaboca-berry.png",
-        "kasib-berry.png",
-        "kebia-berry.png",
-        "kelpsy-berry.png",
-        "kings-rock.png",
-        "lagging-tail.png",
-        "lansat-berry.png",
-        "lava-cookie.png",
-        "lax-incense.png",
-        "leaf-stone.png",
-        "leftovers.png",
-        "lemonade.png",
-        "leppa-berry.png",
-        "liechi-berry.png",
-        "life-orb.png",
-        "light-ball.png",
-        "light-clay.png",
-        "luck-incense.png",
-        "lucky-egg.png",
-        "lucky-punch.png",
-        "lum-berry.png",
-        "luxury-ball.png",
-        "macho-brace.png",
-        "magmarizer.png",
-        "magnet.png",
-        "mago-berry.png",
-        "magost-berry.png",
-        "master-ball.png",
-        "max-elixir.png",
-        "max-ether.png",
-        "max-potion.png",
-        "max-repel.png",
-        "max-revive.png",
-        "meadow-plate.png",
-        "mental-herb.png",
-        "metal-coat.png",
-        "metal-powder.png",
-        "metronome.png",
-        "micle-berry.png",
-        "mind-plate.png",
-        "miracle-seed.png",
-        "moomoo-milk.png",
-        "moon-stone.png",
-        "muscle-band.png",
-        "muscle-wing.png",
-        "mystic-water.png",
-        "nanab-berry.png",
-        "nest-ball.png",
-        "net-ball.png",
-        "never-melt-ice.png",
-        "nomel-berry.png",
-        "normal-gem.png",
-        "nugget.png",
-        "occa-berry.png",
-        "odd-incense.png",
-        "old-amber.png",
-        "old-gateau.png",
-        "oran-berry.png",
-        "oval-stone.png",
-        "pamtre-berry.png",
-        "paralyze-heal.png",
-        "pass-orb.png",
-        "passho-berry.png",
-        "payapa-berry.png",
-        "pearl-string.png",
-        "pearl.png",
-        "pecha-berry.png",
-        "persim-berry.png",
-        "petaya-berry.png",
-        "pinap-berry.png",
-        "pink-scarf.png",
-        "plume-fossil.png",
-        "poison-barb.png",
-        "poison-gem.png",
-        "poke-ball.png",
-        "poke-doll.png",
-        "poke-toy.png",
-        "pomeg-berry.png",
-        "potion.png",
-        "power-anklet.png",
-        "power-band.png",
-        "power-belt.png",
-        "power-bracer.png",
-        "power-herb.png",
-        "power-lens.png",
-        "power-weight.png",
-        "pp-max.png",
-        "pp-up.png",
-        "premier-ball.png",
-        "pretty-wing.png",
-        "prism-scale.png",
-        "protector.png",
-        "protein.png",
-        "psychic-gem.png",
-        "pure-incense.png",
-        "qualot-berry.png",
-        "quick-ball.png",
-        "quick-claw.png",
-        "quick-powder.png",
-        "rabuta-berry.png",
-        "rare-bone.png",
-        "rare-candy.png",
-        "rawst-berry.png",
-        "razor-claw.png",
-        "razor-fang.png",
-        "razz-berry.png",
-        "reaper-cloth.png",
-        "red-card.png",
-        "red-flute.png",
-        "red-scarf.png",
-        "red-shard.png",
-        "relic-band.png",
-        "relic-copper.png",
-        "relic-crown.png",
-        "relic-gold.png",
-        "relic-silver.png",
-        "relic-statue.png",
-        "relic-vase.png",
-        "repeat-ball.png",
-        "repel.png",
-        "resist-wing.png",
-        "revival-herb.png",
-        "revive.png",
-        "rindo-berry.png",
-        "ring-target.png",
-        "rock-gem.png",
-        "rock-incense.png",
-        "rocky-helmet.png",
-        "root-fossil.png",
-        "rose-incense.png",
-        "rowap-berry.png",
-        "sacred-ash.png",
-        "safari-ball.png",
-        "salac-berry.png",
-        "scope-lens.png",
-        "sea-incense.png",
-        "sharp-beak.png",
-        "shed-shell.png",
-        "shell-bell.png",
-        "shiny-stone.png",
-        "shoal-salt.png",
-        "shoal-shell.png",
-        "shuca-berry.png",
-        "silk-scarf.png",
-        "silver-powder.png",
-        "sitrus-berry.png",
-        "skull-fossil.png",
-        "sky-plate.png",
-        "smoke-ball.png",
-        "smooth-rock.png",
-        "soda-pop.png",
-        "soft-sand.png",
-        "soothe-bell.png",
-        "soul-dew.png",
-        "spell-tag.png",
-        "spelon-berry.png",
-        "splash-plate.png",
-        "spooky-plate.png",
-        "star-piece.png",
-        "stardust.png",
-        "starf-berry.png",
-        "steel-gem.png",
-        "stick.png",
-        "sticky-barb.png",
-        "stone-plate.png",
-        "sun-stone.png",
-        "super-potion.png",
-        "super-repel.png",
-        "sweet-heart.png",
-        "swift-wing.png",
-        "tamato-berry.png",
-        "tanga-berry.png",
-        "thick-club.png",
-        "thunder-stone.png",
-        "timer-ball.png",
-        "tiny-mushroom.png",
-        "toxic-orb.png",
-        "toxic-plate.png",
-        "twisted-spoon.png",
-        "ultra-ball.png",
-        "up-grade.png", "wacan-berry.png", "water-gem.png", "water-stone.png", "watmel-berry.png", "wave-incense.png", "wepear-berry.png", "white-flute.png", "white-herb.png", "wide-lens.png", "wiki-berry.png", "wise-glasses.png", "x-accuracy.png", "x-attack.png", "x-defense.png", "x-sp-atk.png", "x-sp-def.png", "x-speed.png", "yache-berry.png", "yellow-flute.png", "yellow-scarf.png", "yellow-shard.png", "zap-plate.png", "zinc.png", "zoom-lens.png"
-        ]
-        if not os.path.exists(self.items_destination_to):
-            os.makedirs(self.items_destination_to)
-        if not os.path.exists(self.badges_destination_to):
-            os.makedirs(self.badges_destination_to)
-        if not os.path.exists(self.sounds_destination_to):
-            os.makedirs(self.sounds_destination_to)
-    def run(self):
-        total_downloaded = 0
-        self.downloading_item_sprites_txt.emit()
-        for item_name in self.item_names:
-            item_url = self.item_base_url + item_name
-            response = requests.get(item_url)
-            if response.status_code == 200:
-                with open(os.path.join(self.items_destination_to, item_name), 'wb') as file:
-                    file.write(response.content)
-            total_downloaded += 1
-            self.progress_updated.emit(total_downloaded)
-        # Emit the download_complete signal at the end of the download process
-        max_badges = 68
-        self.downloading_badges_sprites_txt.emit()
-        for badge_num in range(1,68):
-            badge_file = f"{badge_num}.png"
-            badge_url = self.badges_base_url + badge_file
-            response = requests.get(badge_url)
-            if response.status_code == 200:
-                with open(os.path.join(self.badges_destination_to, badge_file), 'wb') as file:
-                    file.write(response.content)
-            total_downloaded += 1
-            self.progress_updated.emit(total_downloaded)
-        self.downloading_sounds_txt.emit()
-        for sound in self.sound_names:
-            sounds_url = self.sounds_base_url + sound
-            response = requests.get(sounds_url)
-            if response.status_code == 200:
-                with open(os.path.join(self.sounds_destination_to, sound), 'wb') as file:
-                    file.write(response.content)
-            total_downloaded += 1
-            self.progress_updated.emit(total_downloaded)
-        total_downloaded += 1
-        self.progress_updated.emit(total_downloaded)
-        self.download_complete.emit()
-
-
-
-def download_item_sprites():
-    total_images_expected = int(336 + 68 + 1190)
-    global addon_dir
-    destination_to = addon_dir / "pokemon_sprites" / "items"
-
-    def show_loading_window():
-        window = QDialog()
-        window.setWindowTitle("Downloading Item Sprites")
-        window.label = QLabel("Downloading... \n This may take several minutes", window)
-        window.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        window.progress = QProgressBar(window)
-        window.progress.setRange(0, total_images_expected)
-        layout = QVBoxLayout()
-        layout.addWidget(window.label)
-        layout.addWidget(window.progress)
-        window.setLayout(layout)
-
-        def update_progress(value):
-            window.progress.setValue(value)
-
-        def on_download_complete():
-            window.label.setText("All Images have been downloaded. \n Please close this window now and once all needed files have been installed \n => Restart Anki.")
-        
-        def downloading_sounds_txt():
-            window.label.setText("Now Downloading Sound Files")
-        
-        def downloading_item_sprites_txt():
-            window.label.setText("Now Downloading Item Sprites...")
-
-        def downloading_badges_sprites_txt():
-            window.label.setText("Now Downloading Badges...")
-
-        sprite_downloader = ItemSpriteDownloader(destination_to)
-        sprite_downloader.progress_updated.connect(update_progress)
-        sprite_downloader.downloading_sounds_txt.connect(downloading_sounds_txt)
-        sprite_downloader.downloading_item_sprites_txt.connect(downloading_item_sprites_txt)
-        sprite_downloader.downloading_badges_sprites_txt.connect(downloading_badges_sprites_txt)
-        sprite_downloader.download_complete.connect(on_download_complete)
-        sprite_downloader.start()
-
-        window.exec()
-
-    show_loading_window()
-
-def show_agreement_and_download():
-    # Show the agreement dialog
-    dialog = AgreementDialog()
-    if dialog.exec() == QDialog.DialogCode.Accepted:
-        # User agreed, proceed with download
-        download_item_sprites()
 
 class AgreementDialog(QDialog):
     def __init__(self):
@@ -4985,6 +4525,7 @@ def choose_pokemon(starter_name):
         ability = "No Ability"
     type = search_pokedex(starter_name, "types")
     name = search_pokedex(starter_name, "name")
+    global pokeapi_db_path
     generation_file = "pokeapi_db.json"
     growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
     base_experience = search_pokeapi_db_by_id(id, "base_experience")
