@@ -1,1 +1,1 @@
-This Folder is needed to place your Anki Files inside
+This Folder is needed to place your Ankimon Save Files inside
