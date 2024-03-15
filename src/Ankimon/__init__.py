@@ -3983,6 +3983,7 @@ class Downloader(QObject):
     downloading_sounds_txt = pyqtSignal()  # Signal when download is complete
     downloading_item_sprites_txt = pyqtSignal()  # Signal when download is complete
     downloading_data_txt = pyqtSignal()  # Signal when download is complete
+    downloading_gif_sprites_txt = pyqtSignal()
 
     def __init__(self, addon_dir, parent=None):
         super().__init__(parent)
@@ -3994,6 +3995,8 @@ class Downloader(QObject):
         self.sounds_destination_to = user_path_sprites / "sounds"
         self.front_dir = os.path.join(user_path_sprites, "front_default")
         self.back_dir = os.path.join(user_path_sprites, "back_default")
+        self.front_gif_dir = os.path.join(user_path_sprites, "front_default_gif")
+        self.back_gif_dir = os.path.join(user_path_sprites, "back_default_gif")
         self.user_path_data = user_path_data
         self.badges_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/"
         self.item_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dream-world/"
@@ -4012,6 +4015,10 @@ class Downloader(QObject):
             os.makedirs(self.back_dir)
         if not os.path.exists(self.user_path_data):
             os.makedirs(self.user_path_data)
+        if not os.path.exists(self.back_gif_dir):
+            os.makedirs(self.back_gif_dir)
+        if not os.path.exists(self.front_gif_dir):
+            os.makedirs(self.front_gif_dir)       
 
         self.urls = [
                 "https://play.pokemonshowdown.com/data/learnsets.json",
@@ -4171,6 +4178,25 @@ class Downloader(QObject):
                         file.write(response.content)
                 progress = int((i / num_sound_files) * 100)
                 self.progress_updated.emit(progress)
+            self.downloading_gif_sprites_txt.emit()
+            base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
+            total_downloaded = 0
+            self.id_to = 898
+            for pokemon_id in range(1, self.id_to + 1):
+                for sprite_type in ["front_showdown", "back_showdown"]:
+                    front_sprite_url = f"{base_url}other/showdown/{pokemon_id}.gif"
+                    response = requests.get(front_sprite_url)
+                    if response.status_code == 200:
+                        with open(os.path.join(self.front_gif_dir, f"{pokemon_id}.gif"), 'wb') as file:
+                            file.write(response.content)
+                    # Download back sprite
+                    back_sprite_url = f"{base_url}other/showdown/back/{pokemon_id}.gif"
+                    response = requests.get(back_sprite_url)
+                    if response.status_code == 200:
+                        with open(os.path.join(self.back_gif_dir, f"{pokemon_id}.gif"), 'wb') as file:
+                            file.write(response.content)
+                    progress = int((pokemon_id / self.id_to) * 100)
+                    self.progress_updated.emit(progress)
             self.download_complete.emit()
         except Exception as e:
             showWarning(f"An error occurred: {e}")  # Replace with a signal if needed
@@ -4200,6 +4226,7 @@ class LoadingDialog(QDialog):
         self.downloader.downloading_item_sprites_txt.connect(self.downloading_item_sprites_txt)
         self.downloader.downloading_badges_sprites_txt.connect(self.downloading_badges_sprites_txt)
         self.downloader.downloading_sounds_txt.connect(self.downloading_sounds_txt)
+        self.downloader.downloading_gif_sprites_txt.connect(self.downloading_gif_sprites_txt)
         self.downloader.progress_updated.connect(self.progress.setValue)
         self.downloader.download_complete.connect(self.on_download_complete)
         self.downloader.download_complete.connect(self.thread.quit)
@@ -4224,6 +4251,9 @@ class LoadingDialog(QDialog):
 
     def downloading_badges_sprites_txt(self):
         self.label.setText("Now Downloading Badges...")
+        
+    def downloading_gif_sprites_txt(self):
+        self.label.setText("Now Downloading Gif Sprites...")
 
 def show_agreement_and_download_database():
     # Show the agreement dialog
