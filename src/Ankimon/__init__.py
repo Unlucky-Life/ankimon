@@ -292,7 +292,7 @@ def play_sound():
         global name
         # Check if the sound should play
         file_name = f"{name.lower()}.mp3"
-        audio_path = addon_dir / "pokemon_sprites" / "sounds" / file_name
+        audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
         if not audio_path.is_file():
             showWarning(f"Audio file not found: {audio_path}")
             return
@@ -632,7 +632,7 @@ def get_image_as_base64(path):
         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
     return encoded_string
 
-if learnsets_data != False:
+if database_complete != False:
     def get_random_moves_for_pokemon(pokemon_name, level):
         """
         Get up to 4 random moves learned by a Pokémon at a specific level and lower, along with the highest level,
@@ -815,7 +815,7 @@ def pick_random_gender(pokemon_name):
         gender = random.choice(genders)
         return gender
 
-if learnsets_data != False:
+if database_complete != False:
     def get_levelup_move_for_pokemon(pokemon_name, level):
         """
         Get a random move learned by a Pokémon at a specific level and lower, excluding moves that can be learned at a higher level.
@@ -1096,7 +1096,8 @@ if database_complete != False:
                         level = 100
                     if level < 0:
                         level = 1
-                except:
+                except Exception as e:
+                    showWarning(f"Error in generate random pokemon{e}")
                     mainpokemon_level = 5
                     level = 5
             else:
@@ -1196,7 +1197,7 @@ def display_dead_pokemon():
     layout2 = QVBoxLayout()
     # Display the Pokémon image
     pkmnimage_file = f"{id}.png"
-    pkmnimage_path = addon_dir / frontdefault / pkmnimage_file
+    pkmnimage_path = frontdefault / pkmnimage_file
     pkmnimage_label = QLabel()
     pkmnpixmap = QPixmap()
     pkmnpixmap.load(str(pkmnimage_path))
@@ -1418,6 +1419,8 @@ def find_details_move(move_name):
     except json.JSONDecodeError as e:
         showInfo(f"Error decoding JSON: {e}")
         return None
+    except Exception as e:
+        showWarning(f"There is an issue in find_details_move{e}")
 
 def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp):
     global mainpokemon_current_hp, mainpokemon_ev, ev_yield, mainpokemon_evolution, mainpokemon_xp
@@ -2042,77 +2045,9 @@ if database_complete != False:
         starter = True
     except:
         starter = False
+        mainpokemon_level = 5
     name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
     battlescene_file = random_battle_scene()
-
-    def calc_atk_dmg(level, critical, power, stat_atk, wild_stat_def, main_type, move_type, wild_type):
-        if power is None:
-            # You can choose a default power or handle it according to your requirements
-            power = 0
-        # damage = (((2 * level * critical)+2)/ 5) * power * stat_atk / wild_stat_def)+2)/ 50 * stab * random
-        # if move_typ is the same as the main pkmn type => damage * 1.5; else damage * 1.0
-        # STAB calculation
-        stab = 1.5 if move_type == main_type else 1.0
-        eff = get_effectiveness(move_type)
-        # random luck
-        random_number = random.randint(217, 255)
-        random_factor = random_number / 255
-        damage = (((((2 * level * critical) + 2) / 5) * power * stat_atk / wild_stat_def) + 2) / 50 * stab * eff * random_factor
-        # if main pkmn type = move type => damage * 1,5
-        # if wild pokemon type x main pokemon type => 0.5 not very eff.; 1.0 eff.; 2 very eff.
-        return damage
-
-    def find_details_move(move_name):
-        global moves_file_path
-        try:
-            with open(moves_file_path, "r", encoding="utf-8") as json_file:
-                moves_data = json.load(json_file)
-                # Check if there are any captured Pokémon
-                for move in moves_data:
-                    if move["name"].lower() == move_name.lower():
-                        return {
-                            "id": move["id"],
-                            "name": move["name"],
-                            "accuracy": move["accuracy"],
-                            "pp": move["pp"],
-                            "power": move["power"],
-                            "damage_class": move["damage_class"],
-                            "type": move["type"]
-                        }
-        except FileNotFoundError:
-            showInfo("Moves Data File Missing!\nPlease Download Moves Data")
-            return None
-        except json.JSONDecodeError as e:
-            showInfo(f"Error decoding JSON: {e}")
-            return None
-
-    def on_attack_button_clicked(attack, image_label, layout, attack_label):
-        global attack_counter, hp, max_hp, mainpokemon_current_hp, mainpokemon_hp
-        if attack_counter == 0:
-            attack_counter += 1
-            move_info = find_details_move(attack)
-            if move_info["accuracy"] is None:
-                # You can choose a default power or handle it according to your requirements
-                move_info["accuracy"] = 100
-            global mainpokemon_level, mainpokemon_type, mainpokemon_stats, stats, hp, name, type
-            critical = 1
-            damage = int(calc_atk_dmg(mainpokemon_level, critical, move_info["power"], mainpokemon_stats["attack"],
-                                      stats["defense"], mainpokemon_type, move_info["type"], type))
-            hp -= damage
-            if hp < 0:
-                hp = 0
-            update_hp_bar(image_label, layout, attack_label)
-            showInfo(f"{attack} was clicked ! \n Wild {name.capitalize()} receives {damage} Damage!")
-        else:
-            showInfo("A move was already chosen !")
-
-    # Set the layout for the dialog
-    window.setLayout(layout)
-
-    # Show the dialog
-    #window.exec()
-
-    window.show()
 
 def get_effectiveness(move_type):
     global mainpokemon_type, effectiveness_chart_file_path, type
@@ -3273,14 +3208,14 @@ def type_colors(type):
 def type_icon_path(type):
     global addon_dir
     png_file = f"{type}.png"
-    icon_path = addon_dir / "pokemon_sprites" / "Types"
+    icon_path = addon_dir / "addon_sprites" / "Types"
     icon_png_file_path = icon_path / png_file
     return icon_png_file_path
 
 def move_category_path(category):
     global addon_dir
     png_file = f"{category}_move.png"
-    category_path = addon_dir / "pokemon_sprites" / png_file
+    category_path = addon_dir / "addon_sprites" / png_file
     return category_path
 
 def MainPokemon(name, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
@@ -4113,13 +4048,13 @@ if database_complete != False:
         #showInfo(f"inject set to {life_bar_injected}")
     def inject_life_bar(web_content, context):
         global life_bar_injected, hp, name, level, id, battle_status
-        global frontdefault, addon_dir
+        global frontdefault, addon_dir, user_path_sprites
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
             pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
         else:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.gif'
-            pokemon_image_file = os.path.join((addon_dir / "pokemon_sprites" / "front_default_gif"), pokemon_imagefile)
+            pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
         max_hp = calculate_max_hp_wildpokemon()
         pokemon_hp_percent = int((hp / max_hp) * 100)
         is_reviewer = mw.state == "review"
@@ -4194,13 +4129,13 @@ if database_complete != False:
         return web_content
 
     def update_life_bar(reviewer, card, ease):
-        global hp, name, id, frontdefault, battle_status
+        global hp, name, id, frontdefault, battle_status, user_path_sprites
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png'  # use for png files
             pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile)  # use for png files
         else:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.gif'
-            pokemon_image_file = os.path.join((addon_dir / "pokemon_sprites" / "front_default_gif"), pokemon_imagefile)
+            pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
         image_base64 = get_image_as_base64(pokemon_image_file)
         max_hp = calculate_max_hp_wildpokemon()
         pokemon_hp_percent = int((hp / max_hp) * 100)
@@ -4837,11 +4772,11 @@ class TestWindow(QWidget):
         return image_label
 
     def pokemon_display_item(self, item):
-        global pokemon_encounter
+        global pokemon_encounter, user_path_sprites
         global addon_dir
         global frontdefault
-        bckgimage_path = addon_dir / "pokemon_sprites" / "starter_screen" / "bg.png"
-        item_path = addon_dir / "pokemon_sprites" / "items" / f"{item}.png"
+        bckgimage_path =  addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
+        item_path = user_path_sprites / "items" / f"{item}.png"
 
         # Load the background image
         pixmap_bckg = QPixmap()
@@ -4906,67 +4841,66 @@ class TestWindow(QWidget):
         return image_label
 
     def pokemon_display_badge(self, badge_number):
-        global pokemon_encounter
-        global addon_dir
-        global badges_path
-        global frontdefault
-        global badges
-        bckgimage_path = addon_dir / "pokemon_sprites" / "starter_screen" / "bg.png"
-        badge_path = badges_path / f"{badge_number}.png"
+        try:
+            global pokemon_encounter, addon_dir, badges_path, badges
+            bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
+            badge_path = addon_dir / "user_files" / "sprites" / "badges" / f"{badge_number}.png"
 
-        # Load the background image
-        pixmap_bckg = QPixmap()
-        pixmap_bckg.load(str(bckgimage_path))
+            # Load the background image
+            pixmap_bckg = QPixmap()
+            pixmap_bckg.load(str(bckgimage_path))
 
-        # Display the Pokémon image
-        item_pixmap = QPixmap()
-        item_pixmap.load(str(badge_path))
+            # Display the Pokémon image
+            item_pixmap = QPixmap()
+            item_pixmap.load(str(badge_path))
 
-        def resize_pixmap_img(pixmap):
-            max_width = 100
-            original_width = pixmap.width()
-            original_height = pixmap.height()
+            def resize_pixmap_img(pixmap):
+                max_width = 100
+                original_width = pixmap.width()
+                original_height = pixmap.height()
 
-            if original_width == 0:
-                return pixmap  # Avoid division by zero
+                if original_width == 0:
+                    return pixmap  # Avoid division by zero
 
-            new_width = max_width
-            new_height = (original_height * max_width) // original_width
-            pixmap2 = pixmap.scaled(new_width, new_height)
-            return pixmap2
+                new_width = max_width
+                new_height = (original_height * max_width) // original_width
+                pixmap2 = pixmap.scaled(new_width, new_height)
+                return pixmap2
 
-        item_pixmap = resize_pixmap_img(item_pixmap)
+            item_pixmap = resize_pixmap_img(item_pixmap)
 
-        # Merge the background image and the Pokémon image
-        merged_pixmap = QPixmap(pixmap_bckg.size())
-        merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
-        #merged_pixmap.fill(Qt.transparent)
-        # merge both images together
-        painter = QPainter(merged_pixmap)
-        # draw background to a specific pixel
-        painter.drawPixmap(0, 0, pixmap_bckg)
-        #item = str(item)
-        painter.drawPixmap(200,90,item_pixmap)
+            # Merge the background image and the Pokémon image
+            merged_pixmap = QPixmap(pixmap_bckg.size())
+            merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
+            #merged_pixmap.fill(Qt.transparent)
+            # merge both images together
+            painter = QPainter(merged_pixmap)
+            # draw background to a specific pixel
+            painter.drawPixmap(0, 0, pixmap_bckg)
+            #item = str(item)
+            painter.drawPixmap(200,90,item_pixmap)
 
-        # custom font
-        custom_font = load_custom_font(font_file, 20)
-        message_box_text = f"You have received a badge for:"
-        message_box_text2 = f"{badges[str(badge_number)]}!"
-        # Draw the text on top of the image
-        # Adjust the font size as needed
-        painter.setFont(custom_font)
-        painter.setPen(QColor(255,255,255))  # Text color
-        painter.drawText(120, 270, message_box_text)
-        painter.drawText(140, 290, message_box_text2)
-        custom_font = load_custom_font(font_file, 20)
-        painter.setFont(custom_font)
-        #painter.drawText(10, 330, "You can look this up in your item bag.")
-        painter.end()
-        # Set the merged image as the pixmap for the QLabel
-        image_label = QLabel()
-        image_label.setPixmap(merged_pixmap)
+            # custom font
+            custom_font = load_custom_font(font_file, 20)
+            message_box_text = f"You have received a badge for:"
+            message_box_text2 = f"{badges[str(badge_number)]}!"
+            # Draw the text on top of the image
+            # Adjust the font size as needed
+            painter.setFont(custom_font)
+            painter.setPen(QColor(255,255,255))  # Text color
+            painter.drawText(120, 270, message_box_text)
+            painter.drawText(140, 290, message_box_text2)
+            custom_font = load_custom_font(font_file, 20)
+            painter.setFont(custom_font)
+            #painter.drawText(10, 330, "You can look this up in your item bag.")
+            painter.end()
+            # Set the merged image as the pixmap for the QLabel
+            image_label = QLabel()
+            image_label.setPixmap(merged_pixmap)
 
-        return image_label
+            return image_label
+        except Exception as e:
+            showWarning(f"An error occured in badges window {e}")
 
     def pokemon_display_dead_pokemon(self):
         global pokemon_hp, name, id, level, type, caught_pokemon, pkmnimgfolder, frontdefault, addon_dir, caught, pokedex_image_path
@@ -4975,7 +4909,7 @@ class TestWindow(QWidget):
         window_title = (f"Would you want let the  wild {lang_name} free or catch the wild {lang_name} ?")
         # Display the Pokémon image
         pkmnimage_file = f"{int(search_pokedex(name.lower(),'num'))}.png"
-        pkmnimage_path = addon_dir / frontdefault / pkmnimage_file
+        pkmnimage_path = frontdefault / pkmnimage_file
         pkmnimage_label = QLabel()
         pkmnpixmap = QPixmap()
         pkmnpixmap.load(str(pkmnimage_path))
@@ -5050,12 +4984,12 @@ class TestWindow(QWidget):
         #self.setFixedHeight(371)
         layout = self.layout()
         battle_widget = self.pokemon_display_first_encounter()
-        battle_widget.setScaledContents(True) #scalable ankimon window
+        #battle_widget.setScaledContents(True) #scalable ankimon window
         layout.addWidget(battle_widget)
         self.setStyleSheet("background-color: rgb(44,44,44);")
         self.setLayout(layout)
-        self.setMinimumWidth(556)
-        self.setMinimumHeight(300)
+        self.setMaximumWidth(556)
+        self.setMaximumHeight(300)
 
     def display_item(self):
         Receive_Window = QDialog(mw)
@@ -5071,6 +5005,7 @@ class TestWindow(QWidget):
 
     def display_badge(self, badge_num):
         Receive_Window = QDialog(mw)
+        Receive_Window.setWindowTitle("You have received a Badge!")
         layout = QHBoxLayout()
         badge_widget = self.pokemon_display_badge(badge_num)
         layout.addWidget(badge_widget)
@@ -5222,7 +5157,7 @@ class StarterWindow(QWidget):
         global pokemon_encounter
         global addon_dir
         global frontdefault
-        bckgimage_path = addon_dir / "pokemon_sprites" / "starter_screen" / "bckg.png"
+        bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bckg.png"
         water_id = int(search_pokedex(water_start, "num"))
         grass_id = int(search_pokedex(grass_start, "num"))
         fire_id = int(search_pokedex(fire_start, "num"))
@@ -5297,7 +5232,7 @@ class StarterWindow(QWidget):
         global pokemon_encounter
         global addon_dir
         global frontdefault
-        bckgimage_path = addon_dir / "pokemon_sprites" / "starter_screen" / "bg.png"
+        bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         id = int(search_pokedex(starter_name, "num"))
 
         # Load the background image
@@ -5364,7 +5299,7 @@ class EvoWindow(QWidget):
     def pokemon_display_evo(self, pkmn_name, prevo_name):
         global addon_dir
         global frontdefault
-        bckgimage_path = addon_dir / "pokemon_sprites" / "starter_screen" / "bg.png"
+        bckgimage_path = addon_dir / "s" / "starter_screen" / "bg.png"
         id = int(search_pokedex(pkmn_name.lower(), "num"))
 
         # Load the background image
@@ -5439,9 +5374,9 @@ class EvoWindow(QWidget):
             showInfo(f"Error finding evolution details: {e}")
         window_title = (f"{pkmn_name.capitalize()} is evolving to {pokemon_evo.capitalize()} ?")
         # Display the Pokémon image
-        pkmnimage_path = addon_dir / frontdefault / f"{pkmn_id}.png"
+        pkmnimage_path = frontdefault / f"{pkmn_id}.png"
         #pkmnimage_path2 = addon_dir / frontdefault / f"{mainpokemon_prevo_id}.png"
-        pkmnimage_path2 = addon_dir / frontdefault / f"{(pokemon_evo_id)}.png"
+        pkmnimage_path2 = frontdefault / f"{(pokemon_evo_id)}.png"
         #pkmnimage_label = QLabel()
         #pkmnimage_label2 = QLabel()
         pkmnpixmap = QPixmap()
