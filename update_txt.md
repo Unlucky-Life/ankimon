@@ -5,9 +5,11 @@ Feature A: **Battle Cries Integration** - This feature will integrate battle cri
 
 Feature B: **Language Support for Pokémon Names and Descriptions** - Upcoming updates will include support for multiple languages including Japanese, French, German, and English, allowing a broader audience to enjoy the game in their native language.
 
-Feature C: **Dialog Window for Ankimon News/Events/Update Infos** - The next update will introduce a new dialog window that displays the latest Ankimon news, events, and information about updates, keeping players informed about what's new.
+Feature C: **Dialog Window for Ankimon News/Events/Update Infos** - This update will introduce a new dialog window that displays the latest Ankimon news, events, and information about updates, keeping players informed about what's new. (The one you are seeing right now)
 
-Feature D: **Can now remember old Attacks** - The next update will introduce a new feature, where Pokemons can learn their old / once forgotten moves!
+Feature D: **Can now remember old Attacks** - This update will introduce a new feature, where Pokemons can learn their old / once forgotten moves!
+
+Feature E: **Can now set Key for Opening and Closing Ankimon Window in Anki** - This update allos to set a specific key that in combination with crlt or cmd opens and closes the Ankimon Window!
 
 ### Bug Fixes:
 
