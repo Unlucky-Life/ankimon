@@ -1,6 +1,6 @@
 These settings do not sync and require a restart to apply.
 
-- `CardIntervall` [number]: Number of Cards until next Attackround
+- `Cards per Round` [number]: Number of Cards until next Attackround
 
 Possible Generation are:
 If you want to play with Pokemon from a certain generation, set them as True
@@ -12,13 +12,14 @@ If you want to play with Pokemon from a certain generation, set them as True
 - `Generation6` [True/False]
 - `Generation7` [True/False]
 - `Generation8` [True/False]
+- `Generation9` [True/False]
 
 Pokemon Gif Animations:
-You can decide if you want the Gif Animations in the anki reviewer (to use the gifs - you need to download them first unter "Download PokemonShowdown Sprites"
-- `Gif` [True/False]
+You can decide if you want the Gif Animations in the anki reviewer - to use the gifs - you need to download them first unter "Download PokemonShowdown Sprites"
+- `reviewer_image_gif` [True/False]
 
 - Sounds:
-You can decide if you want Pokemon Battle Cries in the anki reviewer if you first encounter them.
+You can decide if you want Pokemon Battle Cries in the anki reviewer.
 - `sounds` [True/False]
 
 - In Game Battle Sounds:
