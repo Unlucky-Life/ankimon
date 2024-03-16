@@ -1,9 +1,9 @@
 #Ankimon News:
 ## Update Information
 
-Feature A: **Battle Cries Integration** - This feature will integrate battle cries for each Pokémon, enhancing the battle experience by adding more depth and realism to the combat sequences.
+Feature A: **Battle Cries Integration** - This update will integrate battle cries for each Pokémon, enhancing the battle experience by adding more depth and realism to the combat sequences.
 
-Feature B: **Language Support for Pokémon Names and Descriptions** - Upcoming updates will include support for multiple languages including Japanese, French, German, and English, allowing a broader audience to enjoy the game in their native language.
+Feature B: **Language Support for Pokémon Names and Descriptions** - This update includes support for multiple languages including Japanese, French, German, and English, allowing a broader audience to enjoy the game in their native language.
 
 Feature C: **Dialog Window for Ankimon News/Events/Update Infos** - This update will introduce a new dialog window that displays the latest Ankimon news, events, and information about updates, keeping players informed about what's new. (The one you are seeing right now)
 
