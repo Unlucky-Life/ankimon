@@ -58,7 +58,6 @@ currdirname = addon_dir
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
     if not os.path.isdir(folder_path):
-       #showInfo(f"Folder '{folder}' does not exist in '{parent_directory}'")
        return False
     else:
        return True
@@ -66,10 +65,8 @@ def check_folders_exist(parent_directory, folder):
 def check_file_exists(folder, filename):
     file_path = os.path.join(folder, filename)
     if os.path.isfile(file_path):
-        #showInfo(f"File '{filename}' exists in '{folder}'.")
         return True
     else:
-        #showInfo(f"File '{filename}' does not exist in '{folder}'.")
         return False
 
 #safe route for updates
@@ -259,7 +256,6 @@ if online_connectivity != False:
     local_content = read_local_file(local_file_path)
     # If local content exists and is the same as GitHub content, do not open dialog
     if local_content is not None and compare_files(local_content, github_content):
-        #showInfo("Local file is up to date.")
         pass
     else:
         # Download new content from GitHub
@@ -346,7 +342,6 @@ def check_id_ok(id_num):
     elif isinstance(id_num, list):
         if len(id_num) > 0:
             id_num = id_num[0]
-            showInfo(f"{id_num}")
         else:
             return False
     # Determine the generation of the given ID
@@ -623,7 +618,6 @@ def answerCard_after(rev, card, ease):
     else:
         # default behavior for unforeseen cases
         tooltip("Error in ColorConfirmation add-on: Couldn't interpret ease")
-    #showInfo(f"{msg} + {card_ratings_count['Again']}, {card_ratings_count['Hard']}, {card_ratings_count['Good']}, {card_ratings_count['Easy']}")
 
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
 
@@ -794,7 +788,6 @@ def pick_random_gender(pokemon_name):
         else:
             genders = pokemon.get("gender")
             if genders:
-                #showInfo(f"gender ist {gender}")
                 if genders == "F":
                     #return "M"
                     gender = "F"
@@ -1009,7 +1002,6 @@ caught_pokemon = {} #pokemon not caught
 def check_min_generate_level(pkmn_name):
     evoType = search_pokedex(name.lower(), "evoType")
     evoLevel = search_pokedex(name.lower(), "evoLevel")
-    #showInfo(f"{evoLevel}, {evoType}")
     if evoLevel is not None:
         return int(evoLevel)
     elif evoType is not None:
@@ -1304,7 +1296,6 @@ def choose_random_pkmn_from_tier():
         showWarning(f" An error occured with generating following Pkmn Info: {id}{pokemon_species} \n Please post this error message over the Report Bug Issue")
 
 def get_pokemon_id_by_tier(tier):
-    #showInfo(f"{tier}")
     global pokemon_species_normal_path, pokemon_species_baby_path, pokemon_species_mythical_path, pokemon_species_ultra_path, pokemon_species_legendary_path
     id_species_path = None
     if tier == "Normal":
@@ -1467,7 +1458,6 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                     for mainpkmndata in main_pokemon_data:
                         if mainpkmndata["name"] == mainpokemon_name.capitalize():
                             attacks = mainpkmndata["attacks"]
-                            # showInfo(f"{attacks}")
                             new_attacks = get_levelup_move_for_pokemon(mainpokemon_name.lower(),int(mainpokemon_level))
                             if new_attacks:
                                 msg = ""
@@ -1506,7 +1496,6 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             for mainpkmndata in main_pokemon_data:
                 if mainpkmndata["name"] == mainpokemon_name.capitalize():
                     attacks = mainpkmndata["attacks"]
-                    # showInfo(f"{attacks}")
                     new_attacks = get_levelup_move_for_pokemon(mainpokemon_name.lower(), int(mainpokemon_level))
                     if new_attacks:
                         showInfo(f"Your {mainpokemon_name.capitalize()} can now learn a new attack !")
@@ -1600,7 +1589,6 @@ def evolve_pokemon(pkmn_name):
     try:
         evoName = search_pokedex(pkmn_name.lower(), "evos")
         evoName = f"{evoName[0]}"
-        #showInfo(f"{evoName}")
         with open(mypokemon_path, "r") as json_file:
             captured_pokemon_data = json.load(json_file)
             pokemon = None
@@ -1617,7 +1605,6 @@ def evolve_pokemon(pkmn_name):
                             pokemon["type"] = search_pokedex(evoName.lower(), "types")
                             pokemon["evos"] = []
                             attacks = pokemon["attacks"]
-                            #showInfo(f"{attacks}")
                             new_attacks = get_random_moves_for_pokemon(evoName, int(pokemon["level"]))
                             for new_attack in new_attacks:
                                 if len(attacks) < 4:
@@ -1717,7 +1704,6 @@ def cancel_evolution(pkmn_name):
             for pokemon in main_pokemon_data:
                 if pokemon["name"] == pkmn_name.capitalize():
                     attacks = pokemon["attacks"]
-                    # showInfo(f"{attacks}")
                     new_attacks = get_random_moves_for_pokemon(pkmn_name.lower(), int(main_pokemon_data["level"]))
                     for new_attack in new_attacks:
                         if len(attacks) < 4:
@@ -1835,12 +1821,10 @@ def get_random_starter():
                         fire_starter.append(pokemon)
                     if type == "Water":
                         water_starter.append(pokemon)
-            #showInfo(f"{water_starter}, {fire_starter}, {grass_starter}")
             random_gen = random.randint(0, 6)
             water_start = f"{water_starter[random_gen]}"
             fire_start = f"{fire_starter[random_gen]}"
             grass_start = f"{grass_starter[random_gen]}"
-            #showInfo(f"{water_start}, {fire_start}, {grass_start}")
             return water_start, fire_start, grass_start
     except Exception as e:
         showWarning(f"Error in get_random_starter: {e}")
@@ -2052,7 +2036,6 @@ if database_complete != False:
 def get_effectiveness(move_type):
     global mainpokemon_type, effectiveness_chart_file_path, type
     move_type = move_type.capitalize()
-    #showInfo(f"{move_type}")
     attacking_types = []
     attacking_types.append(move_type)
     defending_types = type
@@ -2074,11 +2057,9 @@ def get_effectiveness(move_type):
                 for value in effectiveness_values:
                     eff_value *= value
                 effective_txt = effectiveness_text(eff_value)
-                #showInfo(f"Attack {effective_txt} \n Effectiveness is {int(eff_value)}x")
                 return eff_value
             else:
                 effective_txt = effectiveness_text(effectiveness_values[0])
-                #showInfo(f"Effectiveness is {int(effectiveness_values[0])}x \nAttack {effective_txt}")
                 return effectiveness_values[0]
     # If the combination is not found, return None or a default value
     return None
@@ -2095,8 +2076,8 @@ def effectiveness_text(effect_value):
     elif effect_value <= 2:
         effective_txt = "was super effective !"
     else:
-        showInfo(f"{effect_value}")
-        return None
+        effective_txt = "was effective."
+        #return None
     return effective_txt
 
 def calc_multiply_card_rating():
@@ -2165,7 +2146,6 @@ def on_review_card():
             slp_counter = 0
             pokemon_encounter += 1
             multiplier = calc_multiply_card_rating()
-            #showInfo(f"{multiplier}x has been calc")
             msg = ""
             msg += f"{multiplier}x Multiplier - "
             # If 10 or more cards have been reviewed, show the random Pokémon
@@ -2194,7 +2174,6 @@ def on_review_card():
                     if random_number < missing_chance:
                         acc = 0
                 if random.random() > calc_acc:
-                    #showInfo("Move has missed !")
                     msg += "\n Move has missed !"
                 else:
                     if category == "Status":
@@ -2206,12 +2185,10 @@ def on_review_card():
                             color = "#F0B27A"
                         elif category == "Special":
                             color = "#D2B4DE"
-                        #showInfo(f"{random_attack} has been choosen")
                         if move["basePower"] == 0:
                             dmg = bP_none_moves(move)
                             hp -= dmg
                             if dmg == 0:
-                                #showInfo("Move was useless !")
                                 msg += "\n Move has missed !"
                                 #dmg = 1
                         else:
@@ -2235,7 +2212,6 @@ def on_review_card():
                             if move_stat is not None:
                                 move_with_status(move, move_stat, secondary)
                             if dmg == 0:
-                                #showInfo("Move was useless !")
                                 msg += " \n Move has missed !"
                         if hp < 0:
                             hp = 0
@@ -2391,7 +2367,6 @@ def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpoke
         "spe": boosts.get("spe", 0),
         "xp": mainpokemon_stats.get("xp", 0)
     }
-    #showInfo(f"{stat_boost_value}")
     move_stat = move.get("status",None)
     status = move.get("secondary",None)
     if move_stat is not None:
@@ -2403,36 +2378,30 @@ def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpoke
             battle_status = status["status"]
     if battle_status == "slp":
         slp_counter = random.randint(1, 3)
-    #showInfo(f"{battle_status}")
     if target == "self":
         for boost, stage in boosts.items():
             stat = get_multiplier_stats(stage)
-            #showInfo(f"{stat}")
             mainpokemon_stats[boost] = mainpokemon_stats.get(boost, 0) * stat
             msg += f" {mainpokemon_name.capitalize()}'s "
             if stage < 0:
                 msg += f"{boost.capitalize()} is decreased."
             elif stage > 0:
                 msg += f"{boost.capitalize()} is increased."
-            #showInfo(f"{mainpokemon_stats[boost]}")
     elif target in ["normal", "allAdjacentFoes"]:
         for boost, stage in boosts.items():
             stat = get_multiplier_stats(stage)
-            #showInfo(f"{stat}")
             stats[boost] = stats.get(boost, 0) * stat
             msg += f" {name.capitalize()}'s "
             if stage < 0:
                 msg += f"{boost.capitalize()} is decreased."
             elif stage > 0:
                 msg += f"{boost.capitalize()} is increased."
-            #showInfo(f"{stats[boost]}")
     return msg
 
 def move_with_status(move, move_stat, status):
     global battle_status
     target = move.get("target")
     bat_status = move.get("secondary", None).get("status", None)
-    #showInfo(f"{battle_status}")
     if target in ["normal", "allAdjacentFoes"]:
         if move_stat is not None:
             battle_status = move_stat
@@ -3497,79 +3466,82 @@ def trade_pokemon(old_pokemon_name, pokemon_trade):
         json.dump(pokemons, file, indent=4)
 
 def PokemonTradeIn(number_code, old_pokemon_name):
-    global addon_dir
-    # Split the string into a list of integers
-    numbers = [int(num) for num in number_code.split(',')]
+    if len(number_code) > 15:
+        global addon_dir
+        # Split the string into a list of integers
+        numbers = [int(num) for num in number_code.split(',')]
 
-    # Extracting specific parts of the list
-    pokemon_id = numbers[0]
-    level = numbers[1]
-    gender_id = numbers[2]
-    ev_stats = {'hp': numbers[3], 'atk': numbers[4], 'def': numbers[5], 'spa': numbers[6], 'spd': numbers[7],
-                'spe': numbers[8]}
-    iv_stats = {'hp': numbers[9], 'atk': numbers[10], 'def': numbers[11], 'spa': numbers[12], 'spd': numbers[13],
-                'spe': numbers[14]}
-    attack_ids = numbers[15:]
-    attacks = []
-    for attack_id in attack_ids:
-        move = find_move_by_num(int(attack_id))
-        attacks.append(move['name'])
-    details = find_pokemon_by_id(pokemon_id)
-    name = details["name"]
-    type = details["types"]
-    if gender_id == 0:
-        gender = "M"
-    elif gender_id == 1:
-        gender = "F"
-    elif gender_id == 2:
-        gender = "N"
+        # Extracting specific parts of the list
+        pokemon_id = numbers[0]
+        level = numbers[1]
+        gender_id = numbers[2]
+        ev_stats = {'hp': numbers[3], 'atk': numbers[4], 'def': numbers[5], 'spa': numbers[6], 'spd': numbers[7],
+                    'spe': numbers[8]}
+        iv_stats = {'hp': numbers[9], 'atk': numbers[10], 'def': numbers[11], 'spa': numbers[12], 'spd': numbers[13],
+                    'spe': numbers[14]}
+        attack_ids = numbers[15:]
+        attacks = []
+        for attack_id in attack_ids:
+            move = find_move_by_num(int(attack_id))
+            attacks.append(move['name'])
+        details = find_pokemon_by_id(pokemon_id)
+        name = details["name"]
+        type = details["types"]
+        if gender_id == 0:
+            gender = "M"
+        elif gender_id == 1:
+            gender = "F"
+        elif gender_id == 2:
+            gender = "N"
+        else:
+            gender = None #None
+        stats = details["baseStats"]
+        evos = details.get("evos", "None")
+        #type = search_pokedex(name, "types")
+        #stats = search_pokedex(name, "baseStats")
+        global pokeapi_db_path
+        with open(str(pokeapi_db_path), "r") as json_file:
+            pokemon_data = json.load(json_file)
+            for pokemon in pokemon_data:
+                if pokemon["id"] == pokemon_id:
+                    growth_rate = pokemon["growth_rate"]
+        # Creating a dictionary to organize the extracted information
+        stats["xp"] = 0
+        pokemon_trade = {
+                "name": name,
+                "gender": gender,
+                "ability": ability,
+                "level": level,
+                "id": pokemon_id,
+                "type": type,
+                "stats": stats,
+                "ev": ev_stats,
+                "iv": iv_stats,
+                "attacks": attacks,
+                "base_experience": base_experience,
+                "current_hp": calculate_hp(stats["hp"], level, ev, iv),
+                "growth_rate": growth_rate,
+                "evos": evos
+        }
+        #showInfo(f"{pokemon_trade}")
+
+        #PokemonFree(old_pokemon_name)
+        #global mypokemon_path
+        #with open(mypokemon_path, 'r') as file:
+        #    pokemon_list = json.load(file)
+
+        #pokemon_list.append(pokemon_trade)
+        #for pokemon in pokemon_list:
+        #    if pokemon["name"] == old_pokemon_name:
+        #        pokemon = pokemon_trade
+
+        # Write the updated data back to the file
+        #with open(mypokemon_path, 'w') as file:
+        #    json.dump(pokemon_list, file, indent=2)
+        trade_pokemon(f"{old_pokemon_name}", pokemon_trade)
+        showInfo(f"You have sucessfully traded your {old_pokemon_name} for {name} ")
     else:
-        gender = None #None
-    stats = details["baseStats"]
-    evos = details.get("evos", "None")
-    #type = search_pokedex(name, "types")
-    #stats = search_pokedex(name, "baseStats")
-    global pokeapi_db_path
-    with open(str(pokeapi_db_path), "r") as json_file:
-        pokemon_data = json.load(json_file)
-        for pokemon in pokemon_data:
-            if pokemon["id"] == pokemon_id:
-                growth_rate = pokemon["growth_rate"]
-    # Creating a dictionary to organize the extracted information
-    stats["xp"] = 0
-    pokemon_trade = {
-            "name": name,
-            "gender": gender,
-            "ability": ability,
-            "level": level,
-            "id": pokemon_id,
-            "type": type,
-            "stats": stats,
-            "ev": ev_stats,
-            "iv": iv_stats,
-            "attacks": attacks,
-            "base_experience": base_experience,
-            "current_hp": calculate_hp(stats["hp"], level, ev, iv),
-            "growth_rate": growth_rate,
-            "evos": evos
-    }
-    showInfo(f"{pokemon_trade}")
-
-    #PokemonFree(old_pokemon_name)
-    #global mypokemon_path
-    #with open(mypokemon_path, 'r') as file:
-    #    pokemon_list = json.load(file)
-
-    #pokemon_list.append(pokemon_trade)
-    #for pokemon in pokemon_list:
-    #    if pokemon["name"] == old_pokemon_name:
-    #        pokemon = pokemon_trade
-
-    # Write the updated data back to the file
-    #with open(mypokemon_path, 'w') as file:
-    #    json.dump(pokemon_list, file, indent=2)
-    trade_pokemon(f"{old_pokemon_name}", pokemon_trade)
-    showInfo(f"You have sucessfully traded your {old_pokemon_name} for {name} ")
+        showWarning("Please enter a valid Code !")
 
 
 def PokemonFree(name):
@@ -3663,10 +3635,7 @@ def find_experience_for_level(group_growth_rate, level):
         for row in csv_reader:
             if row[fieldnames[0]] == str(level):  # Use the first fieldname to access the 'Level' column
                 experience = row[growth_rate]
-                #showInfo((f"Your main Pokemon {mainpokemon_name} Lvl {level} needs {experience} XP to reach the next level."))
                 break
-        #else:
-            #showInfo(f"Level {level} not found in the CSV file.")
 
         return experience
 
@@ -3697,8 +3666,6 @@ def find_experience_for_mainpokemon():
                 experience -= mainpokemon_xp
                 showInfo((f"Your main Pokemon {mainpokemon_name} Lvl {level} needs {experience} XP to reach the next level."))
                 break
-        #else:
-            #showInfo(f"Level {level} not found in the CSV file.")
 
         return experience
 
@@ -3851,7 +3818,6 @@ class Downloader(QObject):
             self.downloading_sprites_txt.emit()
             for pokemon_id in range(1, self.id_to + 1):
                     for sprite_type in ["front_default", "back_default"]:
-                        #showInfo("PokemonID - +659")
                         if sprite_type == "front_default":
                             base_url = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{pokemon_id}.png"
                             response = requests.get(base_url)
@@ -4045,7 +4011,6 @@ if database_complete != False:
     def reviewer_reset_life_bar_inject():
         global life_bar_injected
         life_bar_injected = False
-        #showInfo(f"inject set to {life_bar_injected}")
     def inject_life_bar(web_content, context):
         global life_bar_injected, hp, name, level, id, battle_status
         global frontdefault, addon_dir, user_path_sprites
@@ -4325,7 +4290,6 @@ def save_error_code(error_code):
         generation_number = int(''.join(filter(str.isdigit, relevant_text)))
 
         # Show the generation number
-        #showInfo(f"Please use Gen {str(generation_number)[0]}")
         error_fix_msg += (f"\n Please use Gen {str(generation_number)[0]} or lower")
 
         index = error_code.find("can't be transferred from Gen")
@@ -5297,9 +5261,8 @@ class EvoWindow(QWidget):
         self.show()
 
     def pokemon_display_evo(self, pkmn_name, prevo_name):
-        global addon_dir
-        global frontdefault
-        bckgimage_path = addon_dir / "s" / "starter_screen" / "bg.png"
+        global addon_dir, frontdefault
+        bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         id = int(search_pokedex(pkmn_name.lower(), "num"))
 
         # Load the background image
@@ -5365,11 +5328,6 @@ class EvoWindow(QWidget):
             else:
                 pokemon_evo = pokemon_evos[0]
                 pokemon_evo_id = int((search_pokedex(pokemon_evo.lower(), "num")))
-            #for pokemon in pokemon_evo:
-                #pokemon_evo_id = (search_pokedex(pokemon.lower(), "num"))
-                #min_level = search_pokedex(pokemon.lower(), "evoLevel")
-                #if min_level == mainpokemon_level:
-                    #showInfo(f"{mainpokemon_name} is about to evolve to {pokemon} at level {min_level}")
         except (IndexError, ValueError, TypeError) as e:
             showInfo(f"Error finding evolution details: {e}")
         window_title = (f"{pkmn_name.capitalize()} is evolving to {pokemon_evo.capitalize()} ?")
