@@ -47,6 +47,7 @@ import distutils.dir_util
 from anki.collection import Collection
 import csv
 import time, wave
+import platform
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
@@ -178,12 +179,20 @@ window = None
 gender = None
 card_counter = -1
 item_receive_value = random.randint(30, 120)
-only_online_sprites = config["only_use_online_sprites"]
+system_name = platform.system()
+
+if system_name == "Windows" or system_name == "Linux":
+    system = "win_lin"
+elif system_name == "Darwin":
+    # Open file explorer at the specified path in macOS
+    system = "mac"
+#only_online_sprites = config["only_use_online_sprites"]
 cards_per_round = config["cards_per_round"]
 reviewer_image_gif = config["reviewer_image_gif"]
 sounds = config["sounds"]
 battle_sounds = config["battle_sounds"]
 language = config["language"]
+ankimon_key = config["key_for_opening_closing_ankimon"]
 
 def test_online_connectivity(url='http://www.google.com', timeout=5):
     try:
@@ -4999,13 +5008,14 @@ class TestWindow(QWidget):
         self.setMaximumHeight(300)
 
     def keyPressEvent(self, event):
-        global test, pokemon_encounter, pokedex_image_path
-        # Close the main window when the spacebar is pressed
-        if event.key() == Qt.Key.Key_N and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-            self.close()
-        if event.key() == Qt.Key.Key_R and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-            new_pokemon()
-            self.display_first_encounter()
+        global test, pokemon_encounter, pokedex_image_path, system, ankimon_key
+        open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
+        if system == "mac":
+            if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
+                self.close()
+        else:
+            if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+                self.close()
 
     def clear_layout(self, layout):
         while layout.count():
@@ -5417,15 +5427,26 @@ evo_window = EvoWindow()
 class MyEventFilter(QObject):
     def eventFilter(self, obj, event):
         if obj is mw and event.type() == QEvent.Type.KeyPress:
-            if event.key() == Qt.Key.Key_M and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-                if test_window.isVisible():
-                    test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
-                else:
-                    global first_start
-                    if first_start == False:
-                        test_window.display_first_start_up()
+            global system, ankimon_key
+            open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
+            if system == "mac":
+                if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
+                    if test_window.isVisible():
+                        test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
                     else:
-                        test_window.open_dynamic_window()
+                        if first_start == False:
+                            test_window.display_first_start_up()
+                        else:
+                            test_window.open_dynamic_window()
+            else:
+                if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+                    if test_window.isVisible():
+                        test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
+                    else:
+                        if first_start == False:
+                            test_window.display_first_start_up()
+                        else:
+                            test_window.open_dynamic_window()
         return False  # Andere Event-Handler nicht blockieren
 
 # Erstellen und Installieren des Event Filters
