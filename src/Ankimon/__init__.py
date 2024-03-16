@@ -187,6 +187,7 @@ elif system_name == "Darwin":
     # Open file explorer at the specified path in macOS
     system = "mac"
 #only_online_sprites = config["only_use_online_sprites"]
+#text_box_in_reviewer = config["text_box"]
 cards_per_round = config["cards_per_round"]
 reviewer_image_gif = config["reviewer_image_gif"]
 sounds = config["sounds"]
