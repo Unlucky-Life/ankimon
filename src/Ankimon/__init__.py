@@ -208,6 +208,35 @@ def test_online_connectivity(url='http://www.google.com', timeout=5):
         return False
 
 online_connectivity = test_online_connectivity()
+    # Function to check if the content of the two files is the same
+def compare_files(local_content, github_content):
+    return local_content == github_content
+
+# Function to read the content of the local file
+def read_local_file(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except FileNotFoundError:
+        return None
+
+# Function to write content to a local file
+def write_local_file(file_path, content):
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(content)
+
+# Function to check if the file exists on GitHub and read its content
+def read_github_file(url):
+    response = requests.get(url)
+        
+    if response.status_code == 200:
+        # File exists, parse the Markdown content
+        content = response.text
+        html_content = markdown.markdown(content)
+        return content, html_content
+    else:
+        return None, None
+
 if online_connectivity != False:
     import markdown
 
@@ -222,39 +251,12 @@ if online_connectivity != False:
             layout = QVBoxLayout()
             self.text_edit = QTextEdit()
             self.text_edit.setReadOnly(True)
+            self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+            self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
             self.text_edit.setHtml(content)
             layout.addWidget(self.text_edit)
 
             self.setLayout(layout)
-
-    # Function to check if the content of the two files is the same
-    def compare_files(local_content, github_content):
-        return local_content == github_content
-
-    # Function to read the content of the local file
-    def read_local_file(file_path):
-        try:
-            with open(file_path, 'r', encoding='utf-8') as file:
-                return file.read()
-        except FileNotFoundError:
-            return None
-
-    # Function to write content to a local file
-    def write_local_file(file_path, content):
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(content)
-
-    # Function to check if the file exists on GitHub and read its content
-    def read_github_file(url):
-        response = requests.get(url)
-        
-        if response.status_code == 200:
-            # File exists, parse the Markdown content
-            content = response.text
-            html_content = markdown.markdown(content)
-            return content, html_content
-        else:
-            return None, None
 
     # URL of the file on GitHub
     github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
@@ -277,6 +279,47 @@ if online_connectivity != False:
         else:
             showWarning("Failed to retrieve Ankimon content from GitHub.")
 
+##HelpGuide
+class HelpWindow(QDialog):
+    def __init__(self):
+            super().__init__()
+            html_content = " "
+            if online_connectivity != False:
+                # URL of the file on GitHub
+                help_github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/HelpInfos.html"
+                # Path to the local file
+                help_local_file_path = addon_dir / "HelpInfos.html"
+                local_content = read_local_file(help_local_file_path)
+                # Read content from GitHub
+                github_content, github_html_content = read_github_file(help_github_url)
+                if local_content is not None and compare_files(local_content, github_content):
+                    html_content = github_html_content
+                else: 
+                    # Download new content from GitHub
+                    if github_content is not None:
+                        # Write new content to the local file
+                        write_local_file(help_local_file_path, github_content)
+                        html_content = github_html_content
+            else:
+                local_content = read_local_file(help_local_file_path)
+                html_content = local_content
+
+            self.setWindowTitle("Ankimon HelpGuide")
+            self.setGeometry(100, 100, 600, 400)
+
+            layout = QVBoxLayout()
+            self.text_edit = QTextEdit()
+            self.text_edit.setReadOnly(True)
+            self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+            self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            self.text_edit.setHtml(html_content)
+            layout.addWidget(self.text_edit)
+
+            self.setLayout(layout)
+    
+def open_help_window():
+    help_dialog = HelpWindow()
+    help_dialog.exec()
 
 try:
     from aqt.sound import av_player
@@ -5918,6 +5961,10 @@ mw.pokemenu.addAction(test_action14)
 test_action13 = QAction("About and License", mw)
 test_action13.triggered.connect(license.show_window)
 mw.pokemenu.addAction(test_action13)
+
+help_action = QAction("Open Help Guide", mw)
+help_action.triggered.connect(open_help_window)
+mw.pokemenu.addAction(help_action)
 
 test_action16 = QAction("Report Bug", mw)
 test_action16.triggered.connect(report_bug)
