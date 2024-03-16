@@ -9,6 +9,7 @@
   "gen8": true,
   "gen9": true,
   "language": 9,
+  "key_for_opening_closing_ankimon": "N",
   "cards_per_round": 2,
   "only_use_online_sprites": false,
   "reviewer_image_gif": false,
