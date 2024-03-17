@@ -1,7 +1,8 @@
 #Ankimon News:
 ## Update Information
 
-**##Mac Users: When download the functions DO NOT go into fullscreen and dont let the computer hibernate/sleep while the files are downloading! This causes errors and issues with ankimon addon. If this happens to you, you need to uninstall - and reinstall the addon and re-do the download process.
+##**Mac Users**:
+**When download the functions DO NOT go into fullscreen** and **dont** let the computer **hibernate/sleep** while the files are downloading! This causes errors and issues with ankimon addon. If this happens to you, you need to uninstall - and reinstall the addon and re-do the download process.
 
 If any new issues appear with the update: please let me know over github, instead of downvoting : https://github.com/Unlucky-Life/ankimon/issues**
 
