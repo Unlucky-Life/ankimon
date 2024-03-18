@@ -343,7 +343,8 @@ def play_sound():
         file_name = f"{name.lower()}.mp3"
         audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
         if not audio_path.is_file():
-            showWarning(f"Audio file not found: {audio_path}")
+            #showWarning(f"Audio file not found: {audio_path}")
+	    pass
             return
 
         audio_path = str(audio_path)
@@ -353,7 +354,8 @@ def play_sound():
         elif legacy_play:
             legacy_play(audio_path)
         else:
-            showWarning("No suitable audio player found in Anki.")
+            pass
+	     #showWarning("No suitable audio player found in Anki.")
                 
         # Disconnect the timer's timeout signal to prevent further plays
         try:
