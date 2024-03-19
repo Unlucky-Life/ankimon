@@ -1082,6 +1082,7 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, period=3000, parent=None, w
             evt.accept()
             self.hide()
     aw = parent or QApplication.activeWindow()
+    aw = None
     if aw is None:
         return
     else:
