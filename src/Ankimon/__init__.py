@@ -3658,14 +3658,15 @@ def createStatBar(color, value):
 def load_custom_font(font_size):
     global font_path, language
     if language == 1:
-        try:
+        font_file = "NineteenNinetyThree-L1Ay.ttf"
+        font_file_path = font_path / font_file
+        font_size = (font_size * 3) / 5
+        if font_file_path.exists():
             font_name = "Nineteen Ninety Three"
-            font_file = "NineteenNinetyThree-L1Ay.ttf"
-            font_size = (font_size * 3) / 5
-        except:
+        else:
             font_name = "Early GameBoy"
             font_file = "Early GameBoy.ttf"
-            font_size = (font_size * 3) / 7
+            font_size = (font_size * 5) / 7
     else:
         font_name = "Early GameBoy"
         font_file = "Early GameBoy.ttf"
