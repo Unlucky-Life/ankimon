@@ -1083,33 +1083,33 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, period=3000, parent=None, w
         def mousePressEvent(self, evt):
             evt.accept()
             self.hide()
-
-    # Assuming closeTooltip() and customCloseTooltip() are defined elsewhere
-    closeTooltip()
-    aw = parent or QApplication.activeWindow()
-    x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
-    y = aw.mapToGlobal(QPoint(0, aw.height() - 180)).y()
-
-    lab = CustomLabel(aw)
-    lab.setFrameShape(QFrame.Shape.StyledPanel)
-    lab.setLineWidth(2)
-    lab.setWindowFlags(Qt.WindowType.ToolTip)
-    lab.setText(msg)
-    lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
-
-    if width > 0:
-        lab.setFixedWidth(width)
-    if height > 0:
-        lab.setFixedHeight(height)
-
-    p = QPalette()
-    p.setColor(QPalette.ColorRole.Window, QColor(color))
-    p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
-    lab.setPalette(p)
-    lab.show()
-    lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))
-
-    QTimer.singleShot(period, lambda: lab.hide())
+    if aw is None:
+	return
+    else:  
+	# Assuming closeTooltip() and customCloseTooltip() are defined elsewhere
+	closeTooltip()
+	aw = parent or QApplication.activeWindow()
+	x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
+	y = aw.mapToGlobal(QPoint(0, aw.height() - 180)).y()	
+	lab = CustomLabel(aw)
+	lab.setFrameShape(QFrame.Shape.StyledPanel)
+	lab.setLineWidth(2)
+	lab.setWindowFlags(Qt.WindowType.ToolTip)
+	lab.setText(msg)
+	lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
+	
+	if width > 0:
+		lab.setFixedWidth(width)
+	if height > 0:
+	        lab.setFixedHeight(height)
+	
+	p = QPalette()
+	p.setColor(QPalette.ColorRole.Window, QColor(color))
+	p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
+	lab.setPalette(p)
+	lab.show()
+	lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))	
+	QTimer.singleShot(period, lambda: lab.hide())
 
 pokemon_species = None
 # Your random Pokémon generation function using the PokeAPI
