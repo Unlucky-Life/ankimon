@@ -2750,7 +2750,7 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         pkmnimage_file = f"{search_pokedex(name.lower(), 'num')}.png"
         pkmnimage_path = frontdefault / pkmnimage_file
         typeimage_file = f"{type[0]}.png"
-        typeimage_path = addon_dir / pkmnimgfolder / "Types" / typeimage_file
+        typeimage_path = addon_dir / "addon_sprites" / "Types" / typeimage_file
         pkmnimage_label = QLabel()
         pkmnpixmap = QPixmap()
         pkmnpixmap.load(str(pkmnimage_path))
@@ -2759,7 +2759,7 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         pkmntypepixmap.load(str(typeimage_path))
         if len(type) > 1:
             type_image_file2 = f"{type[1]}.png"
-            typeimage_path2 = addon_dir / pkmnimgfolder / "Types" / type_image_file2
+            typeimage_path2 = addon_dir / "addon_sprites" / "Types" / type_image_file2
             pkmntype_label2 = QLabel()
             pkmntypepixmap2 = QPixmap()
             pkmntypepixmap2.load(str(typeimage_path2))
@@ -2826,7 +2826,7 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         painter2.end()
 
         # Create a QLabel for the capitalized name
-        name_label = QLabel(f"{capitalized_name} {gender}")
+        name_label = QLabel(f"{capitalized_name} - {gender}")
         name_label.setFont(namefont)
         # Create a QLabel for the level
         description_label = QLabel(description_txt)
@@ -2844,7 +2844,10 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         attacks_label = QLabel(attacks_txt)
         attacks_label.setFont(font)
         growth_rate_label.setFont(font)
-        description_font = load_custom_font(15)
+        if language == 1:
+            description_font = load_custom_font(20)
+        else:
+            description_font = load_custom_font(15)
         description_label.setFont(description_font)
         #stats_label = QLabel(stats_txt)
 
@@ -3655,9 +3658,14 @@ def createStatBar(color, value):
 def load_custom_font(font_size):
     global font_path, language
     if language == 1:
-        font_name = "Nineteen Ninety Three"
-        font_file = "NineteenNinetyThree-L1Ay.ttf"
-        font_size = (font_size * 3) / 5
+        try:
+            font_name = "Nineteen Ninety Three"
+            font_file = "NineteenNinetyThree-L1Ay.ttf"
+            font_size = (font_size * 3) / 5
+        except:
+            font_name = "Early GameBoy"
+            font_file = "Early GameBoy.ttf"
+            font_size = (font_size * 3) / 7
     else:
         font_name = "Early GameBoy"
         font_file = "Early GameBoy.ttf"
@@ -4659,7 +4667,7 @@ class TestWindow(QWidget):
             # Adjust the font size as needed
             painter.setFont(custom_font)
             painter.setPen(QColor(31, 31, 39))  # Text color
-            painter.drawText(48, 67, f"{lang_name} {gender}")
+            painter.drawText(48, 67, f"{lang_name} - {gender}")
             painter.drawText(326, 200, mainpokemon_lang_name)
             painter.drawText(208, 67, lvl)
             #painter.drawText(55, 85, gender_text)
