@@ -335,7 +335,7 @@ sound_list = ['ababo.mp3', 'abomasnow-mega.mp3', 'abomasnow.mp3', 'abra.mp3', 'a
 
 # Function to play the sound
 def play_sound():
-    global timer
+    global timer, sounds
     pass
     if sounds is True:
         global name
@@ -343,8 +343,6 @@ def play_sound():
         file_name = f"{name.lower()}.mp3"
         audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
         if not audio_path.is_file():
-            #showWarning(f"Audio file not found: {audio_path}")
-	    pass
             return
 
         audio_path = str(audio_path)
@@ -1083,33 +1081,33 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, period=3000, parent=None, w
         def mousePressEvent(self, evt):
             evt.accept()
             self.hide()
+    aw = parent or QApplication.activeWindow()
     if aw is None:
-	return
-    else:  
-	# Assuming closeTooltip() and customCloseTooltip() are defined elsewhere
-	closeTooltip()
-	aw = parent or QApplication.activeWindow()
-	x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
-	y = aw.mapToGlobal(QPoint(0, aw.height() - 180)).y()	
-	lab = CustomLabel(aw)
-	lab.setFrameShape(QFrame.Shape.StyledPanel)
-	lab.setLineWidth(2)
-	lab.setWindowFlags(Qt.WindowType.ToolTip)
-	lab.setText(msg)
-	lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
-	
-	if width > 0:
-		lab.setFixedWidth(width)
-	if height > 0:
-	        lab.setFixedHeight(height)
-	
-	p = QPalette()
-	p.setColor(QPalette.ColorRole.Window, QColor(color))
-	p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
-	lab.setPalette(p)
-	lab.show()
-	lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))	
-	QTimer.singleShot(period, lambda: lab.hide())
+        return
+    else:
+        # Assuming closeTooltip() and customCloseTooltip() are defined elsewhere
+        closeTooltip()
+        x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
+        y = aw.mapToGlobal(QPoint(0, aw.height() - 180)).y()
+        lab = CustomLabel(aw)
+        lab.setFrameShape(QFrame.Shape.StyledPanel)
+        lab.setLineWidth(2)
+        lab.setWindowFlags(Qt.WindowType.ToolTip)
+        lab.setText(msg)
+        lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
+        
+        if width > 0:
+            lab.setFixedWidth(width)
+        if height > 0:
+            lab.setFixedHeight(height)
+        
+        p = QPalette()
+        p.setColor(QPalette.ColorRole.Window, QColor(color))
+        p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
+        lab.setPalette(p)
+        lab.show()
+        lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))    
+        QTimer.singleShot(period, lambda: lab.hide())
 
 pokemon_species = None
 # Your random Pokémon generation function using the PokeAPI
@@ -2292,7 +2290,7 @@ def on_review_card():
                     general_card_count_for_battle = 0
             # Reset the counter
             reviewed_cards_count = 0
-        if cry_counter == 10:
+        if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()
     except Exception as e:
