@@ -118,9 +118,7 @@ pokemon_species_baby_path = addon_dir / "user_files" / "pkmn_data" / "baby.json"
 profilename = mw.pm.name
 #profilefolder = Path(mw.pm.profileFolder())
 #mediafolder = Path(mw.col.media.dir())
-font_name = "Axolotl"
-font_file = "Axolotl.ttf"
-font_path = addon_dir / "addon_files" / font_file
+font_path = addon_dir / "addon_files"
 
 mainpkmn = 0
 mainpokemon_hp = 100
@@ -1891,8 +1889,8 @@ def calculate_max_hp_wildpokemon():
 
 def new_pokemon():
     global name, id, level, hp, max_hp, ability, type, attacks, base_experience, stats, battlescene_file, ev, iv, gender, battle_status
-    global font_file
-    global font_name
+    
+    
     # new pokemon
     gender = None
     name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
@@ -2777,7 +2775,7 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         painter2 = QPainter(pkmnpixmap)
 
         #custom font
-        custom_font = load_custom_font(font_file, 20)
+        custom_font = load_custom_font(20)
 
         # Capitalize the first letter of the Pokémon's name
         if nickname is None:
@@ -2821,14 +2819,14 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
 
         # Properties of the text of the image
         # custom font
-        namefont = load_custom_font(font_file, 30)
+        namefont = load_custom_font(30)
         namefont.setUnderline(True)
         painter2.setFont(namefont)
-        font = load_custom_font(font_file, 20)
+        font = load_custom_font(20)
         painter2.end()
 
         # Create a QLabel for the capitalized name
-        name_label = QLabel(f"{capitalized_name} ({gender})")
+        name_label = QLabel(f"{capitalized_name} {gender}")
         name_label.setFont(namefont)
         # Create a QLabel for the level
         description_label = QLabel(description_txt)
@@ -2846,7 +2844,7 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         attacks_label = QLabel(attacks_txt)
         attacks_label.setFont(font)
         growth_rate_label.setFont(font)
-        description_font = load_custom_font(font_file, 15)
+        description_font = load_custom_font(15)
         description_label.setFont(description_font)
         #stats_label = QLabel(stats_txt)
 
@@ -3286,8 +3284,8 @@ def MainPokemon(name, level, id, ability, type, detail_stats, attacks, hp, base_
     new_pokemon() #new pokemon if you change your pokemon
 
 def PokemonDetailsStats(detail_stats, growth_rate, level):
-    global font_file
-    global font_name
+    
+    
     CompleteTable_layout = QVBoxLayout()
     experience = find_experience_for_level(growth_rate, level)
     # Stat colors
@@ -3303,7 +3301,7 @@ def PokemonDetailsStats(detail_stats, growth_rate, level):
     }
 
     #custom font
-    custom_font = load_custom_font(font_file, 20)
+    custom_font = load_custom_font(20)
 
     # Populate the table and create the stat bars
     for row, (stat, value) in enumerate(detail_stats.items()):
@@ -3654,10 +3652,18 @@ def createStatBar(color, value):
 
     return pixmap
 
-def load_custom_font(font_file, font_size):
-    global font_path
+def load_custom_font(font_size):
+    global font_path, language
+    if language == 1:
+        font_name = "Nineteen Ninety Three"
+        font_file = "NineteenNinetyThree-L1Ay.ttf"
+        font_size = (font_size * 3) / 5
+    else:
+        font_name = "Early GameBoy"
+        font_file = "Early GameBoy.ttf"
+        font_size = (font_size * 2) / 5
     # Register the custom font with its file path
-    QFontDatabase.addApplicationFont(str(font_path))
+    QFontDatabase.addApplicationFont(str(font_path / font_file))
     custom_font = QFont(font_name)  # Use the font family name you specified in the font file
     custom_font.setPointSize(font_size)  # Adjust the font size as needed
 
@@ -4646,14 +4652,14 @@ class TestWindow(QWidget):
             mainlvl = (f"{mainpokemon_level}")
 
             # custom font
-            custom_font = load_custom_font(font_file, 26)
-            msg_font = load_custom_font(font_file, 32)
+            custom_font = load_custom_font(26)
+            msg_font = load_custom_font(32)
             mainpokemon_lang_name = get_pokemon_diff_lang_name(int(mainpokemon_id))
             # Draw the text on top of the image
             # Adjust the font size as needed
             painter.setFont(custom_font)
             painter.setPen(QColor(31, 31, 39))  # Text color
-            painter.drawText(48, 67, f"{lang_name} ({gender})")
+            painter.drawText(48, 67, f"{lang_name} {gender}")
             painter.drawText(326, 200, mainpokemon_lang_name)
             painter.drawText(208, 67, lvl)
             #painter.drawText(55, 85, gender_text)
@@ -4765,8 +4771,8 @@ class TestWindow(QWidget):
         mainlvl = (f"{mainpokemon_level}")
 
         # custom font
-        custom_font = load_custom_font(font_file, 28)
-        msg_font = load_custom_font(font_file, 32)
+        custom_font = load_custom_font(28)
+        msg_font = load_custom_font(32)
 
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -4840,14 +4846,14 @@ class TestWindow(QWidget):
             painter.drawPixmap(200,90,item_pixmap)
 
         # custom font
-        custom_font = load_custom_font(font_file, 26)
+        custom_font = load_custom_font(26)
         message_box_text = f"You have received a item: {item.capitalize()} !"
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(255,255,255))  # Text color
         painter.drawText(50, 290, message_box_text)
-        custom_font = load_custom_font(font_file, 20)
+        custom_font = load_custom_font(20)
         painter.setFont(custom_font)
         #painter.drawText(10, 330, "You can look this up in your item bag.")
         painter.end()
@@ -4898,7 +4904,7 @@ class TestWindow(QWidget):
             painter.drawPixmap(200,90,item_pixmap)
 
             # custom font
-            custom_font = load_custom_font(font_file, 20)
+            custom_font = load_custom_font(20)
             message_box_text = f"You have received a badge for:"
             message_box_text2 = f"{badges[str(badge_number)]}!"
             # Draw the text on top of the image
@@ -4907,7 +4913,7 @@ class TestWindow(QWidget):
             painter.setPen(QColor(255,255,255))  # Text color
             painter.drawText(120, 270, message_box_text)
             painter.drawText(140, 290, message_box_text2)
-            custom_font = load_custom_font(font_file, 20)
+            custom_font = load_custom_font(20)
             painter.setFont(custom_font)
             #painter.drawText(10, 330, "You can look this up in your item bag.")
             painter.end()
@@ -5229,14 +5235,14 @@ class StarterWindow(QWidget):
         painter.drawPixmap(311,-3,grass_pixmap)
 
         # custom font
-        custom_font = load_custom_font(font_file, 28)
+        custom_font = load_custom_font(28)
         message_box_text = "Choose your Starter Pokemon"
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(255,255,255))  # Text color
         painter.drawText(110, 310, message_box_text)
-        custom_font = load_custom_font(font_file, 20)
+        custom_font = load_custom_font(20)
         painter.setFont(custom_font)
         painter.drawText(10, 330, "Press G to change Generation")
         painter.end()
@@ -5275,7 +5281,7 @@ class StarterWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(font_file, 32)
+        custom_font = load_custom_font(32)
         message_box_text = f"{(starter_name).capitalize()} was chosen as Starter !"
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -5341,7 +5347,7 @@ class EvoWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(font_file, 20)
+        custom_font = load_custom_font(20)
         message_box_text = f"{(prevo_name).capitalize()} has evolved to {(pkmn_name).capitalize()} !"
         # Draw the text on top of the image
         # Adjust the font size as needed
