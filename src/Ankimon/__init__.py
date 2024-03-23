@@ -192,6 +192,7 @@ sounds = config["sounds"]
 battle_sounds = config["battle_sounds"]
 language = config["language"]
 ankimon_key = config["key_for_opening_closing_ankimon"]
+show_mainpkmn_in_reviewer = config["show_mainpkmn_in_reviewer"]
 
 def test_online_connectivity(url='http://www.google.com', timeout=5):
     try:
@@ -2335,7 +2336,7 @@ def create_status_label(status_name):
 
     return label
 def create_status_html(status_name):
-
+    global show_mainpkmn_in_reviewer
     status_colors = {
         "brn": {"background": "#FF4500", "outline": "#C13500", "name": "Burned"},
         "frz": {"background": "#ADD8E6", "outline": "#91B0C0", "name": "Frozen"},
@@ -2354,25 +2355,46 @@ def create_status_html(status_name):
 
     # If the status name is valid, create the HTML with inline CSS
     if colors:
-        html = f"""
-        <div id=pokestatus style="
-            position: fixed;
-            bottom: 57px; /* Adjust as needed */
-            left: 17px;
-            z-index: 9999;
-            background-color: {colors['background']};
-            border: 2px solid {colors['outline']};
-            border-radius: 5px;
-            padding: 5px 10px;
-            font-size: 8px;
-            font-weight: bold;
-            display: inline-block;
-            color: {colors.get('text_color', '#000000')};
-            text-transform: uppercase;
-            text-align: center;
-            margin: 4px;
-        ">{colors['name']}</div>
-        """
+        if show_mainpkmn_in_reviewer is True:
+            html = f"""
+            <div id=pokestatus style="
+                position: fixed;
+                bottom: 87px; /* Adjust as needed */
+                right: 17px;
+                z-index: 9999;
+                background-color: {colors['background']};
+                border: 2px solid {colors['outline']};
+                border-radius: 5px;
+                padding: 5px 10px;
+                font-size: 8px;
+                font-weight: bold;
+                display: inline-block;
+                color: {colors.get('text_color', '#000000')};
+                text-transform: uppercase;
+                text-align: center;
+                margin: 4px;
+            ">{colors['name']}</div>
+            """
+        else:
+            html = f"""
+            <div id=pokestatus style="
+                position: fixed;
+                bottom: 57px; /* Adjust as needed */
+                left: 17px;
+                z-index: 9999;
+                background-color: {colors['background']};
+                border: 2px solid {colors['outline']};
+                border-radius: 5px;
+                padding: 5px 10px;
+                font-size: 8px;
+                font-weight: bold;
+                display: inline-block;
+                color: {colors.get('text_color', '#000000')};
+                text-transform: uppercase;
+                text-align: center;
+                margin: 4px;
+            ">{colors['name']}</div>
+            """
     else:
         html = "<div>Unknown Status</div>"
 
@@ -4082,21 +4104,36 @@ if database_complete != False:
         global life_bar_injected
         life_bar_injected = False
     def inject_life_bar(web_content, context):
-        global life_bar_injected, hp, name, level, id, battle_status
-        global frontdefault, addon_dir, user_path_sprites
+        global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer
+        global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
             pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
+            if show_mainpkmn_in_reviewer is True:
+                main_pkmn_imagefile = f'{mainpokemon_id}.png' #use for png files
+                main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
         else:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.gif'
-            pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
-        max_hp = calculate_max_hp_wildpokemon()
-        pokemon_hp_percent = int((hp / max_hp) * 100)
+            pokemon_image_file = os.path.join((user_path_sprites / "back_default_gif"), pokemon_imagefile)
+            if show_mainpkmn_in_reviewer is True:
+                main_pkmn_imagefile = f'{mainpokemon_id}.gif'
+                main_pkmn_imagefile_path = os.path.join((user_path_sprites / "back_default_gif"), main_pkmn_imagefile)
+        if show_mainpkmn_in_reviewer is True:
+            mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
+            mainpkmn_hp_percent = int((mainpokemon_hp / mainpkmn_max_hp) * 50)
+            max_hp = calculate_max_hp_wildpokemon()
+            pokemon_hp_percent = int((hp / max_hp) * 50)
+        else:    
+            max_hp = calculate_max_hp_wildpokemon()
+            pokemon_hp_percent = int((hp / max_hp) * 100)
         is_reviewer = mw.state == "review"
         # Inject CSS and the life bar only if not injected before and in the reviewer
         if not life_bar_injected and is_reviewer:
-            css = f"""
-            #life-bar {{
+            css = """
+            """
+            if show_mainpkmn_in_reviewer != True:
+                css += f"""
+                #life-bar {{
                 width: {pokemon_hp_percent}%; /* Replace with the actual percentage */
                 height: 20px;
                 background: linear-gradient(to right, 
@@ -4111,18 +4148,8 @@ if database_complete != False:
                 border-radius: 5px; /* Shorthand for all corners rounded */
                 box-shadow: 0 0 10px rgba(0, 255, 0, 0.8), /* Green glow effect */
                             0 0 30px rgba(54, 54, 56, 1);  /* Dark glow effect */
-            }}
-             #name-display {{
-                position: fixed;
-                bottom: 40px;
-                left: 10px;
-                z-index: 9999;
-                color: white;
-                font-size: 16px;
-                background-color: rgb(54,54,56, 0.7);
-                text-align: left;
-            }}
-            #hp-display {{
+                }}
+                #hp-display {{
                 position: fixed;
                 bottom: 40px;
                 right: 10px;
@@ -4132,17 +4159,122 @@ if database_complete != False:
                 font-weight: bold; /* Make the text bold */
                 background-color: rgb(54,54,56,0.7); 
                 text-align: right;
-            }}
-            #PokeImage {{
+                }}
+                #name-display {{
                 position: fixed;
-                bottom: 70px; /* Adjust as needed */
-                left: 3px;
+                bottom: 40px;
+                left: 10px;
                 z-index: 9999;
-                width: 100px; /* Adjust as needed */
-                height: 100px; /* Adjust as needed */
-                background-size: cover; /* Cover the div area with the image */
-            }}
-            """
+                color: white;
+                font-size: 16px;
+                background-color: rgb(54,54,56, 0.7);
+                text-align: left;
+                }}
+                #PokeImage {{
+                    position: fixed;
+                    bottom: 70px; /* Adjust as needed */
+                    left: 3px;
+                    z-index: 9999;
+                    width: 100px; /* Adjust as needed */
+                    height: 100px; /* Adjust as needed */
+                    background-size: cover; /* Cover the div area with the image */
+                }}
+                """
+            else:
+                css += f"""
+                #life-bar {{
+                width: {pokemon_hp_percent}%; /* Replace with the actual percentage */
+                height: 20px;
+                background: linear-gradient(to right, 
+                                            rgba(114, 230, 96, 0.7), /* Green with transparency */
+                                            rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
+                                            rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
+                                            rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
+                position: fixed;
+                bottom: 10px;
+                right: 0px;
+                z-index: 9999;
+                border-radius: 5px; /* Shorthand for all corners rounded */
+                box-shadow: 0 0 10px rgba(0, 255, 0, 0.8), /* Green glow effect */
+                            0 0 30px rgba(54, 54, 56, 1);  /* Dark glow effect */
+                }}
+                #mylife-bar {{
+                width: {mainpkmn_hp_percent}%; /* Replace with the actual percentage */
+                height: 20px;
+                background: linear-gradient(to right, 
+                                            rgba(114, 230, 96, 0.7), /* Green with transparency */
+                                            rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
+                                            rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
+                                            rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
+                position: fixed;
+                bottom: 10px;
+                left: 0px;
+                z-index: 9999;
+                border-radius: 5px; /* Shorthand for all corners rounded */
+                box-shadow: 0 0 10px rgba(0, 255, 0, 0.8), /* Green glow effect */
+                            0 0 30px rgba(54, 54, 56, 1);  /* Dark glow effect */
+                }}
+                #myhp-display {{
+                position: fixed;
+                bottom: 40px;
+                left: 10px;
+                z-index: 9999;
+                color: white;
+                font-size: 16px;
+                font-weight: bold; /* Make the text bold */
+                background-color: rgb(54,54,56,0.7); 
+                text-align: right;
+                }}
+                #myname-display {{
+                position: fixed;
+                bottom: 60px;
+                left: 10px;
+                z-index: 9999;
+                color: white;
+                font-size: 16px;
+                background-color: rgb(54,54,56, 0.7);
+                text-align: left;
+                }}
+                #MyPokeImage {{
+                    position: fixed;
+                    bottom: 90px; /* Adjust as needed */
+                    left: 3px;
+                    z-index: 9999;
+                    width: 100px; /* Adjust as needed */
+                    height: 100px; /* Adjust as needed */
+                    background-size: cover; /* Cover the div area with the image */
+                }}
+                #hp-display {{
+                position: fixed;
+                bottom: 40px;
+                right: 10px;
+                z-index: 9999;
+                color: white;
+                font-size: 16px;
+                font-weight: bold; /* Make the text bold */
+                background-color: rgb(54,54,56,0.7); 
+                text-align: right;
+                }}
+                #name-display {{
+                position: fixed;
+                bottom: 60px;
+                right: 10px;
+                z-index: 9999;
+                color: white;
+                font-size: 16px;
+                background-color: rgb(54,54,56, 0.7);
+                text-align: right;
+                }}
+                #PokeImage {{
+                    position: fixed;
+                    bottom: 90px; /* Adjust as needed */
+                    right: 3px;
+                    z-index: 9999;
+                    width: 100px; /* Adjust as needed */
+                    height: 100px; /* Adjust as needed */
+                    background-size: cover; /* Cover the div area with the image */
+                }}
+                """
             # background-image: url('{pokemon_image_file}'); Change to your image path */
             # Inject the CSS into the head of the HTML content
             web_content.head += f"<style>{css}</style>"
@@ -4159,35 +4291,63 @@ if database_complete != False:
             # Inject a div element at the end of the body for the life bar
             image_base64 = get_image_as_base64(pokemon_image_file)
             web_content.body += f'<div id="PokeImage"><img src="data:image/png;base64,{image_base64}" alt="PokeImage"></div>'
+            if show_mainpkmn_in_reviewer != False:
+                image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
+                web_content.body += f'<div id="MyPokeImage"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage"></div>'
+                web_content.body += f'<div id="myname-display">{mainpokemon_name.capitalize()} LvL: {mainpokemon_level}</div>'
+                web_content.body += f'<div id="myhp-display">HP: {mainpokemon_hp}/{mainpkmn_max_hp}</div>'
+                # Inject a div element at the end of the body for the life bar
+                web_content.body += f'<div id="mylife-bar"></div>'
             # Set the flag to True to indicate that the life bar has been injected
             life_bar_injected = True
         return web_content
 
     def update_life_bar(reviewer, card, ease):
-        global hp, name, id, frontdefault, battle_status, user_path_sprites
+        global hp, name, id, frontdefault, battle_status, user_path_sprites, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv
         if reviewer_image_gif == False:
-            pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png'  # use for png files
-            pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile)  # use for png files
+            pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
+            pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
+            if show_mainpkmn_in_reviewer is True:
+                main_pkmn_imagefile = f'{mainpokemon_id}.png' #use for png files
+                main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
         else:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.gif'
-            pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
+            pokemon_image_file = os.path.join((user_path_sprites / "back_default_gif"), pokemon_imagefile)
+            if show_mainpkmn_in_reviewer is True:
+                main_pkmn_imagefile = f'{mainpokemon_id}.gif'
+                main_pkmn_imagefile_path = os.path.join((user_path_sprites / "back_default_gif"), main_pkmn_imagefile)
+        if show_mainpkmn_in_reviewer is True:
+            mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
+            mainpkmn_hp_percent = int((mainpokemon_hp / mainpkmn_max_hp) * 50)
+            max_hp = calculate_max_hp_wildpokemon()
+            pokemon_hp_percent = int((hp / max_hp) * 50)
+            image_base64_mainpkmn = get_image_as_base64(main_pkmn_imagefile_path)
+        else:    
+            max_hp = calculate_max_hp_wildpokemon()
+            pokemon_hp_percent = int((hp / max_hp) * 100)
         image_base64 = get_image_as_base64(pokemon_image_file)
-        max_hp = calculate_max_hp_wildpokemon()
-        pokemon_hp_percent = int((hp / max_hp) * 100)
-
         # Update life bar based on ease or any other criteria
         # For example, decrease life by 10% for each card reviewed
         #pokemon_hp -= 10
         # Determine the color based on the percentage
-        if pokemon_hp_percent < 25:
+        if hp < int(0.25 * max_hp):
             hp_color = "rgba(255, 0, 0, 0.7)"  # Red
-        elif pokemon_hp_percent < 50:
+        elif hp < int(0.5 * max_hp):
             hp_color = "rgba(255, 140, 0, 0.7)"  # Dark Orange
-        elif pokemon_hp_percent < 75:
+        elif hp < int(0.75 * max_hp):
             hp_color = "rgba(255, 255, 0, 0.7)"  # Yellow
         else:
             hp_color = "rgba(114, 230, 96, 0.7)"  # Green
 
+        if show_mainpkmn_in_reviewer is True:
+            if mainpokemon_hp < int(0.25 * mainpkmn_max_hp):
+                myhp_color = "rgba(255, 0, 0, 0.7)"  # Red
+            elif mainpokemon_hp < int(0.5 * mainpkmn_max_hp):
+                myhp_color = "rgba(255, 140, 0, 0.7)"  # Dark Orange
+            elif mainpokemon_hp < int(0.75 * mainpkmn_max_hp):
+                myhp_color = "rgba(255, 255, 0, 0.7)"  # Yellow
+            else:
+                myhp_color = "rgba(114, 230, 96, 0.7)"  # Green
         # Extract RGB values from the hex color code
         #hex_color = hp_color.lstrip('#')
         #rgb_values = tuple(int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
@@ -4208,7 +4368,16 @@ if database_complete != False:
         new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage">'
         reviewer.web.eval(f'document.getElementById("PokeImage").innerHTML = `{new_html_content}`;')
         reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
-
+        if show_mainpkmn_in_reviewer is True:
+            new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage">'
+            main_name_display_text = f"{mainpokemon_name.capitalize()} Lvl: {mainpokemon_level}"
+            main_hp_display_text = f"HP: {mainpokemon_hp}/{mainpkmn_max_hp}"
+            reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(mainpkmn_hp_percent) + '%";')
+            reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
+            reviewer.web.eval('document.getElementById("mylife-bar").style.boxShadow = "0 0 10px rgba(' + str(myhp_color) + ')";')
+            reviewer.web.eval(f'document.getElementById("MyPokeImage").innerHTML = `{new_html_content_mainpkmn}`;')
+            reviewer.web.eval('document.getElementById("myname-display").innerText = "' + main_name_display_text + '";')
+            reviewer.web.eval('document.getElementById("myhp-display").innerText = "' + main_hp_display_text + '";')
 
     # Register the functions for the hooks
     gui_hooks.reviewer_will_end.append(reviewer_reset_life_bar_inject)
