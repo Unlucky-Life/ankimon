@@ -1468,7 +1468,7 @@ def find_details_move(move_name):
         showWarning(f"There is an issue in find_details_move{e}")
 
 def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp):
-    global mainpokemon_current_hp, mainpokemon_ev, ev_yield, mainpokemon_evolution, mainpokemon_xp
+    global mainpokemon_current_hp, mainpokemon_ev, ev_yield, mainpokemon_evolution, mainpokemon_xp, pop_up_dialog_message_on_defeat
     experience = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
     mainpokemon_xp += exp
     if mainpokemon_path.is_file():
@@ -1490,7 +1490,8 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             tooltipWithColour(msg, color)
         except:
             pass
-        showInfo(f"{msg}")
+        if pop_up_dialog_message_on_defeat is True:
+            showInfo(f"{msg}")
         mainpokemon_xp = 0
         name = f"{mainpokemon_name}"
         # Update mainpokemon_evolution and handle evolution logic
@@ -1522,7 +1523,8 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                                     msg += f"\n Your {mainpokemon_name.capitalize()} has learned {new_attack} !"
                                     color = "#6A4DAC"
                                     tooltipWithColour(msg, color)
-                                    showInfo(f"{msg}")
+                                    if pop_up_dialog_message_on_defeat is True:
+                                        showInfo(f"{msg}")
                                 else:
                                     dialog = AttackDialog(attacks, new_attack)
                                     if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -1587,7 +1589,8 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             tooltipWithColour(msg, color)
         except:
             pass
-        showInfo(f"{msg}")
+        if pop_up_dialog_message_on_defeat is True:
+            showInfo(f"{msg}")
     # Load existing Pokémon data if it exists
 
     for mainpkmndata in main_pokemon_data:
@@ -1838,7 +1841,7 @@ def calc_experience(base_experience, enemy_level):
     return exp
 
 def catch_pokemon(nickname):
-    global pokemon_hp, name, ability, enemy_attacks, type, stats, base_experience, level, growth_rate, gender, id, iv
+    global pokemon_hp, name, ability, enemy_attacks, type, stats, base_experience, level, growth_rate, gender, id, iv, pop_up_dialog_message_on_defeat
     global mypokemon_path, caught
     caught += 1
     if caught == 1:
@@ -1847,10 +1850,18 @@ def catch_pokemon(nickname):
             save_caught_pokemon(nickname)
         else:
             save_caught_pokemon(name)
-        showInfo(f"You caught {name}!") # Display a message when the Pokémon is caught
+        msg = f"You caught {name}!"
+        if pop_up_dialog_message_on_defeat is True:
+            showInfo(f"{msg}") # Display a message when the Pokémon is caught
+        color = "#6A4DAC" #pokemon leveling info color for tooltip
+        try:
+            tooltipWithColour(msg, color)
+        except:
+            pass
         new_pokemon()  # Show a new random Pokémon
     else:
-        showInfo("You have already caught the pokemon. Please close this window!") # Display a message when the Pokémon is caught
+        if pop_up_dialog_message_on_defeat is True:
+            showInfo("You have already caught the pokemon. Please close this window!") # Display a message when the Pokémon is caught
 
 def get_random_starter():
     global addon_dir, starters_path    # event if pokemon
@@ -3735,7 +3746,7 @@ def find_experience_for_mainpokemon():
     global next_lvl_file_path
     global mainpokemon_growth_rate
     global mainpokemon_level
-    global mainpokemon_xp
+    global mainpokemon_xp, pop_up_dialog_message_on_defeat
     if mainpokemon_growth_rate == "medium":
         mainpokemon_growth_rate = "medium-fast"
     level = mainpokemon_level
@@ -3756,7 +3767,8 @@ def find_experience_for_mainpokemon():
                 experience = row[growth_rate]
                 experience = int(experience)
                 experience -= mainpokemon_xp
-                showInfo((f"Your main Pokemon {mainpokemon_name} Lvl {level} needs {experience} XP to reach the next level."))
+                if pop_up_dialog_message_on_defeat is True:
+                    showInfo((f"Your main Pokemon {mainpokemon_name} Lvl {level} needs {experience} XP to reach the next level."))
                 break
 
         return experience
