@@ -4126,7 +4126,7 @@ if database_complete != False:
                 main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
         else:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.gif'
-            pokemon_image_file = os.path.join((user_path_sprites / "back_default_gif"), pokemon_imagefile)
+            pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
             if show_mainpkmn_in_reviewer is True:
                 main_pkmn_imagefile = f'{mainpokemon_id}.gif'
                 main_pkmn_imagefile_path = os.path.join((user_path_sprites / "back_default_gif"), main_pkmn_imagefile)
@@ -4324,7 +4324,7 @@ if database_complete != False:
                 main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
         else:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.gif'
-            pokemon_image_file = os.path.join((user_path_sprites / "back_default_gif"), pokemon_imagefile)
+            pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
             if show_mainpkmn_in_reviewer is True:
                 main_pkmn_imagefile = f'{mainpokemon_id}.gif'
                 main_pkmn_imagefile_path = os.path.join((user_path_sprites / "back_default_gif"), main_pkmn_imagefile)
