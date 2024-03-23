@@ -184,8 +184,8 @@ if system_name == "Windows" or system_name == "Linux":
 elif system_name == "Darwin":
     # Open file explorer at the specified path in macOS
     system = "mac"
-#only_online_sprites = config["only_use_online_sprites"]
-#text_box_in_reviewer = config["text_box"]
+pop_up_dialog_message_on_defeat = config["pop_up_dialog_message_on_defeat"]
+reviewer_text_message_box = config["reviewer_text_message_box"]
 cards_per_round = config["cards_per_round"]
 reviewer_image_gif = config["reviewer_image_gif"]
 sounds = config["sounds"]
@@ -1075,6 +1075,7 @@ def customCloseTooltip(tooltipLabel):
 		tooltipLabel = None
 
 def tooltipWithColour(msg, color, x=0, y=20, xref=1, period=3000, parent=None, width=0, height=0, centered=False):
+    global reviewer_text_message_box
     class CustomLabel(QLabel):
         def mousePressEvent(self, evt):
             evt.accept()
@@ -1083,29 +1084,30 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, period=3000, parent=None, w
     if aw is None:
         return
     else:
-        # Assuming closeTooltip() and customCloseTooltip() are defined elsewhere
-        closeTooltip()
-        x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
-        y = aw.mapToGlobal(QPoint(0, aw.height() - 180)).y()
-        lab = CustomLabel(aw)
-        lab.setFrameShape(QFrame.Shape.StyledPanel)
-        lab.setLineWidth(2)
-        lab.setWindowFlags(Qt.WindowType.ToolTip)
-        lab.setText(msg)
-        lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
-        
-        if width > 0:
-            lab.setFixedWidth(width)
-        if height > 0:
-            lab.setFixedHeight(height)
-        
-        p = QPalette()
-        p.setColor(QPalette.ColorRole.Window, QColor(color))
-        p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
-        lab.setPalette(p)
-        lab.show()
-        lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))    
-        QTimer.singleShot(period, lambda: lab.hide())
+        if reviewer_text_message_box != False:
+            # Assuming closeTooltip() and customCloseTooltip() are defined elsewhere
+            closeTooltip()
+            x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
+            y = aw.mapToGlobal(QPoint(0, aw.height() - 180)).y()
+            lab = CustomLabel(aw)
+            lab.setFrameShape(QFrame.Shape.StyledPanel)
+            lab.setLineWidth(2)
+            lab.setWindowFlags(Qt.WindowType.ToolTip)
+            lab.setText(msg)
+            lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
+            
+            if width > 0:
+                lab.setFixedWidth(width)
+            if height > 0:
+                lab.setFixedHeight(height)
+            
+            p = QPalette()
+            p.setColor(QPalette.ColorRole.Window, QColor(color))
+            p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
+            lab.setPalette(p)
+            lab.show()
+            lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))    
+            QTimer.singleShot(period, lambda: lab.hide())
 
 pokemon_species = None
 # Your random Pokémon generation function using the PokeAPI
