@@ -10,10 +10,13 @@ If any new issues appear with the update: please let me know over github, instea
 
 ## Update Information
 
-Feature A: **More Options** - Config Option added: Option do disable pop up messages on defeat of enemy pokemon or lvl up of mainpokemon
-Feature B: **Even more Options** - Config Option added: View mainpokemon in reviewer at the same time as enemy pokemon
-Feature C: **MORE MORE Options** - Config Option added: Disable Colorful Tooltip messages in reviewer
-Feature D: **New Font** - A new Font was added for users that would like to use the japanese language and have a more gameboy feeling
+- Feature A: **More Options** - Config Option added: Option do disable pop up messages on defeat of enemy pokemon or lvl up of mainpokemon
+  
+- Feature B: **Even more Options** - Config Option added: View mainpokemon in reviewer at the same time as enemy pokemon
+  
+- Feature C: **MORE MORE Options** - Config Option added: Disable Colorful Tooltip messages in reviewer
+  
+- Feature D: **New Font** - A new Font was added for users that would like to use the japanese language and have a more gameboy feeling
 
 ### Bug Fixes:
 
