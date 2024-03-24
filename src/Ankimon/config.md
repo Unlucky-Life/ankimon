@@ -34,15 +34,15 @@ Reviewer Pop Up Messages:
 Decide if you would like to see the anki popup messages in the anki reviewer when your pokemon levels up or when a wild pokemon is defeated
 - `pop_up_dialog_message_on_defeat` [True/False]
 
-- Sounds:
+Sounds:
 You can decide if you want Pokemon Battle Cries in the anki reviewer.
 - `sounds` [True/False]
 
-- In Game Battle Sounds:
+In Game Battle Sounds:
 You can decide if you want Pokemon Battle Cries to be replayed every 10 cards.
 - `battle_sounds` [True/False]
 
-- Language Option (Select a Number from the ones below to the corresponding language you would like to read your pokemon names and descriptions):
+Language Option (Select a Number from the ones below to the corresponding language you would like to read your pokemon names and descriptions):
 
     | ID  | Language               | Official |
 
