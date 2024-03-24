@@ -15,8 +15,24 @@ If you want to play with Pokemon from a certain generation, set them as True
 - `Generation9` [True/False]
 
 Pokemon Gif Animations:
-You can decide if you want the Gif Animations in the anki reviewer - to use the gifs - you need to download them first unter "Download PokemonShowdown Sprites"
+You can decide if you want the Gif Animations in the anki reviewer
 - `reviewer_image_gif` [True/False]
+
+Ankimon Window Key:
+You can decide which letter key should be pressed additionally to controll / command (like M etc) to open and close the ankimon window from the anki reviewer
+- `key_for_opening_closing_ankimon` [A - Z]
+
+Main Pokemon in Reviewer:
+You can decide if you want to see your mainpokemon in the anki reviewer at the same time as the enemy pokemon
+- `show_mainpkmn_in_reviewer` [True/False]
+
+Reviewer Text Message Box:
+Decide if you would like to see the colorful popup messages in the anki reviewer
+- `reviewer_text_message_box` [True/False]
+
+Reviewer Pop Up Messages:
+Decide if you would like to see the anki popup messages in the anki reviewer when your pokemon levels up or when a wild pokemon is defeated
+- `pop_up_dialog_message_on_defeat` [True/False]
 
 - Sounds:
 You can decide if you want Pokemon Battle Cries in the anki reviewer.
@@ -29,17 +45,29 @@ You can decide if you want Pokemon Battle Cries to be replayed every 10 cards.
 - Language Option (Select a Number from the ones below to the corresponding language you would like to read your pokemon names and descriptions):
 
     | ID  | Language               | Official |
-    |-----|------------------------|----------|
-    | 1   | Japanese (Hiragana & Katakana) | Yes      |
+
+    | 1   | Japanese (Hir & Kata ) | Yes      |
+
     | 2   | Japanese (Roomaji)     | Yes      |
+
     | 3   | Korean                 | Yes      |
+
     | 4   | Chinese (Traditional)  | Yes      |
+
     | 5   | French                 | Yes      |
+
     | 6   | German                 | Yes      |
+
     | 7   | Spanish                | Yes      |
+
     | 8   | Italian                | Yes      |
+
     | 9   | English                | Yes      |
+
     | 10  | Czech                  | No       |
+
     | 11  | Japanese               | Yes      |
+
     | 12  | Chinese (Simplified)   | Yes      |
+
     | 13  | Portuguese (Brazil)    | No       |
