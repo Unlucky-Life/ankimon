@@ -13,5 +13,8 @@
   "cards_per_round": 2,
   "reviewer_image_gif": false,
   "sounds": false,
-  "battle_sounds": false
+  "battle_sounds": false,
+  "show_mainpkmn_in_reviewer": false,
+  "reviewer_text_message_box": true,
+  "pop_up_dialog_message_on_defeat": true
 }
