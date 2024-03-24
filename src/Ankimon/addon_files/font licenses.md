@@ -1,5 +1,4 @@
-https://fontmeme.com/fonts/early-gameboy-font/
-=> License: pixel, free for commercial use
-Early GameBoy.ttf
-license:	Free
-designer:	Jimmy Campbell
+#https://fontmeme.com/fonts/early-gameboy-font/#
+*"Early GameBoy.ttf"*:
+- license:	Free - free for commercial use
+- designer:	Jimmy Campbell
