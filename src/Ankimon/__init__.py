@@ -1335,11 +1335,11 @@ def choose_random_pkmn_from_tier():
     try:
         if card_counter < (40*cards_per_round):
             possible_tiers.append("Normal")
-        elif card_counter < (60*cards_per_round):
+        elif card_counter < (50*cards_per_round):
             possible_tiers.extend(["Baby", "Normal","Baby", "Normal", "Normal", "Normal", "Normal"])
-        elif card_counter < (80*cards_per_round):
+        elif card_counter < (65*cards_per_round):
             possible_tiers.extend(["Baby", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Normal", "Normal", "Normal", "Normal", "Ultra"])
-        elif card_counter < (100*cards_per_round):
+        elif card_counter < (90*cards_per_round):
             possible_tiers.extend(["Baby", "Legendary", "Normal", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal","Normal", "Normal", "Ultra", "Normal", "Normal", "Ultra", "Ultra"])
         else:
             possible_tiers.extend(["Baby", "Legendary","Mythical", "Baby", "Baby", "Normal", "Normal", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
