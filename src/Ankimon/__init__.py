@@ -3089,6 +3089,18 @@ def attack_details_window(attacks):
 def remember_attack_details_window(id, attack_set, all_attacks):
     window = QDialog()
     layout = QHBoxLayout()
+    window.setWindowTitle("Remember Attacks")  # Optional: Set a window title
+    # Outer layout contains everything
+    outer_layout = QVBoxLayout(window)
+
+    # Create a scroll area that will contain our main layout
+    scroll_area = QScrollArea()
+    scroll_area.setWidgetResizable(True)
+
+    # Main widget that contains the content
+    content_widget = QWidget()
+    layout = QHBoxLayout(content_widget)  # The main layout is now set on this widget
+
     # HTML content
     html_content = """
     <style>
@@ -3178,9 +3190,18 @@ def remember_attack_details_window(id, attack_set, all_attacks):
         attack_layout.addWidget(remember_attack_button)
     attack_layout_widget = QWidget()
     attack_layout_widget.setLayout(attack_layout)
+    # Add the label and button layout widget to the main layout
     layout.addWidget(label)
     layout.addWidget(attack_layout_widget)
-    window.setLayout(layout)
+
+    # Set the main widget with content as the scroll area's widget
+    scroll_area.setWidget(content_widget)
+
+    # Add the scroll area to the outer layout
+    outer_layout.addWidget(scroll_area)
+
+    window.setLayout(outer_layout)
+    window.resize(1000, 400)  # Optional: Set a default size for the window
     window.exec()
 
 def remember_attack(id, attacks, new_attack):
