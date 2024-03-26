@@ -5869,29 +5869,45 @@ class ItemWindow(QWidget):
 
     def initUI(self):
         self.setWindowTitle("Itembag")
-        global addon_dir
-        self.layout = QGridLayout()
+        self.layout = QVBoxLayout()  # Main layout is now a QVBoxLayout
+
+        # Create the scroll area and its properties
+        self.scrollArea = QScrollArea(self)
+        self.scrollArea.setWidgetResizable(True)
+
+        # Create a widget and layout for content inside the scroll area
+        self.contentWidget = QWidget()
+        self.contentLayout = QGridLayout()  # The layout for items
+        self.contentWidget.setLayout(self.contentLayout)
+
+        # Add the content widget to the scroll area
+        self.scrollArea.setWidget(self.contentWidget)
+
+        # Add the scroll area to the main layout
+        self.layout.addWidget(self.scrollArea)
         self.setLayout(self.layout)
+        self.setFixedSize(300, 500)
 
     def renewWidgets(self):
         self.read_item_file()
-        # Clear the existing widgets from the layout
-        for i in reversed(range(self.layout.count())):
-            widget = self.layout.itemAt(i).widget()
+        # Clear the existing widgets from the content layout
+        for i in reversed(range(self.contentLayout.count())):
+            widget = self.contentLayout.itemAt(i).widget()
             if widget:
                 widget.deleteLater()
         row, col = 0, 0
         max_items_per_row = 2
         max_rows = 4
-        if self.itembag_list is None or not self.itembag_list:  # Wenn None oder leer
-            empty_label = QLabel("You dont own any items yet.")
-            self.layout.addWidget(empty_label, 1, 1)
+
+        if not self.itembag_list:  # Simplified check
+            empty_label = QLabel("You don't own any items yet.")
+            self.contentLayout.addWidget(empty_label, 1, 1)
         else:
             for item_name in self.itembag_list:
                 if row >= max_rows:
                     break
                 item_widget = self.ItemLabel(item_name)
-                self.layout.addWidget(item_widget, row, col)
+                self.contentLayout.addWidget(item_widget, row, col)
                 col += 1
                 if col >= max_items_per_row:
                     row += 1
@@ -5966,6 +5982,7 @@ class ItemWindow(QWidget):
         self.show()
 
 item_window = ItemWindow()
+
 
 class AttackDialog(QDialog):
     def __init__(self, attacks, new_attack):
