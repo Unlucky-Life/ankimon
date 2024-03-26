@@ -1338,11 +1338,11 @@ def choose_random_pkmn_from_tier():
         elif card_counter < (60*cards_per_round):
             possible_tiers.extend(["Baby", "Normal","Baby", "Normal", "Normal", "Normal", "Normal"])
         elif card_counter < (80*cards_per_round):
-            possible_tiers.extend(["Baby", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra"])
+            possible_tiers.extend(["Baby", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Normal", "Normal", "Normal", "Normal", "Ultra"])
         elif card_counter < (100*cards_per_round):
-            possible_tiers.extend(["Baby", "Legendary", "Normal", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
+            possible_tiers.extend(["Baby", "Legendary", "Normal", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal","Normal", "Normal", "Ultra", "Normal", "Normal", "Ultra", "Ultra"])
         else:
-            possible_tiers.extend(["Baby", "Legendary","Mythical", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
+            possible_tiers.extend(["Baby", "Legendary","Mythical", "Baby", "Baby", "Normal", "Normal", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
         tier = random.choice(possible_tiers)
         id, pokemon_species = get_pokemon_id_by_tier(tier)
         return id, pokemon_species
