@@ -14,7 +14,7 @@ Feel free to add them to the discussion Page:
 
 ## Update Information
 
-- added Scrollbar to the Itembag
+- added Scrollbar to the Itembag and Remember Attacks Window
 
 ### Bug Fixes:
 
