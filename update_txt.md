@@ -10,7 +10,7 @@ If any new issues appear with the update: please let me know over github, instea
 
 If you have any Ideas you would like to see in Ankimon:
 Feel free to add them to the discussion Page:
-**https://github.com/Unlucky-Life/ankimon/discussions/2**
+https://github.com/Unlucky-Life/ankimon/discussions/2**
 
 ## Update Information
 
