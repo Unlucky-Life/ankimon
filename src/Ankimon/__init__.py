@@ -1470,13 +1470,14 @@ def find_details_move(move_name):
 def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp):
     global mainpokemon_current_hp, mainpokemon_ev, ev_yield, mainpokemon_evolution, mainpokemon_xp, pop_up_dialog_message_on_defeat
     experience = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
-    mainpokemon_xp += exp
+    if mainpokemon_level != 100:
+        mainpokemon_xp += exp
     if mainpokemon_path.is_file():
         with open(mainpokemon_path, "r") as json_file:
             main_pokemon_data = json.load(json_file)
     else:
         showWarning("Missing Mainpokemon Data !")
-    if int(experience) < int(mainpokemon_xp):
+    if int(experience) < int(mainpokemon_xp) and mainpokemon_level != 100:
         mainpokemon_level += 1
         msg = ""
         msg += f"Your {mainpokemon_name} is now level {mainpokemon_level} !"
