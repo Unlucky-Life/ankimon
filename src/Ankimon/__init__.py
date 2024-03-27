@@ -4298,12 +4298,22 @@ def ShowPokemonCollection():
                     # Create a painter to add text on top of the image
                     painter = QPainter(pixmap)
 
+                    # Convert gender name to symbol
+                    if pokemon_gender == "M":
+                        gender_symbol = "♂"
+                    elif pokemon_gender == "F":
+                        gender_symbol = "♀"
+                    elif pokemon_gender == "N":
+                        gender_symbol = ""
+                    else:
+                        gender_symbol = ""  # None
+
                     # Capitalize the first letter of the Pokémon's name
                     if pokemon_nickname is None:
-                        capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id)).capitalize()} ({pokemon_gender})"
+                        capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id)).capitalize()}{gender_symbol}"
                     else:
                         capitalized_name = (
-                            f"{pokemon_nickname.capitalize()} ({pokemon_gender})"
+                            f"{pokemon_nickname.capitalize()}{gender_symbol}"
                         )
                     # Create level text
                     lvl = f" Level: {pokemon_level}"
@@ -4623,11 +4633,25 @@ def PokemonCollectionDetails(
         font = load_custom_font(20)
         painter2.end()
 
+        # Convert gender name to symbol
+        if gender == "M":
+            gender_symbol = "♂"
+        elif gender == "F":
+            gender_symbol = "♀"
+        elif gender == "N":
+            gender_symbol = ""
+        else:
+            gender_symbol = ""  # None
+
         # Create a QLabel for the capitalized name
-        name_label = QLabel(f"{capitalized_name} - {gender}")
+        name_label = QLabel(f"{capitalized_name}{gender_symbol}")
+        # Resolved the issue of Japanese dakuten and handakuten overflowing at the top of characters in the Pokémon font.
+        name_label.setStyleSheet("padding: 20px;")
         name_label.setFont(namefont)
         # Create a QLabel for the level
         description_label = QLabel(description_txt)
+        # ↓Unfortunately, I was not able to fix the slightly incorrect display of voiced and semi-voiced characters in the description text.
+        # description_label.setStyleSheet("line-height: 1.5;")
         level_label = QLabel(lvl)
         growth_rate_label = QLabel(growth_rate_txt)
         base_exp_label = QLabel(f"Base XP: {base_experience}")
@@ -5543,11 +5567,11 @@ def createStatBar(color, value):
 def load_custom_font(font_size):
     global font_path, language
     if language == 1:
-        font_file = "NineteenNinetyThree-L1Ay.ttf"
+        font_file = "pkmn_w.ttf"
         font_file_path = font_path / font_file
-        font_size = (font_size * 3) / 5
+        font_size = (font_size * 1) / 2
         if font_file_path.exists():
-            font_name = "Nineteen Ninety Three"
+            font_name = "PKMN Western"
         else:
             font_name = "Early GameBoy"
             font_file = "Early GameBoy.ttf"
@@ -8289,6 +8313,7 @@ class TestWindow(QWidget):
     def pokemon_display_first_encounter(self):
         # Main window layout
         layout = QVBoxLayout()
+        global language
         global pokemon_encounter
         global hp, name, id, stats, level, max_hp, base_experience, ev, iv, gender
         global caught_pokemon, message_box_text
@@ -8329,7 +8354,12 @@ class TestWindow(QWidget):
         name = name.capitalize()
         # calculate wild pokemon max hp
         max_hp = calculate_hp(stats["hp"], level, ev, iv)
-        message_box_text = f"A wild {lang_name.capitalize()} appeared !"
+        if language == 1:
+            message_box_text = (
+                f"あ！やせいの {lang_name.capitalize()}が とびだしてきた！"
+            )
+        else:
+            message_box_text = f"A wild {lang_name.capitalize()} appeared !"
         if pokemon_encounter == 0:
             bckgimage_path = battlescene_path / battlescene_file
         elif pokemon_encounter > 0:
@@ -8437,7 +8467,17 @@ class TestWindow(QWidget):
             # Adjust the font size as needed
             painter.setFont(custom_font)
             painter.setPen(QColor(31, 31, 39))  # Text color
-            painter.drawText(48, 67, f"{lang_name} - {gender}")
+            # Convert gender name to symbol
+            if gender == "M":
+                gender_symbol = "♂"
+            elif gender == "F":
+                gender_symbol = "♀"
+            elif gender == "N":
+                gender_symbol = ""
+            else:
+                gender_symbol = ""  # None
+
+            painter.drawText(48, 67, f"{lang_name}{gender_symbol}")
             painter.drawText(326, 200, mainpokemon_lang_name)
             painter.drawText(208, 67, lvl)
             # painter.drawText(55, 85, gender_text)
