@@ -5908,7 +5908,7 @@ class ItemWindow(QWidget):
         # Add the scroll area to the main layout
         self.layout.addWidget(self.scrollArea)
         self.setLayout(self.layout)
-        self.setFixedSize(300, 500)
+        self.resize(600, 500)
 
     def renewWidgets(self):
         self.read_item_file()
@@ -5918,16 +5918,13 @@ class ItemWindow(QWidget):
             if widget:
                 widget.deleteLater()
         row, col = 0, 0
-        max_items_per_row = 2
-        max_rows = 4
+        max_items_per_row = 4
 
         if not self.itembag_list:  # Simplified check
             empty_label = QLabel("You don't own any items yet.")
             self.contentLayout.addWidget(empty_label, 1, 1)
         else:
             for item_name in self.itembag_list:
-                if row >= max_rows:
-                    break
                 item_widget = self.ItemLabel(item_name)
                 self.contentLayout.addWidget(item_widget, row, col)
                 col += 1
@@ -6001,6 +5998,17 @@ class ItemWindow(QWidget):
         self.renewWidgets()
 
     def show_window(self):
+        from aqt import mw
+        # Get the geometry of the main screen
+        main_screen_geometry = mw.geometry()
+        
+        # Calculate the position to center the ItemWindow on the main screen
+        x = main_screen_geometry.center().x() - self.width() / 2
+        y = main_screen_geometry.center().y() - self.height() / 2
+        
+        # Move the ItemWindow to the calculated position
+        self.move(x, y)
+        
         self.show()
 
 item_window = ItemWindow()
@@ -6045,34 +6053,47 @@ class AchievementWindow(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle("Achievements")
         global addon_dir
-        self.layout = QGridLayout()
+        self.setWindowTitle("Achievements")
+        self.layout = QVBoxLayout()  # Main layout is now a QVBoxLayout
+
+        # Create the scroll area and its properties
+        self.scrollArea = QScrollArea(self)
+        self.scrollArea.setWidgetResizable(True)
+
+        # Create a widget and layout for content inside the scroll area
+        self.contentWidget = QWidget()
+        self.contentLayout = QGridLayout()  # The layout for items
+        self.contentWidget.setLayout(self.contentLayout)
+
+        # Add the content widget to the scroll area
+        self.scrollArea.setWidget(self.contentWidget)
+
+        # Add the scroll area to the main layout
+        self.layout.addWidget(self.scrollArea)
         self.setLayout(self.layout)
 
     def renewWidgets(self):
         self.read_item_file()
         # Clear the existing widgets from the layout
-        for i in reversed(range(self.layout.count())):
-            widget = self.layout.itemAt(i).widget()
+        for i in reversed(range(self.contentLayout.count())):
+            widget = self.contentLayout.itemAt(i).widget()
             if widget:
                 widget.deleteLater()
         row, col = 0, 0
-        max_items_per_row = 2
-        max_rows = 4
+        max_items_per_row = 4
         if self.badge_list is None or not self.badge_list:  # Wenn None oder leer
             empty_label = QLabel("You dont own any badges yet.")
-            self.layout.addWidget(empty_label, 1, 1)
+            self.contentLayout.addWidget(empty_label, 1, 1)
         else:
             for badge_num in self.badge_list:
-                if row >= max_rows:
-                    break
                 item_widget = self.BadgesLabel(badge_num)
-                self.layout.addWidget(item_widget, row, col)
+                self.contentLayout.addWidget(item_widget, row, col)
                 col += 1
                 if col >= max_items_per_row:
                     row += 1
                     col = 0
+        self.resize(700, 400)
 
     def BadgesLabel(self, badge_num):
         badge_path = badges_path / f"{str(badge_num)}.png"
@@ -6131,6 +6152,17 @@ class AchievementWindow(QWidget):
         self.renewWidgets()
 
     def show_window(self):
+        from aqt import mw
+        # Get the geometry of the main screen
+        main_screen_geometry = mw.geometry()
+        
+        # Calculate the position to center the ItemWindow on the main screen
+        x = main_screen_geometry.center().x() - self.width() / 2
+        y = main_screen_geometry.center().y() - self.height() / 2
+        
+        # Move the ItemWindow to the calculated position
+        self.move(x, y)
+        
         self.show()
 
 def report_bug():
