@@ -105,6 +105,7 @@ starters_path = addon_dir / "addon_files" / "starters.json"
 eff_chart_html_path = addon_dir / "addon_files" / "eff_chart_html.html"
 effectiveness_chart_file_path = addon_dir / "addon_files" / "eff_chart.json"
 table_gen_id_html_path = addon_dir / "addon_files" / "table_gen_id.html"
+icon_path = addon_dir / "addon_files" / "pokeball.png"
 
 #pokemon species id files
 pokemon_species_normal_path = addon_dir / "user_files" / "pkmn_data" / "normal.json"
@@ -243,7 +244,7 @@ if online_connectivity != False:
     class UpdateNotificationWindow(QDialog):
         def __init__(self, content):
             super().__init__()
-
+            global icon_path
             self.setWindowTitle("Ankimon Notifications")
             self.setGeometry(100, 100, 600, 400)
 
@@ -254,6 +255,7 @@ if online_connectivity != False:
             self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
             self.text_edit.setHtml(content)
             layout.addWidget(self.text_edit)
+            self.setWindowIcon(QIcon(str(icon_path)))
 
             self.setLayout(layout)
 
@@ -283,6 +285,7 @@ class HelpWindow(QDialog):
     def __init__(self):
             super().__init__()
             html_content = " "
+            global icon_path
             if online_connectivity != False:
                 # URL of the file on GitHub
                 help_github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/HelpInfos.html"
@@ -313,7 +316,7 @@ class HelpWindow(QDialog):
             self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
             self.text_edit.setHtml(html_content)
             layout.addWidget(self.text_edit)
-
+            self.setWindowIcon(QIcon(str(icon_path)))
             self.setLayout(layout)
     
 def open_help_window():
@@ -2551,6 +2554,8 @@ addHook("showQuestion", on_review_card)
 def ShowPokemonCollection():
     # Create the dialog
     window = QDialog(mw)
+    global icon_path
+    window.setWindowIcon(QIcon(str(icon_path))) # Add a Pokeball icon
     #window = QMessageBox(mw)
     window.setWindowTitle(f"Captured Pokemon")
 
@@ -2763,7 +2768,7 @@ def rename_pkmn(nickname, pkmn_name):
         showWarning(f"An error occured: {e}")
 
 def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname):
-    global frontdefault, type_style_file, language
+    global frontdefault, type_style_file, language, icon_path
     # Create the dialog
     try:
         lang_name = get_pokemon_diff_lang_name(int(id)).capitalize()
@@ -2994,12 +2999,16 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         wpkmn_details.setLayout(layout)
 
         # Show the dialog
+        wpkmn_details.setWindowIcon(QIcon(str(icon_path))) # Add a Pokeball icon
+        # Show the dialog
         wpkmn_details.exec()
     except Exception as e:
         showWarning(f"Error occured in Pokemon Details Button: {e}")
 
 def attack_details_window(attacks):
+    global icon_path
     window = QDialog()
+    window.setWindowIcon(QIcon(str(icon_path)))
     layout = QVBoxLayout()
     # HTML content
     html_content = """
@@ -3087,7 +3096,9 @@ def attack_details_window(attacks):
     window.exec()
 
 def remember_attack_details_window(id, attack_set, all_attacks):
+    global icon_path
     window = QDialog()
+    window.setWindowIcon(QIcon(str(icon_path)))
     layout = QHBoxLayout()
     window.setWindowTitle("Remember Attacks")  # Optional: Set a window title
     # Outer layout contains everything
@@ -4697,7 +4708,7 @@ class TestWindow(QWidget):
         #self.update()
     def init_ui(self):
         global test
-        global addon_dir
+        global addon_dir, icon_path
         layout = QVBoxLayout()
         # Main window layout
         global addon_dir
@@ -4718,6 +4729,7 @@ class TestWindow(QWidget):
         self.setLayout(layout)
         # Set window
         self.setWindowTitle('Ankimon Window')
+        self.setWindowIcon(QIcon(str(icon_path))) # Add a Pokeball icon
         # Display the Pokémon image
 
     def open_dynamic_window(self):
@@ -5890,6 +5902,8 @@ class ItemWindow(QWidget):
         self.initUI()
 
     def initUI(self):
+        global icon_path
+        self.setWindowIcon(QIcon(str(icon_path))) # Add a Pokeball icon
         self.setWindowTitle("Itembag")
         self.layout = QVBoxLayout()  # Main layout is now a QVBoxLayout
 
@@ -6053,7 +6067,8 @@ class AchievementWindow(QWidget):
         self.initUI()
 
     def initUI(self):
-        global addon_dir
+        global addon_dir, icon_path
+        self.setWindowIcon(QIcon(str(icon_path)))
         self.setWindowTitle("Achievements")
         self.layout = QVBoxLayout()  # Main layout is now a QVBoxLayout
 
