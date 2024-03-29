@@ -2789,7 +2789,7 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         ):
             result = list(split_string_by_length(description, 30))
         else:
-            result = list(split_string_by_length(description, 65))
+            result = list(split_string_by_length(description, 55))
         description_formated = '\n'.join(result)
         description_txt = f"Description: \n {description_formated}"
         #curr_hp_txt = (f"Current Hp:{current_hp}")
@@ -3708,15 +3708,10 @@ def load_custom_font(font_size):
             font_file = "Early GameBoy.ttf"
             font_size = (font_size * 5) / 7
     else:
-        font_file = "pkmn_w.ttf"
-        font_file_path = font_path / font_file
-        font_size = (font_size * 1) / 3
-        if font_file_path.exists():
-            font_name = "PKMN Western"
-        else:
-            font_name = "Early GameBoy"
-            font_file = "Early GameBoy.ttf"
-            font_size = (font_size * 2) / 5
+        font_name = "Early GameBoy"
+        font_file = "Early GameBoy.ttf"
+        font_size = (font_size * 2) / 5
+
     # Register the custom font with its file path
     QFontDatabase.addApplicationFont(str(font_path / font_file))
     custom_font = QFont(font_name)  # Use the font family name you specified in the font file
