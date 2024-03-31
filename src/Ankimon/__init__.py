@@ -209,6 +209,7 @@ battle_sounds = config["battle_sounds"]
 language = config["language"]
 ankimon_key = config["key_for_opening_closing_ankimon"]
 show_mainpkmn_in_reviewer = config["show_mainpkmn_in_reviewer"]
+xp_bar_config = config["xp_bar_config"]
 
 def test_online_connectivity(url='http://www.google.com', timeout=5):
     try:
@@ -3773,8 +3774,8 @@ def find_experience_for_mainpokemon():
                 experience = row[growth_rate]
                 experience = int(experience)
                 experience -= mainpokemon_xp
-                if pop_up_dialog_message_on_defeat is True:
-                    showInfo((f"Your main Pokemon {mainpokemon_name} Lvl {level} needs {experience} XP to reach the next level."))
+                #if pop_up_dialog_message_on_defeat is True:
+                    #showInfo((f"Your main Pokemon {mainpokemon_name} Lvl {level} needs {experience} XP to reach the next level."))
                 break
 
         return experience
@@ -4122,8 +4123,9 @@ if database_complete != False:
         global life_bar_injected
         life_bar_injected = False
     def inject_life_bar(web_content, context):
-        global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer
-        global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv
+        global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, xp_bar_config
+        global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
+        experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
             pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
@@ -4293,11 +4295,33 @@ if database_complete != False:
                     background-size: cover; /* Cover the div area with the image */
                 }}
                 """
+
+            if xp_bar_config is True:
+                css += f"""
+                #xp-bar {{
+                width: {int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)}%; /* Replace with the actual percentage */
+                height: 20px;
+                background: linear-gradient(to right, 
+                                            rgba(0, 191, 255, 0.7), /* Light Blue with transparency */
+                                            rgba(0, 191, 255, 0.7) 100%, /* Continue light blue to the percentage point */
+                                            rgba(25, 25, 112, 0.7) 100%, /* Transition to dark blue background */
+                                            rgba(25, 25, 112, 0.7)); /* Dark blue background with transparency */
+                position: fixed;
+                top: 10px;
+                left: 0px;
+                z-index: 9999;
+                border-radius: 5px; /* Shorthand for all corners rounded */
+                box-shadow: 0 0 10px rgba(0, 191, 255, 0.8), /* Light blue glow effect */
+                            0 0 30px rgba(25, 25, 112, 1);  /* Dark blue glow effect */
+                }}"""
+
             # background-image: url('{pokemon_image_file}'); Change to your image path */
             # Inject the CSS into the head of the HTML content
             web_content.head += f"<style>{css}</style>"
             # Inject a div element at the end of the body for the life bar
             web_content.body += f'<div id="life-bar"></div>'
+            if xp_bar_config is True:
+                web_content.head += f'<div id="xp-bar"></div>'
             # Inject a div element for the text display
             web_content.body += f'<div id="name-display">{name.capitalize()} LvL: {level}</div>'
             if hp > 0:
@@ -4321,7 +4345,8 @@ if database_complete != False:
         return web_content
 
     def update_life_bar(reviewer, card, ease):
-        global hp, name, id, frontdefault, battle_status, user_path_sprites, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv
+        global hp, name, id, frontdefault, battle_status, user_path_sprites, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
+        global mainpokemon_level
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
             pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
@@ -4379,6 +4404,10 @@ if database_complete != False:
         reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
         reviewer.web.eval('document.getElementById("life-bar").style.background = "linear-gradient(to right, ' + str(hp_color) + ', ' + str(hp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
         reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px rgba(' + str(hp_color) + ')";')
+        if xp_bar_config is True:
+            experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
+            xp_bar_percent = {int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)}
+            reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
         name_display_text = f"{name.capitalize()} Lvl: {level}"
         hp_display_text = f"HP: {hp}/{max_hp}"
         reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
