@@ -163,6 +163,28 @@ if (
 else:
     database_complete = False
 
+if database_complete == True:
+    owned_pokemon_ids = {}
+
+    def extract_ids_from_file():
+        global owned_pokemon_ids, mypokemon_path
+        filename = mypokemon_path
+        with open(filename, 'r') as file:
+            data = json.load(file)
+            ids = [character['id'] for character in data]
+            owned_pokemon_ids = ids
+
+    extract_ids_from_file()
+
+    def check_pokecoll_in_list(id):
+        global owned_pokemon_ids
+        pokeball = False
+        for num in owned_pokemon_ids:
+            if num == id:
+                pokeball = True
+                break
+        return pokeball
+
 class CheckFiles(QDialog):
     def __init__(self):
         super().__init__()
@@ -435,76 +457,7 @@ def check_id_ok(id_num):
 with open(badges_list_path, 'r') as json_file:
     badges = json.load(json_file)
 
-achievements = {
-  "1": False,
-  "2": False,
-  "3": False,
-  "4": False,
-  "5": False,
-  "6": False,
-  "7": False,
-  "8": False,
-  "9": False,
-  "10": False,
-  "11": False,
-  "12": False,
-  "13": False,
-  "14": False,
-  "15": False,
-  "16": False,
-  "17": False,
-  "18": False,
-  "19": False,
-  "20": False,
-  "21": False,
-  "22": False,
-  "23": False,
-  "24": False,
-  "25": False,
-  "26": False,
-  "27": False,
-  "28": False,
-  "29": False,
-  "30": False,
-  "31": False,
-  "32": False,
-  "33": False,
-  "34": False,
-  "35": False,
-  "36": False,
-  "37": False,
-  "38": False,
-  "39": False,
-  "40": False,
-  "41": False,
-  "42": False,
-  "43": False,
-  "44": False,
-  "45": False,
-  "46": False,
-  "47": False,
-  "48": False,
-  "49": False,
-  "50": False,
-  "51": False,
-  "52": False,
-  "53": False,
-  "54": False,
-  "55": False,
-  "56": False,
-  "57": False,
-  "58": False,
-  "59": False,
-  "60": False,
-  "61": False,
-  "62": False,
-  "63": False,
-  "64": False,
-  "65": False,
-  "66": False,
-  "67": False,
-  "68": False
-}
+achievements = {str(i): False for i in range(1, 69)}
 
 def check_badges(achievements):
         with open(badgebag_path, 'r') as json_file:
@@ -2320,8 +2273,8 @@ def create_status_html(status_name):
             html = f"""
             <div id=pokestatus style="
                 position: fixed;
-                bottom: 87px; /* Adjust as needed */
-                right: 17px;
+                bottom: 45px; /* Adjust as needed */
+                right: 17%;
                 z-index: 9999;
                 background-color: {colors['background']};
                 border: 2px solid {colors['outline']};
@@ -4123,7 +4076,7 @@ if database_complete != False:
         global life_bar_injected
         life_bar_injected = False
     def inject_life_bar(web_content, context):
-        global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, xp_bar_config
+        global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, xp_bar_config, icon_path
         global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
         experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
         if reviewer_image_gif == False:
@@ -4148,6 +4101,7 @@ if database_complete != False:
             pokemon_hp_percent = int((hp / max_hp) * 100)
         is_reviewer = mw.state == "review"
         # Inject CSS and the life bar only if not injected before and in the reviewer
+        pokeball = check_pokecoll_in_list(search_pokedex(name.lower(), "num"))
         if not life_bar_injected and is_reviewer:
             css = """
             """
@@ -4200,18 +4154,29 @@ if database_complete != False:
                     background-size: cover; /* Cover the div area with the image */
                 }}
                 """
+                if pokeball == True:
+                    css += f"""
+                    #PokeIcon {{
+                    position: fixed;
+                    bottom: 85px; /* Adjust as needed */
+                    left: 90px;
+                    z-index: 9999;
+                    width: 25px; /* Adjust as needed */
+                    height: 25px; /* Adjust as needed */
+                    }}
+                    """
             else:
                 css += f"""
                 #life-bar {{
                 width: {pokemon_hp_percent}%; /* Replace with the actual percentage */
-                height: 20px;
+                height: 10px;
                 background: linear-gradient(to right, 
                                             rgba(114, 230, 96, 0.7), /* Green with transparency */
                                             rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
                                             rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
                                             rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
                 position: fixed;
-                bottom: 10px;
+                bottom: 120px;
                 right: 0px;
                 z-index: 9999;
                 border-radius: 5px; /* Shorthand for all corners rounded */
@@ -4220,7 +4185,7 @@ if database_complete != False:
                 }}
                 #mylife-bar {{
                 width: {mainpkmn_hp_percent}%; /* Replace with the actual percentage */
-                height: 20px;
+                height: 10px;
                 background: linear-gradient(to right, 
                                             rgba(114, 230, 96, 0.7), /* Green with transparency */
                                             rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
@@ -4236,8 +4201,8 @@ if database_complete != False:
                 }}
                 #myhp-display {{
                 position: fixed;
-                bottom: 40px;
-                left: 10px;
+                bottom: 20px;
+                right: 50%;
                 z-index: 9999;
                 color: white;
                 font-size: 16px;
@@ -4247,7 +4212,7 @@ if database_complete != False:
                 }}
                 #myname-display {{
                 position: fixed;
-                bottom: 60px;
+                bottom: 20px;
                 left: 10px;
                 z-index: 9999;
                 color: white;
@@ -4257,7 +4222,7 @@ if database_complete != False:
                 }}
                 #MyPokeImage {{
                     position: fixed;
-                    bottom: 90px; /* Adjust as needed */
+                    bottom: 30px; /* Adjust as needed */
                     left: 3px;
                     z-index: 9999;
                     width: 100px; /* Adjust as needed */
@@ -4266,8 +4231,8 @@ if database_complete != False:
                 }}
                 #hp-display {{
                 position: fixed;
-                bottom: 40px;
-                right: 10px;
+                bottom: 90px;
+                left: 50%;
                 z-index: 9999;
                 color: white;
                 font-size: 16px;
@@ -4277,7 +4242,7 @@ if database_complete != False:
                 }}
                 #name-display {{
                 position: fixed;
-                bottom: 60px;
+                bottom: 10px;
                 right: 10px;
                 z-index: 9999;
                 color: white;
@@ -4287,33 +4252,65 @@ if database_complete != False:
                 }}
                 #PokeImage {{
                     position: fixed;
-                    bottom: 90px; /* Adjust as needed */
+                    bottom: 15px; /* Adjust as needed */
                     right: 3px;
                     z-index: 9999;
                     width: 100px; /* Adjust as needed */
                     height: 100px; /* Adjust as needed */
                     background-size: cover; /* Cover the div area with the image */
-                }}
-                """
+                }}"""
+                if pokeball == True:
+                    css += f"""
+                    #PokeIcon {{
+                        position: fixed;
+                        bottom: 8px; /* Adjust as needed */
+                        right: 20%;
+                        z-index: 9999;
+                        width: 25px; /* Adjust as needed */
+                        height: 25px; /* Adjust as needed */
+                        background-size: cover; /* Cover the div area with the image */
+                    }}
+                    """
 
             if xp_bar_config is True:
                 css += f"""
                 #xp-bar {{
                 width: {int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)}%; /* Replace with the actual percentage */
-                height: 20px;
+                height: 10px;
                 background: linear-gradient(to right, 
                                             rgba(0, 191, 255, 0.7), /* Light Blue with transparency */
                                             rgba(0, 191, 255, 0.7) 100%, /* Continue light blue to the percentage point */
                                             rgba(25, 25, 112, 0.7) 100%, /* Transition to dark blue background */
                                             rgba(25, 25, 112, 0.7)); /* Dark blue background with transparency */
                 position: fixed;
-                top: 10px;
+                top: 0px;
                 left: 0px;
                 z-index: 9999;
                 border-radius: 5px; /* Shorthand for all corners rounded */
                 box-shadow: 0 0 10px rgba(0, 191, 255, 0.8), /* Light blue glow effect */
                             0 0 30px rgba(25, 25, 112, 1);  /* Dark blue glow effect */
-                }}"""
+                }}
+                #next_lvl_text {{
+                position: fixed;
+                top: 13px;
+                right: 15px;
+                z-index: 9999;
+                color: white;
+                font-size: 10px;
+                background-color: rgb(54,54,56, 0.7);
+                text-align: right;
+                }}
+                #xp_text {{
+                position: fixed;
+                top: 13px;
+                left: 15px;
+                z-index: 9999;
+                color: white;
+                font-size: 10px;
+                background-color: rgb(54,54,56, 0.7);
+                text-align: right;
+                }}
+                """
 
             # background-image: url('{pokemon_image_file}'); Change to your image path */
             # Inject the CSS into the head of the HTML content
@@ -4322,6 +4319,8 @@ if database_complete != False:
             web_content.body += f'<div id="life-bar"></div>'
             if xp_bar_config is True:
                 web_content.head += f'<div id="xp-bar"></div>'
+                web_content.body += f'<div id="next_lvl_text">Next Level</div>'
+                web_content.body += f'<div id="xp_text">XP</div>'
             # Inject a div element for the text display
             web_content.body += f'<div id="name-display">{name.capitalize()} LvL: {level}</div>'
             if hp > 0:
@@ -4341,12 +4340,16 @@ if database_complete != False:
                 # Inject a div element at the end of the body for the life bar
                 web_content.body += f'<div id="mylife-bar"></div>'
             # Set the flag to True to indicate that the life bar has been injected
+            if pokeball == True:
+                icon_base_64 = get_image_as_base64(icon_path)
+                web_content.body += f'<div id="PokeIcon"><img src="data:image/png;base64,{icon_base_64}" alt="PokeIcon"></div>'
             life_bar_injected = True
         return web_content
 
     def update_life_bar(reviewer, card, ease):
         global hp, name, id, frontdefault, battle_status, user_path_sprites, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
-        global mainpokemon_level
+        global mainpokemon_level, icon_path
+        pokeball = check_pokecoll_in_list(search_pokedex(name.lower(), "num"))
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
             pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
@@ -4414,6 +4417,10 @@ if database_complete != False:
         reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
         new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage">'
         reviewer.web.eval(f'document.getElementById("PokeImage").innerHTML = `{new_html_content}`;')
+        if pokeball == True:
+            image_icon_path = get_image_as_base64(icon_path)
+            pokeicon_html = f'<img src="data:image/png;base64,{image_icon_path}" alt="PokeIcon">'
+            reviewer.web.eval(f'document.getElementById("PokeIcon").innerHTML = `{pokeicon_html}`;')
         reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
         if show_mainpkmn_in_reviewer is True:
             new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage">'
@@ -5768,6 +5775,90 @@ class TableWidget(QWidget):
     def show_eff_chart(self):
         self.show()
 
+class Pokedex_Widget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.read_poke_coll()
+        self.initUI()
+
+    def read_poke_coll(self):
+        global mypokemon_path
+        with (open(mypokemon_path, "r") as json_file):
+            self.captured_pokemon_data = json.load(json_file)
+
+    def initUI(self):
+        self.setWindowTitle("Pokédex")
+        global addon_dir
+
+        # Create a label and set HTML content
+        label = QLabel()
+        pokedex_html_template = '''
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pokédex</title>
+        <style>
+        .pokedex-table { width: 100%; border-collapse: collapse; }
+        .pokedex-table th, .pokedex-table td { border: 1px solid #ddd; text-align: left; padding: 8px; }
+        .pokedex-table tr:nth-child(even) { background-color: #f2f2f2; }
+        .pokedex-table th { padding-top: 12px; padding-bottom: 12px; background-color: #4CAF50; color: white; }
+        .pokemon-image { height: 50px; width: 50px; }
+        .pokemon-gray { filter: grayscale(100%); }
+        </style>
+        </head>
+        <body>
+        <table class="pokedex-table">
+        <tr>
+            <th>No.</th>
+            <th>Name</th>
+            <th>Image</th>
+        </tr>
+        <!-- Table Rows Will Go Here -->
+        </table>
+        </body>
+        </html>
+        '''
+        # Extract the IDs of the Pokémon listed in the JSON file
+        self.available_pokedex_ids = {pokemon['id'] for pokemon in self.captured_pokemon_data}
+
+        # Now we generate the HTML rows for each Pokémon in the range 1-898, graying out those not in the JSON file
+        table_rows = [self.generate_table_row(i, i not in self.available_pokedex_ids) for i in range(1, 899)]
+
+        # Combine the HTML template with the generated rows
+        html_content = pokedex_html_template.replace('<!-- Table Rows Will Go Here -->', ''.join(table_rows))
+
+        #html_content = self.read_html_file(f"{pokedex_html_path}")  # Replace with the path to your HTML file
+        label.setText(html_content)  # 'html_table' contains the HTML table string
+        label.setWordWrap(True)
+
+        # Layout
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        self.setLayout(layout)
+
+    # Helper function to generate table rows
+    def generate_table_row(self, pokedex_number, is_gray):
+        name = f"Pokemon #{pokedex_number}" # Placeholder, actual name should be fetched from a database or API
+        image_class = "pokemon-gray" if is_gray else ""
+        return f'''
+        <tr>
+            <td>{pokedex_number}</td>
+            <td>{name}</td>
+            <td><img src="{pokedex_number}.png" alt="{name}" class="pokemon-image {image_class}" /></td>
+        </tr>
+        '''
+
+    def read_html_file(self, file_path):
+        """Reads an HTML file and returns its content as a string."""
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+        
+    def show_pokedex(self):
+        self.read_poke_coll()
+        self.show()
+
 class IDTableWidget(QWidget):
     def __init__(self):
         super().__init__()
@@ -5805,6 +5896,7 @@ if database_complete!= False:
                 starter_window.display_starter_pokemon()
 
 eff_chart = TableWidget()
+pokedex = Pokedex_Widget()
 gen_id_chart = IDTableWidget()
 
 class License(QWidget):
@@ -6241,6 +6333,10 @@ if database_complete != False:
 test_action11 = QAction("Check Effectiveness Chart", mw)
 test_action11.triggered.connect(eff_chart.show_eff_chart)
 mw.pokemenu.addAction(test_action11)
+
+pokedex_action = QAction("Check Pokedex", mw)
+pokedex_action.triggered.connect(pokedex.show_pokedex)
+mw.pokemenu.addAction(pokedex_action)
 
 test_action12 = QAction("Check Generations and Pokemon Chart", mw)
 test_action12.triggered.connect(gen_id_chart.show_gen_chart)
