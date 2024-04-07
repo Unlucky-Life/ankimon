@@ -1041,7 +1041,7 @@ if database_complete != False:
         # Load the JSON file with Pokémon data
         global addon_dir
         global pokemon_encounter
-        global hp, gender, name
+        global hp, gender, name, enemy_attacks
         global mainpokemon_level
         global pokemon_species
         global cards_per_round
