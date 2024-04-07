@@ -177,6 +177,7 @@ if database_complete == True:
     extract_ids_from_file()
 
     def check_pokecoll_in_list(id):
+        extract_ids_from_file()
         global owned_pokemon_ids
         pokeball = False
         for num in owned_pokemon_ids:
@@ -230,8 +231,28 @@ sounds = config["sounds"]
 battle_sounds = config["battle_sounds"]
 language = config["language"]
 ankimon_key = config["key_for_opening_closing_ankimon"]
-show_mainpkmn_in_reviewer = config["show_mainpkmn_in_reviewer"]
+show_mainpkmn_in_reviewer = config["show_mainpkmn_in_reviewer"] #0 is off, 1 normal, 2 battle mode
 xp_bar_config = config["xp_bar_config"]
+review_hp_bar_thickness = config["review_hp_bar_thickness"] #2 = 8px, 3# 12px, 4# 16px, 5# 20px
+hp_bar_thickness = review_hp_bar_thickness * 4
+hp_bar_config = config["hp_bar_config"] #2 = 8px, 3# 12px, 4# 16px, 5# 20px
+xp_bar_location = config["xp_bar_location"] #1 top, 2 = bottom
+if xp_bar_location == 1:
+    xp_bar_location = "top"
+    xp_bar_spacer = 0
+else:
+    xp_bar_location = "bottom"
+    xp_bar_spacer = 20
+
+if xp_bar_config is False:
+    xp_bar_spacer = 0
+
+if hp_bar_config != True:
+    hp_only_spacer = 15
+    wild_hp_spacer = 65
+else:
+    hp_only_spacer = 0
+    wild_hp_spacer = 0
 
 def test_online_connectivity(url='http://www.google.com', timeout=5):
     try:
@@ -2250,7 +2271,7 @@ def create_status_label(status_name):
 
     return label
 def create_status_html(status_name):
-    global show_mainpkmn_in_reviewer
+    global show_mainpkmn_in_reviewer, hp_bar_thickness, xp_bar_spacer
     status_colors = {
         "brn": {"background": "#FF4500", "outline": "#C13500", "name": "Burned"},
         "frz": {"background": "#ADD8E6", "outline": "#91B0C0", "name": "Frozen"},
@@ -2269,12 +2290,12 @@ def create_status_html(status_name):
 
     # If the status name is valid, create the HTML with inline CSS
     if colors:
-        if show_mainpkmn_in_reviewer is True:
+        if show_mainpkmn_in_reviewer == 2:
             html = f"""
             <div id=pokestatus style="
                 position: fixed;
-                bottom: 45px; /* Adjust as needed */
-                right: 17%;
+                bottom: {140 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
+                right: 1%;
                 z-index: 9999;
                 background-color: {colors['background']};
                 border: 2px solid {colors['outline']};
@@ -2289,12 +2310,32 @@ def create_status_html(status_name):
                 margin: 4px;
             ">{colors['name']}</div>
             """
-        else:
+        elif show_mainpkmn_in_reviewer == 1:
             html = f"""
             <div id=pokestatus style="
                 position: fixed;
-                bottom: 57px; /* Adjust as needed */
-                left: 17px;
+                bottom: {15 + hp_bar_thickness + xp_bar_spacer}px; /* Adjust as needed */
+                right: 160px;
+                z-index: 9999;
+                background-color: {colors['background']};
+                border: 2px solid {colors['outline']};
+                border-radius: 5px;
+                padding: 5px 10px;
+                font-size: 8px;
+                font-weight: bold;
+                display: inline-block;
+                color: {colors.get('text_color', '#000000')};
+                text-transform: uppercase;
+                text-align: center;
+                margin: 4px;
+            ">{colors['name']}</div>
+            """
+        elif show_mainpkmn_in_reviewer == 0:
+            html = f"""
+            <div id=pokestatus style="
+                position: fixed;
+                bottom: {40 + hp_bar_thickness}px; /* Adjust as needed */
+                left: 160px;
                 z-index: 9999;
                 background-color: {colors['background']};
                 border: 2px solid {colors['outline']};
@@ -4076,22 +4117,23 @@ if database_complete != False:
         global life_bar_injected
         life_bar_injected = False
     def inject_life_bar(web_content, context):
-        global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, xp_bar_config, icon_path
+        global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, icon_path
         global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
+        global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer
         experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
             pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
-            if show_mainpkmn_in_reviewer is True:
+            if show_mainpkmn_in_reviewer > 0:
                 main_pkmn_imagefile = f'{mainpokemon_id}.png' #use for png files
                 main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
         else:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.gif'
             pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
-            if show_mainpkmn_in_reviewer is True:
+            if show_mainpkmn_in_reviewer > 0:
                 main_pkmn_imagefile = f'{mainpokemon_id}.gif'
                 main_pkmn_imagefile_path = os.path.join((user_path_sprites / "back_default_gif"), main_pkmn_imagefile)
-        if show_mainpkmn_in_reviewer is True:
+        if show_mainpkmn_in_reviewer > 0:
             mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
             mainpkmn_hp_percent = int((mainpokemon_hp / mainpkmn_max_hp) * 50)
             max_hp = calculate_max_hp_wildpokemon()
@@ -4105,18 +4147,18 @@ if database_complete != False:
         if not life_bar_injected and is_reviewer:
             css = """
             """
-            if show_mainpkmn_in_reviewer != True:
+            if show_mainpkmn_in_reviewer == 0:
                 css += f"""
                 #life-bar {{
                 width: {pokemon_hp_percent}%; /* Replace with the actual percentage */
-                height: 20px;
+                height: {hp_bar_thickness}px;
                 background: linear-gradient(to right, 
                                             rgba(114, 230, 96, 0.7), /* Green with transparency */
                                             rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
                                             rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
                                             rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
                 position: fixed;
-                bottom: 10px;
+                bottom: {10 + xp_bar_spacer}px;
                 left: 0px;
                 z-index: 9999;
                 border-radius: 5px; /* Shorthand for all corners rounded */
@@ -4125,7 +4167,7 @@ if database_complete != False:
                 }}
                 #hp-display {{
                 position: fixed;
-                bottom: 40px;
+                bottom: {40 + xp_bar_spacer}px;
                 right: 10px;
                 z-index: 9999;
                 color: white;
@@ -4136,7 +4178,7 @@ if database_complete != False:
                 }}
                 #name-display {{
                 position: fixed;
-                bottom: 40px;
+                bottom: {40 + xp_bar_spacer}px;
                 left: 10px;
                 z-index: 9999;
                 color: white;
@@ -4146,7 +4188,7 @@ if database_complete != False:
                 }}
                 #PokeImage {{
                     position: fixed;
-                    bottom: 70px; /* Adjust as needed */
+                    bottom: {30 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
                     left: 3px;
                     z-index: 9999;
                     width: 100px; /* Adjust as needed */
@@ -4158,25 +4200,25 @@ if database_complete != False:
                     css += f"""
                     #PokeIcon {{
                     position: fixed;
-                    bottom: 85px; /* Adjust as needed */
+                    bottom: {85 + xp_bar_spacer}px; /* Adjust as needed */
                     left: 90px;
                     z-index: 9999;
                     width: 25px; /* Adjust as needed */
                     height: 25px; /* Adjust as needed */
                     }}
                     """
-            else:
+            elif show_mainpkmn_in_reviewer == 2:
                 css += f"""
                 #life-bar {{
                 width: {pokemon_hp_percent}%; /* Replace with the actual percentage */
-                height: 10px;
+                height: {hp_bar_thickness}px;
                 background: linear-gradient(to right, 
                                             rgba(114, 230, 96, 0.7), /* Green with transparency */
                                             rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
                                             rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
                                             rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
                 position: fixed;
-                bottom: 120px;
+                bottom: {130 + xp_bar_spacer}px;
                 right: 0px;
                 z-index: 9999;
                 border-radius: 5px; /* Shorthand for all corners rounded */
@@ -4185,14 +4227,14 @@ if database_complete != False:
                 }}
                 #mylife-bar {{
                 width: {mainpkmn_hp_percent}%; /* Replace with the actual percentage */
-                height: 10px;
+                height: {hp_bar_thickness}px;
                 background: linear-gradient(to right, 
                                             rgba(114, 230, 96, 0.7), /* Green with transparency */
                                             rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
                                             rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
                                             rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
                 position: fixed;
-                bottom: 10px;
+                bottom: {25 + xp_bar_spacer}px;
                 left: 0px;
                 z-index: 9999;
                 border-radius: 5px; /* Shorthand for all corners rounded */
@@ -4201,8 +4243,8 @@ if database_complete != False:
                 }}
                 #myhp-display {{
                 position: fixed;
-                bottom: 20px;
-                right: 50%;
+                bottom: {25 + xp_bar_spacer + hp_bar_thickness}px;
+                right: {50 + hp_only_spacer}%;
                 z-index: 9999;
                 color: white;
                 font-size: 16px;
@@ -4212,7 +4254,7 @@ if database_complete != False:
                 }}
                 #myname-display {{
                 position: fixed;
-                bottom: 20px;
+                bottom: {25 + xp_bar_spacer + hp_bar_thickness}px;
                 left: 10px;
                 z-index: 9999;
                 color: white;
@@ -4222,7 +4264,7 @@ if database_complete != False:
                 }}
                 #MyPokeImage {{
                     position: fixed;
-                    bottom: 30px; /* Adjust as needed */
+                    bottom: {50 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
                     left: 3px;
                     z-index: 9999;
                     width: 100px; /* Adjust as needed */
@@ -4231,8 +4273,8 @@ if database_complete != False:
                 }}
                 #hp-display {{
                 position: fixed;
-                bottom: 90px;
-                left: 50%;
+                bottom: {100 - wild_hp_spacer + xp_bar_spacer}px;
+                left: {50 + hp_only_spacer}%;
                 z-index: 9999;
                 color: white;
                 font-size: 16px;
@@ -4242,7 +4284,7 @@ if database_complete != False:
                 }}
                 #name-display {{
                 position: fixed;
-                bottom: 10px;
+                bottom: {20 + xp_bar_spacer}px;
                 right: 10px;
                 z-index: 9999;
                 color: white;
@@ -4252,7 +4294,7 @@ if database_complete != False:
                 }}
                 #PokeImage {{
                     position: fixed;
-                    bottom: 15px; /* Adjust as needed */
+                    bottom: {30 + xp_bar_spacer}px; /* Adjust as needed */
                     right: 3px;
                     z-index: 9999;
                     width: 100px; /* Adjust as needed */
@@ -4263,7 +4305,113 @@ if database_complete != False:
                     css += f"""
                     #PokeIcon {{
                         position: fixed;
-                        bottom: 8px; /* Adjust as needed */
+                        bottom: {8 + xp_bar_spacer}px; /* Adjust as needed */
+                        right: 20%;
+                        z-index: 9999;
+                        width: 25px; /* Adjust as needed */
+                        height: 25px; /* Adjust as needed */
+                        background-size: cover; /* Cover the div area with the image */
+                    }}
+                    """
+            elif show_mainpkmn_in_reviewer == 1:
+                css += f"""
+                #life-bar {{
+                width: {pokemon_hp_percent}%; /* Replace with the actual percentage */
+                height: {hp_bar_thickness}px;
+                background: linear-gradient(to right, 
+                                            rgba(114, 230, 96, 0.7), /* Green with transparency */
+                                            rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
+                                            rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
+                                            rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
+                position: fixed;
+                bottom: {10 + xp_bar_spacer}px;
+                right: 0px;
+                z-index: 9999;
+                border-radius: 5px; /* Shorthand for all corners rounded */
+                box-shadow: 0 0 10px rgba(0, 255, 0, 0.8), /* Green glow effect */
+                            0 0 30px rgba(54, 54, 56, 1);  /* Dark glow effect */
+                }}
+                #mylife-bar {{
+                width: {mainpkmn_hp_percent}%; /* Replace with the actual percentage */
+                height: {hp_bar_thickness}px;
+                background: linear-gradient(to right, 
+                                            rgba(114, 230, 96, 0.7), /* Green with transparency */
+                                            rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
+                                            rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
+                                            rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
+                position: fixed;
+                bottom: {10 + xp_bar_spacer}px;
+                left: 0px;
+                z-index: 9999;
+                border-radius: 5px; /* Shorthand for all corners rounded */
+                box-shadow: 0 0 10px rgba(0, 255, 0, 0.8), /* Green glow effect */
+                            0 0 30px rgba(54, 54, 56, 1);  /* Dark glow effect */
+                }}
+                #myhp-display {{
+                position: fixed;
+                bottom: {15 + xp_bar_spacer + hp_bar_thickness}px;
+                right: {55 + hp_only_spacer}%;
+                z-index: 9999;
+                color: white;
+                font-size: 16px;
+                font-weight: bold; /* Make the text bold */
+                background-color: rgb(54,54,56,0.7); 
+                text-align: right;
+                }}
+                #myname-display {{
+                position: fixed;
+                bottom: {15 + xp_bar_spacer + hp_bar_thickness}px;
+                left: 10px;
+                z-index: 9999;
+                color: white;
+                font-size: 16px;
+                background-color: rgb(54,54,56, 0.7);
+                text-align: left;
+                }}
+                #MyPokeImage {{
+                    position: fixed;
+                    bottom: {50 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
+                    left: 3px;
+                    z-index: 9999;
+                    width: 100px; /* Adjust as needed */
+                    height: 100px; /* Adjust as needed */
+                    background-size: cover; /* Cover the div area with the image */
+                }}
+                #hp-display {{
+                position: fixed;
+                bottom: {15 + xp_bar_spacer + hp_bar_thickness}px;
+                left: {55 + hp_only_spacer}%;
+                z-index: 9999;
+                color: white;
+                font-size: 16px;
+                font-weight: bold; /* Make the text bold */
+                background-color: rgb(54,54,56,0.7); 
+                text-align: right;
+                }}
+                #name-display {{
+                position: fixed;
+                bottom: {20 + xp_bar_spacer + hp_bar_thickness}px;
+                right: 10px;
+                z-index: 9999;
+                color: white;
+                font-size: 16px;
+                background-color: rgb(54,54,56, 0.7);
+                text-align: right;
+                }}
+                #PokeImage {{
+                    position: fixed;
+                    bottom: {30 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
+                    right: 3px;
+                    z-index: 9999;
+                    width: 100px; /* Adjust as needed */
+                    height: 100px; /* Adjust as needed */
+                    background-size: cover; /* Cover the div area with the image */
+                }}"""
+                if pokeball == True:
+                    css += f"""
+                    #PokeIcon {{
+                        position: fixed;
+                        bottom: {8 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
                         right: 20%;
                         z-index: 9999;
                         width: 25px; /* Adjust as needed */
@@ -4283,7 +4431,7 @@ if database_complete != False:
                                             rgba(25, 25, 112, 0.7) 100%, /* Transition to dark blue background */
                                             rgba(25, 25, 112, 0.7)); /* Dark blue background with transparency */
                 position: fixed;
-                top: 0px;
+                {xp_bar_location}: 0px;
                 left: 0px;
                 z-index: 9999;
                 border-radius: 5px; /* Shorthand for all corners rounded */
@@ -4292,7 +4440,7 @@ if database_complete != False:
                 }}
                 #next_lvl_text {{
                 position: fixed;
-                top: 13px;
+                {xp_bar_location}: 13px;
                 right: 15px;
                 z-index: 9999;
                 color: white;
@@ -4302,7 +4450,7 @@ if database_complete != False:
                 }}
                 #xp_text {{
                 position: fixed;
-                top: 13px;
+                {xp_bar_location}: 13px;
                 left: 15px;
                 z-index: 9999;
                 color: white;
@@ -4316,7 +4464,8 @@ if database_complete != False:
             # Inject the CSS into the head of the HTML content
             web_content.head += f"<style>{css}</style>"
             # Inject a div element at the end of the body for the life bar
-            web_content.body += f'<div id="life-bar"></div>'
+            if hp_bar_config is True:
+                web_content.body += f'<div id="life-bar"></div>'
             if xp_bar_config is True:
                 web_content.head += f'<div id="xp-bar"></div>'
                 web_content.body += f'<div id="next_lvl_text">Next Level</div>'
@@ -4332,13 +4481,14 @@ if database_complete != False:
             # Inject a div element at the end of the body for the life bar
             image_base64 = get_image_as_base64(pokemon_image_file)
             web_content.body += f'<div id="PokeImage"><img src="data:image/png;base64,{image_base64}" alt="PokeImage"></div>'
-            if show_mainpkmn_in_reviewer != False:
+            if show_mainpkmn_in_reviewer > 0:
                 image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
                 web_content.body += f'<div id="MyPokeImage"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage"></div>'
                 web_content.body += f'<div id="myname-display">{mainpokemon_name.capitalize()} LvL: {mainpokemon_level}</div>'
                 web_content.body += f'<div id="myhp-display">HP: {mainpokemon_hp}/{mainpkmn_max_hp}</div>'
                 # Inject a div element at the end of the body for the life bar
-                web_content.body += f'<div id="mylife-bar"></div>'
+                if hp_bar_config is True:
+                    web_content.body += f'<div id="mylife-bar"></div>'
             # Set the flag to True to indicate that the life bar has been injected
             if pokeball == True:
                 icon_base_64 = get_image_as_base64(icon_path)
@@ -4353,16 +4503,16 @@ if database_complete != False:
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
             pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
-            if show_mainpkmn_in_reviewer is True:
+            if show_mainpkmn_in_reviewer > 0:
                 main_pkmn_imagefile = f'{mainpokemon_id}.png' #use for png files
                 main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
         else:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.gif'
             pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
-            if show_mainpkmn_in_reviewer is True:
+            if show_mainpkmn_in_reviewer > 0:
                 main_pkmn_imagefile = f'{mainpokemon_id}.gif'
                 main_pkmn_imagefile_path = os.path.join((user_path_sprites / "back_default_gif"), main_pkmn_imagefile)
-        if show_mainpkmn_in_reviewer is True:
+        if show_mainpkmn_in_reviewer > 0:
             mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
             mainpkmn_hp_percent = int((mainpokemon_hp / mainpkmn_max_hp) * 50)
             max_hp = calculate_max_hp_wildpokemon()
@@ -4385,7 +4535,7 @@ if database_complete != False:
         else:
             hp_color = "rgba(114, 230, 96, 0.7)"  # Green
 
-        if show_mainpkmn_in_reviewer is True:
+        if show_mainpkmn_in_reviewer > 0:
             if mainpokemon_hp < int(0.25 * mainpkmn_max_hp):
                 myhp_color = "rgba(255, 0, 0, 0.7)"  # Red
             elif mainpokemon_hp < int(0.5 * mainpkmn_max_hp):
@@ -4422,7 +4572,7 @@ if database_complete != False:
             pokeicon_html = f'<img src="data:image/png;base64,{image_icon_path}" alt="PokeIcon">'
             reviewer.web.eval(f'document.getElementById("PokeIcon").innerHTML = `{pokeicon_html}`;')
         reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
-        if show_mainpkmn_in_reviewer is True:
+        if show_mainpkmn_in_reviewer > 0:
             new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage">'
             main_name_display_text = f"{mainpokemon_name.capitalize()} Lvl: {mainpokemon_level}"
             main_hp_display_text = f"HP: {mainpokemon_hp}/{mainpkmn_max_hp}"
