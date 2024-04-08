@@ -4906,11 +4906,13 @@ class TestWindow(QWidget):
         global first_start, pkmn_window
         if first_start == False:
             from aqt import mw
-            mw_x = mw.x()
-            mw_y = mw.y()
-            width = mw.width()
-            height = mw.height()
-            self.setGeometry(mw_x, mw_y + height/4, 256, 256 )
+            # Get the geometry of the main screen
+            main_screen_geometry = mw.geometry()
+            # Calculate the position to center the ItemWindow on the main screen
+            x = main_screen_geometry.center().x() - self.width() / 2
+            y = main_screen_geometry.center().y() - self.height() / 2
+            self.setGeometry(x, y, 256, 256 )
+            self.move(x,y)
             self.show()
             first_start = True
         global pkmn_window
@@ -5432,7 +5434,6 @@ class TestWindow(QWidget):
         Receive_Window.setMaximumHeight(320)
         Receive_Window.setLayout(layout)
         Receive_Window.show()
-
 
     def display_pokemon_death(self):
         # pokemon encounter image
