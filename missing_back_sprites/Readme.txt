@@ -1,3 +1,5 @@
+Credits and Aknowledgements:
+
 These were free to use: 
 https://www.smogon.com/forums/threads/the-gen-4-style-gen-5-and-beyond-backsprite-resource.3687625/
 
