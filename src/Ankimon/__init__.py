@@ -120,7 +120,6 @@ pokemon_species_ultra_path = addon_dir / "user_files" / "pkmn_data" / "ultra.jso
 pokemon_species_mythical_path = addon_dir / "user_files" / "pkmn_data" / "mythical.json"
 pokemon_species_baby_path = addon_dir / "user_files" / "pkmn_data" / "baby.json"
 
-
 # Get the profile folder
 profilename = mw.pm.name
 #profilefolder = Path(mw.pm.profileFolder())
@@ -212,6 +211,15 @@ dialog = CheckFiles()
 if database_complete != True:
     dialog.show()
 
+if mainpokemon_path.is_file():
+    with open(mainpokemon_path, "r") as json_file:
+        main_pokemon_data = json.load(json_file)
+        if not main_pokemon_data or main_pokemon_data is None:
+            mainpokemon_empty = True
+            showInfo("Main pokemon empty")
+        else:
+            mainpokemon_empty = False
+
 window = None
 gender = None
 card_counter = -1
@@ -237,6 +245,10 @@ review_hp_bar_thickness = config["review_hp_bar_thickness"] #2 = 8px, 3# 12px, 4
 hp_bar_thickness = review_hp_bar_thickness * 4
 hp_bar_config = config["hp_bar_config"] #2 = 8px, 3# 12px, 4# 16px, 5# 20px
 xp_bar_location = config["xp_bar_location"] #1 top, 2 = bottom
+ssh = config["ssh"] #for eduroam users - false ; default: true
+rate_this = config["rate_this"] #default: false;
+dmg_in_reviewer = config["dmg_in_reviewer"] #default: false; true = mainpokemon is getting damaged in reviewer for false answers
+
 if xp_bar_location == 1:
     xp_bar_location = "top"
     xp_bar_spacer = 0
@@ -267,121 +279,134 @@ def test_online_connectivity(url='http://www.google.com', timeout=5):
         return False
 
 online_connectivity = test_online_connectivity()
-    # Function to check if the content of the two files is the same
-def compare_files(local_content, github_content):
-    return local_content == github_content
 
-# Function to read the content of the local file
-def read_local_file(file_path):
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-    except FileNotFoundError:
-        return None
+system_name = "Linux"
 
-# Function to write content to a local file
-def write_local_file(file_path, content):
-    with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(content)
+if system_name != "Linux":
+    if ssh != False:
+        # Function to check if the content of the two files is the same
+        def compare_files(local_content, github_content):
+            return local_content == github_content
 
-# Function to check if the file exists on GitHub and read its content
-def read_github_file(url):
-    response = requests.get(url)
-        
-    if response.status_code == 200:
-        # File exists, parse the Markdown content
-        content = response.text
-        html_content = markdown.markdown(content)
-        return content, html_content
-    else:
-        return None, None
+        # Function to read the content of the local file
+        def read_local_file(file_path):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    return file.read()
+            except FileNotFoundError:
+                return None
+
+        # Function to write content to a local file
+        def write_local_file(file_path, content):
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(content)
+
+        # Function to check if the file exists on GitHub and read its content
+        def read_github_file(url):
+            response = requests.get(url)
+                
+            if response.status_code == 200:
+                # File exists, parse the Markdown content
+                content = response.text
+                html_content = markdown.markdown(content)
+                return content, html_content
+            else:
+                return None, None
+            
+        showInfo("function running")
 
 if online_connectivity != False:
-    import markdown
+    if system_name != "Linux":
+        if ssh != False:
+            import markdown
 
-    # Custom Dialog class
-    class UpdateNotificationWindow(QDialog):
-        def __init__(self, content):
-            super().__init__()
-            global icon_path
-            self.setWindowTitle("Ankimon Notifications")
-            self.setGeometry(100, 100, 600, 400)
+            # Custom Dialog class
+            class UpdateNotificationWindow(QDialog):
+                def __init__(self, content):
+                    super().__init__()
+                    global icon_path
+                    self.setWindowTitle("Ankimon Notifications")
+                    self.setGeometry(100, 100, 600, 400)
 
-            layout = QVBoxLayout()
-            self.text_edit = QTextEdit()
-            self.text_edit.setReadOnly(True)
-            self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-            self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
-            self.text_edit.setHtml(content)
-            layout.addWidget(self.text_edit)
-            self.setWindowIcon(QIcon(str(icon_path)))
+                    layout = QVBoxLayout()
+                    self.text_edit = QTextEdit()
+                    self.text_edit.setReadOnly(True)
+                    self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+                    self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
+                    self.text_edit.setHtml(content)
+                    layout.addWidget(self.text_edit)
+                    self.setWindowIcon(QIcon(str(icon_path)))
 
-            self.setLayout(layout)
+                    self.setLayout(layout)
 
-    # URL of the file on GitHub
-    github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
-    # Path to the local file
-    local_file_path = addon_dir / "updateinfos.md"
-    # Read content from GitHub
-    github_content, github_html_content = read_github_file(github_url)
-    # Read content from the local file
-    local_content = read_local_file(local_file_path)
-    # If local content exists and is the same as GitHub content, do not open dialog
-    if local_content is not None and compare_files(local_content, github_content):
-        pass
-    else:
-        # Download new content from GitHub
-        if github_content is not None:
-            # Write new content to the local file
-            write_local_file(local_file_path, github_content)
-            dialog = UpdateNotificationWindow(github_html_content)
-            dialog.exec()
-        else:
-            showWarning("Failed to retrieve Ankimon content from GitHub.")
-
-##HelpGuide
-class HelpWindow(QDialog):
-    def __init__(self):
-            super().__init__()
-            html_content = " "
-            global icon_path
-            if online_connectivity != False:
-                # URL of the file on GitHub
-                help_github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/HelpInfos.html"
-                # Path to the local file
-                help_local_file_path = addon_dir / "HelpInfos.html"
-                local_content = read_local_file(help_local_file_path)
-                # Read content from GitHub
-                github_content, github_html_content = read_github_file(help_github_url)
-                if local_content is not None and compare_files(local_content, github_content):
-                    html_content = github_html_content
-                else: 
-                    # Download new content from GitHub
-                    if github_content is not None:
-                        # Write new content to the local file
-                        write_local_file(help_local_file_path, github_content)
-                        html_content = github_html_content
+            # URL of the file on GitHub
+            github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
+            # Path to the local file
+            local_file_path = addon_dir / "updateinfos.md"
+            # Read content from GitHub
+            github_content, github_html_content = read_github_file(github_url)
+            # Read content from the local file
+            local_content = read_local_file(local_file_path)
+            # If local content exists and is the same as GitHub content, do not open dialog
+            if local_content is not None and compare_files(local_content, github_content):
+                pass
             else:
-                local_content = read_local_file(help_local_file_path)
-                html_content = local_content
+                # Download new content from GitHub
+                if github_content is not None:
+                    # Write new content to the local file
+                    write_local_file(local_file_path, github_content)
+                    dialog = UpdateNotificationWindow(github_html_content)
+                    dialog.exec()
+                else:
+                    showWarning("Failed to retrieve Ankimon content from GitHub.")
 
-            self.setWindowTitle("Ankimon HelpGuide")
-            self.setGeometry(100, 100, 600, 400)
+if system_name != "Linux":
+    if ssh != False:
+        ##HelpGuide
+        class HelpWindow(QDialog):
+            def __init__(self):
+                    super().__init__()
+                    html_content = " "
+                    global icon_path
+                    if online_connectivity != False:
+                        # URL of the file on GitHub
+                        help_github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/HelpInfos.html"
+                        # Path to the local file
+                        help_local_file_path = addon_dir / "HelpInfos.html"
+                        local_content = read_local_file(help_local_file_path)
+                        # Read content from GitHub
+                        github_content, github_html_content = read_github_file(help_github_url)
+                        if local_content is not None and compare_files(local_content, github_content):
+                            html_content = github_html_content
+                        else: 
+                            # Download new content from GitHub
+                            if github_content is not None:
+                                # Write new content to the local file
+                                write_local_file(help_local_file_path, github_content)
+                                html_content = github_html_content
+                    else:
+                        local_content = read_local_file(help_local_file_path)
+                        html_content = local_content
 
-            layout = QVBoxLayout()
-            self.text_edit = QTextEdit()
-            self.text_edit.setReadOnly(True)
-            self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-            self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-            self.text_edit.setHtml(html_content)
-            layout.addWidget(self.text_edit)
-            self.setWindowIcon(QIcon(str(icon_path)))
-            self.setLayout(layout)
-    
+                    self.setWindowTitle("Ankimon HelpGuide")
+                    self.setGeometry(100, 100, 600, 400)
+
+                    layout = QVBoxLayout()
+                    self.text_edit = QTextEdit()
+                    self.text_edit.setReadOnly(True)
+                    self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+                    self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+                    self.text_edit.setHtml(html_content)
+                    layout.addWidget(self.text_edit)
+                    self.setWindowIcon(QIcon(str(icon_path)))
+                    self.setLayout(layout)
+            
 def open_help_window():
-    help_dialog = HelpWindow()
-    help_dialog.exec()
-
+    if system_name != "Linux":
+        if ssh != False:
+            help_dialog = HelpWindow()
+            help_dialog.exec()
+        
 try:
     from aqt.sound import av_player
     from anki.sound import SoundOrVideoTag
@@ -592,7 +617,7 @@ def answerCard_after(rev, card, ease):
         card_ratings_count["Easy"] += 1
     else:
         # default behavior for unforeseen cases
-        tooltip("Error in ColorConfirmation add-on: Couldn't interpret ease")
+        tooltip("Error in ColorConfirmation: Couldn't interpret ease")
 
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
 
@@ -1259,13 +1284,13 @@ def choose_random_pkmn_from_tier():
         if card_counter < (40*cards_per_round):
             possible_tiers.append("Normal")
         elif card_counter < (50*cards_per_round):
-            possible_tiers.extend(["Baby", "Normal","Baby", "Normal", "Normal", "Normal", "Normal"])
+            possible_tiers.extend(["Baby", "Normal", "Normal", "Normal", "Normal", "Normal"])
         elif card_counter < (65*cards_per_round):
-            possible_tiers.extend(["Baby", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Normal", "Normal", "Normal", "Normal", "Ultra"])
+            possible_tiers.extend(["Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Normal", "Normal", "Normal", "Normal", "Ultra"])
         elif card_counter < (90*cards_per_round):
-            possible_tiers.extend(["Baby", "Legendary", "Normal", "Baby", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal","Normal", "Normal", "Ultra", "Normal", "Normal", "Ultra", "Ultra"])
+            possible_tiers.extend(["Baby", "Legendary", "Normal", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal","Normal", "Normal", "Ultra", "Normal", "Normal", "Ultra", "Ultra"])
         else:
-            possible_tiers.extend(["Baby", "Legendary","Mythical", "Baby", "Baby", "Normal", "Normal", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
+            possible_tiers.extend(["Baby", "Legendary","Mythical", "Baby", "Normal", "Normal", "Normal", "Baby", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Normal", "Ultra", "Ultra"])
         tier = random.choice(possible_tiers)
         id, pokemon_species = get_pokemon_id_by_tier(tier)
         return id, pokemon_species
@@ -2088,8 +2113,8 @@ cry_counter = 0
 def on_review_card():
     try:
         global reviewed_cards_count, card_ratings_count, card_counter, general_card_count_for_battle, cry_counter, battle_sounds
-        global hp, stats, type, battle_status, name, battle_stats
-        global pokemon_encounter
+        global hp, stats, type, battle_status, name, battle_stats, enemy_attacks, level
+        global pokemon_encounter, mainpokemon_hp
         global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats
         global attack_counter
         global pkmn_window
@@ -2136,7 +2161,49 @@ def on_review_card():
             pokemon_encounter += 1
             multiplier = calc_multiply_card_rating()
             msg = ""
-            msg += f"{multiplier}x Multiplier - "
+            msg += f"{multiplier}x Multiplier"
+            #failed card = enemy attack
+            if pokemon_encounter > 0 and hp > 0 and dmg_in_reviewer is True and multiplier < 1:
+                msg += f" /n "
+                rand_enemy_atk = random.choice(enemy_attacks)
+                msg += f"{name.capitalize()} choose \n {rand_enemy_atk.capitalize()} !"
+                enemy_move = find_details_move(rand_enemy_atk)
+                e_move_category = enemy_move.get("category")
+                e_move_acc = enemy_move.get("accuracy")
+                if e_move_acc is True:
+                    e_move_acc = 100
+                elif e_move_acc != 0:
+                    e_move_acc = 100 / e_move_acc
+                if random.random() > e_move_acc:
+                    msg += "\n Move has missed !"
+                else:
+                    if e_move_category == "Status":
+                        color = "#F7DC6F"
+                        msg = effect_status_moves(rand_enemy_atk, stats, mainpokemon_stats, msg, mainpokemon_name, name)
+                    elif e_move_category == "Physical" or e_move_category == "Special":
+                        critRatio = enemy_move.get("critRatio", 1)
+                        if e_move_category == "Physical":
+                            color = "#F0B27A"
+                        elif e_move_category == "Special":
+                            color = "#D2B4DE"
+                        if enemy_move["basePower"] == 0:
+                            enemy_dmg = bP_none_moves(move)
+                            mainpokemon_hp -= enemy_dmg
+                            if enemy_dmg == 0:
+                                msg += "\n Move has missed !"
+                        else:
+                            if e_move_category == "Special":
+                                def_stat = mainpokemon_stats["spd"]
+                                atk_stat = stats["spa"]
+                            elif e_move_category == "Physical":
+                                def_stat = mainpokemon_stats["def"]
+                                atk_stat = stats["atk"]
+                            enemy_dmg = int(calc_atk_dmg(level,(multiplier * 2),enemy_move["basePower"], atk_stat, def_stat, type, enemy_move["type"],mainpokemon_type, critRatio))
+                            if enemy_dmg == 0:
+                                enemy_dmg = 1
+                            mainpokemon_hp -= enemy_dmg
+                            msg += f" {enemy_dmg} dmg is dealt to {mainpokemon_name.capitalize()}."
+                
             # If 10 or more cards have been reviewed, show the random Pokémon
             if pokemon_encounter > 0 and hp > 0:
                 random_attack = random.choice(mainpokemon_attacks)
@@ -3278,10 +3345,7 @@ def move_category_path(category):
 
 def MainPokemon(name, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
     # Display the Pokémon image
-    global mainpkmn
-    global addon_dir
-    global currdirname
-    global mainpokemon_path
+    global mainpkmn, addon_dir, currdirname, mainpokemon_path
     mainpkmn = 1
     # Capitalize the first letter of the Pokémon's name
     capitalized_name = name.capitalize()
@@ -4112,7 +4176,7 @@ Check out https://pokeapi.co/docs/v2#fairuse and https://github.com/smogon/pokem
 
 life_bar_injected = False
 
-if database_complete != False:
+if database_complete != False and mainpokemon_empty is False:
     def reviewer_reset_life_bar_inject():
         global life_bar_injected
         life_bar_injected = False
