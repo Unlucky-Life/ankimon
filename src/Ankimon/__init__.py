@@ -2203,6 +2203,9 @@ def on_review_card():
                                 enemy_dmg = 1
                             mainpokemon_hp -= enemy_dmg
                             msg += f" {enemy_dmg} dmg is dealt to {mainpokemon_name.capitalize()}."
+                            if mainpokemon_hp < 1:
+                                msg += f"Your {mainpokemon_name} has been defeated and the wild {name} has fled!"
+                                new_pokemon()
                 
             # If 10 or more cards have been reviewed, show the random Pokémon
             if pokemon_encounter > 0 and hp > 0:
