@@ -9,12 +9,20 @@
   "gen8": true,
   "gen9": true,
   "language": 9,
+  "rate_this": false,
   "key_for_opening_closing_ankimon": "N",
   "cards_per_round": 2,
   "reviewer_image_gif": false,
   "sounds": false,
   "battle_sounds": false,
-  "show_mainpkmn_in_reviewer": false,
+  "show_mainpkmn_in_reviewer": 0,
   "reviewer_text_message_box": true,
-  "pop_up_dialog_message_on_defeat": true
+  "reviewer_text_message_box_time": 3,
+  "pop_up_dialog_message_on_defeat": false,
+  "xp_bar_config": true,
+  "review_hp_bar_thickness": 2,
+  "hp_bar_config": true,
+  "xp_bar_location": 1,
+  "ssh": true,
+  "dmg_in_reviewer": false
 }
