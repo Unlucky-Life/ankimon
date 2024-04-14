@@ -251,12 +251,6 @@ xp_bar_location = config["xp_bar_location"] #1 top, 2 = bottom
 ssh = config["ssh"] #for eduroam users - false ; default: true
 dmg_in_reviewer = config["dmg_in_reviewer"] #default: false; true = mainpokemon is getting damaged in reviewer for false answers
 
-#rate_this, default is false
-with open(rate_path, 'r') as file:
-    rate_data = json.load(file)
-    # Access the value of "rate_this" key
-    rate_this = rate_data.get("rate_this")
-
 if xp_bar_location == 1:
     xp_bar_location = "top"
     xp_bar_spacer = 0
@@ -5530,6 +5524,11 @@ test_window = TestWindow()
 
 def rate_this_addon():
     global rate_this, rate_path, itembag_path, rate_data
+    #rate_this, default is false
+    with open(rate_path, 'r') as file:
+        rate_data = json.load(file)
+        rate_this = rate_data.get("rate_this")
+    # Access the value of "rate_this" key
     if rate_this is False:
         rate_window = QDialog()
         rate_layout = QVBoxLayout(rate_window)
@@ -5547,6 +5546,8 @@ def rate_this_addon():
         rate_button = QPushButton("Rate Now")
 
         def rate_this_button():
+            rate_window.close()
+            show_info("Thanks for rating this addon !")
             rate_url = "https://ankiweb.net/shared/review/1908235722"
             QDesktopServices.openUrl(QUrl(rate_url))
             rate_this = True
@@ -5567,6 +5568,12 @@ def rate_this_addon():
         
         rate_window.exec()
 
+if database_complete is True:
+    with open(badgebag_path, 'r') as json_file:
+        badge_list = json.load(json_file)
+        if len(badge_list) > 2:
+            rate_this_addon()
+
 #Badges needed for achievements:
 with open(badges_list_path, 'r') as json_file:
     badges = json.load(json_file)
@@ -5576,8 +5583,6 @@ achievements = {str(i): False for i in range(1, 69)}
 def check_badges(achievements):
         with open(badgebag_path, 'r') as json_file:
             badge_list = json.load(json_file)
-            if len(badge_list) > 2:
-                rate_this_addon()
             for badge_num in badge_list:
                 achievements[str(badge_num)] = True
         return achievements
