@@ -109,6 +109,7 @@ icon_path = addon_dir / "addon_files" / "pokeball.png"
 sound_list_path = addon_dir / "addon_files" / "sound_list.json"
 badges_list_path = addon_dir / "addon_files" / "badges.json"
 items_list_path = addon_dir / "addon_files" / "items.json"
+rate_path = addon_dir / "rate_this.json"
 
 with open(sound_list_path, 'r') as json_file:
     sound_list = json.load(json_file)
@@ -233,6 +234,8 @@ elif system_name == "Darwin":
     system = "mac"
 pop_up_dialog_message_on_defeat = config["pop_up_dialog_message_on_defeat"]
 reviewer_text_message_box = config["reviewer_text_message_box"]
+reviewer_text_message_box_time = config["reviewer_text_message_box_time"] #time in seconds for text message
+reviewer_text_message_box_time = reviewer_text_message_box_time * 1000 #times 1000 for s => ms
 cards_per_round = config["cards_per_round"]
 reviewer_image_gif = config["reviewer_image_gif"]
 sounds = config["sounds"]
@@ -246,8 +249,13 @@ hp_bar_thickness = review_hp_bar_thickness * 4
 hp_bar_config = config["hp_bar_config"] #2 = 8px, 3# 12px, 4# 16px, 5# 20px
 xp_bar_location = config["xp_bar_location"] #1 top, 2 = bottom
 ssh = config["ssh"] #for eduroam users - false ; default: true
-rate_this = config["rate_this"] #default: false;
 dmg_in_reviewer = config["dmg_in_reviewer"] #default: false; true = mainpokemon is getting damaged in reviewer for false answers
+
+#rate_this, default is false
+with open(rate_path, 'r') as file:
+    rate_data = json.load(file)
+    # Access the value of "rate_this" key
+    rate_this = rate_data.get("rate_this")
 
 if xp_bar_location == 1:
     xp_bar_location = "top"
@@ -495,47 +503,9 @@ def check_id_ok(id_num):
     else:
         return False
 
-#count index - count 10 cards - easy = 20, good = 10, hard = 5, again = 0
+#count index - count 2 cards - easy = 20, good = 10, hard = 5, again = 0
 # if index = 40 - 100 => normal ; multiply with damage
 # if index < 40 => attack misses
-
-#Badges needed for achievements:
-with open(badges_list_path, 'r') as json_file:
-    badges = json.load(json_file)
-
-achievements = {str(i): False for i in range(1, 69)}
-
-def check_badges(achievements):
-        with open(badgebag_path, 'r') as json_file:
-            badge_list = json.load(json_file)
-            for badge_num in badge_list:
-                achievements[str(badge_num)] = True
-        return achievements
-
-def check_for_badge(achievements, rec_badge_num):
-        achievements = check_badges(achievements)
-        if achievements[str(rec_badge_num)] is False:
-            got_badge = False
-        else:
-            got_badge = True
-        return got_badge
-        
-def save_badges(badges_collection):
-        with open(badgebag_path, 'w') as json_file:
-            json.dump(badges_collection, json_file)
-
-achievements = check_badges(achievements)
-
-def receive_badge(badge_num,achievements):
-    achievements = check_badges(achievements)
-    #for badges in badge_list:
-    achievements[str(badge_num)] = True
-    badges_collection = []
-    for num in range(1,69):
-        if achievements[str(num)] is True:
-            badges_collection.append(int(num))
-    save_badges(badges_collection)
-    return achievements
 
 def special_pokemon_names_for_min_level(name):
     if name == "flabébé":
@@ -1023,7 +993,8 @@ def customCloseTooltip(tooltipLabel):
 			pass
 		tooltipLabel = None
 
-def tooltipWithColour(msg, color, x=0, y=20, xref=1, period=3000, parent=None, width=0, height=0, centered=False):
+def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, height=0, centered=False):
+    period = reviewer_text_message_box_time #time for pop up message
     global reviewer_text_message_box
     class CustomLabel(QLabel):
         def mousePressEvent(self, evt):
@@ -2110,7 +2081,7 @@ reviewed_cards_count = -1
 general_card_count_for_battle = 0
 cry_counter = 0
 # Hook into Anki's card review event
-def on_review_card():
+def on_review_card(*args):
     try:
         global reviewed_cards_count, card_ratings_count, card_counter, general_card_count_for_battle, cry_counter, battle_sounds
         global hp, stats, type, battle_status, name, battle_stats, enemy_attacks, level
@@ -2559,8 +2530,7 @@ def status_effect(stat, name, move, hp, slp_counter, stats, msg, acc):
     return msg, acc, stat, battle_stats
 
 # Connect the hook to Anki's review event
-addHook("showQuestion", on_review_card)
-
+gui_hooks.reviewer_did_answer_card.append(on_review_card)
 def ShowPokemonCollection():
     # Create the dialog
     window = QDialog(mw)
@@ -5478,6 +5448,18 @@ class TestWindow(QWidget):
         self.setMaximumWidth(556)
         self.setMaximumHeight(300)
 
+    def rate_display_item(self, item):
+        Receive_Window = QDialog(mw)
+        layout = QHBoxLayout()
+        item_name = item
+        item_widget = self.pokemon_display_item(item_name)
+        layout.addWidget(item_widget)
+        Receive_Window.setStyleSheet("background-color: rgb(44,44,44);")
+        Receive_Window.setMaximumWidth(512)
+        Receive_Window.setMaximumHeight(320)
+        Receive_Window.setLayout(layout)
+        Receive_Window.show()
+    
     def display_item(self):
         Receive_Window = QDialog(mw)
         layout = QHBoxLayout()
@@ -5543,6 +5525,88 @@ class TestWindow(QWidget):
 
 # Create an instance of the MainWindow
 test_window = TestWindow()
+
+#Test window
+
+def rate_this_addon():
+    global rate_this, rate_path, itembag_path, rate_data
+    if rate_this is False:
+        rate_window = QDialog()
+        rate_layout = QVBoxLayout(rate_window)
+        rate_window.setWindowTitle("Please Rate this Addon!")
+        
+        text_label = QLabel("""Thanks for using Ankimon! 
+                        \nI would like Ankimon to be known even more in the community, 
+                        \nand a like and comment would be amazing if you could rate this addon.
+                            This takes less than a minute
+                        
+                        As a thank you, you will receive a potion!""")
+        
+        rate_layout.addWidget(text_label)
+        
+        rate_button = QPushButton("Rate Now")
+
+        def rate_this_button():
+            rate_url = "https://ankiweb.net/shared/review/1908235722"
+            QDesktopServices.openUrl(QUrl(rate_url))
+            rate_this = True
+            rate_data["rate_this"] = True
+            # Save the updated data back to the file
+            with open(rate_path, 'w') as file:
+                json.dump(rate_data, file, indent=4)
+                test_window.rate_display_item("potion")
+                # add item to item list
+                with open(itembag_path, 'r') as json_file:
+                    itembag_list = json.load(json_file)
+                    itembag_list.append("potion")
+                with open(itembag_path, 'w') as json_file:
+                    json.dump(itembag_list, json_file)
+
+        rate_button.clicked.connect(rate_this_button)
+        rate_layout.addWidget(rate_button)
+        
+        rate_window.exec()
+
+#Badges needed for achievements:
+with open(badges_list_path, 'r') as json_file:
+    badges = json.load(json_file)
+
+achievements = {str(i): False for i in range(1, 69)}
+
+def check_badges(achievements):
+        with open(badgebag_path, 'r') as json_file:
+            badge_list = json.load(json_file)
+            if len(badge_list) > 2:
+                rate_this_addon()
+            for badge_num in badge_list:
+                achievements[str(badge_num)] = True
+        return achievements
+
+def check_for_badge(achievements, rec_badge_num):
+        achievements = check_badges(achievements)
+        if achievements[str(rec_badge_num)] is False:
+            got_badge = False
+        else:
+            got_badge = True
+        return got_badge
+        
+def save_badges(badges_collection):
+        with open(badgebag_path, 'w') as json_file:
+            json.dump(badges_collection, json_file)
+
+achievements = check_badges(achievements)
+
+def receive_badge(badge_num,achievements):
+    achievements = check_badges(achievements)
+    #for badges in badge_list:
+    achievements[str(badge_num)] = True
+    badges_collection = []
+    for num in range(1,69):
+        if achievements[str(num)] is True:
+            badges_collection.append(int(num))
+    save_badges(badges_collection)
+    return achievements
+
 
 class StarterWindow(QWidget):
     def __init__(self):
@@ -6579,6 +6643,10 @@ mw.pokemenu.addAction(help_action)
 test_action16 = QAction("Report Bug", mw)
 test_action16.triggered.connect(report_bug)
 mw.pokemenu.addAction(test_action16)
+
+rate_action = QAction("Rate This", mw)
+rate_action.triggered.connect(rate_this_addon)
+mw.pokemenu.addAction(rate_action)
 
     #https://goo.gl/uhAxsg
     #https://www.reddit.com/r/PokemonROMhacks/comments/9xgl7j/pokemon_sound_effects_collection_over_3200_sfx/
