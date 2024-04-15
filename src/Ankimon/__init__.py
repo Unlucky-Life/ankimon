@@ -6621,10 +6621,6 @@ test_action11 = QAction("Check Effectiveness Chart", mw)
 test_action11.triggered.connect(eff_chart.show_eff_chart)
 mw.pokemenu.addAction(test_action11)
 
-pokedex_action = QAction("Check Pokedex", mw)
-pokedex_action.triggered.connect(pokedex.show_pokedex)
-mw.pokemenu.addAction(pokedex_action)
-
 test_action12 = QAction("Check Generations and Pokemon Chart", mw)
 test_action12.triggered.connect(gen_id_chart.show_gen_chart)
 mw.pokemenu.addAction(test_action12)
