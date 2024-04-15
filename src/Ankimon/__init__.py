@@ -217,7 +217,6 @@ if mainpokemon_path.is_file():
         main_pokemon_data = json.load(json_file)
         if not main_pokemon_data or main_pokemon_data is None:
             mainpokemon_empty = True
-            showInfo("Main pokemon empty")
         else:
             mainpokemon_empty = False
 
