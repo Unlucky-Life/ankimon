@@ -24,5 +24,6 @@
   "hp_bar_config": true,
   "xp_bar_location": 1,
   "ssh": true,
-  "dmg_in_reviewer": false
+  "dmg_in_reviewer": false,
+  "show_mainpokemon_face_front_in_reviewer": true
 }
