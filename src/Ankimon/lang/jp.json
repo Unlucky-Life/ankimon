@@ -210,7 +210,7 @@
     "Pokemon Evolution is fitting !": "ポケモンの進化にピッタリだ！",
     "This Pokemon does not need this item.": "このポケモンに必要なアイテムではないようだ。",
     "Select which Attack to Replace with {self.new_attack}": "{self.new_attack}の代わりに忘れさせるわざを選んでください。",
-    "Reject Attack": "わざを覚えるのを諦める",
+    "Reject Attack": "このわざを覚えない",
     "Achievements": "実績",
     "You dont own any badges yet.": "まだバッジを持っていません。",
     "Show Pokemon Collection": "ポケモン一覧を開く",
