@@ -2073,12 +2073,13 @@ def calc_multiply_card_rating():
 reviewed_cards_count = -1
 general_card_count_for_battle = 0
 cry_counter = 0
+seconds = 0
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
         global reviewed_cards_count, card_ratings_count, card_counter, general_card_count_for_battle, cry_counter, battle_sounds
         global hp, stats, type, battle_status, name, battle_stats, enemy_attacks, level
-        global pokemon_encounter, mainpokemon_hp
+        global pokemon_encounter, mainpokemon_hp, seconds
         global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats
         global attack_counter
         global pkmn_window
@@ -2173,6 +2174,7 @@ def on_review_card(*args):
                 
             # If 10 or more cards have been reviewed, show the random Pokémon
             if pokemon_encounter > 0 and hp > 0:
+                dmg = 0
                 random_attack = random.choice(mainpokemon_attacks)
                 msg += f"\n {random_attack.capitalize()} has been choosen !"
                 move = find_details_move(random_attack)
@@ -2240,6 +2242,8 @@ def on_review_card(*args):
                             hp = 0
                             msg += f" {name.capitalize()} has fainted"
                     tooltipWithColour(msg, color)
+                    if dmg > 0:
+                        seconds = 2
             else:
                 if pkmn_window is True:
                     test_window.display_pokemon_death()
@@ -4149,7 +4153,7 @@ if database_complete != False and mainpokemon_empty is False:
     def inject_life_bar(web_content, context):
         global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, icon_path
         global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
-        global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer
+        global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds
         experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
@@ -4489,6 +4493,18 @@ if database_complete != False and mainpokemon_empty is False:
                 text-align: right;
                 }}
                 """
+            css += f"""
+            @keyframes shake {{
+                0% {{ transform: translateX(0); }}
+                25% {{ transform: translateX(-10px); }}
+                50% {{ transform: translateX(10px); }}
+                75% {{ transform: translateX(-10px); }}
+                100% {{ transform: translateX(0); }}
+            }}
+            #PokeImage {{
+                animation: shake {seconds}s ease;
+            }} 
+            """
 
             # background-image: url('{pokemon_image_file}'); Change to your image path */
             # Inject the CSS into the head of the HTML content
@@ -4528,7 +4544,7 @@ if database_complete != False and mainpokemon_empty is False:
 
     def update_life_bar(reviewer, card, ease):
         global hp, name, id, frontdefault, battle_status, user_path_sprites, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
-        global mainpokemon_level, icon_path
+        global mainpokemon_level, icon_path, seconds
         pokeball = check_pokecoll_in_list(search_pokedex(name.lower(), "num"))
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
@@ -4584,6 +4600,7 @@ if database_complete != False and mainpokemon_empty is False:
             status_html = create_status_html(f"{battle_status}")
 
         # Refresh the reviewer content to apply the updated life bar
+        reviewer.web.eval('document.getElementById("PokeImage").style.animation')
         reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
         reviewer.web.eval('document.getElementById("life-bar").style.background = "linear-gradient(to right, ' + str(hp_color) + ', ' + str(hp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
         reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px rgba(' + str(hp_color) + ')";')
@@ -4595,7 +4612,7 @@ if database_complete != False and mainpokemon_empty is False:
         hp_display_text = f"HP: {hp}/{max_hp}"
         reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
         reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
-        new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage">'
+        new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage" style="animation: shake {seconds}s ease;">'
         reviewer.web.eval(f'document.getElementById("PokeImage").innerHTML = `{new_html_content}`;')
         if pokeball == True:
             image_icon_path = get_image_as_base64(icon_path)
