@@ -6293,6 +6293,21 @@ class ItemWindow(QWidget):
 
     def initUI(self):
         global icon_path
+        self.hp_heal_items = ["potion", "sweetheart", "berrjuice", "sodapop", "superpotion", "energypowder", 
+              "lemonade", "moomoomilk", "hyperpotion", "energyroot", "fullrestore", "maxpotion"]
+
+        self.fossil_pokemon = {
+            "helixfossil": 138,
+            "domefossil": 140,
+            "oldamber": 142,
+            "rootfossil": 345,
+            "clawfossil": 347,
+            "skullfossil": 408,
+            "armorfossil": 410,
+            "coverfossil": 564,
+            "plumefossil": 566
+            }
+                
         self.setWindowIcon(QIcon(str(icon_path))) # Add a Pokeball icon
         self.setWindowTitle("Itembag")
         self.layout = QVBoxLayout()  # Main layout is now a QVBoxLayout
@@ -6349,8 +6364,17 @@ class ItemWindow(QWidget):
         item_frame.addWidget(item_name_label)
         use_item_button = QPushButton("Use Item")
         comboBox = QComboBox()
-        self.PokemonList(comboBox)
-        use_item_button.clicked.connect(lambda: self.Check_Evo_Item(comboBox.currentText(), item_name))
+        if item_name in self.hp_heal_items :
+            global mainpokemon_name
+            self.MainPokemonList(comboBox)
+            use_item_button.clicked.connect(lambda: self.Check_Heal_Item(mainpokemon_name, item_name))
+        elif item_name in self.fossil_pokemon:
+            self.GetPokemonList(comboBox)
+            fossil_id = self.fossil_pokemon[fossil_name]
+            use_item_button.clicked.connect(lambda: self.Evolve_Fossil(item_name, fossil_id))
+        else:
+            use_item_button.clicked.connect(lambda: self.Check_Evo_Item(comboBox.currentText(), item_name))
+            self.PokemonList(comboBox)
         item_frame.addWidget(use_item_button)
         item_frame.addWidget(comboBox)
         item_frame_widget = QWidget()
@@ -6368,6 +6392,71 @@ class ItemWindow(QWidget):
                         comboBox.addItem(f"{pokemon_name}")
         except:
             pass
+    
+    def MainPokemonList(self, comboBox):
+        try:
+            with open(mainpokemon_path, "r") as json_file:
+                captured_pokemon_data = json.load(json_file)
+                if captured_pokemon_data:
+                    for pokemon in captured_pokemon_data:
+                        pokemon_name = pokemon['name']
+                        comboBox.addItem(f"{pokemon_name}")
+        except:
+            pass
+    
+    def GetPokemonList(self, comboBox):
+        try:
+            comboBox.addItem(f"Use Now")
+        except:
+            pass
+    
+    def Evolve_Fossil(self, item_name, fossil_idl):
+        pass
+
+    def Check_Heal_Item(Self, pkmn_name, item_name):
+            item_name = item_name.lower()
+            if item_name == "potion" or "sweetheart" or "berrjuice":
+                global mainpokemon_hp, mainpokemon_stats, mainpokemon_level, mainpokemon_ev, mainpokemon_iv
+                mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
+                heal_points = 20
+            elif item_name == "sodapop":
+                heal_points = 50
+            elif item_name == "superpotion" or "energypowder":
+                heal_points = 60
+            elif item_name == "lemonade":
+                heal_points = 70
+            elif item_name == "moomoomilk":
+                heal_points = 100
+            elif item_name == "hyperpotion" or "energyroot":
+                heal_points = 120
+            elif item_name == "fullrestore" or "maxpotion":
+                heal_points = mainpkmn_max_hp
+            mainpokemon_hp += heal_points
+            if mainpokemon_hp > (mainpkmn_max_hp + 1):
+                mainpokemon_hp = mainpkmn_max_hp
+            showInfo(f"{pkmn_name} was healed for {heal_points}")
+    
+    def Check_Fossil_item(self, item_name):
+            item_name = item_name.lower()
+            if item_name == "potion" or "sweetheart" or "berrjuice":
+                global mainpokemon_hp, mainpokemon_stats, mainpokemon_level, mainpokemon_ev, mainpokemon_iv
+                mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
+                heal_points = 20
+            elif item_name == "sodapop":
+                heal_points = 50
+            elif item_name == "superpotion" or "energypowder":
+                heal_points = 60
+            elif item_name == "lemonade":
+                heal_points = 70
+            elif item_name == "moomoomilk":
+                heal_points = 100
+            elif item_name == "hyperpotion" or "energyroot":
+                heal_points = 120
+            elif item_name == "fullrestore" or "maxpotion":
+                heal_points = mainpkmn_max_hp
+            mainpokemon_hp += heal_points
+            if mainpokemon_hp > (mainpkmn_max_hp + 1):
+                mainpokemon_hp = mainpkmn_max_hp
 
     def Check_Evo_Item(self, pkmn_name, item_name):
         try:
@@ -6416,7 +6505,6 @@ class ItemWindow(QWidget):
         self.show()
 
 item_window = ItemWindow()
-
 
 class AttackDialog(QDialog):
     def __init__(self, attacks, new_attack):
