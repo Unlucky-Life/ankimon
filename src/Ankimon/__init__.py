@@ -1389,7 +1389,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             main_pokemon_data = json.load(json_file)
     else:
         showWarning("Missing Mainpokemon Data !")
-    if int(experience) < int(mainpokemon_xp) and mainpokemon_level != 100:
+    while int(experience) < int(mainpokemon_xp) and mainpokemon_level != 100:
         mainpokemon_level += 1
         msg = ""
         msg += f"Your {mainpokemon_name} is now level {mainpokemon_level} !"
@@ -1405,7 +1405,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             pass
         if pop_up_dialog_message_on_defeat is True:
             showInfo(f"{msg}")
-        mainpokemon_xp = 0
+        mainpokemon_xp = int(mainpokemon_xp) - int(experience)
         name = f"{mainpokemon_name}"
         # Update mainpokemon_evolution and handle evolution logic
         mainpokemon_evolution = search_pokedex(name.lower(), "evos")
@@ -2070,7 +2070,7 @@ def calc_multiply_card_rating():
     multiplier = multiply_sum / max_points
     return multiplier
 
-reviewed_cards_count = -1
+reviewed_cards_count = 0
 general_card_count_for_battle = 0
 cry_counter = 0
 seconds = 0
