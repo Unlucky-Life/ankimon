@@ -6310,19 +6310,31 @@ class ItemWindow(QWidget):
 
     def initUI(self):
         global icon_path
-        self.hp_heal_items = ["potion", "sweetheart", "berrjuice", "sodapop", "superpotion", "energypowder", 
-              "lemonade", "moomoomilk", "hyperpotion", "energyroot", "fullrestore", "maxpotion"]
-
+        self.hp_heal_items = {
+            'potion': 20,
+            'sweet-heart': 20,
+            'berry-juice': 20,
+            'fresh-water': 30,
+            'soda-pop': 50,
+            'super-potion': 60,
+            'energy-powder': 60,
+            'lemonade': 70,
+            'moomoo-milk': 100,
+            'hyper-potion': 120,
+            'energy-root': 120,
+            'full-restore': 1000,
+            'max-potion': 1000
+        }
         self.fossil_pokemon = {
-            "helixfossil": 138,
-            "domefossil": 140,
-            "oldamber": 142,
-            "rootfossil": 345,
-            "clawfossil": 347,
-            "skullfossil": 408,
-            "armorfossil": 410,
-            "coverfossil": 564,
-            "plumefossil": 566
+            "helix-fossil": 138,
+            "dome-fossil": 140,
+            "old-amber": 142,
+            "root-fossil": 345,
+            "claw-fossil": 347,
+            "skull-fossil": 408,
+            "armor-fossil": 410,
+            "cover-fossil": 564,
+            "plume-fossil": 566
             }
                 
         self.setWindowIcon(QIcon(str(icon_path))) # Add a Pokeball icon
@@ -6371,29 +6383,36 @@ class ItemWindow(QWidget):
     def ItemLabel(self, item_name):
         item_file_path = items_path / f"{item_name}.png"
         item_frame = QVBoxLayout() #itemframe
-        item_name_label = QLabel(f"{item_name.capitalize()}") #itemname
+        item_name_for_label = item_name.replace("-", " ")   # Remove hyphens from item_name
+        item_name_label = QLabel(f"{item_name_for_label.capitalize()}") #itemname
         item_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         item_picture_pixmap = QPixmap(str(item_file_path))
         item_picture_label = QLabel()
         item_picture_label.setPixmap(item_picture_pixmap)
-        item_picture_label.setStyleSheet("border: 2px solid #3498db; border-radius: 5px; padding: 5px;")
+        item_picture_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         item_frame.addWidget(item_picture_label)
         item_frame.addWidget(item_name_label)
-        use_item_button = QPushButton("Use Item")
-        comboBox = QComboBox()
+        item_name = item_name.lower()
         if item_name in self.hp_heal_items :
+            use_item_button = QPushButton("Heal Mainpokemon")
             global mainpokemon_name
-            self.MainPokemonList(comboBox)
-            use_item_button.clicked.connect(lambda: self.Check_Heal_Item(mainpokemon_name, item_name))
+            hp_heal = self.hp_heal_items[item_name]
+            use_item_button.clicked.connect(lambda: self.Check_Heal_Item(mainpokemon_name, hp_heal, item_name))
         elif item_name in self.fossil_pokemon:
-            self.GetPokemonList(comboBox)
-            fossil_id = self.fossil_pokemon[fossil_name]
+            fossil_id = self.fossil_pokemon[item_name]
+            fossil_pokemon_name = search_pokedex_by_id(fossil_id)
+            use_item_button = QPushButton(f"Evolve Fossil to {fossil_pokemon_name.capitalize()}")
+            fossilpoke_label = QLabel(f"{fossil_pokemon_name.capitalize()}")
+            fossilpoke_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            item_frame.addWidget(fossilpoke_label)
             use_item_button.clicked.connect(lambda: self.Evolve_Fossil(item_name, fossil_id))
         else:
+            use_item_button = QPushButton("Evolve Pokemon")
             use_item_button.clicked.connect(lambda: self.Check_Evo_Item(comboBox.currentText(), item_name))
+            comboBox = QComboBox()
             self.PokemonList(comboBox)
+            item_frame.addWidget(comboBox)
         item_frame.addWidget(use_item_button)
-        item_frame.addWidget(comboBox)
         item_frame_widget = QWidget()
         item_frame_widget.setLayout(item_frame)
 
@@ -6410,70 +6429,26 @@ class ItemWindow(QWidget):
         except:
             pass
     
-    def MainPokemonList(self, comboBox):
-        try:
-            with open(mainpokemon_path, "r") as json_file:
-                captured_pokemon_data = json.load(json_file)
-                if captured_pokemon_data:
-                    for pokemon in captured_pokemon_data:
-                        pokemon_name = pokemon['name']
-                        comboBox.addItem(f"{pokemon_name}")
-        except:
-            pass
-    
-    def GetPokemonList(self, comboBox):
-        try:
-            comboBox.addItem(f"Use Now")
-        except:
-            pass
-    
-    def Evolve_Fossil(self, item_name, fossil_idl):
+    def Evolve_Fossil(self, item_name, fossil_id):
         pass
 
-    def Check_Heal_Item(Self, pkmn_name, item_name):
-            item_name = item_name.lower()
-            if item_name == "potion" or "sweetheart" or "berrjuice":
-                global mainpokemon_hp, mainpokemon_stats, mainpokemon_level, mainpokemon_ev, mainpokemon_iv
-                mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
-                heal_points = 20
-            elif item_name == "sodapop":
-                heal_points = 50
-            elif item_name == "superpotion" or "energypowder":
-                heal_points = 60
-            elif item_name == "lemonade":
-                heal_points = 70
-            elif item_name == "moomoomilk":
-                heal_points = 100
-            elif item_name == "hyperpotion" or "energyroot":
-                heal_points = 120
-            elif item_name == "fullrestore" or "maxpotion":
+    def delete_item(self, item_name):
+        self.read_item_file()
+        if item_name in self.itembag_list:
+            self.itembag_list.remove(item_name)
+        self.write_item_file()
+        self.renewWidgets()
+
+    def Check_Heal_Item(self, pkmn_name, heal_points, item_name):
+            global mainpokemon_hp, mainpokemon_stats, mainpokemon_level, mainpokemon_ev, mainpokemon_iv
+            mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
+            if item_name == "fullrestore" or "maxpotion":
                 heal_points = mainpkmn_max_hp
             mainpokemon_hp += heal_points
             if mainpokemon_hp > (mainpkmn_max_hp + 1):
                 mainpokemon_hp = mainpkmn_max_hp
+            self.delete_item(item_name)
             showInfo(f"{pkmn_name} was healed for {heal_points}")
-    
-    def Check_Fossil_item(self, item_name):
-            item_name = item_name.lower()
-            if item_name == "potion" or "sweetheart" or "berrjuice":
-                global mainpokemon_hp, mainpokemon_stats, mainpokemon_level, mainpokemon_ev, mainpokemon_iv
-                mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
-                heal_points = 20
-            elif item_name == "sodapop":
-                heal_points = 50
-            elif item_name == "superpotion" or "energypowder":
-                heal_points = 60
-            elif item_name == "lemonade":
-                heal_points = 70
-            elif item_name == "moomoomilk":
-                heal_points = 100
-            elif item_name == "hyperpotion" or "energyroot":
-                heal_points = 120
-            elif item_name == "fullrestore" or "maxpotion":
-                heal_points = mainpkmn_max_hp
-            mainpokemon_hp += heal_points
-            if mainpokemon_hp > (mainpkmn_max_hp + 1):
-                mainpokemon_hp = mainpkmn_max_hp
 
     def Check_Evo_Item(self, pkmn_name, item_name):
         try:
@@ -6490,6 +6465,10 @@ class ItemWindow(QWidget):
                 showInfo("This Pokemon does not need this item.")
         except Exception as e:
             showWarning(f"{e}")
+    
+    def write_item_file(self):
+        with open(itembag_path, 'w') as json_file:
+            json.dump(self.itembag_list, json_file)
 
     def read_item_file(self):
         # Read the list from the JSON file
