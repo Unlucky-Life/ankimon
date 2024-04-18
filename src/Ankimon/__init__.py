@@ -109,7 +109,7 @@ icon_path = addon_dir / "addon_files" / "pokeball.png"
 sound_list_path = addon_dir / "addon_files" / "sound_list.json"
 badges_list_path = addon_dir / "addon_files" / "badges.json"
 items_list_path = addon_dir / "addon_files" / "items.json"
-rate_path = addon_dir / "rate_this.json"
+rate_path = addon_dir / "user_files" / "rate_this.json"
 
 with open(sound_list_path, 'r') as json_file:
     sound_list = json.load(json_file)
