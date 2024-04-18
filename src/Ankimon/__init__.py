@@ -1816,8 +1816,6 @@ def calculate_max_hp_wildpokemon():
 
 def new_pokemon():
     global name, id, level, hp, max_hp, ability, type, attacks, base_experience, stats, battlescene_file, ev, iv, gender, battle_status
-    
-    
     # new pokemon
     gender = None
     name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
@@ -2088,6 +2086,8 @@ def on_review_card(*args):
         reviewed_cards_count += 1
         card_counter += 1
         cry_counter += 1
+        dmg = 0
+        seconds = 0
         general_card_count_for_battle += 1
         if battle_sounds == True:
             if general_card_count_for_battle == 1:
@@ -2243,7 +2243,9 @@ def on_review_card(*args):
                             msg += f" {name.capitalize()} has fainted"
                     tooltipWithColour(msg, color)
                     if dmg > 0:
-                        seconds = 2
+                        seconds = 0.5
+                    else:
+                        seconds = 0
             else:
                 if pkmn_window is True:
                     test_window.display_pokemon_death()
@@ -4146,6 +4148,13 @@ Check out https://pokeapi.co/docs/v2#fairuse and https://github.com/smogon/pokem
 
 life_bar_injected = False
 
+def animate_pokemon():
+    seconds = 2
+    from aqt import mw
+    reviewer = mw.reviewer
+    reviewer.web = mw.reviewer.web
+    reviewer.web.eval(f'document.getElementById("PokeImage").style="animation: shake {seconds}s ease;"')
+   
 if database_complete != False and mainpokemon_empty is False:
     def reviewer_reset_life_bar_inject():
         global life_bar_injected
@@ -4501,9 +4510,6 @@ if database_complete != False and mainpokemon_empty is False:
                 75% {{ transform: translateX(-10px); }}
                 100% {{ transform: translateX(0); }}
             }}
-            #PokeImage {{
-                animation: shake {seconds}s ease;
-            }} 
             """
 
             # background-image: url('{pokemon_image_file}'); Change to your image path */
@@ -4526,7 +4532,7 @@ if database_complete != False and mainpokemon_empty is False:
             web_content.body += f'<div id="hp-display">HP: {hp}/{max_hp}</div>'
             # Inject a div element at the end of the body for the life bar
             image_base64 = get_image_as_base64(pokemon_image_file)
-            web_content.body += f'<div id="PokeImage"><img src="data:image/png;base64,{image_base64}" alt="PokeImage"></div>'
+            web_content.body += f'<div id="PokeImage"><img src="data:image/png;base64,{image_base64}" alt="PokeImage style="animation: shake 0s ease;"></div>'
             if show_mainpkmn_in_reviewer > 0:
                 image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
                 web_content.body += f'<div id="MyPokeImage"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage"></div>'
@@ -4600,7 +4606,6 @@ if database_complete != False and mainpokemon_empty is False:
             status_html = create_status_html(f"{battle_status}")
 
         # Refresh the reviewer content to apply the updated life bar
-        reviewer.web.eval('document.getElementById("PokeImage").style.animation')
         reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
         reviewer.web.eval('document.getElementById("life-bar").style.background = "linear-gradient(to right, ' + str(hp_color) + ', ' + str(hp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
         reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px rgba(' + str(hp_color) + ')";')
