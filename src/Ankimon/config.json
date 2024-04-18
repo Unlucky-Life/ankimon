@@ -9,7 +9,6 @@
   "gen8": true,
   "gen9": true,
   "language": 9,
-  "rate_this": false,
   "key_for_opening_closing_ankimon": "N",
   "cards_per_round": 2,
   "reviewer_image_gif": false,
@@ -25,5 +24,7 @@
   "xp_bar_location": 1,
   "ssh": true,
   "dmg_in_reviewer": false,
-  "show_mainpokemon_face_front_in_reviewer": true
+  "view_main_front": true,
+  "animate_time": true,
+  "gif_in_collection": false
 }
