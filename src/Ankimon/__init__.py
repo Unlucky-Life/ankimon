@@ -251,6 +251,7 @@ ssh = config["ssh"] #for eduroam users - false ; default: true
 dmg_in_reviewer = config["dmg_in_reviewer"] #default: false; true = mainpokemon is getting damaged in reviewer for false answers
 animate_time = config["animate_time"] #default: true; false = animate for 0.8 seconds
 view_main_front = config["view_main_front"] #default: true => -1; false = 1
+gif_in_collection = config["gif_in_collection"] #default: true => -1; false = 1
 
 if view_main_front is True and reviewer_image_gif is True:
     view_main_front = -1
@@ -2548,6 +2549,25 @@ def status_effect(stat, name, move, hp, slp_counter, stats, msg, acc):
 
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
+
+from PyQt6 import *
+from PyQt6.QtWidgets import QSplashScreen
+from PyQt6.QtGui import QMovie
+
+class MovieSplashLabel(QLabel):
+    def __init__(self, gif_path, parent=None):
+        super().__init__(parent)
+        self.movie = QMovie(gif_path)
+        self.movie.jumpToFrame(0)
+        self.setMovie(self.movie)
+        self.movie.frameChanged.connect(self.repaint)
+
+    def showEvent(self, event):
+        self.movie.start()
+
+    def hideEvent(self, event):
+        self.movie.stop()
+
 def ShowPokemonCollection():
     # Create the dialog
     window = QDialog(mw)
@@ -2575,7 +2595,7 @@ def ShowPokemonCollection():
 
     global mypokemon_path
     global pkmnimgfolder
-    global frontdefault
+    global frontdefault, user_path_sprites
     try:
         with (open(mypokemon_path, "r") as json_file):
             captured_pokemon_data = json.load(json_file)
@@ -2606,8 +2626,12 @@ def ShowPokemonCollection():
                     pokemon_ev = pokemon['ev']
                     pokemon_iv = pokemon['iv']
                     pokemon_description = search_pokeapi_db_by_id(pokemon_id, "description")
-                    pokemon_imagefile = f"{pokemon_id}.png"
-                    pixmap.load(str(frontdefault / pokemon_imagefile))
+                    if gif_in_collection is True:
+                        pkmn_image_path = str(user_path_sprites / "front_default_gif" / f"{pokemon_id}.gif")
+                        splash_label = MovieSplashLabel(pkmn_image_path)
+                    else:
+                        pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
+                    pixmap.load(pkmn_image_path)
 
                     # Calculate the new dimensions to maintain the aspect ratio
                     max_width = 300
@@ -2694,14 +2718,19 @@ def ShowPokemonCollection():
 
                     # Create a QVBoxLayout for the container
                     container_layout = QVBoxLayout()
-                    container_layout.addWidget(image_label)
+                    container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
+                    if gif_in_collection is True:
+                        container_layout.addWidget(splash_label)
+                        splash_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                    else:
+                        container_layout.addWidget(image_label)
+                        image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                     container_layout.addWidget(name_label)
                     container_layout.addWidget(level_label)
                     container_layout.addWidget(type_label)
                     container_layout.addWidget(ability_label)
                     container_layout.addWidget(pokemon_button)
                     container_layout.addWidget(choose_pokemon_button)
-                    image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                     type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                     name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                     level_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
