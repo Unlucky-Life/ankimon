@@ -2084,12 +2084,13 @@ reviewed_cards_count = 0
 general_card_count_for_battle = 0
 cry_counter = 0
 seconds = 0
+myseconds = 0
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
         global reviewed_cards_count, card_ratings_count, card_counter, general_card_count_for_battle, cry_counter, battle_sounds
         global hp, stats, type, battle_status, name, battle_stats, enemy_attacks, level
-        global pokemon_encounter, mainpokemon_hp, seconds, animate_time
+        global pokemon_encounter, mainpokemon_hp, seconds, myseconds, animate_time
         global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats
         global attack_counter
         global pkmn_window
@@ -2100,6 +2101,7 @@ def on_review_card(*args):
         cry_counter += 1
         dmg = 0
         seconds = 0
+        myseconds = 0
         general_card_count_for_battle += 1
         if battle_sounds == True:
             if general_card_count_for_battle == 1:
@@ -2179,6 +2181,10 @@ def on_review_card(*args):
                             if enemy_dmg == 0:
                                 enemy_dmg = 1
                             mainpokemon_hp -= enemy_dmg
+                            if enemy_dmg > 0:
+                                myseconds = animate_time
+                            else:
+                                myseconds = 0
                             msg += f" {enemy_dmg} dmg is dealt to {mainpokemon_name.capitalize()}."
                             if mainpokemon_hp < 1:
                                 msg += f"Your {mainpokemon_name} has been defeated and the wild {name} has fled!"
@@ -4166,6 +4172,8 @@ def animate_pokemon():
     reviewer = mw.reviewer
     reviewer.web = mw.reviewer.web
     reviewer.web.eval(f'document.getElementById("PokeImage").style="animation: shake {seconds}s ease;"')
+    if show_mainpkmn_in_reviewer is True:
+        reviewer.web.eval(f'document.getElementById("MyPokeImage").style="animation: shake {myseconds}s ease;"')
    
 if database_complete != False and mainpokemon_empty is False:
     def reviewer_reset_life_bar_inject():
@@ -4174,7 +4182,7 @@ if database_complete != False and mainpokemon_empty is False:
     def inject_life_bar(web_content, context):
         global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, icon_path
         global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
-        global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds, view_main_front
+        global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds, myseconds, view_main_front
         experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
@@ -4187,7 +4195,11 @@ if database_complete != False and mainpokemon_empty is False:
             pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
             if show_mainpkmn_in_reviewer > 0:
                 main_pkmn_imagefile = f'{mainpokemon_id}.gif'
-                main_pkmn_imagefile_path = os.path.join((user_path_sprites / "back_default_gif"), main_pkmn_imagefile)
+                if view_main_front == -1:
+                    gif_type = "front_default_gif" 
+                else:
+                    gif_type = "back_default_gif"
+                main_pkmn_imagefile_path = os.path.join((user_path_sprites / f"{gif_type}"), main_pkmn_imagefile)
         if show_mainpkmn_in_reviewer > 0:
             mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
             mainpkmn_hp_percent = int((mainpokemon_hp / mainpkmn_max_hp) * 50)
@@ -4555,7 +4567,7 @@ if database_complete != False and mainpokemon_empty is False:
             web_content.body += f'<div id="PokeImage"><img src="data:image/png;base64,{image_base64}" alt="PokeImage style="animation: shake 0s ease;"></div>'
             if show_mainpkmn_in_reviewer > 0:
                 image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
-                web_content.body += f'<div id="MyPokeImage"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage"></div>'
+                web_content.body += f'<div id="MyPokeImage"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage" style="animation: shake 0s ease;"></div>'
                 web_content.body += f'<div id="myname-display">{mainpokemon_name.capitalize()} LvL: {mainpokemon_level}</div>'
                 web_content.body += f'<div id="myhp-display">HP: {mainpokemon_hp}/{mainpkmn_max_hp}</div>'
                 # Inject a div element at the end of the body for the life bar
@@ -4570,7 +4582,7 @@ if database_complete != False and mainpokemon_empty is False:
 
     def update_life_bar(reviewer, card, ease):
         global hp, name, id, frontdefault, battle_status, user_path_sprites, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
-        global mainpokemon_level, icon_path, seconds
+        global mainpokemon_level, icon_path, seconds, myseconds, view_main_front
         pokeball = check_pokecoll_in_list(search_pokedex(name.lower(), "num"))
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
@@ -4583,7 +4595,11 @@ if database_complete != False and mainpokemon_empty is False:
             pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
             if show_mainpkmn_in_reviewer > 0:
                 main_pkmn_imagefile = f'{mainpokemon_id}.gif'
-                main_pkmn_imagefile_path = os.path.join((user_path_sprites / "back_default_gif"), main_pkmn_imagefile)
+                if view_main_front == -1:
+                    gif_type = "front_default_gif" 
+                else:
+                    gif_type = "back_default_gif"
+                main_pkmn_imagefile_path = os.path.join((user_path_sprites / f"{gif_type}"), main_pkmn_imagefile)
         if show_mainpkmn_in_reviewer > 0:
             mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
             mainpkmn_hp_percent = int((mainpokemon_hp / mainpkmn_max_hp) * 50)
@@ -4645,7 +4661,7 @@ if database_complete != False and mainpokemon_empty is False:
             reviewer.web.eval(f'document.getElementById("PokeIcon").innerHTML = `{pokeicon_html}`;')
         reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
         if show_mainpkmn_in_reviewer > 0:
-            new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage">'
+            new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage" style="animation: shake {myseconds}s ease;">'
             main_name_display_text = f"{mainpokemon_name.capitalize()} Lvl: {mainpokemon_level}"
             main_hp_display_text = f"HP: {mainpokemon_hp}/{mainpkmn_max_hp}"
             reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(mainpkmn_hp_percent) + '%";')
