@@ -249,6 +249,18 @@ hp_bar_config = config["hp_bar_config"] #2 = 8px, 3# 12px, 4# 16px, 5# 20px
 xp_bar_location = config["xp_bar_location"] #1 top, 2 = bottom
 ssh = config["ssh"] #for eduroam users - false ; default: true
 dmg_in_reviewer = config["dmg_in_reviewer"] #default: false; true = mainpokemon is getting damaged in reviewer for false answers
+animate_time = config["animate_time"] #default: true; false = animate for 0.8 seconds
+view_main_front = config["view_main_front"] #default: true => -1; false = 1
+
+if view_main_front is True and reviewer_image_gif is True:
+    view_main_front = -1
+else:
+    view_main_front = 1
+
+if animate_time is True:
+    animate_time = 0.8
+else:
+    animate_time = 0
 
 if xp_bar_location == 1:
     xp_bar_location = "top"
@@ -2077,7 +2089,7 @@ def on_review_card(*args):
     try:
         global reviewed_cards_count, card_ratings_count, card_counter, general_card_count_for_battle, cry_counter, battle_sounds
         global hp, stats, type, battle_status, name, battle_stats, enemy_attacks, level
-        global pokemon_encounter, mainpokemon_hp, seconds
+        global pokemon_encounter, mainpokemon_hp, seconds, animate_time
         global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats
         global attack_counter
         global pkmn_window
@@ -2243,7 +2255,7 @@ def on_review_card(*args):
                             msg += f" {name.capitalize()} has fainted"
                     tooltipWithColour(msg, color)
                     if dmg > 0:
-                        seconds = 0.5
+                        seconds = animate_time
                     else:
                         seconds = 0
             else:
@@ -4162,7 +4174,7 @@ if database_complete != False and mainpokemon_empty is False:
     def inject_life_bar(web_content, context):
         global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, icon_path
         global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
-        global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds
+        global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds, view_main_front
         experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
@@ -4308,11 +4320,12 @@ if database_complete != False and mainpokemon_empty is False:
                 #MyPokeImage {{
                     position: fixed;
                     bottom: {50 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
-                    left: 3px;
+                    left: 15px;
                     z-index: 9999;
-                    width: 100px; /* Adjust as needed */
-                    height: 100px; /* Adjust as needed */
-                    background-size: cover; /* Cover the div area with the image */
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    background-position: bottom;
+                    transform: scaleX({view_main_front});
                 }}
                 #hp-display {{
                 position: fixed;
@@ -4416,9 +4429,10 @@ if database_complete != False and mainpokemon_empty is False:
                     bottom: {50 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
                     left: 3px;
                     z-index: 9999;
-                    width: 100px; /* Adjust as needed */
-                    height: 100px; /* Adjust as needed */
-                    background-size: cover; /* Cover the div area with the image */
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    background-position: bottom;
+                    transform: scaleX({view_main_front});
                 }}
                 #hp-display {{
                 position: fixed;
@@ -4504,11 +4518,17 @@ if database_complete != False and mainpokemon_empty is False:
                 """
             css += f"""
             @keyframes shake {{
-                0% {{ transform: translateX(0); }}
-                25% {{ transform: translateX(-10px); }}
-                50% {{ transform: translateX(10px); }}
-                75% {{ transform: translateX(-10px); }}
-                100% {{ transform: translateX(0); }}
+                0% {{ transform: translateX(0) rotateZ(0); filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5)); }}
+                10% {{ transform: translateX(-10%) rotateZ(-5deg); }}
+                20% {{ transform: translateX(10%) rotateZ(5deg); }}
+                30% {{ transform: translateX(-10%) rotateZ(-5deg); }}
+                40% {{ transform: translateX(10%) rotateZ(5deg); }}
+                50% {{ transform: translateX(-10%) rotateZ(-5deg); }}
+                60% {{ transform: translateX(10%) rotateZ(5deg); }}
+                70% {{ transform: translateX(-10%) rotateZ(-5deg); }}
+                80% {{ transform: translateX(10%) rotateZ(5deg); }}
+                90% {{ transform: translateX(-10%) rotateZ(-5deg); }}
+                100% {{ transform: translateX(100vw); filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5)); }}
             }}
             """
 
