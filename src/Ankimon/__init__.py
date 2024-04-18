@@ -4711,6 +4711,73 @@ def choose_pokemon(starter_name):
 
     starter_window.display_chosen_starter_pokemon(starter_name)
 
+def save_outside_pokemon(pokemon_name, pokemon_id):
+    global mypokemon_path, addon_dir, mainpokemon_path
+    # Create a dictionary to store the Pokémon's data
+    # add all new values like hp as max_hp, evolution_data, description and growth rate
+    name = search_pokedex_by_id(pokemon_id)
+    id = pokemon_id
+    stats = search_pokedex(name, "baseStats")
+    abilities = search_pokedex(name, "abilities")
+    evos = search_pokedex(name, "evos")
+    gender = pick_random_gender(name.lower())
+    numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
+    # Check if there are numeric abilities
+    if numeric_abilities:
+        # Convert the filtered abilities dictionary values to a list
+        abilities_list = list(numeric_abilities.values())
+        # Select a random ability from the list
+        ability = random.choice(abilities_list)
+    else:
+        # Set to "No Ability" if there are no numeric abilities
+        ability = "No Ability"
+    type = search_pokedex(name, "types")
+    name = search_pokedex(name, "name")
+    global pokeapi_db_path
+    generation_file = "pokeapi_db.json"
+    growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
+    base_experience = search_pokeapi_db_by_id(id, "base_experience")
+    description= search_pokeapi_db_by_id(id, "description")
+    level = 5
+    attacks = get_random_moves_for_pokemon(name, level)
+    stats["xp"] = 0
+    ev = {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0
+    }
+    caught_pokemon = {
+        "name": name,
+        "gender": gender,
+        "level": level,
+        "id": id,
+        "ability": ability,
+        "type": type,
+        "stats": stats,
+        "ev": ev,
+        "iv": iv,
+        "attacks": attacks,
+        "base_experience": base_experience,
+        "current_hp": calculate_hp(int(stats["hp"]), level, ev, iv),
+        "growth_rate": growth_rate,
+        "evos": evos
+    }
+    # Load existing Pokémon data if it exists
+    if mypokemon_path.is_file():
+        with open(mypokemon_path, "r") as json_file:
+            caught_pokemon_data = json.load(json_file)
+    else:
+        caught_pokemon_data = []
+
+    # Append the caught Pokémon's data to the list
+    caught_pokemon_data.append(caught_pokemon)
+    # Save the caught Pokémon's data to a JSON file
+    with open(str(mypokemon_path), "w") as json_file:
+        json.dump(caught_pokemon_data, json_file, indent=2)
+
 def export_to_pkmn_showdown():
     global mainpokemon_level, mainpokemon_type, mainpokemon_name, mainpokemon_stats, mainpokemon_attacks, mainpokemon_ability, mainpokemon_iv, mainpokemon_ev, mainpokemon_gender
     # Create a main window
@@ -6489,7 +6556,9 @@ class ItemWindow(QWidget):
     
     def Evolve_Fossil(self, item_name, fossil_id, fossil_poke_name):
         starter_window.display_fossil_pokemon(fossil_id, fossil_poke_name)
+        save_outside_pokemon(fossil_poke_name, fossil_id)
         self.delete_item(item_name)
+
 
     def delete_item(self, item_name):
         self.read_item_file()
