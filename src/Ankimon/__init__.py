@@ -5682,7 +5682,7 @@ class StarterWindow(QWidget):
         self.setStyleSheet("background-color: rgb(14,14,14);")
         self.setLayout(layout)
         self.show()
-
+        
     def display_chosen_starter_pokemon(self, starter_name):
         self.clear_layout(self.layout())
         layout = self.layout()
@@ -5700,6 +5700,24 @@ class StarterWindow(QWidget):
         if check is False:
             receive_badge(7,achievements)
             test_window.display_badge(7)
+    
+    def display_fossil_pokemon(self, fossil_id, fossil_name):
+        self.clear_layout(self.layout())
+        layout = self.layout()
+        fossil_label = self.pokemon_display_fossil_pokemon(fossil_id, fossil_name)
+        layout.addWidget(fossil_label)
+        self.setStyleSheet("background-color: rgb(14,14,14);")
+        self.setLayout(layout)
+        self.setMaximumWidth(512)
+        self.setMaximumHeight(340)
+        self.show()
+        self.starter = True
+        showInfo("You have received your Fossil Pokemon ! \n You can now close this window !")
+        global achievments
+        check = check_for_badge(achievements,19)
+        if check is False:
+            receive_badge(19,achievements)
+            test_window.display_badge(19)
 
     def pokemon_display_starter_buttons(self, water_start, fire_start, grass_start):
         # Create buttons for catching and killing the Pokémon
@@ -5842,6 +5860,49 @@ class StarterWindow(QWidget):
         starter_label.setPixmap(merged_pixmap)
 
         return starter_label
+    
+    def pokemon_display_fossil_pokemon(self, fossil_id, fossil_name):
+        global pokemon_encounter
+        global addon_dir
+        global frontdefault
+        bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
+        id = fossil_id
+
+        # Load the background image
+        pixmap_bckg = QPixmap()
+        pixmap_bckg.load(str(bckgimage_path))
+
+        # Display the Pokémon image
+        image_path = frontdefault / f"{id}.png"
+        image_label = QLabel()
+        image_pixmap = QPixmap()
+        image_pixmap.load(str(image_path))
+        image_pixmap = resize_pixmap_img(image_pixmap, 250)
+
+        # Merge the background image and the Pokémon image
+        merged_pixmap = QPixmap(pixmap_bckg.size())
+        #merged_pixmap.fill(Qt.transparent)
+        merged_pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
+        # merge both images together
+        painter = QPainter(merged_pixmap)
+        # draw background to a specific pixel
+        painter.drawPixmap(0, 0, pixmap_bckg)
+        painter.drawPixmap(125,10,image_pixmap)
+
+        # custom font
+        custom_font = load_custom_font(32)
+        message_box_text = f"{(fossil_name).capitalize()} was brought to life !"
+        # Draw the text on top of the image
+        # Adjust the font size as needed
+        painter.setFont(custom_font)
+        painter.setPen(QColor(255,255,255))  # Text color
+        painter.drawText(40, 290, message_box_text)
+        painter.end()
+        # Set the merged image as the pixmap for the QLabel
+        fossil_label = QLabel()
+        fossil_label.setPixmap(merged_pixmap)
+
+        return fossil_label
 
 class EvoWindow(QWidget):
     def __init__(self):
@@ -6402,10 +6463,7 @@ class ItemWindow(QWidget):
             fossil_id = self.fossil_pokemon[item_name]
             fossil_pokemon_name = search_pokedex_by_id(fossil_id)
             use_item_button = QPushButton(f"Evolve Fossil to {fossil_pokemon_name.capitalize()}")
-            fossilpoke_label = QLabel(f"{fossil_pokemon_name.capitalize()}")
-            fossilpoke_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            item_frame.addWidget(fossilpoke_label)
-            use_item_button.clicked.connect(lambda: self.Evolve_Fossil(item_name, fossil_id))
+            use_item_button.clicked.connect(lambda: self.Evolve_Fossil(item_name, fossil_id, fossil_pokemon_name))
         else:
             use_item_button = QPushButton("Evolve Pokemon")
             use_item_button.clicked.connect(lambda: self.Check_Evo_Item(comboBox.currentText(), item_name))
@@ -6429,8 +6487,9 @@ class ItemWindow(QWidget):
         except:
             pass
     
-    def Evolve_Fossil(self, item_name, fossil_id):
-        pass
+    def Evolve_Fossil(self, item_name, fossil_id, fossil_poke_name):
+        starter_window.display_fossil_pokemon(fossil_id, fossil_poke_name)
+        self.delete_item(item_name)
 
     def delete_item(self, item_name):
         self.read_item_file()
@@ -6440,15 +6499,20 @@ class ItemWindow(QWidget):
         self.renewWidgets()
 
     def Check_Heal_Item(self, pkmn_name, heal_points, item_name):
-            global mainpokemon_hp, mainpokemon_stats, mainpokemon_level, mainpokemon_ev, mainpokemon_iv
-            mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
-            if item_name == "fullrestore" or "maxpotion":
-                heal_points = mainpkmn_max_hp
-            mainpokemon_hp += heal_points
-            if mainpokemon_hp > (mainpkmn_max_hp + 1):
-                mainpokemon_hp = mainpkmn_max_hp
-            self.delete_item(item_name)
-            showInfo(f"{pkmn_name} was healed for {heal_points}")
+        global achievments
+        check = check_for_badge(achievements,20)
+        if check is False:
+            receive_badge(20,achievements)
+            test_window.display_badge(20)
+        global mainpokemon_hp, mainpokemon_stats, mainpokemon_level, mainpokemon_ev, mainpokemon_iv
+        mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
+        if item_name == "fullrestore" or "maxpotion":
+            heal_points = mainpkmn_max_hp
+        mainpokemon_hp += heal_points
+        if mainpokemon_hp > (mainpkmn_max_hp + 1):
+            mainpokemon_hp = mainpkmn_max_hp
+        self.delete_item(item_name)
+        showInfo(f"{pkmn_name} was healed for {heal_points}")
 
     def Check_Evo_Item(self, pkmn_name, item_name):
         try:
