@@ -294,132 +294,126 @@ def test_online_connectivity(url='http://www.google.com', timeout=5):
 
 online_connectivity = test_online_connectivity()
 
-system_name = "Linux"
+if ssh != False:
+    # Function to check if the content of the two files is the same
+    def compare_files(local_content, github_content):
+        return local_content == github_content
 
-if system_name != "Linux":
-    if ssh != False:
-        # Function to check if the content of the two files is the same
-        def compare_files(local_content, github_content):
-            return local_content == github_content
+    # Function to read the content of the local file
+    def read_local_file(file_path):
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                return file.read()
+        except FileNotFoundError:
+            return None
 
-        # Function to read the content of the local file
-        def read_local_file(file_path):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as file:
-                    return file.read()
-            except FileNotFoundError:
-                return None
+    # Function to write content to a local file
+    def write_local_file(file_path, content):
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(content)
 
-        # Function to write content to a local file
-        def write_local_file(file_path, content):
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.write(content)
-
-        # Function to check if the file exists on GitHub and read its content
-        def read_github_file(url):
-            response = requests.get(url)
-                
-            if response.status_code == 200:
-                # File exists, parse the Markdown content
-                content = response.text
-                html_content = markdown.markdown(content)
-                return content, html_content
-            else:
-                return None, None
+    # Function to check if the file exists on GitHub and read its content
+    def read_github_file(url):
+        response = requests.get(url)
             
-        showInfo("function running")
+        if response.status_code == 200:
+            # File exists, parse the Markdown content
+            content = response.text
+            html_content = markdown.markdown(content)
+            return content, html_content
+        else:
+            return None, None
+        
+    showInfo("function running")
 
 if online_connectivity != False:
-    if system_name != "Linux":
-        if ssh != False:
-            import markdown
-
-            # Custom Dialog class
-            class UpdateNotificationWindow(QDialog):
-                def __init__(self, content):
-                    super().__init__()
-                    global icon_path
-                    self.setWindowTitle("Ankimon Notifications")
-                    self.setGeometry(100, 100, 600, 400)
-
-                    layout = QVBoxLayout()
-                    self.text_edit = QTextEdit()
-                    self.text_edit.setReadOnly(True)
-                    self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-                    self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
-                    self.text_edit.setHtml(content)
-                    layout.addWidget(self.text_edit)
-                    self.setWindowIcon(QIcon(str(icon_path)))
-
-                    self.setLayout(layout)
-
-            # URL of the file on GitHub
-            github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
-            # Path to the local file
-            local_file_path = addon_dir / "updateinfos.md"
-            # Read content from GitHub
-            github_content, github_html_content = read_github_file(github_url)
-            # Read content from the local file
-            local_content = read_local_file(local_file_path)
-            # If local content exists and is the same as GitHub content, do not open dialog
-            if local_content is not None and compare_files(local_content, github_content):
-                pass
-            else:
-                # Download new content from GitHub
-                if github_content is not None:
-                    # Write new content to the local file
-                    write_local_file(local_file_path, github_content)
-                    dialog = UpdateNotificationWindow(github_html_content)
-                    dialog.exec()
-                else:
-                    showWarning("Failed to retrieve Ankimon content from GitHub.")
-
-if system_name != "Linux":
     if ssh != False:
-        ##HelpGuide
-        class HelpWindow(QDialog):
-            def __init__(self):
-                    super().__init__()
-                    html_content = " "
-                    global icon_path
-                    if online_connectivity != False:
-                        # URL of the file on GitHub
-                        help_github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/HelpInfos.html"
-                        # Path to the local file
-                        help_local_file_path = addon_dir / "HelpInfos.html"
-                        local_content = read_local_file(help_local_file_path)
-                        # Read content from GitHub
-                        github_content, github_html_content = read_github_file(help_github_url)
-                        if local_content is not None and compare_files(local_content, github_content):
-                            html_content = github_html_content
-                        else: 
-                            # Download new content from GitHub
-                            if github_content is not None:
-                                # Write new content to the local file
-                                write_local_file(help_local_file_path, github_content)
-                                html_content = github_html_content
-                    else:
-                        local_content = read_local_file(help_local_file_path)
-                        html_content = local_content
+        import markdown
 
-                    self.setWindowTitle("Ankimon HelpGuide")
-                    self.setGeometry(100, 100, 600, 400)
+        # Custom Dialog class
+        class UpdateNotificationWindow(QDialog):
+            def __init__(self, content):
+                super().__init__()
+                global icon_path
+                self.setWindowTitle("Ankimon Notifications")
+                self.setGeometry(100, 100, 600, 400)
 
-                    layout = QVBoxLayout()
-                    self.text_edit = QTextEdit()
-                    self.text_edit.setReadOnly(True)
-                    self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-                    self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-                    self.text_edit.setHtml(html_content)
-                    layout.addWidget(self.text_edit)
-                    self.setWindowIcon(QIcon(str(icon_path)))
-                    self.setLayout(layout)
+                layout = QVBoxLayout()
+                self.text_edit = QTextEdit()
+                self.text_edit.setReadOnly(True)
+                self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+                self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
+                self.text_edit.setHtml(content)
+                layout.addWidget(self.text_edit)
+                self.setWindowIcon(QIcon(str(icon_path)))
+
+                self.setLayout(layout)
+
+        # URL of the file on GitHub
+        github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
+        # Path to the local file
+        local_file_path = addon_dir / "updateinfos.md"
+        # Read content from GitHub
+        github_content, github_html_content = read_github_file(github_url)
+        # Read content from the local file
+        local_content = read_local_file(local_file_path)
+        # If local content exists and is the same as GitHub content, do not open dialog
+        if local_content is not None and compare_files(local_content, github_content):
+            pass
+        else:
+            # Download new content from GitHub
+            if github_content is not None:
+                # Write new content to the local file
+                write_local_file(local_file_path, github_content)
+                dialog = UpdateNotificationWindow(github_html_content)
+                dialog.exec()
+            else:
+                showWarning("Failed to retrieve Ankimon content from GitHub.")
+
+if ssh != False:
+    ##HelpGuide
+    class HelpWindow(QDialog):
+        def __init__(self):
+            super().__init__()
+            html_content = " "
+            global icon_path
+            if online_connectivity != False:
+                # URL of the file on GitHub
+                help_github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/HelpInfos.html"
+                # Path to the local file
+                help_local_file_path = addon_dir / "HelpInfos.html"
+                local_content = read_local_file(help_local_file_path)
+                # Read content from GitHub
+                github_content, github_html_content = read_github_file(help_github_url)
+                if local_content is not None and compare_files(local_content, github_content):
+                    html_content = github_html_content
+                else: 
+                    # Download new content from GitHub
+                    if github_content is not None:
+                        # Write new content to the local file
+                        write_local_file(help_local_file_path, github_content)
+                        html_content = github_html_content
+            else:
+                local_content = read_local_file(help_local_file_path)
+                html_content = local_content
+
+            self.setWindowTitle("Ankimon HelpGuide")
+            self.setGeometry(100, 100, 600, 400)
+
+            layout = QVBoxLayout()
+            self.text_edit = QTextEdit()
+            self.text_edit.setReadOnly(True)
+            self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+            self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            self.text_edit.setHtml(html_content)
+            layout.addWidget(self.text_edit)
+            self.setWindowIcon(QIcon(str(icon_path)))
+            self.setLayout(layout)
             
 def open_help_window():
-    if system_name != "Linux":
-        if ssh != False:
-            help_dialog = HelpWindow()
-            help_dialog.exec()
+    if ssh != False:
+        help_dialog = HelpWindow()
+        help_dialog.exec()
         
 try:
     from aqt.sound import av_player
