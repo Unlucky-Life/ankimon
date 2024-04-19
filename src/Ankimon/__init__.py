@@ -324,8 +324,6 @@ if ssh != False:
         else:
             return None, None
         
-    showInfo("function running")
-
 if online_connectivity != False:
     if ssh != False:
         import markdown
