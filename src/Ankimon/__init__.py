@@ -2804,7 +2804,7 @@ def rename_pkmn(nickname, pkmn_name):
         showWarning(f"An error occured: {e}")
 
 def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname):
-    global frontdefault, type_style_file, language, icon_path
+    global frontdefault, type_style_file, language, icon_path, gif_in_collection
     # Create the dialog
     try:
         lang_name = get_pokemon_diff_lang_name(int(id)).capitalize()
@@ -2824,13 +2824,23 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         typelayout = QHBoxLayout()
         attackslayout = QVBoxLayout()
         # Display the Pokémon image
-        pkmnimage_file = f"{search_pokedex(name.lower(), 'num')}.png"
-        pkmnimage_path = frontdefault / pkmnimage_file
-        typeimage_file = f"{type[0]}.png"
-        typeimage_path = addon_dir / "addon_sprites" / "Types" / typeimage_file
         pkmnimage_label = QLabel()
         pkmnpixmap = QPixmap()
-        pkmnpixmap.load(str(pkmnimage_path))
+        if gif_in_collection is True:
+            pkmnimage_path = str(user_path_sprites / "front_default_gif" / f"{int(id)}.gif")
+            pkmnimage_label = MovieSplashLabel(pkmnimage_path)
+        else:
+            pkmnimage_path = str(frontdefault / f"{int(id)}.png")
+            pkmnpixmap.load(str(pkmnimage_path))
+            # Calculate the new dimensions to maintain the aspect ratio
+            max_width = 150
+            original_width = pkmnpixmap.width()
+            original_height = pkmnpixmap.height()
+            new_width = max_width
+            new_height = (original_height * max_width) // original_width
+            pkmnpixmap = pkmnpixmap.scaled(new_width, new_height)
+        typeimage_file = f"{type[0]}.png"
+        typeimage_path = addon_dir / "addon_sprites" / "Types" / typeimage_file
         pkmntype_label = QLabel()
         pkmntypepixmap = QPixmap()
         pkmntypepixmap.load(str(typeimage_path))
@@ -2840,13 +2850,7 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
             pkmntype_label2 = QLabel()
             pkmntypepixmap2 = QPixmap()
             pkmntypepixmap2.load(str(typeimage_path2))
-        # Calculate the new dimensions to maintain the aspect ratio
-        max_width = 150
-        original_width = pkmnpixmap.width()
-        original_height = pkmnpixmap.height()
-        new_width = max_width
-        new_height = (original_height * max_width) // original_width
-        pkmnpixmap = pkmnpixmap.scaled(new_width, new_height)
+        
 
         # Create a painter to add text on top of the image
         painter2 = QPainter(pkmnpixmap)
@@ -2946,7 +2950,8 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         #stats_label = QLabel(stats_txt)
 
         # Set the merged image as the pixmap for the QLabel
-        pkmnimage_label.setPixmap(pkmnpixmap)
+        if gif_in_collection is False:
+            pkmnimage_label.setPixmap(pkmnpixmap)
         # Set the merged image as the pixmap for the QLabel
         pkmntype_label.setPixmap(pkmntypepixmap)
         if len(type) > 1:
