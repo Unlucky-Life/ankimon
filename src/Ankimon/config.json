@@ -26,5 +26,6 @@
   "dmg_in_reviewer": false,
   "view_main_front": true,
   "animate_time": true,
-  "gif_in_collection": false
+  "gif_in_collection": false,
+  "sound_effects": false
 }
