@@ -111,6 +111,14 @@ badges_list_path = addon_dir / "addon_files" / "badges.json"
 items_list_path = addon_dir / "addon_files" / "items.json"
 rate_path = addon_dir / "user_files" / "rate_this.json"
 
+#effect sounds paths
+hurt_normal_sound_path = addon_dir / "addon_sprites" / "sounds" / "HurtNormal.mp3"
+hurt_noteff_sound_path = addon_dir / "addon_sprites" / "sounds" / "HurtNotEffective.mp3"
+hurt_supereff_sound_path = addon_dir / "addon_sprites" / "sounds" / "HurtSuper.mp3"
+ownhplow_sound_path = addon_dir / "addon_sprites" / "sounds" / "OwnHpLow.mp3"
+hpheal_sound_path = addon_dir / "addon_sprites" / "sounds" / "HpHeal.mp3"
+fainted_sound_path = addon_dir / "addon_sprites" / "sounds" / "Fainted.mp3"
+
 with open(sound_list_path, 'r') as json_file:
     sound_list = json.load(json_file)
 
@@ -252,6 +260,7 @@ dmg_in_reviewer = config["dmg_in_reviewer"] #default: false; true = mainpokemon 
 animate_time = config["animate_time"] #default: true; false = animate for 0.8 seconds
 view_main_front = config["view_main_front"] #default: true => -1; false = 1
 gif_in_collection = config["gif_in_collection"] #default: true => -1; false = 1
+sound_effects = config["sound_effects"] #default: false; true = sound_effects on
 
 if view_main_front is True and reviewer_image_gif is True:
     view_main_front = -1
@@ -422,9 +431,45 @@ except (ImportError, ModuleNotFoundError):
     from anki.sound import play as legacy_play
     av_player = None
 
+def play_effect_sound(sound_type):
+    global effect_sound_timer, sound_effects, hurt_normal_sound_path, hurt_noteff_sound_path, hurt_supereff_sound_path, ownhplow_sound_path, hpheal_sound_path, fainted_sound_path
+    pass
+    if sound_effects is True:
+        if sound_type == "HurtNotEffective":
+            audio_path = hurt_noteff_sound_path
+        elif sound_type == "HurtNormal":
+            audio_path = hurt_normal_sound_path
+        elif sound_type == "HurtSuper":
+            audio_path = hurt_supereff_sound_path
+        elif sound_type == "OwnHpLow":
+            audio_path = ownhplow_sound_path
+        elif sound_type == "HpHeal":
+            audio_path = hpheal_sound_path
+        elif sound_type == "Fainted":
+            audio_path = fainted_sound_path
+
+        if not audio_path.is_file():
+            return
+
+        audio_path = str(audio_path)
+
+        if av_player:
+            av_player.play_file(filename=audio_path)
+        elif legacy_play:
+            legacy_play(audio_path)
+        else:
+            pass
+	     #showWarning("No suitable audio player found in Anki.")
+                
+        # Disconnect the timer's timeout signal to prevent further plays
+        try:
+            effect_sound_timer.timeout.disconnect(play_effect_sound)
+        except TypeError:
+            pass  # Do nothing if the signal was not connected
+
 # Function to play the sound
 def play_sound():
-    global timer, sounds
+    global cry_sound_timer, sounds
     pass
     if sounds is True:
         global name, sound_list
@@ -446,21 +491,19 @@ def play_sound():
                 
         # Disconnect the timer's timeout signal to prevent further plays
         try:
-            timer.timeout.disconnect(play_sound)
+            cry_sound_timer.timeout.disconnect(play_sound)
         except TypeError:
             pass  # Do nothing if the signal was not connected
 
 if sounds == True:    
     # Create a QTimer
-    timer = QTimer()
-
+    cry_sound_timer = QTimer()
     # Connect the timer's timeout signal to the play_sound function
-    timer.timeout.connect(play_sound)
+    cry_sound_timer.timeout.connect(play_sound)
 
-    #def play_pokemon_cry():
-        #play_sound()
-
-    #gui_hooks.reviewer_will_end.append(play_pokemon_cry)
+if sound_effects == True:
+    effect_sound_timer = QTimer()
+    effect_sound_timer.timeout.connect(play_effect_sound)
 
 gen_ids = {
     "gen_1": 151,
@@ -2176,11 +2219,14 @@ def on_review_card(*args):
                             mainpokemon_hp -= enemy_dmg
                             if enemy_dmg > 0:
                                 myseconds = animate_time
+                                if multiplier < 1:
+                                    play_effect_sound("HurtNormal")
                             else:
                                 myseconds = 0
                             msg += f" {enemy_dmg} dmg is dealt to {mainpokemon_name.capitalize()}."
                             if mainpokemon_hp < 1:
                                 msg += f"Your {mainpokemon_name} has been defeated and the wild {name} has fled!"
+                                play_effect_sound("Fainted")
                                 new_pokemon()
                 
             # If 10 or more cards have been reviewed, show the random Pokémon
@@ -2255,6 +2301,12 @@ def on_review_card(*args):
                     tooltipWithColour(msg, color)
                     if dmg > 0:
                         seconds = animate_time
+                        if multiplier == 1:
+                            play_effect_sound("HurtNormal")
+                        elif multiplier < 1:
+                            play_effect_sound("HurtNotEffective")
+                        elif multiplier > 1:
+                            play_effect_sound("HurtSuper")
                     else:
                         seconds = 0
             else:
@@ -6648,6 +6700,7 @@ class ItemWindow(QWidget):
         if mainpokemon_hp > (mainpkmn_max_hp + 1):
             mainpokemon_hp = mainpkmn_max_hp
         self.delete_item(item_name)
+        play_effect_sound("HpHeal")
         showInfo(f"{pkmn_name} was healed for {heal_points}")
 
     def Check_Evo_Item(self, pkmn_name, item_name):
