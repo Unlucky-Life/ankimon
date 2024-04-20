@@ -5086,6 +5086,13 @@ def open_team_builder():
     # Open the Team Builder in the default web browser
     QDesktopServices.openUrl(QUrl(team_builder_url))
 
+def rate_addon_url():
+    # Specify the URL of the Pokémon Showdown Team Builder
+    rating_url = "https://ankiweb.net/shared/review/1908235722"
+
+    # Open the Team Builder in the default web browser
+    QDesktopServices.openUrl(QUrl(rating_url))
+
 #def no_hp():
     #if main_window is not None:
         #main_window.death_window()
@@ -6982,7 +6989,7 @@ test_action16.triggered.connect(report_bug)
 mw.pokemenu.addAction(test_action16)
 
 rate_action = QAction("Rate This", mw)
-rate_action.triggered.connect(rate_this_addon)
+rate_action.triggered.connect(rate_addon_url)
 mw.pokemenu.addAction(rate_action)
 
     #https://goo.gl/uhAxsg
