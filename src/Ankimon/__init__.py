@@ -431,10 +431,16 @@ except (ImportError, ModuleNotFoundError):
     from anki.sound import play as legacy_play
     av_player = None
 
+from aqt import mw
+from anki.hooks import addHook
+import anki.sound
+
+from anki.cards import Card
 def play_effect_sound(sound_type):
     global effect_sound_timer, sound_effects, hurt_normal_sound_path, hurt_noteff_sound_path, hurt_supereff_sound_path, ownhplow_sound_path, hpheal_sound_path, fainted_sound_path
-    pass
-    if sound_effects is True:
+    
+    if sound_effects:
+        audio_path = None
         if sound_type == "HurtNotEffective":
             audio_path = hurt_noteff_sound_path
         elif sound_type == "HurtNormal":
@@ -455,17 +461,21 @@ def play_effect_sound(sound_type):
 
         if av_player:
             av_player.play_file(filename=audio_path)
+            # Disconnect the timer's timeout signal to prevent further plays
+            try:
+                effect_sound_timer.timeout.disconnect(play_sound)
+            except TypeError:
+                pass  # Do nothing if the signal was not connected
         elif legacy_play:
             legacy_play(audio_path)
+            # Disconnect the timer's timeout signal to prevent further plays
+            try:
+                effect_sound_timer.timeout.disconnect(play_sound)
+            except TypeError:
+                pass  # Do nothing if the signal was not connected
         else:
             pass
-	     #showWarning("No suitable audio player found in Anki.")
-                
-        # Disconnect the timer's timeout signal to prevent further plays
-        try:
-            effect_sound_timer.timeout.disconnect(play_effect_sound)
-        except TypeError:
-            pass  # Do nothing if the signal was not connected
+	     #showWarning("No suitable audio player found in Anki."
 
 # Function to play the sound
 def play_sound():
