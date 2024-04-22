@@ -5739,8 +5739,13 @@ def rate_this_addon():
                     json.dump(itembag_list, json_file)
 
         rate_button.clicked.connect(rate_this_button)
+        support_button = QPushButton("Support the Author")
+        def support_button_click():
+            support_url = "https://ko-fi.com/unlucky99"
+            QDesktopServices.openUrl(QUrl(support_url))
+        support_button.clicked.connect(support_button_click)
         rate_layout.addWidget(rate_button)
-        
+        rate_layout.addWidget(support_button)
         rate_window.exec()
 
 if database_complete is True:
@@ -6887,16 +6892,6 @@ def report_bug():
     # Open the Team Builder in the default web browser
     QDesktopServices.openUrl(QUrl(bug_url))
 
-def play_sound_test():
-    from . import playsound
-    try:            
-        sound_path = os.path.join(addon_dir, "addon_sprites", "sounds", "Fainted.mp3")
-        playsound.playsound(sound_path)
-
-    except Exception as e:
-        showWarning(f"{e}")
-# Hook the function to a relevant event in Anki, for example, when a card is shown
-
 achievement_bag = AchievementWindow()
 
 #buttonlayout
@@ -6967,10 +6962,6 @@ mw.pokemenu.addAction(test_action16)
 rate_action = QAction("Rate This", mw)
 rate_action.triggered.connect(rate_addon_url)
 mw.pokemenu.addAction(rate_action)
-
-sound_action = QAction("Test", mw)
-sound_action.triggered.connect(play_sound_test)
-mw.pokemenu.addAction(sound_action)
 
     #https://goo.gl/uhAxsg
     #https://www.reddit.com/r/PokemonROMhacks/comments/9xgl7j/pokemon_sound_effects_collection_over_3200_sfx/
