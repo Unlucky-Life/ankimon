@@ -48,6 +48,8 @@ from anki.collection import Collection
 import csv
 import time, wave
 import platform
+from . import playsound #function to import sound_lib
+
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
@@ -431,11 +433,6 @@ except (ImportError, ModuleNotFoundError):
     from anki.sound import play as legacy_play
     av_player = None
 
-from aqt import mw
-from anki.hooks import addHook
-import anki.sound
-
-from anki.cards import Card
 def play_effect_sound(sound_type):
     global effect_sound_timer, sound_effects, hurt_normal_sound_path, hurt_noteff_sound_path, hurt_supereff_sound_path, ownhplow_sound_path, hpheal_sound_path, fainted_sound_path
     
@@ -456,60 +453,19 @@ def play_effect_sound(sound_type):
 
         if not audio_path.is_file():
             return
+        else:   
+            audio_path = str(audio_path)
+            threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
 
-        audio_path = str(audio_path)
-
-        if av_player:
-            av_player.play_file(filename=audio_path)
-            # Disconnect the timer's timeout signal to prevent further plays
-            try:
-                effect_sound_timer.timeout.disconnect(play_sound)
-            except TypeError:
-                pass  # Do nothing if the signal was not connected
-        elif legacy_play:
-            legacy_play(audio_path)
-            # Disconnect the timer's timeout signal to prevent further plays
-            try:
-                effect_sound_timer.timeout.disconnect(play_sound)
-            except TypeError:
-                pass  # Do nothing if the signal was not connected
-        else:
-            pass
-	     #showWarning("No suitable audio player found in Anki."
-
-# Function to play the sound
 def play_sound():
-    global cry_sound_timer, sounds
-    pass
-    if sounds is True:
-        global name, sound_list
-        # Check if the sound should play
+    global sounds
+    if sounds:
+        global name, addon_dir
         file_name = f"{name.lower()}.mp3"
         audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
-        if not audio_path.is_file():
-            return
-
-        audio_path = str(audio_path)
-
-        if av_player:
-            av_player.play_file(filename=audio_path)
-        elif legacy_play:
-            legacy_play(audio_path)
-        else:
-            pass
-	     #showWarning("No suitable audio player found in Anki.")
-                
-        # Disconnect the timer's timeout signal to prevent further plays
-        try:
-            cry_sound_timer.timeout.disconnect(play_sound)
-        except TypeError:
-            pass  # Do nothing if the signal was not connected
-
-if sounds == True:    
-    # Create a QTimer
-    cry_sound_timer = QTimer()
-    # Connect the timer's timeout signal to the play_sound function
-    cry_sound_timer.timeout.connect(play_sound)
+        if audio_path.is_file():
+            audio_path = str(audio_path)
+            threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
 
 if sound_effects == True:
     effect_sound_timer = QTimer()
@@ -6931,6 +6887,16 @@ def report_bug():
     # Open the Team Builder in the default web browser
     QDesktopServices.openUrl(QUrl(bug_url))
 
+def play_sound_test():
+    from . import playsound
+    try:            
+        sound_path = os.path.join(addon_dir, "addon_sprites", "sounds", "Fainted.mp3")
+        playsound.playsound(sound_path)
+
+    except Exception as e:
+        showWarning(f"{e}")
+# Hook the function to a relevant event in Anki, for example, when a card is shown
+
 achievement_bag = AchievementWindow()
 
 #buttonlayout
@@ -7001,6 +6967,10 @@ mw.pokemenu.addAction(test_action16)
 rate_action = QAction("Rate This", mw)
 rate_action.triggered.connect(rate_addon_url)
 mw.pokemenu.addAction(rate_action)
+
+sound_action = QAction("Test", mw)
+sound_action.triggered.connect(play_sound_test)
+mw.pokemenu.addAction(sound_action)
 
     #https://goo.gl/uhAxsg
     #https://www.reddit.com/r/PokemonROMhacks/comments/9xgl7j/pokemon_sound_effects_collection_over_3200_sfx/
