@@ -1837,6 +1837,11 @@ def new_pokemon():
     max_hp = calculate_hp(stats["hp"], level, ev, iv)
     if test_window is not None:
         test_window.display_first_encounter()
+    class Container(object):
+        pass
+    reviewer = Container()
+    reviewer.web = mw.reviewer.web
+    update_life_bar(reviewer, 0, 0)
 
 def calc_atk_dmg(level, critical, power, stat_atk, wild_stat_def, main_type, move_type, wild_type, critRatio):
         if power is None:
