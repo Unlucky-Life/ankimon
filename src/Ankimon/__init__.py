@@ -4390,7 +4390,7 @@ if database_complete != False and mainpokemon_empty is False:
                 }}
                 #hp-display {{
                 position: fixed;
-                bottom: {100 - wild_hp_spacer + xp_bar_spacer}px;
+                bottom: {160 - wild_hp_spacer + xp_bar_spacer}px;
                 left: {50 + hp_only_spacer}%;
                 z-index: 9999;
                 color: white;
