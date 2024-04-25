@@ -48,7 +48,7 @@ from anki.collection import Collection
 import csv
 import time, wave
 import platform
-from . import playsound #function to import sound_lib
+from . import playsound
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
