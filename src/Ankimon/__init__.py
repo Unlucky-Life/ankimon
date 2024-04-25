@@ -1841,7 +1841,6 @@ def new_pokemon():
         pass
     reviewer = Container()
     reviewer.web = mw.reviewer.web
-    mainpokemon_data()
     update_life_bar(reviewer, 0, 0)
 
 def calc_atk_dmg(level, critical, power, stat_atk, wild_stat_def, main_type, move_type, wild_type, critRatio):
@@ -5699,36 +5698,57 @@ class TestWindow(QWidget):
 test_window = TestWindow()
 
 #Test window
-
 def rate_this_addon():
-    global rate_this, rate_path, itembag_path, rate_data
-    #rate_this, default is false
+    global rate_this, rate_path, itembag_path
+    # Load rate data
     with open(rate_path, 'r') as file:
         rate_data = json.load(file)
-        rate_this = rate_data.get("rate_this")
-    # Access the value of "rate_this" key
-    if rate_this is False:
+        rate_this = rate_data.get("rate_this", False)
+    
+    # Check if rating is needed
+    if not rate_this:
         rate_window = QDialog()
-        rate_layout = QVBoxLayout(rate_window)
         rate_window.setWindowTitle("Please Rate this Addon!")
         
+        layout = QVBoxLayout(rate_window)
+        
         text_label = QLabel("""Thanks for using Ankimon! 
-                        \nI would like Ankimon to be known even more in the community, 
-                        \nand a like and comment would be amazing if you could rate this addon.
-                            This takes less than a minute
-                        
-                        As a thank you, you will receive a potion!""")
+                            \nI would like Ankimon to be known even more in the community, 
+                            \nand a like and comment would be amazing if you could rate this addon.
+                            \nThis takes less than a minute
+                            
+                            As a thank you, you will receive a potion and can access all the configurations!""")
+        layout.addWidget(text_label)
         
-        rate_layout.addWidget(text_label)
-        
+        # Rate button
         rate_button = QPushButton("Rate Now")
+
+        def support_button_click():
+            support_url = "https://ko-fi.com/unlucky99"
+            QDesktopServices.openUrl(QUrl(support_url))
+        
+        def thankyou_message():
+            thankyou_window = QDialog()
+            thankyou_window.setWindowTitle("Thank you !") 
+            thx_layout = QVBoxLayout(thankyou_window)
+            thx_label = QLabel("""
+            Thank you for Rating this Addon !
+                               
+            Exit this window to receive your potion!
+            """)
+            thx_layout.addWidget(thx_label)
+            # Support button
+            support_button = QPushButton("Support the Author")
+            support_button.clicked.connect(support_button_click)
+            thx_layout.addWidget(support_button)
+            thankyou_window.setModal(True)
+            thankyou_window.exec()
 
         def rate_this_button():
             rate_window.close()
-            show_info("Thanks for rating this addon !")
             rate_url = "https://ankiweb.net/shared/review/1908235722"
             QDesktopServices.openUrl(QUrl(rate_url))
-            rate_this = True
+            thankyou_message()
             rate_data["rate_this"] = True
             # Save the updated data back to the file
             with open(rate_path, 'w') as file:
@@ -5740,16 +5760,20 @@ def rate_this_addon():
                     itembag_list.append("potion")
                 with open(itembag_path, 'w') as json_file:
                     json.dump(itembag_list, json_file)
-
         rate_button.clicked.connect(rate_this_button)
+        layout.addWidget(rate_button)
+        
+        # Support button
         support_button = QPushButton("Support the Author")
-        def support_button_click():
-            support_url = "https://ko-fi.com/unlucky99"
-            QDesktopServices.openUrl(QUrl(support_url))
         support_button.clicked.connect(support_button_click)
-        rate_layout.addWidget(rate_button)
-        rate_layout.addWidget(support_button)
+        layout.addWidget(support_button)
+        
+        # Make the dialog modal to wait for user interaction
+        rate_window.setModal(True)
+        
+        # Execute the dialog
         rate_window.exec()
+
 
 if database_complete is True:
     with open(badgebag_path, 'r') as json_file:
