@@ -277,7 +277,7 @@ else:
 if xp_bar_location == 1:
     xp_bar_location = "top"
     xp_bar_spacer = 0
-else:
+elif xp_bar_location == 2:
     xp_bar_location = "bottom"
     xp_bar_spacer = 20
 
@@ -1841,6 +1841,7 @@ def new_pokemon():
         pass
     reviewer = Container()
     reviewer.web = mw.reviewer.web
+    mainpokemon_data()
     update_life_bar(reviewer, 0, 0)
 
 def calc_atk_dmg(level, critical, power, stat_atk, wild_stat_def, main_type, move_type, wild_type, critRatio):
@@ -2388,8 +2389,8 @@ def create_status_html(status_name):
             html = f"""
             <div id=pokestatus style="
                 position: fixed;
-                bottom: {15 + hp_bar_thickness + xp_bar_spacer}px; /* Adjust as needed */
-                right: 160px;
+                bottom: {40 + hp_bar_thickness + xp_bar_spacer}px; /* Adjust as needed */
+                right: 15%;
                 z-index: 9999;
                 background-color: {colors['background']};
                 border: 2px solid {colors['outline']};
@@ -4360,7 +4361,7 @@ if database_complete != False and mainpokemon_empty is False:
                 #myhp-display {{
                 position: fixed;
                 bottom: {25 + xp_bar_spacer + hp_bar_thickness}px;
-                right: {50 + hp_only_spacer}%;
+                right: {40 + hp_only_spacer}%;
                 z-index: 9999;
                 color: white;
                 font-size: 16px;
@@ -4467,7 +4468,7 @@ if database_complete != False and mainpokemon_empty is False:
                 #myhp-display {{
                 position: fixed;
                 bottom: {15 + xp_bar_spacer + hp_bar_thickness}px;
-                right: {55 + hp_only_spacer}%;
+                right: {55}%;
                 z-index: 9999;
                 color: white;
                 font-size: 16px;
@@ -4498,7 +4499,7 @@ if database_complete != False and mainpokemon_empty is False:
                 #hp-display {{
                 position: fixed;
                 bottom: {15 + xp_bar_spacer + hp_bar_thickness}px;
-                left: {55 + hp_only_spacer}%;
+                left: {55}%;
                 z-index: 9999;
                 color: white;
                 font-size: 16px;
@@ -4508,7 +4509,7 @@ if database_complete != False and mainpokemon_empty is False:
                 }}
                 #name-display {{
                 position: fixed;
-                bottom: {20 + xp_bar_spacer + hp_bar_thickness}px;
+                bottom: {15 + xp_bar_spacer + hp_bar_thickness}px;
                 right: 10px;
                 z-index: 9999;
                 color: white;
@@ -4600,7 +4601,7 @@ if database_complete != False and mainpokemon_empty is False:
             if hp_bar_config is True:
                 web_content.body += f'<div id="life-bar"></div>'
             if xp_bar_config is True:
-                web_content.head += f'<div id="xp-bar"></div>'
+                web_content.body += f'<div id="xp-bar"></div>'
                 web_content.body += f'<div id="next_lvl_text">Next Level</div>'
                 web_content.body += f'<div id="xp_text">XP</div>'
             # Inject a div element for the text display
@@ -4693,7 +4694,7 @@ if database_complete != False and mainpokemon_empty is False:
         reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px ' + hp_color + ', 0 0 30px rgba(54, 54, 56, 1)";');
         if xp_bar_config is True:
             experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
-            xp_bar_percent = {int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)}
+            xp_bar_percent = int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)
             reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
         name_display_text = f"{name.capitalize()} Lvl: {level}"
         hp_display_text = f"HP: {hp}/{max_hp}"
