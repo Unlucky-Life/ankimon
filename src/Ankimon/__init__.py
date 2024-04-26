@@ -48,7 +48,6 @@ from anki.collection import Collection
 import csv
 import time, wave
 import platform
-from . import playsound
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -269,6 +268,9 @@ animate_time = config["animate_time"] #default: true; false = animate for 0.8 se
 view_main_front = config["view_main_front"] #default: true => -1; false = 1
 gif_in_collection = config["gif_in_collection"] #default: true => -1; false = 1
 sound_effects = config["sound_effects"] #default: false; true = sound_effects on
+
+if sound_effects is True:
+    from . import playsound
 
 if view_main_front is True and reviewer_image_gif is True:
     view_main_front = -1
