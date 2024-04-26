@@ -29,9 +29,11 @@ Ankimon is an Anki addon designed to gamify your learning experience by allowing
 ## Screenshots
 <div style="display:flex;flex-wrap:wrap;justify-content:center;">
   <img src="https://github.com/Unlucky-Life/ankimon/assets/77027147/d3d62c70-8473-407a-92b1-daf37817a9e6" alt="image" width="300" height="200">
+    <img src="https://github.com/Unlucky-Life/ankimon/assets/77027147/6a1a4979-10d1-4618-81f4-f8865caf7206" alt="image" width="250" height="300">
+  <img src="https://github.com/Unlucky-Life/ankimon/assets/77027147/ad3bf54f-24dd-4150-abdc-25aa23b6543a" alt="image" width="600" height="200">
+    <img src="https://github.com/Unlucky-Life/ankimon/assets/77027147/cf131fdc-1ff4-4d67-a6a3-e9d1ec2a3d42" alt="image" width="600" height="200">
+  <img src="https://github.com/Unlucky-Life/ankimon/assets/77027147/a6f2f1cf-e308-4a02-8c15-9f8a32b32cd7" alt="image" width="600" height="200">
   <img src="https://github.com/Unlucky-Life/ankimon/assets/77027147/6bdd303d-3055-4520-b0ae-bc144c3d55b9" alt="image" width="400" height="200">
-  <img src="https://github.com/Unlucky-Life/ankimon/assets/77027147/275c5b22-445b-4062-891c-c4db79cfcefc" alt="image" width="250" height="200">
-  <img src="https://github.com/Unlucky-Life/ankimon/assets/77027147/6a1a4979-10d1-4618-81f4-f8865caf7206" alt="image" width="250" height="300">
   <img src="https://github.com/Unlucky-Life/ankimon/assets/77027147/ed6330ad-db26-4894-8375-869704a78a08" alt="image" width="400" height="200">
 </div>
 
