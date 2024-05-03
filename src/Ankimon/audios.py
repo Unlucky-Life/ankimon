@@ -1,9 +1,10 @@
-#this code is from audiovisualfeedback
+#This Source Code is not from me, its from audiovisualfeedback
 #https://github.com/AnKing-VIP/anki-audiovisual-feedback/tree/master
 #right now there is no clear license in this, therefore I see this as 
 #open as MIT License or atleast opensource due to posting on GitHub
-#An addon developed by Anking
+#audiovisualfeedback is an addon developed with the help of the Anking or Atleast under his Account
 #The Code here was commited from BlueGreenMagick  https://github.com/BlueGreenMagick
+#If the author have any issues with this being posted here, please let me know!
 
 from pathlib import Path
 from typing import Literal, Union
