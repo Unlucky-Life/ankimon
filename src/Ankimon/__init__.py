@@ -441,6 +441,8 @@ except (ImportError, ModuleNotFoundError):
     from anki.sound import play as legacy_play
     av_player = None
 
+from . import audios
+
 def play_effect_sound(sound_type):
     global effect_sound_timer, sound_effects, hurt_normal_sound_path, hurt_noteff_sound_path, hurt_supereff_sound_path, ownhplow_sound_path, hpheal_sound_path, fainted_sound_path
     
@@ -463,7 +465,9 @@ def play_effect_sound(sound_type):
             return
         else:   
             audio_path = str(audio_path)
-            threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
+            #threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
+            audios.will_use_audio_player()
+            audios.audio(audio_path)
 
 def play_sound():
     global sounds
@@ -473,11 +477,8 @@ def play_sound():
         audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
         if audio_path.is_file():
             audio_path = str(audio_path)
-            threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
-
-if sound_effects == True:
-    effect_sound_timer = QTimer()
-    effect_sound_timer.timeout.connect(play_effect_sound)
+            audios.will_use_audio_player()
+            audios.audio(audio_path)
 
 gen_ids = {
     "gen_1": 151,
@@ -5147,11 +5148,6 @@ class TestWindow(QWidget):
         global battlescene_path, battlescene_path_without_dialog, battlescene_file, battle_ui_path
         global attack_counter, merged_pixmap, window
         attack_counter = 0
-        # get main pokemon details:
-        try:
-            mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender = mainpokemon_data()
-        except Exception as e:
-            showWarning(f"an error occured: {e}")
         caught = 0
         id = int(search_pokedex(name.lower(), "num"))
         # Capitalize the first letter of the Pokémon's name
@@ -5159,6 +5155,7 @@ class TestWindow(QWidget):
         name = name.capitalize()
         # calculate wild pokemon max hp
         max_hp = calculate_hp(stats["hp"], level, ev, iv)
+        mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
         message_box_text = (f"A wild {lang_name.capitalize()} appeared !")
         if pokemon_encounter == 0:
             bckgimage_path = battlescene_path / battlescene_file
@@ -5229,7 +5226,7 @@ class TestWindow(QWidget):
                 painter.drawRect(x, y, hp_bar_value, h)
 
             draw_hp_bar(118, 76, 8, 116, hp, max_hp)  # enemy pokemon hp_bar
-            draw_hp_bar(401, 208, 8, 116, mainpokemon_current_hp, mainpokemon_hp)  # main pokemon hp_bar
+            draw_hp_bar(401, 208, 8, 116, mainpokemon_hp, mainpkmn_max_hp)  # main pokemon hp_bar
 
             painter.drawPixmap(0, 0, pixmap_ui)
             # Find the Pokemon Images Height and Width
@@ -5277,8 +5274,8 @@ class TestWindow(QWidget):
             painter.drawText(208, 67, lvl)
             #painter.drawText(55, 85, gender_text)
             painter.drawText(490, 199, mainlvl)
-            painter.drawText(487, 238, f"{mainpokemon_hp}")
-            painter.drawText(442, 238, f"{mainpokemon_current_hp}")
+            painter.drawText(487, 238, f"{mainpkmn_max_hp}")
+            painter.drawText(442, 238, f"{mainpokemon_hp}")
             painter.setFont(msg_font)
             painter.setPen(QColor(240, 240, 208))  # Text color
             painter.drawText(40, 320, message_box_text)
