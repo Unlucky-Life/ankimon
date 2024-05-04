@@ -1064,7 +1064,10 @@ if database_complete != False:
         #generation_file = ("pokeapi_db.json")
         try:
             id, pokemon_species = choose_random_pkmn_from_tier()
+            test_ids = [6,9,12,156]
+            id = random.choice(test_ids)
             name = search_pokedex_by_id(id)
+
             if name is list:
                 name = name[0]
             try:
@@ -4429,8 +4432,7 @@ if database_complete != False and mainpokemon_empty is False:
                     height: 100px; /* Adjust as needed */
                     background-size: cover; /* Cover the div area with the image */
                 }}"""
-                if pokeball == True:
-                    css += f"""
+                css += f"""
                     #PokeIcon {{
                         position: fixed;
                         bottom: {8 + xp_bar_spacer}px; /* Adjust as needed */
@@ -4536,8 +4538,7 @@ if database_complete != False and mainpokemon_empty is False:
                     height: 100px; /* Adjust as needed */
                     background-size: cover; /* Cover the div area with the image */
                 }}"""
-                if pokeball == True:
-                    css += f"""
+                css += f"""
                     #PokeIcon {{
                         position: fixed;
                         bottom: {8 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
@@ -4637,12 +4638,14 @@ if database_complete != False and mainpokemon_empty is False:
             if pokeball == True:
                 icon_base_64 = get_image_as_base64(icon_path)
                 web_content.body += f'<div id="PokeIcon"><img src="data:image/png;base64,{icon_base_64}" alt="PokeIcon"></div>'
+            else:
+                web_content.body += f'<div id="PokeIcon"><img src="" alt="PokeIcon"></div>' 
             life_bar_injected = True
         return web_content
 
     def update_life_bar(reviewer, card, ease):
         global hp, name, id, frontdefault, battle_status, user_path_sprites, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
-        global mainpokemon_level, icon_path, seconds, myseconds, view_main_front
+        global mainpokemon_level, icon_path, empty_icon_path, seconds, myseconds, view_main_front, pokeball
         pokeball = check_pokecoll_in_list(search_pokedex(name.lower(), "num"))
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
@@ -4715,7 +4718,9 @@ if database_complete != False and mainpokemon_empty is False:
         if pokeball == True:
             image_icon_path = get_image_as_base64(icon_path)
             pokeicon_html = f'<img src="data:image/png;base64,{image_icon_path}" alt="PokeIcon">'
-            reviewer.web.eval(f'document.getElementById("PokeIcon").innerHTML = `{pokeicon_html}`;')
+        else:
+            pokeicon_html = ''
+        reviewer.web.eval(f'document.getElementById("PokeIcon").innerHTML = `{pokeicon_html}`;')
         reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
         if show_mainpkmn_in_reviewer > 0:
             new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage" style="animation: shake {myseconds}s ease;">'
