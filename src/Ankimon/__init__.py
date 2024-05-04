@@ -446,7 +446,7 @@ from . import audios
 def play_effect_sound(sound_type):
     global effect_sound_timer, sound_effects, hurt_normal_sound_path, hurt_noteff_sound_path, hurt_supereff_sound_path, ownhplow_sound_path, hpheal_sound_path, fainted_sound_path
     
-    if sound_effects:
+    if sound_effects is True:
         audio_path = None
         if sound_type == "HurtNotEffective":
             audio_path = hurt_noteff_sound_path
@@ -464,7 +464,7 @@ def play_effect_sound(sound_type):
         if not audio_path.is_file():
             return
         else:   
-            audio_path = str(audio_path)
+            audio_path = Path(audio_path)
             #threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
             audios.will_use_audio_player()
             audios.audio(audio_path)
