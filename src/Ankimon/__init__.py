@@ -5724,9 +5724,9 @@ def rate_this_addon():
         
         text_label = QLabel("""Thanks for using Ankimon! 
                             \nI would like Ankimon to be known even more in the community, 
-                            \nand a rating would be amazing.This takes less than a minute.
-                            \nPlease make an honest rating.
-                            As a thank you, you will receive a potion!""")
+                            \nand a rating would be amazing.Letting others know what you think of the addon.
+                            \nThis takes less than a minute.
+                            """)
         layout.addWidget(text_label)
         
         # Rate button
@@ -5743,7 +5743,7 @@ def rate_this_addon():
             thx_label = QLabel("""
             Thank you for Rating this Addon !
                                
-            Exit this window to receive your potion!
+            Please exit this window!
             """)
             thx_layout.addWidget(thx_label)
             # Support button
