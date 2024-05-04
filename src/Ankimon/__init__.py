@@ -471,16 +471,14 @@ def play_effect_sound(sound_type):
 
 def play_sound():
     global sounds
-    if sounds:
+    if sounds is True:
         global name, addon_dir
         file_name = f"{name.lower()}.mp3"
         audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
         if audio_path.is_file():
-            audio_path = str(audio_path)
-
-if sound_effects == True:
-    effect_sound_timer = QTimer()
-    effect_sound_timer.timeout.connect(play_effect_sound)
+            audio_path = Path(audio_path)
+            audios.will_use_audio_player()
+            audios.audio(audio_path)
 
 gen_ids = {
     "gen_1": 151,
