@@ -1998,7 +1998,7 @@ def search_pokeapi_db_by_id(pkmn_id,variable):
             
 def mainpokemon_data():
     global mainpkmn
-    global mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender
+    global mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname
     mainpkmn = 1
     try:
         with (open(str(mainpokemon_path), "r", encoding="utf-8") as json_file):
@@ -2006,6 +2006,7 @@ def mainpokemon_data():
                 main_pokemon_data = []
                 for main_pokemon_data in main_pokemon_datalist:
                     mainpokemon_name = main_pokemon_data["name"]
+                    mainpokemon_nickname = main_pokemon_data["nickname"]
                     mainpokemon_id = main_pokemon_data["id"]
                     mainpokemon_ability = main_pokemon_data["ability"]
                     mainpokemon_type = main_pokemon_data["type"]
@@ -2029,13 +2030,13 @@ def mainpokemon_data():
                     mainpokemon_base_experience = main_pokemon_data["base_experience"]
                     mainpokemon_growth_rate = main_pokemon_data["growth_rate"]
                     mainpokemon_gender = main_pokemon_data["gender"]
-                    return mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender
+                    return mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname
     except:
             pass
 #get main pokemon details:
 if database_complete != False:
     try:
-        mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender = mainpokemon_data()
+        mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname = mainpokemon_data()
         starter = True
     except:
         starter = False
@@ -2174,7 +2175,7 @@ def on_review_card(*args):
                         
                         if enemy_move is not None:
                             break  # Exit the loop if a valid enemy_move is found
-                    msg += f"{name.capitalize()} choose {rand_enemy_atk.capitalize()} !"
+                    msg += f"{name.capitalize()} chose {rand_enemy_atk.capitalize()} !"
                     e_move_category = enemy_move.get("category")
                     e_move_acc = enemy_move.get("accuracy")
                     if e_move_acc is True:
@@ -2247,7 +2248,7 @@ def on_review_card(*args):
             if pokemon_encounter > 0 and hp > 0:
                 dmg = 0
                 random_attack = random.choice(mainpokemon_attacks)
-                msg += f"\n {mainpokemon_name} has choosen {random_attack.capitalize()} !"
+                msg += f"\n {mainpokemon_name} has chosen {random_attack.capitalize()} !"
                 move = find_details_move(random_attack)
                 category = move.get("category")
                 acc = move.get("accuracy")
@@ -2792,7 +2793,7 @@ def ShowPokemonCollection():
                     # Create a QPushButton for the Pokémon
                     choose_pokemon_button = QPushButton("Pick as main Pokemon")
                     choose_pokemon_button.setIconSize(pixmap.size())
-                    choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp = pokemon_hp , base_experience = mainpokemon_base_experience, growth_rate = pokemon_growth_rate, ev = pokemon_ev, iv = pokemon_iv, gender = pokemon_gender: MainPokemon(name, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
+                    choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp = pokemon_hp , base_experience = mainpokemon_base_experience, growth_rate = pokemon_growth_rate, ev = pokemon_ev, iv = pokemon_iv, gender = pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
 
                     # Create a QVBoxLayout for the container
                     container_layout = QVBoxLayout()
@@ -3445,7 +3446,7 @@ def move_category_path(category):
     category_path = addon_dir / "addon_sprites" / png_file
     return category_path
 
-def MainPokemon(name, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
+def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
     # Display the Pokémon image
     global mainpkmn, addon_dir, currdirname, mainpokemon_path
     mainpkmn = 1
@@ -3465,6 +3466,7 @@ def MainPokemon(name, level, id, ability, type, detail_stats, attacks, hp, base_
     main_pokemon_data = [
         {
             "name": name,
+            "nickname": nickname,
             "gender": gender,
             "level": level,
             "id": id,
