@@ -1064,8 +1064,8 @@ if database_complete != False:
         #generation_file = ("pokeapi_db.json")
         try:
             id, pokemon_species = choose_random_pkmn_from_tier()
-            test_ids = [417]
-            id = random.choice(test_ids)
+            #test_ids = [417]
+            #id = random.choice(test_ids)
             name = search_pokedex_by_id(id)
 
             if name is list:
@@ -2249,7 +2249,7 @@ def on_review_card(*args):
             if pokemon_encounter > 0 and hp > 0:
                 dmg = 0
                 random_attack = random.choice(mainpokemon_attacks)
-                msg += f"\n {random_attack.capitalize()} has been choosen !"
+                msg += f"\n {mainpokemon_name} has choosen {random_attack.capitalize()} !"
                 move = find_details_move(random_attack)
                 category = move.get("category")
                 acc = move.get("accuracy")
@@ -2278,39 +2278,49 @@ def on_review_card(*args):
                         color = "#F7DC6F"
                         msg = effect_status_moves(random_attack, mainpokemon_stats, stats, msg, name, mainpokemon_name)
                     elif category == "Physical" or category == "Special":
-                        critRatio = move.get("critRatio", 1)
-                        if category == "Physical":
-                            color = "#F0B27A"
-                        elif category == "Special":
-                            color = "#D2B4DE"
-                        if move["basePower"] == 0:
-                            dmg = bP_none_moves(move)
-                            hp -= dmg
-                            if dmg == 0:
-                                msg += "\n Move has missed !"
-                                #dmg = 1
-                        else:
+                        try:
+                            critRatio = move.get("critRatio", 1)
+                            if category == "Physical":
+                                color = "#F0B27A"
+                            elif category == "Special":
+                                color = "#D2B4DE"
+                            if move["basePower"] == 0:
+                                dmg = bP_none_moves(move)
+                                hp -= dmg
+                                if dmg == 0:
+                                    msg += "\n Move has missed !"
+                                    #dmg = 1
+                            else:
+                                if category == "Special":
+                                    def_stat = stats["spd"]
+                                    atk_stat = mainpokemon_stats["spa"]
+                                elif category == "Physical":
+                                    def_stat = stats["def"]
+                                    atk_stat = mainpokemon_stats["atk"]
+                                dmg = int(calc_atk_dmg(mainpokemon_level, multiplier,move["basePower"], atk_stat, def_stat, mainpokemon_type, move["type"],type, critRatio))
+                                if dmg == 0:
+                                    dmg = 1
+                                hp -= dmg
+                                msg += f" {dmg} dmg is dealt to {name.capitalize()}."
+                                move_stat = move.get("status", None)
+                                secondary = move.get("secondary", None)
+                                if secondary is not None:
+                                    bat_status = move.get("secondary", None).get("status", None)
+                                    if bat_status is not None:
+                                        move_with_status(move, move_stat, secondary)
+                                if move_stat is not None:
+                                    move_with_status(move, move_stat, secondary)
+                                if dmg == 0:
+                                    msg += " \n Move has missed !"
+                        except:
                             if category == "Special":
                                 def_stat = stats["spd"]
                                 atk_stat = mainpokemon_stats["spa"]
                             elif category == "Physical":
                                 def_stat = stats["def"]
                                 atk_stat = mainpokemon_stats["atk"]
-                            dmg = int(calc_atk_dmg(mainpokemon_level, multiplier,move["basePower"], atk_stat, def_stat, mainpokemon_type, move["type"],type, critRatio))
-                            if dmg == 0:
-                                dmg = 1
+                            dmg = int(calc_atk_dmg(mainpokemon_level, multiplier,random.randint(60, 100), atk_stat, def_stat, mainpokemon_type, "Normal",type, critRatio))
                             hp -= dmg
-                            msg += f" {dmg} dmg is dealt to {name.capitalize()}."
-                            move_stat = move.get("status", None)
-                            secondary = move.get("secondary", None)
-                            if secondary is not None:
-                                bat_status = move.get("secondary", None).get("status", None)
-                                if bat_status is not None:
-                                    move_with_status(move, move_stat, secondary)
-                            if move_stat is not None:
-                                move_with_status(move, move_stat, secondary)
-                            if dmg == 0:
-                                msg += " \n Move has missed !"
                         if hp < 0:
                             hp = 0
                             msg += f" {name.capitalize()} has fainted"
@@ -2509,9 +2519,6 @@ def bP_none_moves(move):
         if damage is None:
             damage = 5
         return damage
-    #else:
-        #damage = 5
-        #return damage
 
 
 def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpokemon_name):
