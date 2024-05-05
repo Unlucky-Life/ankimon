@@ -436,12 +436,12 @@ try:
     from aqt.sound import av_player
     from anki.sound import SoundOrVideoTag
     legacy_play = None
+    from . import audios
 except (ImportError, ModuleNotFoundError):
     showWarning("Sound import error occured.")
     from anki.sound import play as legacy_play
     av_player = None
 
-from . import audios
 
 def play_effect_sound(sound_type):
     global effect_sound_timer, sound_effects, hurt_normal_sound_path, hurt_noteff_sound_path, hurt_supereff_sound_path, ownhplow_sound_path, hpheal_sound_path, fainted_sound_path
@@ -1843,14 +1843,12 @@ def calculate_max_hp_wildpokemon():
     return wild_pk_max_hp
 
 def new_pokemon():
-    global name, id, level, hp, max_hp, ability, type, attacks, base_experience, stats, battlescene_file, ev, iv, gender, battle_status
+    global name, id, level, hp, max_hp, ability, type, enemy_attacks, attacks, base_experience, stats, battlescene_file, ev, iv, gender, battle_status
     # new pokemon
     gender = None
     name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
     battlescene_file = random_battle_scene()
     max_hp = calculate_hp(stats["hp"], level, ev, iv)
-    global mainpokemon_hp
-    mainpokemon_data()
     #reset mainpokemon hp
     if test_window is not None:
         test_window.display_first_encounter()
@@ -2362,6 +2360,7 @@ def on_review_card(*args):
             msg = f"Your {mainpokemon_name} has been defeated and the wild {name} has fled!"
             play_effect_sound("Fainted")
             new_pokemon()
+            mainpokemon_data()
             color = "#E12939"
             tooltipWithColour(msg, color)
     except Exception as e:
