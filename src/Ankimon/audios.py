@@ -4,7 +4,7 @@
 #open as MIT License or atleast opensource due to posting on GitHub
 #audiovisualfeedback is an addon developed with the help of the Anking or Atleast under his Account
 #The Code here was commited from BlueGreenMagick  https://github.com/BlueGreenMagick
-#If the author have any issues with this being posted here, please let me know!
+#If the author has any issues with this being posted here, please let me know!
 
 from pathlib import Path
 from typing import Literal, Union
