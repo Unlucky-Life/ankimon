@@ -2167,7 +2167,7 @@ def on_review_card(*args):
             msg += f"{multiplier}x Multiplier"
             #failed card = enemy attack
             if pokemon_encounter > 0 and hp > 0 and dmg_in_reviewer is True and multiplier < 1:
-                msg += f" /n "
+                msg += f" \n "
                 try:
                     max_attempts = 3  # Set the maximum number of attempts
                     for _ in range(max_attempts):
@@ -2176,7 +2176,7 @@ def on_review_card(*args):
                         
                         if enemy_move is not None:
                             break  # Exit the loop if a valid enemy_move is found
-                    msg += f"{name.capitalize()} choose \n {rand_enemy_atk.capitalize()} !"
+                    msg += f"{name.capitalize()} choose {rand_enemy_atk.capitalize()} !"
                     e_move_category = enemy_move.get("category")
                     e_move_acc = enemy_move.get("accuracy")
                     if e_move_acc is True:
