@@ -468,6 +468,8 @@ def play_effect_sound(sound_type):
             #threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
             audios.will_use_audio_player()
             audios.audio(audio_path)
+    else:
+        pass
 
 def play_sound():
     global sounds
@@ -1062,7 +1064,7 @@ if database_complete != False:
         #generation_file = ("pokeapi_db.json")
         try:
             id, pokemon_species = choose_random_pkmn_from_tier()
-            test_ids = [6,9,12,156]
+            test_ids = [417]
             id = random.choice(test_ids)
             name = search_pokedex_by_id(id)
 
@@ -1847,6 +1849,9 @@ def new_pokemon():
     name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
     battlescene_file = random_battle_scene()
     max_hp = calculate_hp(stats["hp"], level, ev, iv)
+    global mainpokemon_hp
+    mainpokemon_data()
+    #reset mainpokemon hp
     if test_window is not None:
         test_window.display_first_encounter()
     class Container(object):
@@ -2110,7 +2115,7 @@ def on_review_card(*args):
         global reviewed_cards_count, card_ratings_count, card_counter, general_card_count_for_battle, cry_counter, battle_sounds
         global hp, stats, type, battle_status, name, battle_stats, enemy_attacks, level
         global pokemon_encounter, mainpokemon_hp, seconds, myseconds, animate_time
-        global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats
+        global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats, mainpokemon_ev, mainpokemon_iv
         global attack_counter
         global pkmn_window
         global achievements
@@ -2163,55 +2168,83 @@ def on_review_card(*args):
             #failed card = enemy attack
             if pokemon_encounter > 0 and hp > 0 and dmg_in_reviewer is True and multiplier < 1:
                 msg += f" /n "
-                rand_enemy_atk = random.choice(enemy_attacks)
-                msg += f"{name.capitalize()} choose \n {rand_enemy_atk.capitalize()} !"
-                enemy_move = find_details_move(rand_enemy_atk)
-                e_move_category = enemy_move.get("category")
-                e_move_acc = enemy_move.get("accuracy")
-                if e_move_acc is True:
-                    e_move_acc = 100
-                elif e_move_acc != 0:
-                    e_move_acc = 100 / e_move_acc
-                if random.random() > e_move_acc:
-                    msg += "\n Move has missed !"
-                else:
-                    if e_move_category == "Status":
-                        color = "#F7DC6F"
-                        msg = effect_status_moves(rand_enemy_atk, stats, mainpokemon_stats, msg, mainpokemon_name, name)
-                    elif e_move_category == "Physical" or e_move_category == "Special":
-                        critRatio = enemy_move.get("critRatio", 1)
-                        if e_move_category == "Physical":
-                            color = "#F0B27A"
-                        elif e_move_category == "Special":
-                            color = "#D2B4DE"
-                        if enemy_move["basePower"] == 0:
-                            enemy_dmg = bP_none_moves(move)
-                            mainpokemon_hp -= enemy_dmg
-                            if enemy_dmg == 0:
-                                msg += "\n Move has missed !"
-                        else:
-                            if e_move_category == "Special":
-                                def_stat = mainpokemon_stats["spd"]
-                                atk_stat = stats["spa"]
-                            elif e_move_category == "Physical":
-                                def_stat = mainpokemon_stats["def"]
-                                atk_stat = stats["atk"]
-                            enemy_dmg = int(calc_atk_dmg(level,(multiplier * 2),enemy_move["basePower"], atk_stat, def_stat, type, enemy_move["type"],mainpokemon_type, critRatio))
-                            if enemy_dmg == 0:
-                                enemy_dmg = 1
-                            mainpokemon_hp -= enemy_dmg
-                            if enemy_dmg > 0:
-                                myseconds = animate_time
-                                if multiplier < 1:
-                                    play_effect_sound("HurtNormal")
+                try:
+                    max_attempts = 3  # Set the maximum number of attempts
+                    for _ in range(max_attempts):
+                        rand_enemy_atk = random.choice(enemy_attacks)
+                        enemy_move = find_details_move(rand_enemy_atk)
+                        
+                        if enemy_move is not None:
+                            break  # Exit the loop if a valid enemy_move is found
+                    msg += f"{name.capitalize()} choose \n {rand_enemy_atk.capitalize()} !"
+                    e_move_category = enemy_move.get("category")
+                    e_move_acc = enemy_move.get("accuracy")
+                    if e_move_acc is True:
+                        e_move_acc = 100
+                    elif e_move_acc != 0:
+                        e_move_acc = 100 / e_move_acc
+                    if random.random() > e_move_acc:
+                        msg += "\n Move has missed !"
+                    else:
+                        if e_move_category == "Status":
+                            color = "#F7DC6F"
+                            msg = effect_status_moves(rand_enemy_atk, stats, mainpokemon_stats, msg, mainpokemon_name , name)
+                        elif e_move_category == "Physical" or e_move_category == "Special":
+                            critRatio = enemy_move.get("critRatio", 1)
+                            if e_move_category == "Physical":
+                                color = "#F0B27A"
+                            elif e_move_category == "Special":
+                                color = "#D2B4DE"
+                            if enemy_move["basePower"] == 0:
+                                enemy_dmg = bP_none_moves(enemy_move)
+                                mainpokemon_hp -= int(enemy_dmg)
+                                if enemy_dmg == 0:
+                                    msg += "\n Move has missed !"
                             else:
-                                myseconds = 0
-                            msg += f" {enemy_dmg} dmg is dealt to {mainpokemon_name.capitalize()}."
-                            if mainpokemon_hp < 1:
-                                msg += f"Your {mainpokemon_name} has been defeated and the wild {name} has fled!"
-                                play_effect_sound("Fainted")
-                                new_pokemon()
-                
+                                if e_move_category == "Special":
+                                    def_stat = mainpokemon_stats["spd"]
+                                    atk_stat = stats["spa"]
+                                elif e_move_category == "Physical":
+                                    def_stat = mainpokemon_stats["def"]
+                                    atk_stat = stats["atk"]
+                                enemy_dmg = int(calc_atk_dmg(level,(multiplier * 2),enemy_move["basePower"], atk_stat, def_stat, type, enemy_move["type"],mainpokemon_type, critRatio))
+                                if enemy_dmg == 0:
+                                    enemy_dmg = 1
+                                mainpokemon_hp -= enemy_dmg
+                                if enemy_dmg > 0:
+                                    myseconds = animate_time
+                                    if multiplier < 1:
+                                        play_effect_sound("HurtNormal")
+                                else:
+                                    myseconds = 0
+                                msg += f" {enemy_dmg} dmg is dealt to {mainpokemon_name.capitalize()}."
+                except:
+                    enemy_dmg = 0
+                    rand_enemy_atk = random.choice(enemy_attacks)
+                    enemy_move = find_details_move(rand_enemy_atk)
+                    e_move_category = enemy_move.get("category")
+                    if e_move_category == "Status":
+                            color = "#F7DC6F"
+                            msg = effect_status_moves(rand_enemy_atk, stats, mainpokemon_stats, msg, mainpokemon_name , name)
+                    elif e_move_category == "Physical" or e_move_category == "Special":
+                        if e_move_category == "Special":
+                            def_stat = mainpokemon_stats["spd"]
+                            atk_stat = stats["spa"]
+                        elif e_move_category == "Physical":
+                            def_stat = mainpokemon_stats["def"]
+                            atk_stat = stats["atk"]                        
+                        enemy_dmg = int(calc_atk_dmg(level,(multiplier * 2),random.randint(60, 100), atk_stat, def_stat, type, "Normal", mainpokemon_type, critRatio))
+                        if enemy_dmg == 0:
+                            enemy_dmg = 1
+                        mainpokemon_hp -= enemy_dmg
+                    if enemy_dmg > 0:
+                        myseconds = animate_time
+                        if multiplier < 1:
+                            play_effect_sound("HurtNormal")
+                    else:
+                        myseconds = 0
+                    msg += f" {enemy_dmg} dmg is dealt to {mainpokemon_name.capitalize()}."
+    
             # If 10 or more cards have been reviewed, show the random Pokémon
             if pokemon_encounter > 0 and hp > 0:
                 dmg = 0
@@ -2315,6 +2348,12 @@ def on_review_card(*args):
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()
+        if mainpokemon_hp < 1:
+            msg = f"Your {mainpokemon_name} has been defeated and the wild {name} has fled!"
+            play_effect_sound("Fainted")
+            new_pokemon()
+            color = "#E12939"
+            tooltipWithColour(msg, color)
     except Exception as e:
         showWarning(f"An error occured in reviewer: {e}")
 
@@ -2467,7 +2506,13 @@ def bP_none_moves(move):
     target =  move.get("target", None)
     if target == "normal":
         damage = move.get("damage")
+        if damage is None:
+            damage = 5
         return damage
+    #else:
+        #damage = 5
+        #return damage
+
 
 def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpokemon_name):
     global battle_status
@@ -4637,7 +4682,7 @@ if database_complete != False and mainpokemon_empty is False:
                 icon_base_64 = get_image_as_base64(icon_path)
                 web_content.body += f'<div id="PokeIcon"><img src="data:image/png;base64,{icon_base_64}" alt="PokeIcon"></div>'
             else:
-                web_content.body += f'<div id="PokeIcon"><img src="" alt="PokeIcon"></div>' 
+                web_content.body += f'<div id="PokeIcon"></div>' 
             life_bar_injected = True
         return web_content
 
