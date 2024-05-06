@@ -2647,214 +2647,353 @@ class MovieSplashLabel(QLabel):
     def hideEvent(self, event):
         self.movie.stop()
 
-def ShowPokemonCollection():
-    # Create the dialog
-    window = QDialog(mw)
-    global icon_path
-    window.setWindowIcon(QIcon(str(icon_path))) # Add a Pokeball icon
-    #window = QMessageBox(mw)
-    window.setWindowTitle(f"Captured Pokemon")
 
-    # Create a QScrollArea to enable scrolling
-    scroll_area = QScrollArea()
-    scroll_area.setWidgetResizable(True)
+class PokemonCollectionDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Captured Pokemon")
+        self.setMinimumWidth(750)
+        self.setMinimumHeight(400)
+        self.layout = QVBoxLayout(self)
 
-    # Create a layout for the scroll area using QGridLayout
-    scroll_layout = QGridLayout()
+        # Search Filter
+        self.search_edit = QLineEdit()
+        self.search_edit.setPlaceholderText("Search Pokémon...")
+        #self.search_edit.textChanged.connect(self.filter_pokemon)
+        self.search_button = QPushButton("Search")
+        self.search_button.clicked.connect(self.filter_pokemon)
 
-    # Create a widget to hold the layout
-    container = QWidget()
+        # Add dropdown menu for generation filtering
+        self.generation_combo = QComboBox()
+        self.generation_combo.addItem("All")
+        self.generation_combo.addItems(["Generation 1", "Generation 2", "Generation 3", "Generation 4", "Generation 5", "Generation 6", "Generation 7", "Generation 8"])
+        self.generation_combo.currentIndexChanged.connect(self.filter_pokemon)
 
-    # Set the widget for the scroll area
-    scroll_area.setWidget(container)
+        # Add widgets to layout
+        filter_layout = QHBoxLayout()
+        filter_layout.addWidget(self.search_edit)
+        filter_layout.addWidget(self.search_button)
+        filter_layout.addWidget(self.generation_combo)
+        self.layout.addLayout(filter_layout)
 
-    #Set Window Width
-    window.setMinimumWidth(750)
-    window.setMinimumHeight(400)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
 
-    global mypokemon_path
-    global pkmnimgfolder
-    global frontdefault, user_path_sprites
-    try:
-        with (open(mypokemon_path, "r") as json_file):
-            captured_pokemon_data = json.load(json_file)
-            # Check if there are any captured Pokémon
-            if captured_pokemon_data:
-                # Counter for tracking the column position
-                column = 0
-                row = 0
-                for pokemon in captured_pokemon_data:
-                    pokemon_container = QWidget()
-                    image_label = QLabel()
-                    pixmap = QPixmap()
-                    pokemon_id = pokemon['id']
-                    pokemon_name = pokemon['name']
-                    if not pokemon.get('nickname') or pokemon.get('nickname') is None:
-                        pokemon_nickname = None
-                    else:
-                        pokemon_nickname = pokemon['nickname']
-                    pokemon_gender = pokemon['gender']
-                    pokemon_level = pokemon['level']
-                    pokemon_ability = pokemon['ability']
-                    pokemon_type = pokemon['type']
-                    pokemon_stats = pokemon['stats']
-                    pokemon_hp = pokemon_stats["hp"],
-                    pokemon_attacks = pokemon['attacks']
-                    pokemon_base_experience = pokemon['base_experience']
-                    pokemon_growth_rate = pokemon['growth_rate']
-                    pokemon_ev = pokemon['ev']
-                    pokemon_iv = pokemon['iv']
-                    pokemon_description = search_pokeapi_db_by_id(pokemon_id, "description")
-                    if gif_in_collection is True:
-                        pkmn_image_path = str(user_path_sprites / "front_default_gif" / f"{pokemon_id}.gif")
-                        splash_label = MovieSplashLabel(pkmn_image_path)
-                    else:
-                        pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
-                    pixmap.load(pkmn_image_path)
+        self.container = QWidget()
+        self.scroll_layout = QGridLayout(self.container)
+        self.setup_ui()
 
-                    # Calculate the new dimensions to maintain the aspect ratio
-                    max_width = 300
-                    max_height = 230
-                    original_width = pixmap.width()
-                    original_height = pixmap.height()
+    def showEvent(self, event):
+        # Call refresh_pokemon_collection when the dialog is shown
+        self.refresh_pokemon_collection()
+    
+    def refresh_pokemon_collection(self):
+        # Clear previous contents
+        for i in reversed(range(self.scroll_layout.count())):
+            widget = self.scroll_layout.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
+        
+        self.setup_ui()
 
-                    if original_width > max_width:
-                        new_width = max_width
-                        new_height = (original_height * max_width) // original_width
-                        pixmap = pixmap.scaled(new_width, new_height)
+    def setup_ui(self):
 
-                    # Create a painter to add text on top of the image
-                    painter = QPainter(pixmap)
+        try:
+            with open(mypokemon_path, "r") as json_file:
+                captured_pokemon_data = json.load(json_file)
+                if captured_pokemon_data:
+                    row, column = 0, 0
+                    for pokemon in captured_pokemon_data:
+                        pokemon_container = QWidget()
+                        image_label = QLabel()
+                        pixmap = QPixmap()
+                        pokemon_id = pokemon['id']
+                        pokemon_name = pokemon['name']
+                        if not pokemon.get('nickname') or pokemon.get('nickname') is None:
+                            pokemon_nickname = None
+                        else:
+                            pokemon_nickname = pokemon['nickname']
+                        pokemon_gender = pokemon['gender']
+                        pokemon_level = pokemon['level']
+                        pokemon_ability = pokemon['ability']
+                        pokemon_type = pokemon['type']
+                        pokemon_stats = pokemon['stats']
+                        pokemon_hp = pokemon_stats["hp"],
+                        pokemon_attacks = pokemon['attacks']
+                        pokemon_base_experience = pokemon['base_experience']
+                        pokemon_growth_rate = pokemon['growth_rate']
+                        pokemon_ev = pokemon['ev']
+                        pokemon_iv = pokemon['iv']
+                        pokemon_description = search_pokeapi_db_by_id(pokemon_id, "description")
+                        if gif_in_collection is True:
+                            pkmn_image_path = str(user_path_sprites / "front_default_gif" / f"{pokemon_id}.gif")
+                            splash_label = MovieSplashLabel(pkmn_image_path)
+                        else:
+                            pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
+                        pixmap.load(pkmn_image_path)
 
-                    # Convert gender name to symbol - this function is from Foxy-null
-                    if pokemon_gender == "M":
-                        gender_symbol = "♂"
-                    elif pokemon_gender == "F":
-                        gender_symbol = "♀"
-                    elif pokemon_gender == "N":
-                        gender_symbol = ""
-                    else:
-                        gender_symbol = ""  # None
+                        # Calculate the new dimensions to maintain the aspect ratio
+                        max_width = 300
+                        max_height = 230
+                        original_width = pixmap.width()
+                        original_height = pixmap.height()
 
-                    # Capitalize the first letter of the Pokémon's name
-                    if pokemon_nickname is None:
-                        capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id)).capitalize()} {gender_symbol}"
-                    else:
-                        capitalized_name = f"{pokemon_nickname.capitalize()} {gender_symbol}"
-                    # Create level text
-                    lvl = (f" Level: {pokemon_level}")
-                    type_txt = "Type: "
-                    for type in pokemon_type:
-                        type_txt += f" {type.capitalize()}"
-                    #if len(pokemon_type) > 1:
-                        #type_txt = (f" Type: {(pokemon_type[0].capitalize())} and {(pokemon_type[1].capitalize())}")
-                    #else:
-                        #type_txt = (f" Type: {(pokemon_type[0].capitalize())}")
-                    ability_txt = (f" Ability: {pokemon_ability.capitalize()}")
-                    # Draw the text on top of the image
-                    font = QFont()
-                    font.setPointSize(12)  # Adjust the font size as needed
-                    painter.setFont(font)
-                    fontpkmnspec = QFont()
-                    fontpkmnspec.setPointSize(8)
-                    painter.end()
+                        if original_width > max_width:
+                            new_width = max_width
+                            new_height = (original_height * max_width) // original_width
+                            pixmap = pixmap.scaled(new_width, new_height)
 
-                    # Create a QLabel for the capitalized name
-                    name_label = QLabel(capitalized_name)
-                    name_label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align to the left
-                    name_label.setFont(font)
+                        painter = QPainter(pixmap)
 
-                    # Create a QLabel for the level
-                    level_label = QLabel(lvl)
-                    level_label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align to the left
-                    level_label.setFont(fontpkmnspec)
+                        if pokemon_gender == "M":
+                            gender_symbol = "♂"
+                        elif pokemon_gender == "F":
+                            gender_symbol = "♀"
+                        elif pokemon_gender == "N":
+                            gender_symbol = ""
+                        else:
+                            gender_symbol = ""
 
-                    # Create a QLabel for the type
-                    type_label = QLabel(type_txt)
-                    type_label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align to the left
-                    type_label.setFont(fontpkmnspec)
+                        if pokemon_nickname is None:
+                            capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id)).capitalize()} {gender_symbol}"
+                        else:
+                            capitalized_name = f"{pokemon_nickname.capitalize()} {gender_symbol}"
+                        lvl = (f" Level: {pokemon_level}")
+                        type_txt = "Type: "
+                        for type in pokemon_type:
+                            type_txt += f" {type.capitalize()}"
+                        ability_txt = (f" Ability: {pokemon_ability.capitalize()}")
 
-                    # Create a QLabel for the ability
-                    ability_label = QLabel(ability_txt)
-                    ability_label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align to the left
-                    ability_label.setFont(fontpkmnspec)
+                        font = QFont()
+                        font.setPointSize(12)
+                        painter.setFont(font)
+                        fontpkmnspec = QFont()
+                        fontpkmnspec.setPointSize(8)
+                        painter.end()
 
-                    # Set the merged image as the pixmap for the QLabel
-                    image_label.setPixmap(pixmap)
+                        name_label = QLabel(capitalized_name)
+                        name_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+                        name_label.setFont(font)
 
-                    # Create a QPushButton for the Pokémon
-                    pokemon_button = QPushButton("Show me Details")
-                    pokemon_button.setIconSize(pixmap.size())
-                    if len(pokemon_type) > 1:
-                        pokemon_button.clicked.connect(lambda state, name = pokemon_name, level = pokemon_level, id = pokemon_id, ability=pokemon_ability, type=[pokemon_type[0], pokemon_type[1]], detail_stats=pokemon_stats, attacks = pokemon_attacks, base_experience=pokemon_base_experience, growth_rate = pokemon_growth_rate, description = pokemon_description, gender = pokemon_gender, nickname = pokemon_nickname: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname))
-                    else:
-                        pokemon_button.clicked.connect(lambda state, name = pokemon_name, level = pokemon_level, id = pokemon_id, ability=pokemon_ability, type=[pokemon_type[0]], detail_stats=pokemon_stats, attacks = pokemon_attacks, base_experience=pokemon_base_experience, growth_rate = pokemon_growth_rate, description = pokemon_description, gender = pokemon_gender, nickname = pokemon_nickname: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname))
+                        level_label = QLabel(lvl)
+                        level_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+                        level_label.setFont(fontpkmnspec)
 
-                    # Create a QPushButton for the Pokémon
-                    choose_pokemon_button = QPushButton("Pick as main Pokemon")
-                    choose_pokemon_button.setIconSize(pixmap.size())
-                    choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp = pokemon_hp , base_experience = mainpokemon_base_experience, growth_rate = pokemon_growth_rate, ev = pokemon_ev, iv = pokemon_iv, gender = pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
+                        type_label = QLabel(type_txt)
+                        type_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+                        type_label.setFont(fontpkmnspec)
 
-                    # Create a QVBoxLayout for the container
-                    container_layout = QVBoxLayout()
-                    container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
-                    if gif_in_collection is True:
-                        container_layout.addWidget(splash_label)
-                        splash_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    else:
-                        container_layout.addWidget(image_label)
-                        image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    container_layout.addWidget(name_label)
-                    container_layout.addWidget(level_label)
-                    container_layout.addWidget(type_label)
-                    container_layout.addWidget(ability_label)
-                    container_layout.addWidget(pokemon_button)
-                    container_layout.addWidget(choose_pokemon_button)
-                    type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    level_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    ability_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                        ability_label = QLabel(ability_txt)
+                        ability_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+                        ability_label.setFont(fontpkmnspec)
 
-                    # Set the QVBoxLayout as the layout for the container
-                    pokemon_container.setLayout(container_layout)
+                        image_label.setPixmap(pixmap)
 
-                    # Add the container to the layout at the current column and row position
-                    scroll_layout.addWidget(pokemon_container, row, column)
+                        pokemon_button = QPushButton("Show me Details")
+                        pokemon_button.setIconSize(pixmap.size())
+                        if len(pokemon_type) > 1:
+                            pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0], pokemon_type[1]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname))
+                        else:
+                            pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname))
 
-                    # Increment the column counter
-                    column += 1
-                    MAX_ITEMS_PER_ROW = 3
-                    if column >= MAX_ITEMS_PER_ROW:
-                        column = 0
-                        row += 1
+                        choose_pokemon_button = QPushButton("Pick as main Pokemon")
+                        choose_pokemon_button.setIconSize(pixmap.size())
+                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=mainpokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
 
-                    # If the column exceeds the screen width, move to the next row
-                    #if column * (max_width + 20) > window.width():
-                        #column = 0
-                        #row += 1
+                        container_layout = QVBoxLayout()
+                        container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
+                        if gif_in_collection is True:
+                            container_layout.addWidget(splash_label)
+                            splash_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                        else:
+                            container_layout.addWidget(image_label)
+                            image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                        container_layout.addWidget(name_label)
+                        container_layout.addWidget(level_label)
+                        container_layout.addWidget(type_label)
+                        container_layout.addWidget(ability_label)
+                        container_layout.addWidget(pokemon_button)
+                        container_layout.addWidget(choose_pokemon_button)
+                        type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                        name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                        level_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                        ability_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-                     # test new code - if +3 pokemon per column =>
-                    #if column > 3:
-                        #column = 0
-                        #row += 1
+                        pokemon_container.setLayout(container_layout)
+                        self.scroll_layout.addWidget(pokemon_container, row, column)
+                        column += 1
+                        if column >= 3:
+                            column = 0
+                            row += 1
 
-                # Set the layout for the container
-                container.setLayout(scroll_layout)
+                    self.container.setLayout(self.scroll_layout)
+                    self.scroll_area.setWidget(self.container)
+                    self.layout.addWidget(self.scroll_area)
+                    self.setLayout(self.layout)
+                else:
+                    self.layout.addWidget(QLabel("You haven't captured any Pokémon yet."))
+        except FileNotFoundError:
+            self.layout.addWidget(QLabel(f"Can't open the Saving File. {mypokemon_path}"))
 
-                # Set the widget for the scroll area
-                scroll_area.setWidget(container)
+    def filter_pokemon(self):
+        search_text = self.search_edit.text().lower()
+        generation_index = self.generation_combo.currentIndex()
+        # Clear previous contents
+        for i in reversed(range(self.scroll_layout.count())):
+            widget = self.scroll_layout.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
+        try:
+            with open(mypokemon_path, "r") as json_file:
+                captured_pokemon_data = json.load(json_file)
+                if captured_pokemon_data:
+                    row, column = 0, 0
+                    for pokemon in captured_pokemon_data:
+                        pokemon_id = pokemon['id']
+                        pokemon_name = pokemon['name'].lower()
+                        pokemon_nickname = pokemon['nickname'].lower()
+                        # Check if the Pokémon matches the search text and generation filter
+                        if (search_text in pokemon_name or search_text in pokemon_nickname) and (generation_index == 0 or (1 <= pokemon_id <= 151 and generation_index == 1) or
+                                                                (152 <= pokemon_id <= 251 and generation_index == 2) or
+                                                                (252 <= pokemon_id <= 386 and generation_index == 3) or
+                                                                (387 <= pokemon_id <= 493 and generation_index == 4) or
+                                                                (494 <= pokemon_id <= 649 and generation_index == 5) or
+                                                                (650 <= pokemon_id <= 721 and generation_index == 6) or
+                                                                (722 <= pokemon_id <= 809 and generation_index == 7) or
+                                                                (810 <= pokemon_id <= 898 and generation_index == 8)):
+                            # Display the Pokémon
+                            pokemon_container = QWidget()
+                            image_label = QLabel()
+                            pixmap = QPixmap()
+                            pokemon_id = pokemon['id']
+                            pokemon_name = pokemon['name']
+                            if not pokemon.get('nickname') or pokemon.get('nickname') is None:
+                                pokemon_nickname = None
+                            else:
+                                pokemon_nickname = pokemon['nickname']
+                            pokemon_gender = pokemon['gender']
+                            pokemon_level = pokemon['level']
+                            pokemon_ability = pokemon['ability']
+                            pokemon_type = pokemon['type']
+                            pokemon_stats = pokemon['stats']
+                            pokemon_hp = pokemon_stats["hp"],
+                            pokemon_attacks = pokemon['attacks']
+                            pokemon_base_experience = pokemon['base_experience']
+                            pokemon_growth_rate = pokemon['growth_rate']
+                            pokemon_ev = pokemon['ev']
+                            pokemon_iv = pokemon['iv']
+                            pokemon_description = search_pokeapi_db_by_id(pokemon_id, "description")
+                            if gif_in_collection is True:
+                                pkmn_image_path = str(user_path_sprites / "front_default_gif" / f"{pokemon_id}.gif")
+                                splash_label = MovieSplashLabel(pkmn_image_path)
+                            else:
+                                pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
+                            pixmap.load(pkmn_image_path)
 
-                # Add the scroll area to the dialog
-                window_layout = QVBoxLayout()
-                window_layout.addWidget(scroll_area)
-                window.setLayout(window_layout)
-                # Show the dialog
-                window.exec()
-                #window.show()
-            else:
-                showInfo("You haven't captured any Pokémon yet.")
-    except FileNotFoundError:
-        showInfo(f"Can't open the Saving File. {mypokemon_path}")
+                            # Calculate the new dimensions to maintain the aspect ratio
+                            max_width = 300
+                            max_height = 230
+                            original_width = pixmap.width()
+                            original_height = pixmap.height()
+
+                            if original_width > max_width:
+                                new_width = max_width
+                                new_height = (original_height * max_width) // original_width
+                                pixmap = pixmap.scaled(new_width, new_height)
+
+                            painter = QPainter(pixmap)
+
+                            if pokemon_gender == "M":
+                                gender_symbol = "♂"
+                            elif pokemon_gender == "F":
+                                gender_symbol = "♀"
+                            elif pokemon_gender == "N":
+                                gender_symbol = ""
+                            else:
+                                gender_symbol = ""
+
+                            if pokemon_nickname is None:
+                                capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id)).capitalize()} {gender_symbol}"
+                            else:
+                                capitalized_name = f"{pokemon_nickname.capitalize()} {gender_symbol}"
+                            lvl = (f" Level: {pokemon_level}")
+                            type_txt = "Type: "
+                            for type in pokemon_type:
+                                type_txt += f" {type.capitalize()}"
+                            ability_txt = (f" Ability: {pokemon_ability.capitalize()}")
+
+                            font = QFont()
+                            font.setPointSize(12)
+                            painter.setFont(font)
+                            fontpkmnspec = QFont()
+                            fontpkmnspec.setPointSize(8)
+                            painter.end()
+
+                            name_label = QLabel(capitalized_name)
+                            name_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+                            name_label.setFont(font)
+
+                            level_label = QLabel(lvl)
+                            level_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+                            level_label.setFont(fontpkmnspec)
+
+                            type_label = QLabel(type_txt)
+                            type_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+                            type_label.setFont(fontpkmnspec)
+
+                            ability_label = QLabel(ability_txt)
+                            ability_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+                            ability_label.setFont(fontpkmnspec)
+
+                            image_label.setPixmap(pixmap)
+
+                            pokemon_button = QPushButton("Show me Details")
+                            pokemon_button.setIconSize(pixmap.size())
+                            if len(pokemon_type) > 1:
+                                pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0], pokemon_type[1]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname))
+                            else:
+                                pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname))
+
+                            choose_pokemon_button = QPushButton("Pick as main Pokemon")
+                            choose_pokemon_button.setIconSize(pixmap.size())
+                            choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=mainpokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
+
+                            container_layout = QVBoxLayout()
+                            container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
+                            if gif_in_collection is True:
+                                container_layout.addWidget(splash_label)
+                                splash_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                            else:
+                                container_layout.addWidget(image_label)
+                                image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                            container_layout.addWidget(name_label)
+                            container_layout.addWidget(level_label)
+                            container_layout.addWidget(type_label)
+                            container_layout.addWidget(ability_label)
+                            container_layout.addWidget(pokemon_button)
+                            container_layout.addWidget(choose_pokemon_button)
+                            type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                            name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                            level_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                            ability_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+                            pokemon_container.setLayout(container_layout)
+                            self.scroll_layout.addWidget(pokemon_container, row, column)
+                            column += 1
+                            if column >= 3:
+                                column = 0
+                                row += 1
+                    self.container.setLayout(self.scroll_layout)
+                    self.scroll_area.setWidget(self.container)
+                    self.layout.addWidget(self.scroll_area)
+                    self.setLayout(self.layout)                        
+                else:
+                    self.layout.addWidget(QLabel("You haven't captured any Pokémon yet."))
+        except FileNotFoundError:
+            self.layout.addWidget(QLabel(f"Can't open the Saving File. {mypokemon_path}"))
+
+
+pokecollection_win = PokemonCollectionDialog()
 
 def rename_pkmn(nickname, pkmn_name):
     try:
@@ -2879,6 +3018,7 @@ def rename_pkmn(nickname, pkmn_name):
                                 with open(str(mypokemon_path), "w") as output_file:
                                     json.dump(mypokemondata, output_file, indent=2)
                                 showInfo(f"Your {pkmn_name.capitalize()} has been renamed to {nickname}!")
+                                pokecollection_win.refresh_pokemon_collection()
     except Exception as e:
         showWarning(f"An error occured: {e}")
 
@@ -6650,10 +6790,38 @@ class ItemWindow(QWidget):
             "cover-fossil": 564,
             "plume-fossil": 566
             }
-                
+        
+        self.evolution_items = {
+
+        }
+        
+        self.tm_hm_list = {
+
+        }
+
         self.setWindowIcon(QIcon(str(icon_path))) # Add a Pokeball icon
         self.setWindowTitle("Itembag")
         self.layout = QVBoxLayout()  # Main layout is now a QVBoxLayout
+
+        # Search Filter
+        self.search_edit = QLineEdit()
+        self.search_edit.setPlaceholderText("Search Items...")
+        #self.search_edit.textChanged.connect(self.filter_pokemon)
+        self.search_button = QPushButton("Search")
+        self.search_button.clicked.connect(self.filter_items)
+
+        # Add dropdown menu for generation filtering
+        self.category = QComboBox()
+        self.category.addItem("All")
+        self.category.addItems(["Fossils", "TMs and HMs", "Heal", "Evolution Items"])
+        self.category.currentIndexChanged.connect(self.filter_items)
+
+        # Add widgets to layout
+        filter_layout = QHBoxLayout()
+        filter_layout.addWidget(self.search_edit)
+        filter_layout.addWidget(self.search_button)
+        filter_layout.addWidget(self.category)
+        self.layout.addLayout(filter_layout)
 
         # Create the scroll area and its properties
         self.scrollArea = QScrollArea(self)
@@ -6680,13 +6848,49 @@ class ItemWindow(QWidget):
             if widget:
                 widget.deleteLater()
         row, col = 0, 0
-        max_items_per_row = 4
+        max_items_per_row = 3
 
         if not self.itembag_list:  # Simplified check
             empty_label = QLabel("You don't own any items yet.")
             self.contentLayout.addWidget(empty_label, 1, 1)
         else:
             for item_name in self.itembag_list:
+                item_widget = self.ItemLabel(item_name)
+                self.contentLayout.addWidget(item_widget, row, col)
+                col += 1
+                if col >= max_items_per_row:
+                    row += 1
+                    col = 0
+    
+    def filter_items(self):
+        self.read_item_file()
+        search_text = self.search_edit.text().lower()
+        category_index = self.category.currentIndex()
+        # Clear the existing widgets from the content layout
+        for i in reversed(range(self.contentLayout.count())):
+            widget = self.contentLayout.itemAt(i).widget()
+            if widget:
+                widget.deleteLater()
+        row, col = 0, 0
+        max_items_per_row = 3
+
+        if not self.itembag_list:  # Simplified check
+            empty_label = QLabel("Empty Search")
+            self.contentLayout.addWidget(empty_label, 1, 1)
+        else:
+            # Filter items based on category index
+            if category_index == 1:  # Heal items
+                filtered_items = [item_name for item_name in self.itembag_list if item_name in self.fossil_pokemon and search_text in item_name.lower()]
+            elif category_index == 2:  # Heal items
+                filtered_items = [item_name for item_name in self.itembag_list if item_name in self.tm_hm_list and search_text in item_name.lower()]
+            elif category_index == 3:
+                filtered_items = [item_name for item_name in self.itembag_list if item_name in self.hp_heal_items and search_text in item_name.lower()]
+            elif category_index == 4:
+                filtered_items = [item_name for item_name in self.itembag_list if item_name in self.evolution_items and search_text in item_name.lower()]
+            else:
+                filtered_items = [item_name for item_name in self.itembag_list if search_text in item_name.lower()]
+
+            for item_name in filtered_items:
                 item_widget = self.ItemLabel(item_name)
                 self.contentLayout.addWidget(item_widget, row, col)
                 col += 1
@@ -6992,7 +7196,7 @@ if database_complete != False:
     pokecol_action = QAction("Show Pokemon Collection", mw)
     # set it to call testFunction when it's clicked
     mw.pokemenu.addAction(pokecol_action)
-    qconnect(pokecol_action.triggered, ShowPokemonCollection)
+    qconnect(pokecol_action.triggered, pokecollection_win.show)
     # Make new PokeAnki menu under tools
 
     test_action10 = QAction("Open Ankimon Window", mw)
