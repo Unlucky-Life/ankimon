@@ -111,6 +111,9 @@ sound_list_path = addon_dir / "addon_files" / "sound_list.json"
 badges_list_path = addon_dir / "addon_files" / "badges.json"
 items_list_path = addon_dir / "addon_files" / "items.json"
 rate_path = addon_dir / "user_files" / "rate_this.json"
+csv_file_items = addon_dir / "user_files" / "data_files" / "item_names.csv"
+csv_file_descriptions = addon_dir / "user_files" / "data_files" / "item_flavor_text.csv"
+
 
 items_list = []
 with open(items_list_path, 'r') as file:
@@ -6901,6 +6904,8 @@ class ItemWindow(QWidget):
     def ItemLabel(self, item_name):
         item_file_path = items_path / f"{item_name}.png"
         item_frame = QVBoxLayout() #itemframe
+        info_item_button = QPushButton("More Info")
+        info_item_button.clicked.connect(lambda: self.more_info_button_act(item_name))
         item_name_for_label = item_name.replace("-", " ")   # Remove hyphens from item_name
         item_name_label = QLabel(f"{item_name_for_label.capitalize()}") #itemname
         item_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -6928,6 +6933,7 @@ class ItemWindow(QWidget):
             self.PokemonList(comboBox)
             item_frame.addWidget(comboBox)
         item_frame.addWidget(use_item_button)
+        item_frame.addWidget(info_item_button)
         item_frame_widget = QWidget()
         item_frame_widget.setLayout(item_frame)
 
@@ -7024,6 +7030,49 @@ class ItemWindow(QWidget):
         
         self.show()
 
+    def more_info_button_act(self, item_name):
+        description = get_id_and_description_by_item_name(item_name)
+        showInfo(f"{description}")
+    
+def read_csv_file(csv_file):
+    item_id_mapping = {}
+    with open(csv_file, newline='', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            item_id_mapping[row['name'].lower()] = int(row['item_id'])
+    return item_id_mapping
+
+def capitalize_each_word(item_name):
+    # Replace hyphens with spaces and capitalize each word
+    return ' '.join(word.capitalize() for word in item_name.replace("-", " ").split())
+
+def read_descriptions_csv(csv_file):
+    descriptions = {}
+    with open(csv_file, newline='', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header row
+        for row in reader:
+            item_id = int(row[0])
+            version_group_id = int(row[1])
+            language_id = int(row[2])
+            description = row[3].strip('"')
+            key = (item_id, version_group_id, language_id)
+            descriptions[key] = description
+    return descriptions
+
+def get_id_and_description_by_item_name(item_name):
+    global csv_file_descriptions, csv_file_items
+    item_name = capitalize_each_word(item_name)
+    item_id_mapping = read_csv_file(csv_file_items)
+    item_id = item_id_mapping.get(item_name.lower())
+    if item_id is None:
+        return None, None
+    else:
+        descriptions = read_descriptions_csv(csv_file_descriptions)
+        key = (item_id, 11, 9)  # Assuming version_group_id 11 and language_id 9
+        description = descriptions.get(key, None)
+        return description
+    
 item_window = ItemWindow()
 
 class AttackDialog(QDialog):
