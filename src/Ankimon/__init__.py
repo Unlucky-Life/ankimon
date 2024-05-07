@@ -2041,7 +2041,7 @@ if database_complete != False:
     try:
         mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname = mainpokemon_data()
         starter = True
-    except:
+    except Exception as e:
         starter = False
         mainpokemon_level = 5
     name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
@@ -2801,7 +2801,7 @@ class PokemonCollectionDialog(QDialog):
 
                         choose_pokemon_button = QPushButton("Pick as main Pokemon")
                         choose_pokemon_button.setIconSize(pixmap.size())
-                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=mainpokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
+                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
 
                         container_layout = QVBoxLayout()
                         container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
@@ -2854,7 +2854,10 @@ class PokemonCollectionDialog(QDialog):
                     for pokemon in captured_pokemon_data:
                         pokemon_id = pokemon['id']
                         pokemon_name = pokemon['name'].lower()
-                        pokemon_nickname = pokemon['nickname'].lower()
+                        if not pokemon.get('nickname') or pokemon.get('nickname') is None:
+                            pokemon_nickname = None
+                        else:
+                            pokemon_nickname = pokemon['nickname']
                         # Check if the Pokémon matches the search text and generation filter
                         if (search_text in pokemon_name or search_text in pokemon_nickname) and (generation_index == 0 or (1 <= pokemon_id <= 151 and generation_index == 1) or
                                                                 (152 <= pokemon_id <= 251 and generation_index == 2) or
@@ -4440,6 +4443,7 @@ if database_complete != False and mainpokemon_empty is False:
         global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, icon_path
         global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
         global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds, myseconds, view_main_front
+
         experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
