@@ -2009,7 +2009,10 @@ def mainpokemon_data():
                 main_pokemon_data = []
                 for main_pokemon_data in main_pokemon_datalist:
                     mainpokemon_name = main_pokemon_data["name"]
-                    mainpokemon_nickname = main_pokemon_data["nickname"]
+                    if not main_pokemon_data.get('nickname') or main_pokemon_data.get('nickname') is None:
+                            mainpokemon_nickname = None
+                    else:
+                        mainpokemon_nickname = main_pokemon_data['nickname']
                     mainpokemon_id = main_pokemon_data["id"]
                     mainpokemon_ability = main_pokemon_data["ability"]
                     mainpokemon_type = main_pokemon_data["type"]
@@ -5931,6 +5934,7 @@ def rate_this_addon():
         
         # Rate button
         rate_button = QPushButton("Rate Now")
+        dont_show_button = QPushButton("I dont want to rate this addon.")
 
         def support_button_click():
             support_url = "https://ko-fi.com/unlucky99"
@@ -5952,6 +5956,18 @@ def rate_this_addon():
             thx_layout.addWidget(support_button)
             thankyou_window.setModal(True)
             thankyou_window.exec()
+        
+        def dont_show_this_button():
+            rate_window.close()
+            rate_data["rate_this"] = True
+            # Save the updated data back to the file
+            with open(rate_path, 'w') as file:
+                json.dump(rate_data, file, indent=4)
+            showInfo("""This Pop Up wont turn up on startup anymore.
+                     If you decide to rate this addon later on.
+                     You can go to Ankimon => Rate This.
+                     Anyway, have fun playing !
+                     """)
 
         def rate_this_button():
             rate_window.close()
@@ -5971,6 +5987,9 @@ def rate_this_addon():
                     json.dump(itembag_list, json_file)
         rate_button.clicked.connect(rate_this_button)
         layout.addWidget(rate_button)
+
+        dont_show_button.clicked.connect(dont_show_this_button)
+        layout.addWidget(dont_show_button)
         
         # Support button
         support_button = QPushButton("Support the Author")
