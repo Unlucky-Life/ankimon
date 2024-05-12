@@ -2857,19 +2857,21 @@ class PokemonCollectionDialog(QDialog):
                     for pokemon in captured_pokemon_data:
                         pokemon_id = pokemon['id']
                         pokemon_name = pokemon['name'].lower()
-                        if not pokemon.get('nickname') or pokemon.get('nickname') is None:
-                            pokemon_nickname = None
-                        else:
-                            pokemon_nickname = pokemon['nickname']
+                        pokemon_nickname = pokemon.get("nickname", None)
                         # Check if the Pokémon matches the search text and generation filter
-                        if (search_text in pokemon_name or search_text in pokemon_nickname) and (generation_index == 0 or (1 <= pokemon_id <= 151 and generation_index == 1) or
-                                                                (152 <= pokemon_id <= 251 and generation_index == 2) or
-                                                                (252 <= pokemon_id <= 386 and generation_index == 3) or
-                                                                (387 <= pokemon_id <= 493 and generation_index == 4) or
-                                                                (494 <= pokemon_id <= 649 and generation_index == 5) or
-                                                                (650 <= pokemon_id <= 721 and generation_index == 6) or
-                                                                (722 <= pokemon_id <= 809 and generation_index == 7) or
-                                                                (810 <= pokemon_id <= 898 and generation_index == 8)):
+                        if (search_text.lower() in pokemon_name.lower() or 
+                            (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower())) and \
+                            0 <= generation_index <= 8 and \
+                            ((generation_index == 0) or 
+                            (1 <= pokemon_id <= 151 and generation_index == 1) or
+                            (152 <= pokemon_id <= 251 and generation_index == 2) or
+                            (252 <= pokemon_id <= 386 and generation_index == 3) or
+                            (387 <= pokemon_id <= 493 and generation_index == 4) or
+                            (494 <= pokemon_id <= 649 and generation_index == 5) or
+                            (650 <= pokemon_id <= 721 and generation_index == 6) or
+                            (722 <= pokemon_id <= 809 and generation_index == 7) or
+                            (810 <= pokemon_id <= 898 and generation_index == 8)):
+
                             # Display the Pokémon
                             pokemon_container = QWidget()
                             image_label = QLabel()
@@ -6834,6 +6836,7 @@ class ItemWindow(QWidget):
         # Search Filter
         self.search_edit = QLineEdit()
         self.search_edit.setPlaceholderText("Search Items...")
+        self.search_edit.returnPressed.connect(self.filter_items)
         #self.search_edit.textChanged.connect(self.filter_pokemon)
         self.search_button = QPushButton("Search")
         self.search_button.clicked.connect(self.filter_items)
