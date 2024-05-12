@@ -5927,8 +5927,10 @@ def rate_this_addon():
         
         text_label = QLabel("""Thanks for using Ankimon! 
                             \nI would like Ankimon to be known even more in the community, 
-                            \nand a rating would be amazing.Letting others know what you think of the addon.
+                            \nand a rating would be amazing. Letting others know what you think of the addon.
                             \nThis takes less than a minute.
+
+                            \nIf you do not want to rate this addon. Feel free to press: I dont want to rate this addon.
                             """)
         layout.addWidget(text_label)
         
@@ -5964,10 +5966,10 @@ def rate_this_addon():
             with open(rate_path, 'w') as file:
                 json.dump(rate_data, file, indent=4)
             showInfo("""This Pop Up wont turn up on startup anymore.
-                     If you decide to rate this addon later on.
-                     You can go to Ankimon => Rate This.
-                     Anyway, have fun playing !
-                     """)
+            If you decide to rate this addon later on.
+            You can go to Ankimon => Rate This.
+            Anyway, have fun playing !
+            """)
 
         def rate_this_button():
             rate_window.close()
