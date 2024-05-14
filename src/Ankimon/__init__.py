@@ -4036,6 +4036,8 @@ def load_custom_font(font_size):
 #test functions
 
 def find_experience_for_level(group_growth_rate, level):
+    if level > 100:
+    	level = 100
     if group_growth_rate == "medium":
         group_growth_rate = "medium-fast"
     elif group_growth_rate == "slow-then-very-fast":
