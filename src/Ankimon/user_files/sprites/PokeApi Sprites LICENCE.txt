@@ -1,3 +1,8 @@
+This License and the content in these Folders (and subfolders) are distributed by PokeApi under the following repository on GitHub:
+https://github.com/PokeAPI/sprites/tree/master
+As a CC0 1.0 Universal License allows to redistribute these images.
+
+
 All image contents within are Copyright The Pokémon Company.
 
 This repository is distributed under CC0 1.0 Universal
