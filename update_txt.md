@@ -1,20 +1,15 @@
-## Ankimon News: Version 1.275:
+## Ankimon News: Version 1.279:
 
-🚀 **Exciting News for Ankimon's Next Update: Version 1.275!**
+## Update Notification
 
+**More Fixes**: 🔧
 
-1. **Search by Pokémon Name and Nickname**: 🧐 Now you can easily find your Pokémon by their English name or nickname! No more scrolling through long lists—just type in the name and voilà!
+- **Trading Starter Pokémon**: Not able to trade out starter Pokémon for another Pokémon (only after reset) as main Pokémon has been fixed. If any users lost their starter Pokémon through this or still have issues, please create an issue on the Ankimon GitHub: [https://github.com/Unlucky-Life/ankimon/issues/](https://github.com/Unlucky-Life/ankimon/issues/) and send me your `mainpokemon.json` and `mypokemon.json` file in the `user_files` folder in the Ankimon Addon folder.
 
-2. **Generation Specific Searches**: 🌟 Looking for Pokémon from a specific generation? We've got you covered! Narrow down your search results by generation to find exactly what you're looking for.
+- **Huge Pokéball Icon**: The huge Pokéball icon not disappearing for users with "show main Pokémon in reviewer" setting set to 0 has been fixed.
 
-3. **Item Information at Your Fingertips**: 💼 Want to know more about your items? Simply search through your items, and we'll provide you with detailed information on each one. No more guessing—get all the info you need instantly!
-
-4. **Bug Fixes**: 🐛 We've squashed the pesky "move" bug and resolved issues with certain Pokémon attacks giving out errors. Your gameplay experience just got smoother!
-
-5. **More Fixes**: 🔧 We've fixed the error issue with the already caught icon not disappearing, the bug causing full issue on opening the ankimon window, and resolved audio issues for some users. Everything's running smoother than ever!
-
-Get ready for an electrifying adventure with Ankimon Version 1.27!
-
+- **Startup Issue**: Fixed the issue where Ankimon would not start up due to Pokémon over level 100.
+    
 ### PLEASE READ:
 
 **Mac Users:** When download the functions DO NOT go into fullscreen and don't let the computer hibernate/sleep while the files are downloading! This causes errors and issues with the Ankimon addon. If this happens to you, you need to uninstall and reinstall the addon and re-do the download process.
