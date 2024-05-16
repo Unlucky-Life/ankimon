@@ -3639,7 +3639,10 @@ def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks,
 
     showInfo(f"{capitalized_name} has been chosen as your main Pokemon !")
     new_pokemon() #new pokemon if you change your pokemon
-
+    mainpokemon_data()
+    if pkmn_window is True:
+        test_window.display_first_encounter()
+	
 def PokemonDetailsStats(detail_stats, growth_rate, level):
     
     
