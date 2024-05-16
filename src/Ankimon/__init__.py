@@ -4531,8 +4531,7 @@ if database_complete != False and mainpokemon_empty is False:
                     background-size: cover; /* Cover the div area with the image */
                 }}
                 """
-                if pokeball == True:
-                    css += f"""
+                css += f"""
                     #PokeIcon {{
                     position: fixed;
                     bottom: {85 + xp_bar_spacer}px; /* Adjust as needed */
