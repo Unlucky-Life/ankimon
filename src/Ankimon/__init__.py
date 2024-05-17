@@ -302,7 +302,7 @@ else:
     hp_only_spacer = 0
     wild_hp_spacer = 0
 
-def test_online_connectivity(url='http://www.google.com', timeout=5):
+def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5):
     try:
         # Attempt to get the URL
         response = requests.get(url, timeout=timeout)
@@ -477,8 +477,10 @@ def play_effect_sound(sound_type):
 def play_sound():
     global sounds
     if sounds is True:
-        global name, addon_dir
-        file_name = f"{name.lower()}.mp3"
+        global id, addon_dir
+        #id = search_pokedex(name.lower(), "id")
+        file_name = f"{id}.ogg"
+        #file_name = f"{name.lower()}.mp3"
         audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
         if audio_path.is_file():
             audio_path = Path(audio_path)
@@ -4123,9 +4125,11 @@ class Downloader(QObject):
         self.user_path_data = user_path_data
         self.badges_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/"
         self.item_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dream-world/"
-        self.sounds_base_url = "https://play.pokemonshowdown.com/audio/cries/"
-        self.sound_names = sound_list
-        self.item_names = items_list
+        self.sounds_base_url = "https://https://veekun.com/dex/media/pokemon/cries/"
+        #self.sound_names = sound_list
+        self.sound_name = list(range(1, 722))
+        #self.item_names = items_list
+        self.item_name = ["absorb-bulb"]
         if not os.path.exists(self.items_destination_to):
             os.makedirs(self.items_destination_to)
         if not os.path.exists(self.badges_destination_to):
@@ -4222,7 +4226,7 @@ class Downloader(QObject):
                         with open(file_path, 'w') as json_file:
                             json.dump(data, json_file, indent=2)
                     else:
-                        print(f"Failed to download data from {url}")  # Replace with a signal if needed
+                       print(f"Failed to download data from {url}")  # Replace with a signal if needed
                     progress = int((i / num_files) * 100)
                     self.progress_updated.emit(progress)
                 else:  # Handle "POKEAPI" case
@@ -4243,56 +4247,12 @@ class Downloader(QObject):
                 progress = int((i / num_files) * 100)
                 self.progress_updated.emit(progress)
             total_downloaded = 0
-            self.id_to = 898
-            self.downloading_sprites_txt.emit()
-            for pokemon_id in range(1, self.id_to + 1):
-                    for sprite_type in ["front_default", "back_default"]:
-                        if sprite_type == "front_default":
-                            base_url = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{pokemon_id}.png"
-                            response = requests.get(base_url)
-                            if response.status_code == 200:
-                                save_dir = self.front_dir
-                                with open(os.path.join(save_dir, f"{pokemon_id}.png"), "wb") as f:
-                                    f.write(response.content)
-                        elif sprite_type == "back_default":
-                            base_url = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/{pokemon_id}.png"
-                            response = requests.get(base_url)
-                            if response.status_code == 200:
-                                save_dir = self.back_dir
-                                with open(os.path.join(save_dir, f"{pokemon_id}.png"), "wb") as f:
-                                    f.write(response.content)
-                        total_downloaded += 1
-                        progress = int((pokemon_id / self.id_to) * 100)
-                        self.progress_updated.emit(progress)
-            self.downloading_item_sprites_txt.emit()
-            item_files = 336
-            i = 0
-            for item_name in self.item_names:
-                i += 1
-                item_url = self.item_base_url + item_name
-                response = requests.get(item_url)
-                if response.status_code == 200:
-                    with open(os.path.join(self.items_destination_to, item_name), 'wb') as file:
-                        file.write(response.content)
-                progress = int((i / item_files) * 100)
-                self.progress_updated.emit(progress)
-            # Emit the download_complete signal at the end of the download process
-            max_badges = 68
-            self.downloading_badges_sprites_txt.emit()
-            for badge_num in range(1,68):
-                badge_file = f"{badge_num}.png"
-                badge_url = self.badges_base_url + badge_file
-                response = requests.get(badge_url)
-                if response.status_code == 200:
-                    with open(os.path.join(self.badges_destination_to, badge_file), 'wb') as file:
-                        file.write(response.content)
-                progress = int((badge_num / max_badges) * 100)
-                self.progress_updated.emit(progress)
             self.downloading_sounds_txt.emit()
             num_sound_files = len(self.sound_names)
             i = 0
             for sound in self.sound_names:
                 i += 1
+                sound = f"{sound}.ogg"
                 sounds_url = self.sounds_base_url + sound
                 response = requests.get(sounds_url)
                 if response.status_code == 200:
@@ -4301,24 +4261,6 @@ class Downloader(QObject):
                 progress = int((i / num_sound_files) * 100)
                 self.progress_updated.emit(progress)
             self.downloading_gif_sprites_txt.emit()
-            base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
-            total_downloaded = 0
-            self.id_to = 898
-            for pokemon_id in range(1, self.id_to + 1):
-                for sprite_type in ["front_showdown", "back_showdown"]:
-                    front_sprite_url = f"{base_url}other/showdown/{pokemon_id}.gif"
-                    response = requests.get(front_sprite_url)
-                    if response.status_code == 200:
-                        with open(os.path.join(self.front_gif_dir, f"{pokemon_id}.gif"), 'wb') as file:
-                            file.write(response.content)
-                    # Download back sprite
-                    back_sprite_url = f"{base_url}other/showdown/back/{pokemon_id}.gif"
-                    response = requests.get(back_sprite_url)
-                    if response.status_code == 200:
-                        with open(os.path.join(self.back_gif_dir, f"{pokemon_id}.gif"), 'wb') as file:
-                            file.write(response.content)
-                    progress = int((pokemon_id / self.id_to) * 100)
-                    self.progress_updated.emit(progress)
             self.download_complete.emit()
         except Exception as e:
             showWarning(f"An error occurred: {e}")  # Replace with a signal if needed
