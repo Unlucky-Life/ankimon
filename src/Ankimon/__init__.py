@@ -5956,7 +5956,7 @@ def rate_this_addon():
 if database_complete is True:
     with open(badgebag_path, 'r') as json_file:
         badge_list = json.load(json_file)
-        if len(badge_list) > 2:
+        if len(badge_list) > 4:
             rate_this_addon()
 
 #Badges needed for achievements:
