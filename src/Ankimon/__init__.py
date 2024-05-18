@@ -5928,13 +5928,7 @@ def rate_this_addon():
             # Save the updated data back to the file
             with open(rate_path, 'w') as file:
                 json.dump(rate_data, file, indent=4)
-                test_window.rate_display_item("potion")
-                # add item to item list
-                with open(itembag_path, 'r') as json_file:
-                    itembag_list = json.load(json_file)
-                    itembag_list.append("potion")
-                with open(itembag_path, 'w') as json_file:
-                    json.dump(itembag_list, json_file)
+
         rate_button.clicked.connect(rate_this_button)
         layout.addWidget(rate_button)
 
