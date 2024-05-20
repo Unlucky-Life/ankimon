@@ -12,6 +12,8 @@ Whether you're looking to **trade** your Pokémon 🐉, **train** with fellow tr
 
 🔗 [Join the Discord Server](https://discord.gg/AvCESmPGfy)
 
+Link: https://discord.gg/AvCESmPGfy
+
 See you there, Trainers! Let's catch 'em all together! ⚡
     
 ### PLEASE READ:
