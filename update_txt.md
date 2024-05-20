@@ -1,14 +1,18 @@
-## Ankimon News: Version 1.279:
+## Ankimon News:
 
 ## Update Notification
 
-**More Fixes**: 🔧
+# 🚨 **Attention Pokémon Trainers!** 🚨
 
-- **Trading Starter Pokémon**: Not able to trade out starter Pokémon for another Pokémon (only after reset) as main Pokémon has been fixed. If any users lost their starter Pokémon through this or still have issues, please create an issue on the Ankimon GitHub: [https://github.com/Unlucky-Life/ankimon/issues/](https://github.com/Unlucky-Life/ankimon/issues/) and send me your `mainpokemon.json` and `mypokemon.json` file in the `user_files` folder in the Ankimon Addon folder.
+🌟 We are excited to announce the launch of our new **Discord server** dedicated to all things Pokémon! 🌟
 
-- **Huge Pokéball Icon**: The huge Pokéball icon not disappearing for users with "show main Pokémon in reviewer" setting set to 0 has been fixed.
+Whether you're looking to **trade** your Pokémon 🐉, **train** with fellow trainers 🏋️‍♂️, or just chat and share tips 🗣️, our server is the perfect place for you!
 
-- **Startup Issue**: Fixed the issue where Ankimon would not start up due to Pokémon over level 100.
+🎉 **Join us today and become part of our growing community!** 🎉
+
+🔗 [Join the Discord Server](https://discord.gg/AvCESmPGfy)
+
+See you there, Trainers! Let's catch 'em all together! ⚡
     
 ### PLEASE READ:
 
