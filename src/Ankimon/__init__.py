@@ -2711,7 +2711,7 @@ class PokemonCollectionDialog(QDialog):
                 captured_pokemon_data = json.load(json_file)
                 if captured_pokemon_data:
                     row, column = 0, 0
-                    for pokemon in captured_pokemon_data:
+                    for position, pokemon in enumerate(captured_pokemon_data):
                         pokemon_container = QWidget()
                         image_label = QLabel()
                         pixmap = QPixmap()
@@ -2800,9 +2800,9 @@ class PokemonCollectionDialog(QDialog):
                         pokemon_button = QPushButton("Show me Details")
                         pokemon_button.setIconSize(pixmap.size())
                         if len(pokemon_type) > 1:
-                            pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0], pokemon_type[1]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname))
+                            pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0], pokemon_type[1]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname, position=position: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position))
                         else:
-                            pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname))
+                            pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname, position=position: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position))
 
                         choose_pokemon_button = QPushButton("Pick as main Pokemon")
                         choose_pokemon_button.setIconSize(pixmap.size())
@@ -2856,7 +2856,7 @@ class PokemonCollectionDialog(QDialog):
                 captured_pokemon_data = json.load(json_file)
                 if captured_pokemon_data:
                     row, column = 0, 0
-                    for pokemon in captured_pokemon_data:
+                    for position, pokemon in enumerate(captured_pokemon_data):
                         pokemon_id = pokemon['id']
                         pokemon_name = pokemon['name'].lower()
                         pokemon_nickname = pokemon.get("nickname", None)
@@ -2963,9 +2963,9 @@ class PokemonCollectionDialog(QDialog):
                             pokemon_button = QPushButton("Show me Details")
                             pokemon_button.setIconSize(pixmap.size())
                             if len(pokemon_type) > 1:
-                                pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0], pokemon_type[1]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname))
+                                pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0], pokemon_type[1]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname, position=position: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position))
                             else:
-                                pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname))
+                                pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname, position=position: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position))
 
                             choose_pokemon_button = QPushButton("Pick as main Pokemon")
                             choose_pokemon_button.setIconSize(pixmap.size())
@@ -3008,14 +3008,14 @@ class PokemonCollectionDialog(QDialog):
 
 pokecollection_win = PokemonCollectionDialog()
 
-def rename_pkmn(nickname, pkmn_name):
+def rename_pkmn(nickname, pkmn_name, position):
     try:
         with open(mypokemon_path, "r") as json_file:
             captured_pokemon_data = json.load(json_file)
             pokemon = None
             if captured_pokemon_data:
-                for pokemon_data in captured_pokemon_data:
-                    if pokemon_data['name'] == pkmn_name:
+                for index, pokemon_data in enumerate(captured_pokemon_data):
+                    if index == position:
                         pokemon = pokemon_data
                         if pokemon is not None:
                             pokemon["nickname"] = nickname
@@ -3024,9 +3024,8 @@ def rename_pkmn(nickname, pkmn_name):
                                 mypokemondata = json.load(output_file)
                                 # Find and replace the specified Pokémon's data in mypokemondata
                                 for index, pokemon_data in enumerate(mypokemondata):
-                                    if pokemon_data["name"] == pkmn_name:
-                                        mypokemondata[index] = pokemon
-                                        break
+                                    mypokemondata[position] = pokemon
+                                    break
                                         # Save the modified data to the output JSON file
                                 with open(str(mypokemon_path), "w") as output_file:
                                     json.dump(mypokemondata, output_file, indent=2)
@@ -3035,7 +3034,7 @@ def rename_pkmn(nickname, pkmn_name):
     except Exception as e:
         showWarning(f"An error occured: {e}")
 
-def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname):
+def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position):
     global frontdefault, type_style_file, language, icon_path, gif_in_collection
     # Create the dialog
     try:
@@ -3253,15 +3252,15 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         #statstablelayout.setFixedWidth(350)
         statstablelayout.setFixedHeight(200)
         free_pokemon_button = QPushButton("Release Pokemon") #add Details to Moves
-        qconnect(free_pokemon_button.clicked, lambda: PokemonFree(name))
+        qconnect(free_pokemon_button.clicked, lambda: PokemonFree(position, name))
         trade_pokemon_button = QPushButton("Trade Pokemon") #add Details to Moves
-        qconnect(trade_pokemon_button.clicked, lambda: PokemonTrade(name, id, level, ability, iv, ev, gender, attacks))
+        qconnect(trade_pokemon_button.clicked, lambda: PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position))
         layout.addWidget(trade_pokemon_button)
         layout.addWidget(free_pokemon_button)
         rename_button = QPushButton("Rename Pokemon") #add Details to Moves
         rename_input = QLineEdit()
         rename_input.setPlaceholderText("Enter a new Nickname for your Pokemon")
-        qconnect(rename_button.clicked, lambda: rename_pkmn(rename_input.text(),name))
+        qconnect(rename_button.clicked, lambda: rename_pkmn(rename_input.text(),name, position))
         layout.addWidget(rename_input)
         layout.addWidget(rename_button)
         #qconnect()
@@ -3700,16 +3699,16 @@ def PokemonDetailsStats(detail_stats, growth_rate, level):
 
     return CompleteTable_layout
 
-def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks):
+def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
     global addon_dir
     global mainpokemon_path
      # Load the data from the file
     with open(mainpokemon_path, 'r') as file:
         pokemon_data = json.load(file)
-
+    #check if player tries to trade mainpokemon
     found = False
     for pokemons in pokemon_data:
-        if pokemons["name"] == name:
+        if pokemons["name"] == name and pokemons["id"] == id and pokemons["level"] == level and pokemons["ability"] == ability and pokemons["iv"] == iv and pokemons["ev"] == ev and pokemons["gender"] == gender and pokemons["attacks"] == attacks:
             found = True
             break
 
@@ -3740,7 +3739,7 @@ def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks):
 
         # Create a button to save the input
         trade_button = QPushButton("Trade Pokemon")
-        qconnect(trade_button.clicked, lambda: PokemonTradeIn(trade_code_input.text(), name))
+        qconnect(trade_button.clicked, lambda: PokemonTradeIn(trade_code_input.text(), name, position))
         # Information label
         info = "Pokemon Infos have been Copied to your Clipboard! \nNow simply paste this text into Teambuilder in PokemonShowdown. \nNote: Fight in the [Gen 9] Anything Goes - Battle Mode"
 
@@ -3836,7 +3835,7 @@ def find_pokemon_by_id(pokemon_id):
     except json.JSONDecodeError as e:
         showInfo(f"Error decoding JSON: {e}")
 
-def trade_pokemon(old_pokemon_name, pokemon_trade):
+def trade_pokemon(old_pokemon_name, pokemon_trade, position):
     global mypokemon_path
     try:
         # Load the current list of Pokemon
@@ -3851,9 +3850,8 @@ def trade_pokemon(old_pokemon_name, pokemon_trade):
 
     # Find and replace the specific Pokemon's information
     for i, pokemon in enumerate(pokemon_list):
-        if pokemon["name"].lower() == old_pokemon_name.lower():
-            pokemon_list[i] = pokemon_trade  # Replace with new Pokemon data
-            break
+        pokemon_list[position] = pokemon_trade  # Replace with new Pokemon data
+        break
     else:
         showInfo(f"Pokemon named '{old_pokemon_name}' not found.")
         return
@@ -3866,19 +3864,7 @@ def trade_pokemon(old_pokemon_name, pokemon_trade):
     except Exception as e:
         showInfo(f"An error occurred while writing to the file: {e}")
 
-    global mainpokemon_path
-    # Load the data from the file
-    with open(mainpokemon_path, 'r') as file:
-        pokemons = json.load(file)
-
-    # Find and remove the Pokemon with the given name
-    pokemons = [p for p in pokemons if p['name'] != old_pokemon_name]
-
-    # Write the updated data back to the file
-    with open(mainpokemon_path, 'w') as file:
-        json.dump(pokemons, file, indent=4)
-
-def PokemonTradeIn(number_code, old_pokemon_name):
+def PokemonTradeIn(number_code, old_pokemon_name, position):
     if len(number_code) > 15:
         global addon_dir
         # Split the string into a list of integers
@@ -3951,13 +3937,13 @@ def PokemonTradeIn(number_code, old_pokemon_name):
         # Write the updated data back to the file
         #with open(mypokemon_path, 'w') as file:
         #    json.dump(pokemon_list, file, indent=2)
-        trade_pokemon(f"{old_pokemon_name}", pokemon_trade)
+        trade_pokemon(f"{old_pokemon_name}", pokemon_trade, position)
         showInfo(f"You have sucessfully traded your {old_pokemon_name} for {name} ")
     else:
         showWarning("Please enter a valid Code !")
 
 
-def PokemonFree(name):
+def PokemonFree(position, name):
     global mypokemon_path
     global mainpokemon_path
 
@@ -3986,12 +3972,14 @@ def PokemonFree(name):
             pokemon_list = json.load(file)
 
         # Find and remove the Pokemon with the given name
-        pokemon_list = [p for p in pokemon_list if p['name'] != name]
+        #pokemon_list = [p for p in pokemon_list if p['name'] != name]
+        pokemon_list.pop(position)
 
         # Write the updated data back to the file
         with open(mypokemon_path, 'w') as file:
             json.dump(pokemon_list, file, indent=2)
         showInfo(f"{name.capitalize()} has been let free.")
+        pokecollection_win.refresh_pokemon_collection()
     else:
         showWarning("You can't free your Main Pokemon!")
 
@@ -4125,9 +4113,9 @@ class Downloader(QObject):
         self.user_path_data = user_path_data
         self.badges_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/"
         self.item_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dream-world/"
-        self.sounds_base_url = "https://https://veekun.com/dex/media/pokemon/cries/"
+        self.sounds_base_url = "https://veekun.com/dex/media/pokemon/cries/"
         #self.sound_names = sound_list
-        self.sound_name = list(range(1, 722))
+        self.sound_names = list(range(1, 722))
         #self.item_names = items_list
         self.item_name = ["absorb-bulb"]
         if not os.path.exists(self.items_destination_to):
@@ -5928,7 +5916,13 @@ def rate_this_addon():
             # Save the updated data back to the file
             with open(rate_path, 'w') as file:
                 json.dump(rate_data, file, indent=4)
-
+                test_window.rate_display_item("potion")
+                # add item to item list
+                with open(itembag_path, 'r') as json_file:
+                    itembag_list = json.load(json_file)
+                    itembag_list.append("potion")
+                with open(itembag_path, 'w') as json_file:
+                    json.dump(itembag_list, json_file)
         rate_button.clicked.connect(rate_this_button)
         layout.addWidget(rate_button)
 
@@ -5950,7 +5944,7 @@ def rate_this_addon():
 if database_complete is True:
     with open(badgebag_path, 'r') as json_file:
         badge_list = json.load(json_file)
-        if len(badge_list) > 4:
+        if len(badge_list) > 2:
             rate_this_addon()
 
 #Badges needed for achievements:
