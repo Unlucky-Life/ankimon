@@ -1069,7 +1069,7 @@ if database_complete != False:
         #generation_file = ("pokeapi_db.json")
         try:
             id, pokemon_species = choose_random_pkmn_from_tier()
-            #test_ids = [417]
+            #test_ids = [719]
             #id = random.choice(test_ids)
             name = search_pokedex_by_id(id)
 
