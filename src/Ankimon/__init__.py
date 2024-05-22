@@ -271,7 +271,7 @@ animate_time = config["animate_time"] #default: true; false = animate for 0.8 se
 view_main_front = config["view_main_front"] #default: true => -1; false = 1
 gif_in_collection = config["gif_in_collection"] #default: true => -1; false = 1
 sound_effects = config["sound_effects"] #default: false; true = sound_effects on
-
+styling_in_reviewer = config["styling_in_reviewer"] #default: true; false = no styling in reviewer
 if sound_effects is True:
     from . import playsound
 
@@ -4382,7 +4382,7 @@ if database_complete != False and mainpokemon_empty is False:
     def inject_life_bar(web_content, context):
         global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, icon_path
         global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
-        global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds, myseconds, view_main_front
+        global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds, myseconds, view_main_front, styling_in_reviewer
 
         experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
         if reviewer_image_gif == False:
@@ -4743,46 +4743,47 @@ if database_complete != False and mainpokemon_empty is False:
             """
 
             # background-image: url('{pokemon_image_file}'); Change to your image path */
-            # Inject the CSS into the head of the HTML content
-            web_content.head += f"<style>{css}</style>"
-            # Inject a div element at the end of the body for the life bar
-            if hp_bar_config is True:
-                web_content.body += f'<div id="life-bar"></div>'
-            if xp_bar_config is True:
-                web_content.body += f'<div id="xp-bar"></div>'
-                web_content.body += f'<div id="next_lvl_text">Next Level</div>'
-                web_content.body += f'<div id="xp_text">XP</div>'
-            # Inject a div element for the text display
-            web_content.body += f'<div id="name-display">{name.capitalize()} LvL: {level}</div>'
-            if hp > 0:
-                web_content.body += f'{create_status_html(f"{battle_status}")}'
-            else:
-                web_content.body += f'{create_status_html(f"fainted")}'
-
-            web_content.body += f'<div id="hp-display">HP: {hp}/{max_hp}</div>'
-            # Inject a div element at the end of the body for the life bar
-            image_base64 = get_image_as_base64(pokemon_image_file)
-            web_content.body += f'<div id="PokeImage"><img src="data:image/png;base64,{image_base64}" alt="PokeImage style="animation: shake 0s ease;"></div>'
-            if show_mainpkmn_in_reviewer > 0:
-                image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
-                web_content.body += f'<div id="MyPokeImage"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage" style="animation: shake 0s ease;"></div>'
-                web_content.body += f'<div id="myname-display">{mainpokemon_name.capitalize()} LvL: {mainpokemon_level}</div>'
-                web_content.body += f'<div id="myhp-display">HP: {mainpokemon_hp}/{mainpkmn_max_hp}</div>'
+            if styling_in_reviewer is True:
+                # Inject the CSS into the head of the HTML content
+                web_content.head += f"<style>{css}</style>"
                 # Inject a div element at the end of the body for the life bar
                 if hp_bar_config is True:
-                    web_content.body += f'<div id="mylife-bar"></div>'
-            # Set the flag to True to indicate that the life bar has been injected
-            if pokeball == True:
-                icon_base_64 = get_image_as_base64(icon_path)
-                web_content.body += f'<div id="PokeIcon"><img src="data:image/png;base64,{icon_base_64}" alt="PokeIcon"></div>'
-            else:
-                web_content.body += f'<div id="PokeIcon"></div>' 
-            life_bar_injected = True
+                    web_content.body += f'<div id="life-bar"></div>'
+                if xp_bar_config is True:
+                    web_content.body += f'<div id="xp-bar"></div>'
+                    web_content.body += f'<div id="next_lvl_text">Next Level</div>'
+                    web_content.body += f'<div id="xp_text">XP</div>'
+                # Inject a div element for the text display
+                web_content.body += f'<div id="name-display">{name.capitalize()} LvL: {level}</div>'
+                if hp > 0:
+                    web_content.body += f'{create_status_html(f"{battle_status}")}'
+                else:
+                    web_content.body += f'{create_status_html(f"fainted")}'
+
+                web_content.body += f'<div id="hp-display">HP: {hp}/{max_hp}</div>'
+                # Inject a div element at the end of the body for the life bar
+                image_base64 = get_image_as_base64(pokemon_image_file)
+                web_content.body += f'<div id="PokeImage"><img src="data:image/png;base64,{image_base64}" alt="PokeImage style="animation: shake 0s ease;"></div>'
+                if show_mainpkmn_in_reviewer > 0:
+                    image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
+                    web_content.body += f'<div id="MyPokeImage"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage" style="animation: shake 0s ease;"></div>'
+                    web_content.body += f'<div id="myname-display">{mainpokemon_name.capitalize()} LvL: {mainpokemon_level}</div>'
+                    web_content.body += f'<div id="myhp-display">HP: {mainpokemon_hp}/{mainpkmn_max_hp}</div>'
+                    # Inject a div element at the end of the body for the life bar
+                    if hp_bar_config is True:
+                        web_content.body += f'<div id="mylife-bar"></div>'
+                # Set the flag to True to indicate that the life bar has been injected
+                if pokeball == True:
+                    icon_base_64 = get_image_as_base64(icon_path)
+                    web_content.body += f'<div id="PokeIcon"><img src="data:image/png;base64,{icon_base_64}" alt="PokeIcon"></div>'
+                else:
+                    web_content.body += f'<div id="PokeIcon"></div>' 
+                life_bar_injected = True
         return web_content
 
     def update_life_bar(reviewer, card, ease):
         global hp, name, id, frontdefault, battle_status, user_path_sprites, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
-        global mainpokemon_level, icon_path, empty_icon_path, seconds, myseconds, view_main_front, pokeball
+        global mainpokemon_level, icon_path, empty_icon_path, seconds, myseconds, view_main_front, pokeball, styling_in_reviewer
         pokeball = check_pokecoll_in_list(search_pokedex(name.lower(), "num"))
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
@@ -4837,38 +4838,38 @@ if database_complete != False and mainpokemon_empty is False:
             status_html = create_status_html('fainted')
         elif hp > 0:
             status_html = create_status_html(f"{battle_status}")
-
-        # Refresh the reviewer content to apply the updated life bar
-        reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
-        reviewer.web.eval('document.getElementById("life-bar").style.background = "linear-gradient(to right, ' + str(hp_color) + ', ' + str(hp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
-        reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px ' + hp_color + ', 0 0 30px rgba(54, 54, 56, 1)";');
-        if xp_bar_config is True:
-            experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
-            xp_bar_percent = int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)
-            reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
-        name_display_text = f"{name.capitalize()} Lvl: {level}"
-        hp_display_text = f"HP: {hp}/{max_hp}"
-        reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
-        reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
-        new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage" style="animation: shake {seconds}s ease;">'
-        reviewer.web.eval(f'document.getElementById("PokeImage").innerHTML = `{new_html_content}`;')
-        if pokeball == True:
-            image_icon_path = get_image_as_base64(icon_path)
-            pokeicon_html = f'<img src="data:image/png;base64,{image_icon_path}" alt="PokeIcon">'
-        else:
-            pokeicon_html = ''
-        reviewer.web.eval(f'document.getElementById("PokeIcon").innerHTML = `{pokeicon_html}`;')
-        reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
-        if show_mainpkmn_in_reviewer > 0:
-            new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage" style="animation: shake {myseconds}s ease;">'
-            main_name_display_text = f"{mainpokemon_name.capitalize()} Lvl: {mainpokemon_level}"
-            main_hp_display_text = f"HP: {mainpokemon_hp}/{mainpkmn_max_hp}"
-            reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(mainpkmn_hp_percent) + '%";')
-            reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
-            reviewer.web.eval('document.getElementById("mylife-bar").style.boxShadow = "0 0 10px ' + myhp_color + ', 0 0 30px rgba(54, 54, 56, 1)";');
-            reviewer.web.eval(f'document.getElementById("MyPokeImage").innerHTML = `{new_html_content_mainpkmn}`;')
-            reviewer.web.eval('document.getElementById("myname-display").innerText = "' + main_name_display_text + '";')
-            reviewer.web.eval('document.getElementById("myhp-display").innerText = "' + main_hp_display_text + '";')
+        if styling_in_reviewer is True:
+            # Refresh the reviewer content to apply the updated life bar
+            reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
+            reviewer.web.eval('document.getElementById("life-bar").style.background = "linear-gradient(to right, ' + str(hp_color) + ', ' + str(hp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
+            reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px ' + hp_color + ', 0 0 30px rgba(54, 54, 56, 1)";');
+            if xp_bar_config is True:
+                experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
+                xp_bar_percent = int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)
+                reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
+            name_display_text = f"{name.capitalize()} Lvl: {level}"
+            hp_display_text = f"HP: {hp}/{max_hp}"
+            reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
+            reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
+            new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage" style="animation: shake {seconds}s ease;">'
+            reviewer.web.eval(f'document.getElementById("PokeImage").innerHTML = `{new_html_content}`;')
+            if pokeball == True:
+                image_icon_path = get_image_as_base64(icon_path)
+                pokeicon_html = f'<img src="data:image/png;base64,{image_icon_path}" alt="PokeIcon">'
+            else:
+                pokeicon_html = ''
+            reviewer.web.eval(f'document.getElementById("PokeIcon").innerHTML = `{pokeicon_html}`;')
+            reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
+            if show_mainpkmn_in_reviewer > 0:
+                new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage" style="animation: shake {myseconds}s ease;">'
+                main_name_display_text = f"{mainpokemon_name.capitalize()} Lvl: {mainpokemon_level}"
+                main_hp_display_text = f"HP: {mainpokemon_hp}/{mainpkmn_max_hp}"
+                reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(mainpkmn_hp_percent) + '%";')
+                reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
+                reviewer.web.eval('document.getElementById("mylife-bar").style.boxShadow = "0 0 10px ' + myhp_color + ', 0 0 30px rgba(54, 54, 56, 1)";');
+                reviewer.web.eval(f'document.getElementById("MyPokeImage").innerHTML = `{new_html_content_mainpkmn}`;')
+                reviewer.web.eval('document.getElementById("myname-display").innerText = "' + main_name_display_text + '";')
+                reviewer.web.eval('document.getElementById("myhp-display").innerText = "' + main_hp_display_text + '";')
 
     # Register the functions for the hooks
     gui_hooks.reviewer_will_end.append(reviewer_reset_life_bar_inject)
