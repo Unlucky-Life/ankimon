@@ -27,5 +27,6 @@
   "view_main_front": true,
   "animate_time": true,
   "gif_in_collection": false,
-  "sound_effects": false
+  "sound_effects": false,
+  "styling_in_reviewer": true
 }
