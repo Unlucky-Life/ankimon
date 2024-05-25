@@ -1401,8 +1401,15 @@ def find_details_move(move_name):
             if move:
                 return move
             else:
-                showInfo(f"Move '{move_name}' not found.")
-                return None
+                if move is None:
+                    move_name = move_name.replace(" ", "")
+                    try:
+                        move = moves_data.get(move_name.lower())
+                        return move
+                    except:
+                        showInfo(f"Can't find the attack {move_name} in the database.")
+                        move = moves_data.get("tackle")
+                        return move
     except FileNotFoundError:
         showInfo("Moves Data File Missing!\nPlease Download Moves Data")
         return None
@@ -3355,7 +3362,13 @@ def attack_details_window(attacks):
     # Loop through the list of attacks and add them to the HTML content
     for attack in attacks:
         move = find_details_move(attack)
-
+        if move is None:
+            attack = attack.replace(" ", "")
+            try:
+                move = find_details_move(attack)
+            except:
+                showInfo(f"Can't find the attack {attack} in the database.")
+                move = find_details_move("tackle")
         html_content += f"""
         <tr>
           <td class="move-name">{move['name']}</td>
@@ -4741,12 +4754,19 @@ if database_complete != False and mainpokemon_empty is False:
                 100% {{ transform: translateX(100vw); filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5)); }}
             }}
             """
-
+            css += f"""
+            #pokebackground {{
+                color: white;
+                background-color: blue;
+                z-index: 99999;
+            }}
+            """
             # background-image: url('{pokemon_image_file}'); Change to your image path */
             if styling_in_reviewer is True:
                 # Inject the CSS into the head of the HTML content
                 web_content.head += f"<style>{css}</style>"
                 # Inject a div element at the end of the body for the life bar
+                web_content.body += f'<div id="pokebackground">'
                 if hp_bar_config is True:
                     web_content.body += f'<div id="life-bar"></div>'
                 if xp_bar_config is True:
@@ -4777,7 +4797,8 @@ if database_complete != False and mainpokemon_empty is False:
                     icon_base_64 = get_image_as_base64(icon_path)
                     web_content.body += f'<div id="PokeIcon"><img src="data:image/png;base64,{icon_base_64}" alt="PokeIcon"></div>'
                 else:
-                    web_content.body += f'<div id="PokeIcon"></div>' 
+                    web_content.body += f'<div id="PokeIcon"></div>'
+                web_content.body += '</div>'
                 life_bar_injected = True
         return web_content
 
