@@ -4766,7 +4766,7 @@ if database_complete != False and mainpokemon_empty is False:
                 # Inject the CSS into the head of the HTML content
                 web_content.head += f"<style>{css}</style>"
                 # Inject a div element at the end of the body for the life bar
-                web_content.body += f'<div id="pokebackground">'
+                #web_content.body += f'<div id="pokebackground">' try adding backgroudns to battle
                 if hp_bar_config is True:
                     web_content.body += f'<div id="life-bar"></div>'
                 if xp_bar_config is True:
