@@ -2673,7 +2673,7 @@ class PokemonCollectionDialog(QDialog):
 
         # Search Filter
         self.search_edit = QLineEdit()
-        self.search_edit.setPlaceholderText("Search Pokémon...")
+        self.search_edit.setPlaceholderText("Search Pokémon (by nickname, name)")
         #self.search_edit.textChanged.connect(self.filter_pokemon)
         self.search_button = QPushButton("Search")
         self.search_button.clicked.connect(self.filter_pokemon)
@@ -2875,9 +2875,10 @@ class PokemonCollectionDialog(QDialog):
                             pokemon_id = pokemon['id']
                             pokemon_name = pokemon['name'].lower()
                             pokemon_nickname = pokemon.get("nickname", None)
+                            pokemon_type = pokemon.get("type", " ")
                             # Check if the Pokémon matches the search text and generation filter
                             if (search_text.lower() in pokemon_name.lower() or 
-                                (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower())) and \
+                                (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower()) or (search_text.capitalize() in pokemon_type)) and \
                                 0 <= generation_index <= 8 and \
                                 ((generation_index == 0) or 
                                 (1 <= pokemon_id <= 151 and generation_index == 1) or
@@ -2902,7 +2903,6 @@ class PokemonCollectionDialog(QDialog):
                                 pokemon_gender = pokemon['gender']
                                 pokemon_level = pokemon['level']
                                 pokemon_ability = pokemon['ability']
-                                pokemon_type = pokemon['type']
                                 pokemon_stats = pokemon['stats']
                                 pokemon_hp = pokemon_stats["hp"],
                                 pokemon_attacks = pokemon['attacks']
