@@ -5358,7 +5358,7 @@ def export_all_pkmn_showdown():
                     pokemon_ev = pokemon['ev']
                     pokemon_iv = pokemon['iv']
 
-                    pokemon_info = "{} \nAbility: {}\nLevel: {}\nType: {}\nEVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe\n IVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe".format(
+                    pokemon_info = "{} \nAbility: {}\nLevel: {}\nType: {}\nEVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe\n IVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe \n".format(
                         pokemon_name,
                         pokemon_ability.capitalize(),
                         pokemon_level,
@@ -5450,7 +5450,7 @@ def flex_pokemon_collection():
                     pokemon_ev = pokemon['ev']
                     pokemon_iv = pokemon['iv']
 
-                    pokemon_info = "{} \nAbility: {}\nLevel: {}\nType: {}\nEVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe\n IVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe".format(
+                    pokemon_info = "{} \nAbility: {}\nLevel: {}\nType: {}\nEVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe\n IVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe \n".format(
                         pokemon_name,
                         pokemon_ability.capitalize(),
                         pokemon_level,
