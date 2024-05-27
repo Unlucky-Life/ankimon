@@ -2671,30 +2671,37 @@ class PokemonCollectionDialog(QDialog):
         self.setMinimumHeight(400)
         self.layout = QVBoxLayout(self)
 
+        #add Widget to sort by ID
+        self.sort_checkbox = QCheckBox("Sort by ID")
+        self.sort_checkbox.stateChanged.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
+
         # Search Filter
         self.search_edit = QLineEdit()
         self.search_edit.setPlaceholderText("Search Pokémon (by nickname, name)")
         #self.search_edit.textChanged.connect(self.filter_pokemon)
         self.search_button = QPushButton("Search")
-        self.search_button.clicked.connect(self.filter_pokemon)
+        self.search_button.clicked.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
 
         # Add dropdown menu for generation filtering
         self.generation_combo = QComboBox()
         self.generation_combo.addItem("All")
         self.generation_combo.addItems(["Generation 1", "Generation 2", "Generation 3", "Generation 4", "Generation 5", "Generation 6", "Generation 7", "Generation 8"])
-        self.generation_combo.currentIndexChanged.connect(self.filter_pokemon)
+        self.generation_combo.currentIndexChanged.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
+
+        # Add dropdown menu for generation filtering
+        self.type_combo = QComboBox()
+        self.type_combo.addItem("All")
+        self.type_combo.addItems(["Normal", "Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"])
+        self.type_combo.currentIndexChanged.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
 
         # Add widgets to layout
         filter_layout = QHBoxLayout()
         filter_layout.addWidget(self.search_edit)
         filter_layout.addWidget(self.search_button)
         filter_layout.addWidget(self.generation_combo)
-        self.layout.addLayout(filter_layout)
-
-        #add Widget to sort by ID
-        self.sort_checkbox = QCheckBox("Sort by ID")
-        self.sort_checkbox.stateChanged.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
+        filter_layout.addWidget(self.type_combo)
         filter_layout.addWidget(self.sort_checkbox)
+        self.layout.addLayout(filter_layout)
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
@@ -2859,6 +2866,8 @@ class PokemonCollectionDialog(QDialog):
 
     def filter_pokemon(self):
         if not self.sort_checkbox.isChecked():
+            type_index = self.type_combo.currentIndex()
+            type_text = self.type_combo.currentText()
             search_text = self.search_edit.text().lower()
             generation_index = self.generation_combo.currentIndex()
             # Clear previous contents
@@ -2877,10 +2886,13 @@ class PokemonCollectionDialog(QDialog):
                             pokemon_nickname = pokemon.get("nickname", None)
                             pokemon_type = pokemon.get("type", " ")
                             # Check if the Pokémon matches the search text and generation filter
-                            if (search_text.lower() in pokemon_name.lower() or 
-                                (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower()) or (search_text.capitalize() in pokemon_type)) and \
-                                0 <= generation_index <= 8 and \
-                                ((generation_index == 0) or 
+                            if (
+                                search_text.lower() in pokemon_name.lower() or 
+                                (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower())
+                            ) and \
+                            0 <= generation_index <= 8 and \
+                            (
+                                generation_index == 0 or
                                 (1 <= pokemon_id <= 151 and generation_index == 1) or
                                 (152 <= pokemon_id <= 251 and generation_index == 2) or
                                 (252 <= pokemon_id <= 386 and generation_index == 3) or
@@ -2888,7 +2900,11 @@ class PokemonCollectionDialog(QDialog):
                                 (494 <= pokemon_id <= 649 and generation_index == 5) or
                                 (650 <= pokemon_id <= 721 and generation_index == 6) or
                                 (722 <= pokemon_id <= 809 and generation_index == 7) or
-                                (810 <= pokemon_id <= 898 and generation_index == 8)):
+                                (810 <= pokemon_id <= 898 and generation_index == 8)
+                            ) and \
+                            (
+                                type_index == 0 or type_text in pokemon_type
+                            ):
 
                                 # Display the Pokémon
                                 pokemon_container = QWidget()
@@ -3025,6 +3041,8 @@ class PokemonCollectionDialog(QDialog):
     def sort_pokemon(self):
         search_text = self.search_edit.text().lower()
         generation_index = self.generation_combo.currentIndex()
+        type_index = self.type_combo.currentIndex()
+        type_text = self.type_combo.currentText()
         for i in reversed(range(self.scroll_layout.count())):
             widget = self.scroll_layout.itemAt(i).widget()
             if widget is not None:
@@ -3038,12 +3056,15 @@ class PokemonCollectionDialog(QDialog):
                     pokemon_id = pokemon['id']
                     pokemon_name = pokemon['name'].lower()
                     pokemon_nickname = pokemon.get("nickname", None)
-
+                    pokemon_type = pokemon.get("type", " ")
                     # Check if the Pokémon matches the search text and generation filter
-                    if (search_text.lower() in pokemon_name.lower() or 
-                        (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower())) and \
-                        0 <= generation_index <= 8 and \
-                        ((generation_index == 0) or 
+                    if (
+                        search_text.lower() in pokemon_name.lower() or 
+                        (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower())
+                    ) and \
+                    0 <= generation_index <= 8 and \
+                    (
+                        generation_index == 0 or
                         (1 <= pokemon_id <= 151 and generation_index == 1) or
                         (152 <= pokemon_id <= 251 and generation_index == 2) or
                         (252 <= pokemon_id <= 386 and generation_index == 3) or
@@ -3051,7 +3072,11 @@ class PokemonCollectionDialog(QDialog):
                         (494 <= pokemon_id <= 649 and generation_index == 5) or
                         (650 <= pokemon_id <= 721 and generation_index == 6) or
                         (722 <= pokemon_id <= 809 and generation_index == 7) or
-                        (810 <= pokemon_id <= 898 and generation_index == 8)):
+                        (810 <= pokemon_id <= 898 and generation_index == 8)
+                    ) and \
+                    (
+                        type_index == 0 or type_text in pokemon_type
+                    ):
 
                         # Create the Pokémon widget
                         pokemon_container = QWidget()
@@ -3062,7 +3087,6 @@ class PokemonCollectionDialog(QDialog):
                         pokemon_gender = pokemon['gender']
                         pokemon_level = pokemon['level']
                         pokemon_ability = pokemon['ability']
-                        pokemon_type = pokemon['type']
                         pokemon_stats = pokemon['stats']
                         pokemon_hp = pokemon_stats["hp"]
                         pokemon_attacks = pokemon['attacks']
