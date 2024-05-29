@@ -30,5 +30,7 @@
   "sound_effects": false,
   "styling_in_reviewer": true,
   "YouShallNotPass_Ankimon_News": false,
-  "automatic_battle": 0
+  "automatic_battle": 0,
+  "defeat_key": "F",
+  "catch_key": "D"
 }
