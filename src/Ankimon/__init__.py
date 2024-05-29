@@ -275,6 +275,10 @@ sound_effects = config["sound_effects"] #default: false; true = sound_effects on
 styling_in_reviewer = config["styling_in_reviewer"] #default: true; false = no styling in reviewer
 no_more_news = config["YouShallNotPass_Ankimon_News"] #default: false; true = no more news
 automatic_battle = config["automatic_battle"] #default: 0; 1 = catch_pokemon; 2 = defeat_pokemon; 3 = both
+defeat_key = config["defeat_key"] #default: 5; ; Else if not 5 => controll + Key for capture
+catch_key = config["catch_key"] #default: 6; Else if not 6 => controll + Key for capture
+
+
 if sound_effects is True:
     from . import playsound
 
@@ -2361,7 +2365,7 @@ def on_review_card(*args):
                 else:
                     if automatic_battle != 0:
                         if automatic_battle == 1:
-                            catch_pokemon()
+                            catch_pokemon("")
                             general_card_count_for_battle = 0
                         elif automatic_battle == 2:
                             kill_pokemon()
@@ -2379,7 +2383,7 @@ def on_review_card(*args):
                     hp = 0
                     if automatic_battle != 0:
                         if automatic_battle == 1:
-                            catch_pokemon()
+                            catch_pokemon("")
                             general_card_count_for_battle = 0
                         elif automatic_battle == 2:
                             kill_pokemon()
@@ -6769,8 +6773,10 @@ evo_window = EvoWindow()
 class MyEventFilter(QObject):
     def eventFilter(self, obj, event):
         if obj is mw and event.type() == QEvent.Type.KeyPress:
-            global system, ankimon_key, hp
+            global system, ankimon_key, catch_key, defeat_key, hp
             open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
+            catch_pokemon_key = getattr(Qt.Key, 'Key_' + catch_key.upper())
+            defeat_pokemon_key = getattr(Qt.Key, 'Key_' + defeat_key.upper())
             if system == "mac":
                 if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
                     if test_window.isVisible():
@@ -6780,6 +6786,11 @@ class MyEventFilter(QObject):
                             test_window.display_first_start_up()
                         else:
                             test_window.open_dynamic_window()
+                elif event.key() == catch_pokemon_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier and hp < 1:
+                    catch_pokemon("")
+                elif event.key() == defeat_pokemon_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier and hp < 1:
+                    kill_pokemon()
+                    new_pokemon()
             else:
                 if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
                     if test_window.isVisible():
@@ -6789,10 +6800,12 @@ class MyEventFilter(QObject):
                             test_window.display_first_start_up()
                         else:
                             test_window.open_dynamic_window()
-                elif event.key() == Qt.Key.Key_F and event.modifiers() == Qt.KeyboardModifier.ControlModifier and hp < 1:
-                    catch_pokemon("")
-                elif event.key() == Qt.Key.Key_D and event.modifiers() == Qt.KeyboardModifier.ControlModifier and hp < 1:
-                    kill_pokemon()
+                else:
+                    if event.key() == catch_pokemon_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier and hp < 1:
+                        catch_pokemon("")
+                    elif event.key() == defeat_pokemon_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier and hp < 1:
+                        kill_pokemon()
+                        new_pokemon()
         return False  # Andere Event-Handler nicht blockieren
 
 # Erstellen und Installieren des Event Filters
