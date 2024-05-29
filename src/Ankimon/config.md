@@ -80,6 +80,12 @@ Setting `automate_battle` to `0` deactivates the automatic defeat or catch in th
     - If set to `1`, the wild Pokemon will be automatically caught if it has no more HP.
     - If set to `2`, the wild Pokemon will be defeated if its HP reaches 0, and your main Pokemon will gain experience.
 
+Setting `catch_key` to a letter allows you to catch pokemons inside of the reviewer when their hp reaches 0 by pressing control and your letter - default is D.
+- `catch_key` [A - Z]
+
+Setting `defeat_key` to a letter allows you to defeat pokemons inside of the reviewer when their hp reaches 0 by pressing control and your letter - default is F.
+- `defeat_key` [A - Z]
+
 `review_hp_bar_thickness` sets the pixel thickness of the HP bar in the reviewer. 
 - Setting it to `2` will result in an 8px thickness.
 - Setting it to `3` will result in a 12px thickness.
