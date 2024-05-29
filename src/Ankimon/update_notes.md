@@ -1,9 +1,3 @@
-## Ankimon News:
-
-## Update Notification
-
-# 🚨 **Attention Ankimon Trainers!** 🚨
-
 ### 🚀 **Sneak Peek at Update v1.285!** 🚀
 
 - 🛠️ Fixed issues when exporting all Ankimon data to Ankimon Paste and Ankimon Showdown.
@@ -12,9 +6,9 @@
 - 🎨 New ability to deactivate styling in reviewer.
 - 🔄 Fixed trading, naming, and releasing issues with multiple Ankimon having the same ID.
 - 🌟 All sprites are now included within the addon due to licensing changes of PokeAPI.
-## 🚨 **Attention Ankimon Trainers!** 🚨
 
-🌟 **Big News!** 🌟 We're thrilled to announce the launch of our brand-new **Discord server** dedicated to everything Ankimon! 🌟
+  
+## 🚨 **Attention Ankimon Trainers!** 🚨
 
 🔥 Whether you're eager to **trade** your Ankimon 🐉, **train** with fellow trainers 🏋️‍♂️, or simply chat and share tips 🗣️, our server is THE place to be! 🔥
 
@@ -25,10 +19,6 @@
 Link: https://discord.gg/AvCESmPGfy
 
 🌟 Let's catch 'em all together! See you there, Trainers! ⚡
-    
-### 🚨 **IMPORTANT NOTICE FOR MAC USERS:** 🚨
-
-**Mac Users:** When downloading, DO NOT go into fullscreen mode and avoid letting your computer hibernate/sleep while the files are downloading! This can cause serious errors with the Ankimon addon. If this happens, you will need to uninstall and reinstall the addon and redo the download process.
 
 ### 📢 **Having Issues? Let Us Know!** 📢
 
