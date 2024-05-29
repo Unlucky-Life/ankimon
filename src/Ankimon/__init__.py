@@ -5085,7 +5085,7 @@ if database_complete != False and mainpokemon_empty is False:
                 experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
                 xp_bar_percent = int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)
                 reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
-            name_display_text = f"{name.capitalize()} Lvl: {level}"
+            name_display_text = f"{name.capitalize()} LvL: {level}"
             hp_display_text = f"HP: {hp}/{max_hp}"
             reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
             reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
@@ -5100,7 +5100,7 @@ if database_complete != False and mainpokemon_empty is False:
             reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
             if show_mainpkmn_in_reviewer > 0:
                 new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage" style="animation: shake {myseconds}s ease;">'
-                main_name_display_text = f"{mainpokemon_name.capitalize()} Lvl: {mainpokemon_level}"
+                main_name_display_text = f"{mainpokemon_name.capitalize()} LvL: {mainpokemon_level}"
                 main_hp_display_text = f"HP: {mainpokemon_hp}/{mainpkmn_max_hp}"
                 reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(mainpkmn_hp_percent) + '%";')
                 reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
