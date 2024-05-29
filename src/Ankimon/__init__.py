@@ -274,6 +274,7 @@ gif_in_collection = config["gif_in_collection"] #default: true => -1; false = 1
 sound_effects = config["sound_effects"] #default: false; true = sound_effects on
 styling_in_reviewer = config["styling_in_reviewer"] #default: true; false = no styling in reviewer
 no_more_news = config["YouShallNotPass_Ankimon_News"] #default: false; true = no more news
+automatic_battle = config["automatic_battle"] #default: 0; 1 = catch_pokemon; 2 = defeat_pokemon; 3 = both
 if sound_effects is True:
     from . import playsound
 
@@ -1175,6 +1176,8 @@ def kill_pokemon():
     name = name.capitalize()
     exp = int(calc_experience(mainpokemon_base_experience, level))
     mainpokemon_level = save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp)
+    global general_card_count_for_battle
+    general_card_count_for_battle = 0
     if pkmn_window is True:
         new_pokemon()  # Show a new random Pokémon
 
@@ -1804,6 +1807,8 @@ def catch_pokemon(nickname):
             save_caught_pokemon(nickname)
         else:
             save_caught_pokemon(name)
+        global general_card_count_for_battle
+        general_card_count_for_battle = 0
         msg = f"You caught {name}!"
         if pop_up_dialog_message_on_defeat is True:
             showInfo(f"{msg}") # Display a message when the Pokémon is caught
@@ -2353,9 +2358,15 @@ def on_review_card(*args):
             else:
                 if pkmn_window is True:
                     test_window.display_pokemon_death()
-                elif pkmn_window is False:
-                    new_pokemon()
-                    general_card_count_for_battle = 0
+                else:
+                    if automatic_battle != 0:
+                        if automatic_battle == 1:
+                            catch_pokemon()
+                            general_card_count_for_battle = 0
+                        elif automatic_battle == 2:
+                            kill_pokemon()
+                            new_pokemon()
+                            general_card_count_for_battle = 0
             if pkmn_window is True:
                 if hp > 0:
                     test_window.display_first_encounter()
@@ -2366,8 +2377,14 @@ def on_review_card(*args):
             elif pkmn_window is False:
                 if hp < 1:
                     hp = 0
-                    kill_pokemon()
-                    general_card_count_for_battle = 0
+                    if automatic_battle != 0:
+                        if automatic_battle == 1:
+                            catch_pokemon()
+                            general_card_count_for_battle = 0
+                        elif automatic_battle == 2:
+                            kill_pokemon()
+                            new_pokemon()
+                            general_card_count_for_battle = 0
             # Reset the counter
             reviewed_cards_count = 0
         if cry_counter == 10 and battle_sounds is True:
@@ -7618,3 +7635,47 @@ mw.pokemenu.addAction(version_action)
     #https://www.reddit.com/r/PokemonROMhacks/comments/9xgl7j/pokemon_sound_effects_collection_over_3200_sfx/
     #https://archive.org/details/pokemon-dp-sound-library-disc-2_202205
     #https://www.sounds-resource.com/nintendo_switch/pokemonswordshield/
+
+# addHook to function to Ankimote
+from aqt import mw
+from aqt.utils import showInfo
+from anki.hooks import addHook
+
+# Define lists to hold hook functions
+catch_pokemon_hooks = []
+defeat_pokemon_hooks = []
+
+# Function to add hooks to catch_pokemon event
+def add_catch_pokemon_hook(func):
+    catch_pokemon_hooks.append(func)
+
+# Function to add hooks to defeat_pokemon event
+def add_defeat_pokemon_hook(func):
+    defeat_pokemon_hooks.append(func)
+
+# Custom function that triggers the catch_pokemon hook
+def CatchPokemonHook():
+    global hp
+    if hp < 1:
+        catch_pokemon("")
+    for hook in catch_pokemon_hooks:
+        hook()
+
+# Custom function that triggers the defeat_pokemon hook
+def DefeatPokemonHook():
+    global hp
+    if hp < 1:
+        kill_pokemon()
+        new_pokemon()
+    for hook in defeat_pokemon_hooks:
+        hook()
+
+# Hook to expose the function
+def on_profile_loaded():
+    mw.defeatpokemon = DefeatPokemonHook
+    mw.catchpokemon = CatchPokemonHook
+    mw.add_catch_pokemon_hook = add_catch_pokemon_hook
+    mw.add_defeat_pokemon_hook = add_defeat_pokemon_hook
+
+# Add hook to run on profile load
+addHook("profileLoaded", on_profile_loaded)
