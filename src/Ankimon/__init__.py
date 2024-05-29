@@ -48,6 +48,7 @@ from anki.collection import Collection
 import csv
 import time, wave
 import platform
+import markdown
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -349,8 +350,6 @@ if ssh != False:
         
 if online_connectivity != False:
     if ssh != False:
-        import markdown
-
         # Custom Dialog class
         class UpdateNotificationWindow(QDialog):
             def __init__(self, content):
@@ -7508,6 +7507,31 @@ def report_bug():
 
 achievement_bag = AchievementWindow()
 
+# Custom Dialog class
+class Version_Dialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        global icon_path
+        self.setWindowTitle("Ankimon Notifications")
+        self.setGeometry(100, 100, 600, 400)
+        layout = QVBoxLayout()
+        self.text_edit = QTextEdit()
+        self.text_edit.setReadOnly(True)
+        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
+        self.local_file_path = addon_dir / "update_notes.md"
+        self.local_content = read_local_file(self.local_file_path)
+        self.html_content = markdown.markdown(self.local_content)
+        self.text_edit.setHtml(self.html_content)
+        layout.addWidget(self.text_edit)
+        self.setWindowIcon(QIcon(str(icon_path)))
+        self.setLayout(layout)
+    
+    def open(self):
+        self.exec()
+
+version_dialog = Version_Dialog()
+
 #buttonlayout
 mw.pokemenu = QMenu('&Ankimon', mw)
 # and add it to the tools menu
@@ -7582,29 +7606,11 @@ rate_action = QAction("Rate This", mw)
 rate_action.triggered.connect(rate_addon_url)
 mw.pokemenu.addAction(rate_action)
 
+version_action = QAction("Version", mw)
+version_action.triggered.connect(version_dialog.open)
+mw.pokemenu.addAction(version_action)
+
     #https://goo.gl/uhAxsg
     #https://www.reddit.com/r/PokemonROMhacks/comments/9xgl7j/pokemon_sound_effects_collection_over_3200_sfx/
     #https://archive.org/details/pokemon-dp-sound-library-disc-2_202205
-
-"""
-Future Code Notes
-
-       mw_x = mw.x()
-        mw_y = mw.y()
-        width = mw.width()
-        height = mw.height()
-        akw_height = self.height()
-        akw_width = self.width()
-
-        amw_center = True
-        if amw_center is True:
-            if height > akw_height:
-                y = int(mw_y + ((height/2) - (akw_height/2)))
-            else:
-                y = int(mw_y + ((akw_height/2) - (height/2)))
-        amw_left = True
-        amw_right = False
-        if amw_right is True:
-            x = int(mw_x + width)
-        elif amw_left is True:
-            x = int(mw_x-(akw_width))"""
+    #https://www.sounds-resource.com/nintendo_switch/pokemonswordshield/
