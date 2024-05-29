@@ -1,0 +1,13 @@
+{
+  "feedback": true,
+  "cmd1-label": "Suspend Card",
+  "cmd1": "mw.reviewer.onSuspendCard()",
+  "cmd2-label": "CMD 2",
+  "cmd2": "mw.catchpokemon()",
+  "cmd3-label": "CMD 3",
+  "cmd3": "mw.defeatpokemon()",
+  "cmd4-label": "CMD 4",
+  "cmd4": "showInfo('CMD 4: replace with custom code in the Anki addon config page')",
+  "cmd5-label": "CMD 5",
+  "cmd5": "mw.web.eval( \"alert('CMD 5: replace with custom code in the Anki addon config page');\" )"
+}
