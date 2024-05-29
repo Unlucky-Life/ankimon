@@ -274,7 +274,7 @@ gif_in_collection = config["gif_in_collection"] #default: true => -1; false = 1
 sound_effects = config["sound_effects"] #default: false; true = sound_effects on
 styling_in_reviewer = config["styling_in_reviewer"] #default: true; false = no styling in reviewer
 no_more_news = config["YouShallNotPass_Ankimon_News"] #default: false; true = no more news
-automatic_battle = config["automatic_battle"] #default: 0; 1 = catch_pokemon; 2 = defeat_pokemon; 3 = both
+automatic_battle = config["automatic_battle"] #default: 0; 1 = catch_pokemon; 2 = defeat_pokemon
 defeat_key = config["defeat_key"] #default: 5; ; Else if not 5 => controll + Key for capture
 catch_key = config["catch_key"] #default: 6; Else if not 6 => controll + Key for capture
 
