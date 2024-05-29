@@ -6752,7 +6752,7 @@ evo_window = EvoWindow()
 class MyEventFilter(QObject):
     def eventFilter(self, obj, event):
         if obj is mw and event.type() == QEvent.Type.KeyPress:
-            global system, ankimon_key
+            global system, ankimon_key, hp
             open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
             if system == "mac":
                 if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
@@ -6772,6 +6772,10 @@ class MyEventFilter(QObject):
                             test_window.display_first_start_up()
                         else:
                             test_window.open_dynamic_window()
+                elif event.key() == Qt.Key.Key_F and event.modifiers() == Qt.KeyboardModifier.ControlModifier and hp < 1:
+                    catch_pokemon("")
+                elif event.key() == Qt.Key.Key_D and event.modifiers() == Qt.KeyboardModifier.ControlModifier and hp < 1:
+                    kill_pokemon()
         return False  # Andere Event-Handler nicht blockieren
 
 # Erstellen und Installieren des Event Filters
