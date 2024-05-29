@@ -72,6 +72,14 @@ Setting `xp_bar_location` to 1 places the XP bar at the top of your screen in th
 Setting `xp_bar_config` to `true` will display the XP bar in the reviewer. It will show your main Pokémon's current XP and the amount needed for the next level.
 - `xp_bar_config` [True/False]
 
+Setting `YouShallNotPass_Ankimon_News` to `true` deactivates the update patch notes pop-up on Anki startup.
+- `YouShallNotPass_Ankimon_News` [True/False]
+
+Setting `automate_battle` to `0` deactivates the automatic defeat or catch in the reviewer. Pokemon will stay alive until you decide to choose to defeat or catch them in the Ankimon Window.
+- `automate_battle` [0/1/2]
+    - If set to `1`, the wild Pokemon will be automatically caught if it has no more HP.
+    - If set to `2`, the wild Pokemon will be defeated if its HP reaches 0, and your main Pokemon will gain experience.
+
 `review_hp_bar_thickness` sets the pixel thickness of the HP bar in the reviewer. 
 - Setting it to `2` will result in an 8px thickness.
 - Setting it to `3` will result in a 12px thickness.
