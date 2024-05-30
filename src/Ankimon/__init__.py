@@ -275,10 +275,9 @@ sound_effects = config["sound_effects"] #default: false; true = sound_effects on
 styling_in_reviewer = config["styling_in_reviewer"] #default: true; false = no styling in reviewer
 no_more_news = config["YouShallNotPass_Ankimon_News"] #default: false; true = no more news
 automatic_battle = config["automatic_battle"] #default: 0; 1 = catch_pokemon; 2 = defeat_pokemon
-defeat_key = config["defeat_key"] #default: 5; ; Else if not 5 => controll + Key for capture
-catch_key = config["catch_key"] #default: 6; Else if not 6 => controll + Key for capture
-defeat_shortcut = defeat_key
-catch_shortcut = catch_key
+defeat_shortcut = config["defeat_key"] #default: 5; ; Else if not 5 => controll + Key for capture
+catch_shortcut = config["catch_key"] #default: 6; Else if not 6 => controll + Key for capture
+reviewer_buttons = config["pokemon_buttons"] #default: true; false = no pokemon buttons in reviewer
 
 if sound_effects is True:
     from . import playsound
@@ -7687,48 +7686,15 @@ from aqt.reviewer import Reviewer
 from aqt import mw  # Importing the main Anki window object
 from aqt.utils import downArrow, shortcut, showInfo
 
-#// adding button links to link handler function
-def linkHandler_wrap(reviewer, url):
-    if url == "catch":
-        showInfo("Catch Pokemon")
-    elif url == "defeat":
-        showInfo("Defeat Pokemon")
-
-#// Choosing styling for review other buttons in reviewer bottombar based on chosen style
-button_style = """
-.button_style {
-    position: absolute;
-    white-space: nowrap;
-    font-size: small;
-    right: 0px;
-    transform: translate(-50%, -100%);
-    font-weight: normal;
-    display: inline-block;
-    }
-"""
-Review_linkHandelr_Original = Reviewer._linkHandler
-# Define the HTML and styling for the custom button
-def custom_button():
-    return f"""<button title="Shortcut key: C" onclick="pycmd('catch');" {button_style}>Catch</button>"""
-
-# Update the link handler function to handle the custom button action
-def linkHandler_wrap(reviewer, url):
-    if url == "catch":
-        showInfo("Catch Pokemon")
-    elif url == "defeat":
-        showInfo("Defeat Pokemon")
-    else:
-        Review_linkHandelr_Original(reviewer, url)
-
 def catch_shorcut_function():
     if hp > 1:
-        showInfo("You only catch a pokemon once its fained !")
+        tooltip("You only catch a pokemon once its fained !")
     else:
         catch_pokemon("")
 
 def defeat_shortcut_function():
     if hp > 1:
-        showInfo("Wild pokemon has to much hp to defeat it yet !")
+        tooltip("Wild pokemon has to be fainted to defeat it !")
     else:
         kill_pokemon()
         new_pokemon()
@@ -7744,42 +7710,69 @@ def _shortcutKeys_wrap(self, _old):
 
 Reviewer._shortcutKeys = wrap(Reviewer._shortcutKeys, _shortcutKeys_wrap, 'around')
 
-def _bottomHTML(self) -> str:
-    return """
-    <center id=outer>
-    <table id=innertable width=100%% cellspacing=0 cellpadding=0>
-    <tr>
-    <td align=start valign=top class=stat>
-    <button title="%(editkey)s" onclick="pycmd('edit');">%(edit)s</button></td>
-    <td align=center valign=top id=middle>
-    </td>
-    <td align=center valign=top class=stat>
-    <button title="%(CatchKey)s" onclick="pycmd('catch');">Catch Pokemon</button>
-    <button title="%(DefeatKey)s" onclick="pycmd('defeat');">Defeat Pokemon</button>
-    </td>
-    <td align=end valign=top class=stat>
-    <button title="%(morekey)s" onclick="pycmd('more');">%(more)s %(downArrow)s</button>
-    <span id=time class=stattxt></span>
-    </td>
-    </tr>
-    </table>
-    </center>
-    <script>
-    time = %(time)d;
-    timerStopped = false;
-    </script>
-    """ % dict(
-        edit=tr.studying_edit(),
-        editkey=tr.actions_shortcut_key(val="E"),
-        more=tr.studying_more(),
-        morekey=tr.actions_shortcut_key(val="M"),
-        downArrow=downArrow(),
-        time=self.card.time_taken() // 1000,
-        CatchKey=tr.actions_shortcut_key(val=f"{catch_shortcut}"),
-        DefeatKey=tr.actions_shortcut_key(val=f"{defeat_shortcut}"),
-    )
+if reviewer_buttons is True:
+    #// Choosing styling for review other buttons in reviewer bottombar based on chosen style
+    button_style = """
+    .button_style {
+        position: absolute;
+        white-space: nowrap;
+        font-size: small;
+        right: 0px;
+        transform: translate(-50%, -100%);
+        font-weight: normal;
+        display: inline-block;
+        }
+    """
+    Review_linkHandelr_Original = Reviewer._linkHandler
+    # Define the HTML and styling for the custom button
+    def custom_button():
+        return f"""<button title="Shortcut key: C" onclick="pycmd('catch');" {button_style}>Catch</button>"""
 
-# Replace the current HTML with the updated HTML
-Reviewer._bottomHTML = _bottomHTML  # Assuming you have access to self in this context
-# Replace the original link handler function with the modified one
-Reviewer._linkHandler = linkHandler_wrap
+    # Update the link handler function to handle the custom button action
+    def linkHandler_wrap(reviewer, url):
+        if url == "catch":
+            catch_shorcut_function()
+        elif url == "defeat":
+            defeat_shortcut_function()
+        else:
+            Review_linkHandelr_Original(reviewer, url)
+
+    def _bottomHTML(self) -> str:
+        return """
+        <center id=outer>
+        <table id=innertable width=100%% cellspacing=0 cellpadding=0>
+        <tr>
+        <td align=start valign=top class=stat>
+        <button title="%(editkey)s" onclick="pycmd('edit');">%(edit)s</button></td>
+        <td align=center valign=top id=middle>
+        </td>
+        <td align=center valign=top class=stat>
+        <button title="%(CatchKey)s" onclick="pycmd('catch');">Catch Pokemon</button>
+        <button title="%(DefeatKey)s" onclick="pycmd('defeat');">Defeat Pokemon</button>
+        </td>
+        <td align=end valign=top class=stat>
+        <button title="%(morekey)s" onclick="pycmd('more');">%(more)s %(downArrow)s</button>
+        <span id=time class=stattxt></span>
+        </td>
+        </tr>
+        </table>
+        </center>
+        <script>
+        time = %(time)d;
+        timerStopped = false;
+        </script>
+        """ % dict(
+            edit=tr.studying_edit(),
+            editkey=tr.actions_shortcut_key(val="E"),
+            more=tr.studying_more(),
+            morekey=tr.actions_shortcut_key(val="M"),
+            downArrow=downArrow(),
+            time=self.card.time_taken() // 1000,
+            CatchKey=tr.actions_shortcut_key(val=f"{catch_shortcut}"),
+            DefeatKey=tr.actions_shortcut_key(val=f"{defeat_shortcut}"),
+        )
+
+    # Replace the current HTML with the updated HTML
+    Reviewer._bottomHTML = _bottomHTML  # Assuming you have access to self in this context
+    # Replace the original link handler function with the modified one
+    Reviewer._linkHandler = linkHandler_wrap
