@@ -5087,6 +5087,7 @@ if database_complete != False and mainpokemon_empty is False:
                 reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
             name_display_text = f"{name.capitalize()} LvL: {level}"
             hp_display_text = f"HP: {hp}/{max_hp}"
+            reviewer.web.eval('document.getElementById("Buttons").innerText = """<button id="Notizen" style="display:inline">Notizen</button>""";')
             reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
             reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
             new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage" style="animation: shake {seconds}s ease;">'
@@ -7692,3 +7693,79 @@ def on_profile_loaded():
 
 # Add hook to run on profile load
 addHook("profileLoaded", on_profile_loaded)
+
+from aqt import gui_hooks
+from anki.cards import Card
+from aqt.reviewer import Reviewer
+from aqt import mw  # Importing the main Anki window object
+
+#// adding button links to link handler function
+def linkHandler_wrap(reviewer, url):
+    if url == "catch":
+        showInfo("Catch Pokemon")
+    elif url == "defeat":
+        showInfo("Defeat Pokemon")
+
+#// Choosing styling for review other buttons in reviewer bottombar based on chosen style
+button_style = """
+.button_style {
+    position: absolute;
+    white-space: nowrap;
+    font-size: small;
+    right: 0px;
+    transform: translate(-50%, -100%);
+    font-weight: normal;
+    display: inline-block;
+    }
+"""
+Review_linkHandelr_Original = Reviewer._linkHandler
+# Define the HTML and styling for the custom button
+def custom_button():
+    return f"""<button title="Shortcut key: C" onclick="pycmd('catch');" {button_style}>Catch</button>"""
+
+# Update the link handler function to handle the custom button action
+def linkHandler_wrap(reviewer, url):
+    if url == "catch":
+        showInfo("Catch Pokemon")
+    elif url == "defeat":
+        showInfo("Defeat Pokemon")
+    else:
+        Review_linkHandelr_Original(reviewer, url)
+
+def _bottomHTML(self) -> str:
+    return """
+    <center id=outer>
+    <table id=innertable width=100%% cellspacing=0 cellpadding=0>
+    <tr>
+    <td align=start valign=top class=stat>
+    <button title="%(editkey)s" onclick="pycmd('edit');">%(edit)s</button></td>
+    <td align=center valign=top id=middle>
+    </td>
+    <td align=end valign=top class=stat>
+    <button title="%(CatchKey)s" onclick="pycmd('catch');">Catch Pokemon</button>
+    <button title="%(DefeatKey)s" onclick="pycmd('defeat');">Defeat Pokemon</button>
+    <button title="%(morekey)s" onclick="pycmd('more');">%(more)s %(downArrow)s</button>
+    <span id=time class=stattxt></span>
+    </td>
+    </tr>
+    </table>
+    </center>
+    <script>
+    time = %(time)d;
+    timerStopped = false;
+    </script>
+    """ % dict(
+        edit=tr.studying_edit(),
+        editkey=tr.actions_shortcut_key(val="E"),
+        more=tr.studying_more(),
+        morekey=tr.actions_shortcut_key(val="M"),
+        downArrow=downArrow(),
+        time=self.card.time_taken() // 1000,
+        CatchKey="Catch Pokemon",
+        DefeatKey="Defeat Pokemon",
+    )
+
+# Replace the current HTML with the updated HTML
+Reviewer._bottomHTML = _bottomHTML  # Assuming you have access to self in this context
+# Replace the original link handler function with the modified one
+Reviewer._linkHandler = linkHandler_wrap
