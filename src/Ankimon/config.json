@@ -31,6 +31,7 @@
   "styling_in_reviewer": true,
   "YouShallNotPass_Ankimon_News": false,
   "automatic_battle": 0,
-  "defeat_key": "F",
-  "catch_key": "D"
+  "defeat_key": "5",
+  "catch_key": "6",
+  "pokemon_buttons": true
 }
