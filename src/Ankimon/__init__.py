@@ -277,7 +277,8 @@ no_more_news = config["YouShallNotPass_Ankimon_News"] #default: false; true = no
 automatic_battle = config["automatic_battle"] #default: 0; 1 = catch_pokemon; 2 = defeat_pokemon
 defeat_key = config["defeat_key"] #default: 5; ; Else if not 5 => controll + Key for capture
 catch_key = config["catch_key"] #default: 6; Else if not 6 => controll + Key for capture
-
+defeat_shortcut = defeat_key
+catch_shortcut = catch_key
 
 if sound_effects is True:
     from . import playsound
@@ -6773,10 +6774,8 @@ evo_window = EvoWindow()
 class MyEventFilter(QObject):
     def eventFilter(self, obj, event):
         if obj is mw and event.type() == QEvent.Type.KeyPress:
-            global system, ankimon_key, catch_key, defeat_key, hp
+            global system, ankimon_key, hp
             open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
-            catch_pokemon_key = getattr(Qt.Key, 'Key_' + catch_key.upper())
-            defeat_pokemon_key = getattr(Qt.Key, 'Key_' + defeat_key.upper())
             if system == "mac":
                 if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
                     if test_window.isVisible():
@@ -6786,11 +6785,6 @@ class MyEventFilter(QObject):
                             test_window.display_first_start_up()
                         else:
                             test_window.open_dynamic_window()
-                elif event.key() == catch_pokemon_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier and hp < 1:
-                    catch_pokemon("")
-                elif event.key() == defeat_pokemon_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier and hp < 1:
-                    kill_pokemon()
-                    new_pokemon()
             else:
                 if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
                     if test_window.isVisible():
@@ -6800,12 +6794,6 @@ class MyEventFilter(QObject):
                             test_window.display_first_start_up()
                         else:
                             test_window.open_dynamic_window()
-                else:
-                    if event.key() == catch_pokemon_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier and hp < 1:
-                        catch_pokemon("")
-                    elif event.key() == defeat_pokemon_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier and hp < 1:
-                        kill_pokemon()
-                        new_pokemon()
         return False  # Andere Event-Handler nicht blockieren
 
 # Erstellen und Installieren des Event Filters
@@ -7697,6 +7685,7 @@ from aqt import gui_hooks
 from anki.cards import Card
 from aqt.reviewer import Reviewer
 from aqt import mw  # Importing the main Anki window object
+from aqt.utils import downArrow, shortcut, showInfo
 
 #// adding button links to link handler function
 def linkHandler_wrap(reviewer, url):
@@ -7731,6 +7720,30 @@ def linkHandler_wrap(reviewer, url):
     else:
         Review_linkHandelr_Original(reviewer, url)
 
+def catch_shorcut_function():
+    if hp > 1:
+        showInfo("You only catch a pokemon once its fained !")
+    else:
+        catch_pokemon("")
+
+def defeat_shortcut_function():
+    if hp > 1:
+        showInfo("Wild pokemon has to much hp to defeat it yet !")
+    else:
+        kill_pokemon()
+        new_pokemon()
+
+catch_shortcut = catch_shortcut.lower()
+defeat_shortcut = defeat_shortcut.lower()
+#// adding shortcuts to _shortcutKeys function in anki
+def _shortcutKeys_wrap(self, _old):
+    original = _old(self)
+    original.append((catch_shortcut, lambda: catch_shorcut_function()))
+    original.append((defeat_shortcut, lambda: defeat_shortcut_function()))
+    return original
+
+Reviewer._shortcutKeys = wrap(Reviewer._shortcutKeys, _shortcutKeys_wrap, 'around')
+
 def _bottomHTML(self) -> str:
     return """
     <center id=outer>
@@ -7740,9 +7753,11 @@ def _bottomHTML(self) -> str:
     <button title="%(editkey)s" onclick="pycmd('edit');">%(edit)s</button></td>
     <td align=center valign=top id=middle>
     </td>
-    <td align=end valign=top class=stat>
+    <td align=center valign=top class=stat>
     <button title="%(CatchKey)s" onclick="pycmd('catch');">Catch Pokemon</button>
     <button title="%(DefeatKey)s" onclick="pycmd('defeat');">Defeat Pokemon</button>
+    </td>
+    <td align=end valign=top class=stat>
     <button title="%(morekey)s" onclick="pycmd('more');">%(more)s %(downArrow)s</button>
     <span id=time class=stattxt></span>
     </td>
@@ -7760,8 +7775,8 @@ def _bottomHTML(self) -> str:
         morekey=tr.actions_shortcut_key(val="M"),
         downArrow=downArrow(),
         time=self.card.time_taken() // 1000,
-        CatchKey="Catch Pokemon",
-        DefeatKey="Defeat Pokemon",
+        CatchKey=tr.actions_shortcut_key(val=f"{catch_shortcut}"),
+        DefeatKey=tr.actions_shortcut_key(val=f"{defeat_shortcut}"),
     )
 
 # Replace the current HTML with the updated HTML
