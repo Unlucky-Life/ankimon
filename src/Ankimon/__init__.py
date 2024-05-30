@@ -5087,7 +5087,6 @@ if database_complete != False and mainpokemon_empty is False:
                 reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
             name_display_text = f"{name.capitalize()} LvL: {level}"
             hp_display_text = f"HP: {hp}/{max_hp}"
-            reviewer.web.eval('document.getElementById("Buttons").innerText = """<button id="Notizen" style="display:inline">Notizen</button>""";')
             reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
             reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
             new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage" style="animation: shake {seconds}s ease;">'
