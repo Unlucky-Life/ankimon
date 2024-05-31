@@ -3311,7 +3311,7 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         painter2 = QPainter(pkmnpixmap)
 
         #custom font
-        custom_font = load_custom_font(20)
+        custom_font = load_custom_font(int(20))
 
         # Capitalize the first letter of the Pokémon's name
         if nickname is None:
@@ -3362,10 +3362,10 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
 
         # Properties of the text of the image
         # custom font
-        namefont = load_custom_font(30)
+        namefont = load_custom_font(int(30))
         namefont.setUnderline(True)
         painter2.setFont(namefont)
-        font = load_custom_font(20)
+        font = load_custom_font(int(20))
         painter2.end()
 
         # Convert gender name to symbol - this function is from Foxy-null
@@ -3398,9 +3398,9 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         attacks_label.setFont(font)
         growth_rate_label.setFont(font)
         if language == 1:
-            description_font = load_custom_font(20)
+            description_font = load_custom_font(int(20))
         else:
-            description_font = load_custom_font(15)
+            description_font = load_custom_font(int(15))
         description_label.setFont(description_font)
         #stats_label = QLabel(stats_txt)
 
@@ -3892,7 +3892,7 @@ def PokemonDetailsStats(detail_stats, growth_rate, level):
     }
 
     #custom font
-    custom_font = load_custom_font(20)
+    custom_font = load_custom_font(int(20))
 
     # Populate the table and create the stat bars
     for row, (stat, value) in enumerate(detail_stats.items()):
@@ -5736,8 +5736,8 @@ class TestWindow(QWidget):
                 gender_symbol = ""  # None
 
             # custom font
-            custom_font = load_custom_font(26)
-            msg_font = load_custom_font(32)
+            custom_font = load_custom_font(int(26))
+            msg_font = load_custom_font(int(32))
             mainpokemon_lang_name = get_pokemon_diff_lang_name(int(mainpokemon_id))
             # Draw the text on top of the image
             # Adjust the font size as needed
@@ -5855,8 +5855,8 @@ class TestWindow(QWidget):
         mainlvl = (f"{mainpokemon_level}")
 
         # custom font
-        custom_font = load_custom_font(28)
-        msg_font = load_custom_font(32)
+        custom_font = load_custom_font(int(28))
+        msg_font = load_custom_font(int(32))
 
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -5930,14 +5930,14 @@ class TestWindow(QWidget):
             painter.drawPixmap(200,90,item_pixmap)
 
         # custom font
-        custom_font = load_custom_font(26)
+        custom_font = load_custom_font(int(26))
         message_box_text = f"You have received a item: {item.capitalize()} !"
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(255,255,255))  # Text color
         painter.drawText(50, 290, message_box_text)
-        custom_font = load_custom_font(20)
+        custom_font = load_custom_font(int(20))
         painter.setFont(custom_font)
         #painter.drawText(10, 330, "You can look this up in your item bag.")
         painter.end()
@@ -5988,7 +5988,7 @@ class TestWindow(QWidget):
             painter.drawPixmap(200,90,item_pixmap)
 
             # custom font
-            custom_font = load_custom_font(20)
+            custom_font = load_custom_font(int(20))
             message_box_text = f"You have received a badge for:"
             message_box_text2 = f"{badges[str(badge_number)]}!"
             # Draw the text on top of the image
@@ -5997,7 +5997,7 @@ class TestWindow(QWidget):
             painter.setPen(QColor(255,255,255))  # Text color
             painter.drawText(120, 270, message_box_text)
             painter.drawText(140, 290, message_box_text2)
-            custom_font = load_custom_font(20)
+            custom_font = load_custom_font(int(20))
             painter.setFont(custom_font)
             #painter.drawText(10, 330, "You can look this up in your item bag.")
             painter.end()
@@ -6488,14 +6488,14 @@ class StarterWindow(QWidget):
         painter.drawPixmap(311,-3,grass_pixmap)
 
         # custom font
-        custom_font = load_custom_font(28)
+        custom_font = load_custom_font(int(28))
         message_box_text = "Choose your Starter Pokemon"
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(255,255,255))  # Text color
         painter.drawText(110, 310, message_box_text)
-        custom_font = load_custom_font(20)
+        custom_font = load_custom_font(int(20))
         painter.setFont(custom_font)
         painter.drawText(10, 330, "Press G to change Generation")
         painter.end()
@@ -6534,7 +6534,7 @@ class StarterWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(32)
+        custom_font = load_custom_font(int(32))
         message_box_text = f"{(starter_name).capitalize()} was chosen as Starter !"
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -6577,7 +6577,7 @@ class StarterWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(32)
+        custom_font = load_custom_font(int(32))
         message_box_text = f"{(fossil_name).capitalize()} was brought to life !"
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -6643,7 +6643,7 @@ class EvoWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(20)
+        custom_font = load_custom_font(int(20))
         message_box_text = f"{(prevo_name).capitalize()} has evolved to {(pkmn_name).capitalize()} !"
         # Draw the text on top of the image
         # Adjust the font size as needed
