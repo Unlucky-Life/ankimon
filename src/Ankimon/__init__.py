@@ -4252,7 +4252,7 @@ def load_custom_font(font_size):
     # Register the custom font with its file path
     QFontDatabase.addApplicationFont(str(font_path / font_file))
     custom_font = QFont(font_name)  # Use the font family name you specified in the font file
-    custom_font.setPointSize(font_size)  # Adjust the font size as needed
+    custom_font.setPointSize(int(font_size))  # Adjust the font size as needed
 
     return custom_font
 
