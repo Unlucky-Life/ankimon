@@ -1624,7 +1624,6 @@ def evolve_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name):
                             # pokemon["ev"] = ev
                             # pokemon["iv"] = iv
                             pokemon["type"] = search_pokedex(evoName.lower(), "types")
-                            pokemon["evos"] = search_pokedex(evoName.lower(), "evos")
                             attacks = pokemon["attacks"]
                             new_attacks = get_random_moves_for_pokemon(evoName, int(pokemon["level"]))
                             for new_attack in new_attacks:
@@ -1653,7 +1652,9 @@ def evolve_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name):
                                         showInfo("No attack selected")
                             pokemon["attacks"] = attacks
                             if search_pokedex(evoName, "evos"):
-                                pokemon["evos"].append(search_pokedex(evoName.lower(), "evos"))
+                                pokemon["evos"] = search_pokedex(evoName.lower(), "evos")
+                            else:
+                                pokemon["evos"] = []
                             stats = search_pokedex(evoName.lower(), "baseStats")
                             pokemon["stats"] = stats
                             pokemon["stats"]["xp"] = 0
@@ -1694,7 +1695,7 @@ def evolve_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name):
                                 mainpokemon_data = json.load(output_file)
                                 # Find and replace the specified Pokémon's data in mypokemondata
                                 for pokemon_data in mainpokemon_data:
-                                    if pokemon_data['name'] == pkmn_name.capitalize():
+                                    if pokemon_data.get('position',None) == position:
                                         with open(str(mainpokemon_path), "w") as output_file:
                                             pokemon = [pokemon]
                                             json.dump(pokemon, output_file, indent=2)
@@ -2011,7 +2012,7 @@ def search_pokeapi_db_by_id(pkmn_id,variable):
             
 def mainpokemon_data():
     global mainpkmn
-    global mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname
+    global mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname, mainpokemon_position
     mainpkmn = 1
     try:
         with (open(str(mainpokemon_path), "r", encoding="utf-8") as json_file):
@@ -2046,6 +2047,7 @@ def mainpokemon_data():
                     mainpokemon_base_experience = main_pokemon_data["base_experience"]
                     mainpokemon_growth_rate = main_pokemon_data["growth_rate"]
                     mainpokemon_gender = main_pokemon_data["gender"]
+                    mainpokemon_position = main_pokemon_data.get("position", None)
                     return mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname
     except:
             pass
@@ -2840,7 +2842,7 @@ class PokemonCollectionDialog(QDialog):
 
                         choose_pokemon_button = QPushButton("Pick as main Pokemon")
                         choose_pokemon_button.setIconSize(pixmap.size())
-                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
+                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender, position=position: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender, position))
 
                         container_layout = QVBoxLayout()
                         container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
@@ -3174,7 +3176,7 @@ class PokemonCollectionDialog(QDialog):
 
                         choose_pokemon_button = QPushButton("Pick as main Pokemon")
                         choose_pokemon_button.setIconSize(pixmap.size())
-                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=mainpokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
+                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=mainpokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender, position=position: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender, position))
 
                         container_layout = QVBoxLayout()
                         container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
@@ -3819,7 +3821,7 @@ def move_category_path(category):
     category_path = addon_dir / "addon_sprites" / png_file
     return category_path
 
-def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
+def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender, position):
     # Display the Pokémon image
     global mainpkmn, addon_dir, currdirname, mainpokemon_path
     mainpkmn = 1
@@ -3851,7 +3853,8 @@ def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks,
             "attacks": attacks,
             "base_experience": base_experience,
             "current_hp": calculate_hp(detail_stats["hp"],level, ev, iv),
-            "growth_rate": growth_rate
+            "growth_rate": growth_rate,
+            "position": position
         }
     ]
 
