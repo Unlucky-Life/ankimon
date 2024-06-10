@@ -114,7 +114,11 @@ items_list_path = addon_dir / "addon_files" / "items.json"
 rate_path = addon_dir / "user_files" / "rate_this.json"
 csv_file_items = addon_dir / "user_files" / "data_files" / "item_names.csv"
 csv_file_descriptions = addon_dir / "user_files" / "data_files" / "item_flavor_text.csv"
+csv_file_items_all = addon_dir / "user_files" / "data_files" / "items.csv"
+csv_file_pokemon_evolution = addon_dir / "user_files" / "data_files" / "pokemon_evolution.csv"
 
+sys.path.append(os.path.abspath(f"{addon_dir}/user_files/data_files/"))
+from return_evo_info import get_item_id, get_evolution_entry
 
 items_list = []
 with open(items_list_path, 'r') as file:
@@ -1600,28 +1604,27 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
 
     return mainpokemon_level
 
-def evolve_pokemon(pkmn_name):
+def evolve_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name):
     global mainpokemon_path
     global addon_dir
     global achievements
     try:
-        evoName = search_pokedex(pkmn_name.lower(), "evos")
-        evoName = f"{evoName[0]}"
+        evoName = evos
+        evoId = int(evos_id)
         with open(mypokemon_path, "r") as json_file:
             captured_pokemon_data = json.load(json_file)
             pokemon = None
             if captured_pokemon_data:
-                for pokemon_data in captured_pokemon_data:
-                    if pokemon_data['name'] == pkmn_name.capitalize():
-                        pokemon = pokemon_data
+                for num, pokemon_data in enumerate(captured_pokemon_data):
+                    if num == position:
+                        pokemon = captured_pokemon_data[num]
                         if pokemon is not None:
                             pokemon["name"] = evoName.capitalize()
-                            evoId = int(search_pokedex(evoName.lower(), "num"))
                             pokemon["id"] = evoId
                             # pokemon["ev"] = ev
                             # pokemon["iv"] = iv
                             pokemon["type"] = search_pokedex(evoName.lower(), "types")
-                            pokemon["evos"] = []
+                            pokemon["evos"] = search_pokedex(evoName.lower(), "evos")
                             attacks = pokemon["attacks"]
                             new_attacks = get_random_moves_for_pokemon(evoName, int(pokemon["level"]))
                             for new_attack in new_attacks:
@@ -1683,27 +1686,25 @@ def evolve_pokemon(pkmn_name):
                             with open(str(mypokemon_path), "r") as output_file:
                                 mypokemondata = json.load(output_file)
                                 # Find and replace the specified Pokémon's data in mypokemondata
-                                for index, pokemon_data in enumerate(mypokemondata):
-                                    if pokemon_data["name"] == pkmn_name.capitalize():
-                                        mypokemondata[index] = pokemon
-                                        break
-                                        # Save the modified data to the output JSON file
+                                mypokemondata[position] = pokemon
+                                # Save the modified data to the output JSON file
                                 with open(str(mypokemon_path), "w") as output_file:
                                     json.dump(mypokemondata, output_file, indent=2)
                             with open(str(mainpokemon_path), "r") as output_file:
                                 mainpokemon_data = json.load(output_file)
                                 # Find and replace the specified Pokémon's data in mypokemondata
-                                for index, pokemon_data in enumerate(mainpokemon_data):
-                                    if pokemon_data["name"] == pkmn_name.capitalize():
-                                        mypokemondata[index] = pokemon
+                                for pokemon_data in mainpokemon_data:
+                                    if pokemon_data['name'] == pkmn_name.capitalize():
+                                        with open(str(mainpokemon_path), "w") as output_file:
+                                            pokemon = [pokemon]
+                                            json.dump(pokemon, output_file, indent=2)
                                         break
                                     else:
                                         pass
                                             # Save the modified data to the output JSON file
-                                with open(str(mainpokemon_path), "w") as output_file:
-                                        pokemon = [pokemon]
-                                        json.dump(pokemon, output_file, indent=2)
+                            item_window.delete_item(item_name)
                             showInfo(f"Your {pkmn_name.capitalize()} has evolved to {evoName.capitalize()}! \n You can now close this Window.")
+                            break
     except Exception as e:
         showWarning(f"{e}")
     prevo_name = pkmn_name
@@ -1714,7 +1715,7 @@ def evolve_pokemon(pkmn_name):
         test_window.display_badge(16)
 
 def cancel_evolution(pkmn_name):
-    global mainpokemon_current_hp, mainpokemon_ev, ev_yield, mainpokemon_evolutions
+    global mainpokemon_current_hp, mainpokemon_ev, ev_yield, mainpokemon_evolutions, mypokemon_path, mainpokemon_path
     # Load existing Pokémon data if it exists
     if mainpokemon_path.is_file():
         with open(mainpokemon_path, "r") as json_file:
@@ -1747,23 +1748,24 @@ def cancel_evolution(pkmn_name):
                             else:
                                 # Handle the case where the user cancels the dialog
                                 showInfo("No attack selected")
+                    for mainpkmndata in main_pokemon_data:
+                        mainpkmndata["stats"]["xp"] = int(mainpokemon_xp)
+                        mainpkmndata["level"] = int(mainpokemon_level)
+                        mainpkmndata["current_hp"] = int(mainpokemon_current_hp)
+                        mainpkmndata["ev"]["hp"] += ev_yield["hp"]
+                        mainpkmndata["ev"]["atk"] += ev_yield["attack"]
+                        mainpkmndata["ev"]["def"] += ev_yield["defense"]
+                        mainpkmndata["ev"]["spa"] += ev_yield["special-attack"]
+                        mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
+                        mainpkmndata["ev"]["spe"] += ev_yield["speed"]
+                        mainpkmndata["attacks"] = attacks
+                    mypkmndata = mainpkmndata
+                    mainpkmndata = [mainpkmndata]
+                    # Save the caught Pokémon's data to a JSON file
+                    with open(str(mainpokemon_path), "w") as json_file:
+                        json.dump(mainpkmndata, json_file, indent=2)
+                else:
                     break
-            for mainpkmndata in main_pokemon_data:
-                mainpkmndata["stats"]["xp"] = int(mainpokemon_xp)
-                mainpkmndata["level"] = int(mainpokemon_level)
-                mainpkmndata["current_hp"] = int(mainpokemon_current_hp)
-                mainpkmndata["ev"]["hp"] += ev_yield["hp"]
-                mainpkmndata["ev"]["atk"] += ev_yield["attack"]
-                mainpkmndata["ev"]["def"] += ev_yield["defense"]
-                mainpkmndata["ev"]["spa"] += ev_yield["special-attack"]
-                mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
-                mainpkmndata["ev"]["spe"] += ev_yield["speed"]
-                mainpkmndata["attacks"] = attacks
-    mypkmndata = mainpkmndata
-    mainpkmndata = [mainpkmndata]
-    # Save the caught Pokémon's data to a JSON file
-    with open(str(mainpokemon_path), "w") as json_file:
-        json.dump(mainpkmndata, json_file, indent=2)
 
     # Find the specified Pokémon's data in mainpokemondata
     #selected_pokemon_data = None
@@ -1785,17 +1787,6 @@ def cancel_evolution(pkmn_name):
         #selected_pokemon_data["ev"]["spe"] += ev_yield["speed"]
 
         # Load data from the output JSON file
-    with open(str(mypokemon_path), "r") as output_file:
-        mypokemondata = json.load(output_file)
-
-        # Find and replace the specified Pokémon's data in mypokemondata
-        for index, pokemon_data in enumerate(mypokemondata):
-            if pokemon_data["name"] == pkmn_name:
-                mypokemondata[index] = mypkmndata
-                break
-        # Save the modified data to the output JSON file
-        with open(str(mypokemon_path), "w") as output_file:
-            json.dump(mypokemondata, output_file, indent=2)
 
 def calc_experience(base_experience, enemy_level):
     exp = base_experience * enemy_level / 7
@@ -1940,7 +1931,7 @@ def search_pokedex(pokemon_name,variable):
             else:
                 return []
 
-def search_pokedex_by_name_for_id(pokemon_name, variable):
+def search_pokedex_by_name_for_id(pokemon_name):
     global pokedex_path
     pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
@@ -6657,12 +6648,12 @@ class EvoWindow(QWidget):
 
         return pkmn_label
 
-    def display_pokemon_evo(self, pkmn_name):
+    def display_pokemon_evo(self, prevo_id, evos_id, evos, pkmn_name, position, item_name):
         self.setMaximumWidth(600)
         self.setMaximumHeight(530)
         self.clear_layout(self.layout())
         layout = self.layout()
-        pokemon_images, evolve_button, dont_evolve_button = self.pokemon_display_evo_pokemon(pkmn_name)
+        pokemon_images, evolve_button, dont_evolve_button = self.pokemon_display_evo_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name)
         layout.addWidget(pokemon_images)
         layout.addWidget(evolve_button)
         layout.addWidget(dont_evolve_button)
@@ -6670,23 +6661,15 @@ class EvoWindow(QWidget):
         self.setLayout(layout)
         self.show()
 
-    def pokemon_display_evo_pokemon(self, pkmn_name):
+    def pokemon_display_evo_pokemon(self, prevo_id, evos_id, evos, pkmn_name, position, item_name):
         global pokemon_hp, name, id, level, caught_pokemon, pkmnimgfolder, frontdefault, addon_dir, caught, evolve_image_path
         global mainpokemon_name, mainpokemon_id
         layout_pokemon = QHBoxLayout()
         # Update mainpokemon_evolution and handle evolution logic
-        pokemon_evos = search_pokedex(pkmn_name.lower(), "evos")
-        pkmn_id = int(search_pokedex(pkmn_name.lower(), "num"))
-        try:
-            if len(pokemon_evos) > 1:
-                pokemon_evo = random.choice(pokemon_evos)
-                pokemon_evo_id = int((search_pokedex(pokemon_evo.lower(), "num")))
-            else:
-                pokemon_evo = pokemon_evos[0]
-                pokemon_evo_id = int((search_pokedex(pokemon_evo.lower(), "num")))
-        except (IndexError, ValueError, TypeError) as e:
-            showInfo(f"Error finding evolution details: {e}")
-        window_title = (f"{pkmn_name.capitalize()} is evolving to {pokemon_evo.capitalize()} ?")
+        pokemon_evo = evos
+        pokemon_evo_id = evos_id
+        pkmn_id = int(prevo_id)
+        window_title = (f"{pkmn_name.capitalize()} is evolving to {evos.capitalize()} ?")
         # Display the Pokémon image
         pkmnimage_path = frontdefault / f"{pkmn_id}.png"
         #pkmnimage_path2 = addon_dir / frontdefault / f"{mainpokemon_prevo_id}.png"
@@ -6749,7 +6732,7 @@ class EvoWindow(QWidget):
         # Create buttons for catching and killing the Pokémon
         evolve_button = QPushButton("Evolve Pokémon")
         dont_evolve_button = QPushButton("Cancel Evolution")
-        qconnect(evolve_button.clicked, lambda: evolve_pokemon(pkmn_name))
+        qconnect(evolve_button.clicked, lambda: evolve_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name))
         qconnect(dont_evolve_button.clicked, lambda: cancel_evolution(pkmn_name))
 
         # Set the merged image as the pixmap for the QLabel
@@ -7220,7 +7203,7 @@ class ItemWindow(QWidget):
             use_item_button.clicked.connect(lambda: self.Evolve_Fossil(item_name, fossil_id, fossil_pokemon_name))
         else:
             use_item_button = QPushButton("Evolve Pokemon")
-            use_item_button.clicked.connect(lambda: self.Check_Evo_Item(comboBox.currentText(), item_name))
+            use_item_button.clicked.connect(lambda: self.Check_Evo_Item(comboBox.currentText(), item_name, comboBox.currentIndex()))
             comboBox = QComboBox()
             self.PokemonList(comboBox)
             item_frame.addWidget(comboBox)
@@ -7272,19 +7255,25 @@ class ItemWindow(QWidget):
         play_effect_sound("HpHeal")
         showInfo(f"{pkmn_name} was healed for {heal_points}")
 
-    def Check_Evo_Item(self, pkmn_name, item_name):
+    def Check_Evo_Item(self, pkmn_name, item_name, position):
         try:
+            prevo_id = search_pokedex_by_name_for_id(pkmn_name.lower())
             evoName = search_pokedex(pkmn_name.lower(), "evos")
-            evoName = f"{evoName[0]}"
-            evoItem = search_pokedex(evoName.lower(), "evoItem")
-            item_name = item_name.replace("-", " ")  # Remove hyphens from item_name
-            evoItem = str(evoItem).lower()
-            if evoItem == item_name:  # Corrected this line to assign the item_name to evoItem
-                # Perform your action when the item matches the Pokémon's evolution item
-                showInfo("Pokemon Evolution is fitting !")
-                evo_window.display_pokemon_evo(pkmn_name)
-            else:
-                showInfo("This Pokemon does not need this item.")
+            item_id = get_item_id(item_name)
+            fitting = False
+            if evoName:
+                for evos in evoName:
+                    evos_id = search_pokedex_by_name_for_id(evos.lower())
+                    evo_info = get_evolution_entry(evos_id)
+                    if evo_info:
+                        evoitem_id = evo_info.get("trigger_item_id", None)
+                        #evoItem = search_pokedex(evos.lower(), "evoItem")
+                        if evoitem_id == item_id:
+                            showInfo("Pokemon Evolution is fitting !")
+                            fitting = True
+                            evo_window.display_pokemon_evo(prevo_id, evos_id, evos, pkmn_name, position, item_name)
+                if fitting is False:
+                    showInfo("This Pokemon does not need this item.")
         except Exception as e:
             showWarning(f"{e}")
     
