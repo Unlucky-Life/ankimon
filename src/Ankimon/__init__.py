@@ -52,8 +52,6 @@ import markdown
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
-#show config .json file
-
 # Find current directory
 addon_dir = Path(__file__).parents[0]
 currdirname = addon_dir
@@ -119,6 +117,8 @@ csv_file_pokemon_evolution = addon_dir / "user_files" / "data_files" / "pokemon_
 
 sys.path.append(os.path.abspath(f"{addon_dir}/user_files/data_files/"))
 from return_evo_info import get_item_id, get_evolution_entry
+sys.path.append(os.path.abspath(f"{addon_dir}/user_files/"))
+from ankimon_sync import CheckPokemonData
 
 items_list = []
 with open(items_list_path, 'r') as file:
@@ -312,6 +312,8 @@ if hp_bar_config != True:
 else:
     hp_only_spacer = 0
     wild_hp_spacer = 0
+
+check_data = CheckPokemonData(mainpokemon_path, mypokemon_path, config)
 
 def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5):
     try:
