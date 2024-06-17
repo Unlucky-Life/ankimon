@@ -1,3 +1,5 @@
+This License is from https://github.com/PokeAPI/cries/tree/8584048df8f55ee1c436da23b378316e9d416a9b aswell as the cries audios. Therefore this is the pokeapi cries license aswell as the sound files are forked from that repository.
+
 All audio files contents within are Copyright The Pokémon Company.
 
 This repository is distributed under CC0 1.0 Universal
