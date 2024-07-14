@@ -4450,7 +4450,7 @@ def find_experience_for_level(group_growth_rate, level):
                 experience = (level ** 3) * (100 - level) // 50
             elif 50 <= level < 68:
                 experience = (level ** 3) * (150 - level) // 100
-            elif 68 <= level < 98:
+            elif 68 <= level:
                 experience = (level ** 3) * (1911 - 10 * level) // 500
             else:
                 experience = (level ** 3) * (160 - level) // 100
@@ -4459,7 +4459,7 @@ def find_experience_for_level(group_growth_rate, level):
                 experience = (level ** 3) * (level // 3 + 24) // 50
             elif 15 <= level < 36:
                 experience = (level ** 3) * (level + 14) // 50
-            elif 36 <= level < 100:
+            elif 36 <= level:
                 experience = (level ** 3) * (level // 2 + 32) // 50
         elif group_growth_rate == "fast":
             experience = (4 * (level ** 3)) // 5
