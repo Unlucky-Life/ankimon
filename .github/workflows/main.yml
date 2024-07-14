@@ -48,6 +48,7 @@ jobs:
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
           echo "::set-output name=module_name::$(ls src)"
           echo "::set-output name=build_name::$(ls build | grep --color=never .ankiaddon)"
+          
       - name: Create github release and upload ankiaddon file
         uses: svenstaro/upload-release-action@2.2.1
         with:
