@@ -1,36 +1,61 @@
-name: Create Release
+name: Release Ankimon Add-on
 
 on:
-  workflow_dispatch:
-    inputs:
-      file_name:
-        description: apkg file name (Ankimon by Unlucky-life)
-        required: true
-      version:
-        description: release version string (eg. 6.1)
-        required: true
-        
+  push:
+    tags:
+      - 'v*.*'
+
 jobs:
-  create-release:
-    name: ${{ github.event.inputs.file_name }}
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-        with: 
-          submodules: recursive
-          fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: Set variables
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
         run: |
-          echo "LAST_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-          file_name="${{ github.event.inputs.file_name }}"
-          echo "WITHOUT_SPACE=${file_name// /_}" >> $GITHUB_ENV
+          set -x  # Enable debugging
+          python -m venv venv
+          source venv/bin/activate  # Use 'venv\Scripts\activate' on Windows
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Create github release
+      - name: Build Ankimon add-on
+        run: |
+          set -x  # Enable debugging
+          source venv/bin/activate  # Use 'venv\Scripts\activate' on Windows
+          python setup.py sdist bdist_wheel
+          mkdir -p build
+          cp dist/*.ankiaddon build/
+        id: build_addon
+
+      - name: Get packaged add-on name
+        run: |
+          set -x  # Enable debugging
+          FILE_NAME=$(ls build/*.ankiaddon)
+          echo "ADDON_NAME=$(basename $FILE_NAME)" >> $GITHUB_ENV
+        id: get_addon_name
+
+      - name: Print debugging information
+        run: |
+          set -x  # Enable debugging
+          echo "Build Directory Content:"
+          ls build
+          echo "ADDON_NAME: ${{ env.ADDON_NAME }}"
+
+      - name: Create GitHub release and upload .ankiaddon file
         uses: svenstaro/upload-release-action@2.2.1
         with:
-          repo_token: ${{ github.token }}
-          file: Apkg/${{ github.event.inputs.file_name }}.apkg
-          release_name: ${{ github.event.inputs.file_name }}--Release_${{ github.event.inputs.version }}
-          tag: ${{ env.WITHOUT_SPACE }}-${{ env.LAST_SHA }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/${{ env.ADDON_NAME }}
+          tag: ${{ github.ref }}
+          release_name: Ankimon v${{ github.ref }}
+        env:
+          LAST_SHA: ${{ github.sha }}
+          WITHOUT_SPACE: ${{ github.ref }}
