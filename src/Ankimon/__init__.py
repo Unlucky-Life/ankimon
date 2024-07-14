@@ -52,6 +52,8 @@ import markdown
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
+#show config .json file
+
 # Find current directory
 addon_dir = Path(__file__).parents[0]
 currdirname = addon_dir
@@ -112,11 +114,7 @@ items_list_path = addon_dir / "addon_files" / "items.json"
 rate_path = addon_dir / "user_files" / "rate_this.json"
 csv_file_items = addon_dir / "user_files" / "data_files" / "item_names.csv"
 csv_file_descriptions = addon_dir / "user_files" / "data_files" / "item_flavor_text.csv"
-csv_file_items_all = addon_dir / "user_files" / "data_files" / "items.csv"
-csv_file_pokemon_evolution = addon_dir / "user_files" / "data_files" / "pokemon_evolution.csv"
 
-sys.path.append(os.path.abspath(f"{addon_dir}/user_files/data_files/"))
-from return_evo_info import get_item_id, get_evolution_entry
 
 items_list = []
 with open(items_list_path, 'r') as file:
@@ -280,6 +278,8 @@ automatic_battle = config["automatic_battle"] #default: 0; 1 = catch_pokemon; 2 
 defeat_shortcut = config["defeat_key"] #default: 5; ; Else if not 5 => controll + Key for capture
 catch_shortcut = config["catch_key"] #default: 6; Else if not 6 => controll + Key for capture
 reviewer_buttons = config["pokemon_buttons"] #default: true; false = no pokemon buttons in reviewer
+remove_levelcap = config["misc.remove_level_cap"] #default: false; true = no more news
+
 
 if sound_effects is True:
     from . import playsound
@@ -311,168 +311,113 @@ else:
     hp_only_spacer = 0
     wild_hp_spacer = 0
 
-class CheckPokemonData(QDialog):
-    def __init__(self, mainpokemon_path, mypokemon_path, config):
-        super().__init__()
-        self.mainpokemon_path = mainpokemon_path
-        self.mypokemon_path = mypokemon_path
-        self.config = config
-        self.sync_pokemons()
-        message = "Ankimon Pokemon Sync:"
-        message += "There is a difference between the Ankiweb Synced Pokémon data and the local Pokémon data. \n"
-        message += "Please choose to either load the local data and sync to Ankiweb or sync Ankiweb data to your local storage \n"
-        # Set the window title for the dialog
-        self.setWindowTitle("Ankimon Pokemon Sync:")
-
-        # Create a QLabel instance
-        self.label = QLabel(f"{message}", self)
-
-        # Create two QPushButtons for syncing options
-        self.sync_local_button = QPushButton("Load Local Data and Sync to Ankiweb", self)
-        self.sync_ankiweb_button = QPushButton("Sync Ankiweb Data to Local Storage", self)
-        qconnect(self.sync_local_button.clicked, self.sync_data_to_ankiweb)
-        qconnect(self.sync_ankiweb_button.clicked, self.sync_data_to_local)
-        # Create a QVBoxLayout instance
-        self.layout = QVBoxLayout()
-        # Add the QLabel and QPushButtons to the layout
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.sync_local_button)
-        self.layout.addWidget(self.sync_ankiweb_button)
-        # Set the dialog's layout
-        self.setLayout(self.layout)
-
-    def sync_pokemons(self):
-        self.mainpokemon_web_data = self.config.get('mainpokemon', '')
-        self.pokemon_collection_web_data = self.config.get('pokemon_collection', '')
-        #showInfo("Pokémon data synced.")
-        #showInfo(f"Mainpokemon {mainpokemon}")
-        #showInfo(f"Pokémon Collection {pokemon_collection}")    #function to sync pokemon data to ankiweb and local files
-            
-        with open(str(self.mypokemon_path), 'r', encoding='utf-8') as file:
-            self.mainpokemon_sync_data = json.load(file)
-        with open(str(self.mainpokemon_path), 'r', encoding='utf-8') as file:
-            self.pokemon_collection_sync_data = json.load(file)
-            
-        if self.mainpokemon_web_data != self.mainpokemon_sync_data or self.pokemon_collection_web_data != self.pokemon_collection_sync_data:
-            # Show dialog window with two buttons
-            self.show()
-    
-    def sync_data_to_local(self):
-        with open(str(self.mypokemon_path), 'w', encoding='utf-8') as file:
-            json.dump(self.pokemon_collection_web_data, file, ensure_ascii=False, indent=4)
-        with open(str(self.mainpokemon_path), 'w', encoding='utf-8') as file:
-            json.dump(self.mainpokemon_web_data, file, ensure_ascii=False, indent=4)
-        showInfo("Ankiweb Data synced to local.")
-        self.close()
-    
-    def sync_data_to_ankiweb(self):
-        self.config["pokemon_collection"] = self.pokemon_collection_sync_data
-        self.config["mainpokemon"] = self.mainpokemon_sync_data
-        mw.addonManager.writeConfig(__name__, self.config)
-        showInfo("Local Data synced to local.")
-        self.close()
-
-check_data = CheckPokemonData(mainpokemon_path, mypokemon_path, config)
-
-def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5):
-    try:
-        # Attempt to get the URL
-        response = requests.get(url, timeout=timeout)
-
-        # Check if the response status code is 200 (OK)
-        if response.status_code == 200:
-            return True
-    except requests.ConnectionError:
-        # Connection error means no internet connectivity
-        return False
-
-online_connectivity = test_online_connectivity()
-
-if ssh != False:
-    # Function to check if the content of the two files is the same
-    def compare_files(local_content, github_content):
-        return local_content == github_content
-
-    # Function to read the content of the local file
-    def read_local_file(file_path):
+try:
+    def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5):
         try:
-            with open(file_path, 'r', encoding='utf-8') as file:
-                return file.read()
-        except FileNotFoundError:
-            return None
+            # Attempt to get the URL
+            response = requests.get(url, timeout=timeout)
 
-    # Function to write content to a local file
-    def write_local_file(file_path, content):
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(content)
+            # Check if the response status code is 200 (OK)
+            if response.status_code == 200:
+                return True
+        except requests.ConnectionError:
+            # Connection error means no internet connectivity
+            return False
+    online_connectivity = test_online_connectivity()
+except:
+    online_connectivity = False
 
-    # Function to check if the file exists on GitHub and read its content
-    def read_github_file(url):
-        response = requests.get(url)
-            
-        if response.status_code == 200:
-            # File exists, parse the Markdown content
-            content = response.text
-            html_content = markdown.markdown(content)
-            return content, html_content
-        else:
-            return None, None
-        
-if online_connectivity != False:
+#Connect to GitHub and Check for Notification and HelpGuideChanges
+try:
     if ssh != False:
-        # Custom Dialog class
-        class UpdateNotificationWindow(QDialog):
-            def __init__(self, content):
-                super().__init__()
-                global icon_path
-                self.setWindowTitle("Ankimon Notifications")
-                self.setGeometry(100, 100, 600, 400)
+        # Function to check if the content of the two files is the same
+        def compare_files(local_content, github_content):
+            return local_content == github_content
 
-                layout = QVBoxLayout()
-                self.text_edit = QTextEdit()
-                self.text_edit.setReadOnly(True)
-                self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-                self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
-                self.text_edit.setHtml(content)
-                layout.addWidget(self.text_edit)
-                self.setWindowIcon(QIcon(str(icon_path)))
+        # Function to read the content of the local file
+        def read_local_file(file_path):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    return file.read()
+            except FileNotFoundError:
+                return None
 
-                self.setLayout(layout)
+        # Function to write content to a local file
+        def write_local_file(file_path, content):
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(content)
 
-        # URL of the file on GitHub
-        github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
-        # Path to the local file
-        local_file_path = addon_dir / "updateinfos.md"
-        # Read content from GitHub
-        github_content, github_html_content = read_github_file(github_url)
-        # Read content from the local file
-        local_content = read_local_file(local_file_path)
-        # If local content exists and is the same as GitHub content, do not open dialog
-        if local_content is not None and compare_files(local_content, github_content):
-            pass
-        else:
-            # Download new content from GitHub
-            if github_content is not None:
-                # Write new content to the local file
-                write_local_file(local_file_path, github_content)
-                dialog = UpdateNotificationWindow(github_html_content)
-                if no_more_news is False:
-                    dialog.exec()
+        # Function to check if the file exists on GitHub and read its content
+        def read_github_file(url):
+            response = requests.get(url)
+                
+            if response.status_code == 200:
+                # File exists, parse the Markdown content
+                content = response.text
+                html_content = markdown.markdown(content)
+                return content, html_content
             else:
-                showWarning("Failed to retrieve Ankimon content from GitHub.")
+                return None, None
+            
+    if online_connectivity != False:
+        if ssh != False:
+            # Custom Dialog class
+            class UpdateNotificationWindow(QDialog):
+                def __init__(self, content):
+                    super().__init__()
+                    global icon_path
+                    self.setWindowTitle("Ankimon Notifications")
+                    self.setGeometry(100, 100, 600, 400)
 
-if ssh != False:
-    ##HelpGuide
-    class HelpWindow(QDialog):
-        def __init__(self):
-            super().__init__()
-            html_content = " "
-            global icon_path
+                    layout = QVBoxLayout()
+                    self.text_edit = QTextEdit()
+                    self.text_edit.setReadOnly(True)
+                    self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+                    self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
+                    self.text_edit.setHtml(content)
+                    layout.addWidget(self.text_edit)
+                    self.setWindowIcon(QIcon(str(icon_path)))
+
+                    self.setLayout(layout)
+
+            # URL of the file on GitHub
+            github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
+            # Path to the local file
+            local_file_path = addon_dir / "updateinfos.md"
+            # Read content from GitHub
+            github_content, github_html_content = read_github_file(github_url)
+            # Read content from the local file
+            local_content = read_local_file(local_file_path)
+            # If local content exists and is the same as GitHub content, do not open dialog
+            if local_content is not None and compare_files(local_content, github_content):
+                pass
+            else:
+                # Download new content from GitHub
+                if github_content is not None:
+                    # Write new content to the local file
+                    write_local_file(local_file_path, github_content)
+                    dialog = UpdateNotificationWindow(github_html_content)
+                    if no_more_news is False:
+                        dialog.exec()
+                else:
+                    showWarning("Failed to retrieve Ankimon content from GitHub.")
+except Exception as e:
+    if ssh != False:
+        showInfo(f"Error in try connect to GitHub: {e}")
+
+##HelpGuide
+class HelpWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+        html_content = " "
+        global icon_path
+        help_local_file_path = addon_dir / "HelpInfos.html"
+        try:
             if online_connectivity != False:
                 # URL of the file on GitHub
+                help_local_file_path = addon_dir / "HelpInfos.html"
                 help_github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/HelpInfos.html"
                 # Path to the local file
-                help_local_file_path = addon_dir / "HelpInfos.html"
                 local_content = read_local_file(help_local_file_path)
                 # Read content from GitHub
                 github_content, github_html_content = read_github_file(help_github_url)
@@ -485,26 +430,32 @@ if ssh != False:
                         write_local_file(help_local_file_path, github_content)
                         html_content = github_html_content
             else:
+                help_local_file_path = addon_dir / "HelpInfos.html"
                 local_content = read_local_file(help_local_file_path)
                 html_content = local_content
+        except:
+            showWarning("Failed to retrieve Ankimon HelpGuide from GitHub.")
+            local_content = read_local_file(help_local_file_path)
+            html_content = local_content
+        self.setWindowTitle("Ankimon HelpGuide")
+        self.setGeometry(100, 100, 600, 400)
 
-            self.setWindowTitle("Ankimon HelpGuide")
-            self.setGeometry(100, 100, 600, 400)
+        layout = QVBoxLayout()
+        self.text_edit = QTextEdit()
+        self.text_edit.setReadOnly(True)
+        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.text_edit.setHtml(html_content)
+        layout.addWidget(self.text_edit)
+        self.setWindowIcon(QIcon(str(icon_path)))
+        self.setLayout(layout)
 
-            layout = QVBoxLayout()
-            self.text_edit = QTextEdit()
-            self.text_edit.setReadOnly(True)
-            self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-            self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-            self.text_edit.setHtml(html_content)
-            layout.addWidget(self.text_edit)
-            self.setWindowIcon(QIcon(str(icon_path)))
-            self.setLayout(layout)
-            
 def open_help_window():
-    if ssh != False:
+    try:
         help_dialog = HelpWindow()
         help_dialog.exec()
+    except:
+        showWarning("Error in opening HelpGuide")
         
 try:
     from aqt.sound import av_player
@@ -1495,14 +1446,18 @@ def find_details_move(move_name):
 def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp):
     global mainpokemon_current_hp, mainpokemon_ev, ev_yield, mainpokemon_evolution, mainpokemon_xp, pop_up_dialog_message_on_defeat
     experience = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
-    if mainpokemon_level != 100:
+    if remove_levelcap is True:
         mainpokemon_xp += exp
+        level_cap = None
+    elif mainpokemon_level != 100:
+            mainpokemon_xp += exp
+            level_cap = 100
     if mainpokemon_path.is_file():
         with open(mainpokemon_path, "r") as json_file:
             main_pokemon_data = json.load(json_file)
     else:
         showWarning("Missing Mainpokemon Data !")
-    while int(experience) < int(mainpokemon_xp) and mainpokemon_level != 100:
+    while int(experience) < int(mainpokemon_xp) and (level_cap is None or mainpokemon_level < level_cap):
         mainpokemon_level += 1
         msg = ""
         msg += f"Your {mainpokemon_name} is now level {mainpokemon_level} !"
@@ -1665,26 +1620,28 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
 
     return mainpokemon_level
 
-def evolve_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name):
+def evolve_pokemon(pkmn_name):
     global mainpokemon_path
     global addon_dir
     global achievements
     try:
-        evoName = evos
-        evoId = int(evos_id)
+        evoName = search_pokedex(pkmn_name.lower(), "evos")
+        evoName = f"{evoName[0]}"
         with open(mypokemon_path, "r") as json_file:
             captured_pokemon_data = json.load(json_file)
             pokemon = None
             if captured_pokemon_data:
-                for num, pokemon_data in enumerate(captured_pokemon_data):
-                    if num == position:
-                        pokemon = captured_pokemon_data[num]
+                for pokemon_data in captured_pokemon_data:
+                    if pokemon_data['name'] == pkmn_name.capitalize():
+                        pokemon = pokemon_data
                         if pokemon is not None:
                             pokemon["name"] = evoName.capitalize()
+                            evoId = int(search_pokedex(evoName.lower(), "num"))
                             pokemon["id"] = evoId
                             # pokemon["ev"] = ev
                             # pokemon["iv"] = iv
                             pokemon["type"] = search_pokedex(evoName.lower(), "types")
+                            pokemon["evos"] = []
                             attacks = pokemon["attacks"]
                             new_attacks = get_random_moves_for_pokemon(evoName, int(pokemon["level"]))
                             for new_attack in new_attacks:
@@ -1713,9 +1670,7 @@ def evolve_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name):
                                         showInfo("No attack selected")
                             pokemon["attacks"] = attacks
                             if search_pokedex(evoName, "evos"):
-                                pokemon["evos"] = search_pokedex(evoName.lower(), "evos")
-                            else:
-                                pokemon["evos"] = []
+                                pokemon["evos"].append(search_pokedex(evoName.lower(), "evos"))
                             stats = search_pokedex(evoName.lower(), "baseStats")
                             pokemon["stats"] = stats
                             pokemon["stats"]["xp"] = 0
@@ -1748,25 +1703,27 @@ def evolve_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name):
                             with open(str(mypokemon_path), "r") as output_file:
                                 mypokemondata = json.load(output_file)
                                 # Find and replace the specified Pokémon's data in mypokemondata
-                                mypokemondata[position] = pokemon
-                                # Save the modified data to the output JSON file
+                                for index, pokemon_data in enumerate(mypokemondata):
+                                    if pokemon_data["name"] == pkmn_name.capitalize():
+                                        mypokemondata[index] = pokemon
+                                        break
+                                        # Save the modified data to the output JSON file
                                 with open(str(mypokemon_path), "w") as output_file:
                                     json.dump(mypokemondata, output_file, indent=2)
                             with open(str(mainpokemon_path), "r") as output_file:
                                 mainpokemon_data = json.load(output_file)
                                 # Find and replace the specified Pokémon's data in mypokemondata
-                                for pokemon_data in mainpokemon_data:
-                                    if pokemon_data.get('position',None) == position:
-                                        with open(str(mainpokemon_path), "w") as output_file:
-                                            pokemon = [pokemon]
-                                            json.dump(pokemon, output_file, indent=2)
+                                for index, pokemon_data in enumerate(mainpokemon_data):
+                                    if pokemon_data["name"] == pkmn_name.capitalize():
+                                        mypokemondata[index] = pokemon
                                         break
                                     else:
                                         pass
                                             # Save the modified data to the output JSON file
-                            item_window.delete_item(item_name)
+                                with open(str(mainpokemon_path), "w") as output_file:
+                                        pokemon = [pokemon]
+                                        json.dump(pokemon, output_file, indent=2)
                             showInfo(f"Your {pkmn_name.capitalize()} has evolved to {evoName.capitalize()}! \n You can now close this Window.")
-                            break
     except Exception as e:
         showWarning(f"{e}")
     prevo_name = pkmn_name
@@ -1777,7 +1734,7 @@ def evolve_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name):
         test_window.display_badge(16)
 
 def cancel_evolution(pkmn_name):
-    global mainpokemon_current_hp, mainpokemon_ev, ev_yield, mainpokemon_evolutions, mypokemon_path, mainpokemon_path
+    global mainpokemon_current_hp, mainpokemon_ev, ev_yield, mainpokemon_evolutions
     # Load existing Pokémon data if it exists
     if mainpokemon_path.is_file():
         with open(mainpokemon_path, "r") as json_file:
@@ -1810,24 +1767,23 @@ def cancel_evolution(pkmn_name):
                             else:
                                 # Handle the case where the user cancels the dialog
                                 showInfo("No attack selected")
-                    for mainpkmndata in main_pokemon_data:
-                        mainpkmndata["stats"]["xp"] = int(mainpokemon_xp)
-                        mainpkmndata["level"] = int(mainpokemon_level)
-                        mainpkmndata["current_hp"] = int(mainpokemon_current_hp)
-                        mainpkmndata["ev"]["hp"] += ev_yield["hp"]
-                        mainpkmndata["ev"]["atk"] += ev_yield["attack"]
-                        mainpkmndata["ev"]["def"] += ev_yield["defense"]
-                        mainpkmndata["ev"]["spa"] += ev_yield["special-attack"]
-                        mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
-                        mainpkmndata["ev"]["spe"] += ev_yield["speed"]
-                        mainpkmndata["attacks"] = attacks
-                    mypkmndata = mainpkmndata
-                    mainpkmndata = [mainpkmndata]
-                    # Save the caught Pokémon's data to a JSON file
-                    with open(str(mainpokemon_path), "w") as json_file:
-                        json.dump(mainpkmndata, json_file, indent=2)
-                else:
                     break
+            for mainpkmndata in main_pokemon_data:
+                mainpkmndata["stats"]["xp"] = int(mainpokemon_xp)
+                mainpkmndata["level"] = int(mainpokemon_level)
+                mainpkmndata["current_hp"] = int(mainpokemon_current_hp)
+                mainpkmndata["ev"]["hp"] += ev_yield["hp"]
+                mainpkmndata["ev"]["atk"] += ev_yield["attack"]
+                mainpkmndata["ev"]["def"] += ev_yield["defense"]
+                mainpkmndata["ev"]["spa"] += ev_yield["special-attack"]
+                mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
+                mainpkmndata["ev"]["spe"] += ev_yield["speed"]
+                mainpkmndata["attacks"] = attacks
+    mypkmndata = mainpkmndata
+    mainpkmndata = [mainpkmndata]
+    # Save the caught Pokémon's data to a JSON file
+    with open(str(mainpokemon_path), "w") as json_file:
+        json.dump(mainpkmndata, json_file, indent=2)
 
     # Find the specified Pokémon's data in mainpokemondata
     #selected_pokemon_data = None
@@ -1849,6 +1805,17 @@ def cancel_evolution(pkmn_name):
         #selected_pokemon_data["ev"]["spe"] += ev_yield["speed"]
 
         # Load data from the output JSON file
+    with open(str(mypokemon_path), "r") as output_file:
+        mypokemondata = json.load(output_file)
+
+        # Find and replace the specified Pokémon's data in mypokemondata
+        for index, pokemon_data in enumerate(mypokemondata):
+            if pokemon_data["name"] == pkmn_name:
+                mypokemondata[index] = mypkmndata
+                break
+        # Save the modified data to the output JSON file
+        with open(str(mypokemon_path), "w") as output_file:
+            json.dump(mypokemondata, output_file, indent=2)
 
 def calc_experience(base_experience, enemy_level):
     exp = base_experience * enemy_level / 7
@@ -1993,7 +1960,7 @@ def search_pokedex(pokemon_name,variable):
             else:
                 return []
 
-def search_pokedex_by_name_for_id(pokemon_name):
+def search_pokedex_by_name_for_id(pokemon_name, variable):
     global pokedex_path
     pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
@@ -2073,7 +2040,7 @@ def search_pokeapi_db_by_id(pkmn_id,variable):
             
 def mainpokemon_data():
     global mainpkmn
-    global mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname, mainpokemon_position
+    global mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname
     mainpkmn = 1
     try:
         with (open(str(mainpokemon_path), "r", encoding="utf-8") as json_file):
@@ -2108,7 +2075,6 @@ def mainpokemon_data():
                     mainpokemon_base_experience = main_pokemon_data["base_experience"]
                     mainpokemon_growth_rate = main_pokemon_data["growth_rate"]
                     mainpokemon_gender = main_pokemon_data["gender"]
-                    mainpokemon_position = main_pokemon_data.get("position", None)
                     return mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname
     except:
             pass
@@ -2742,10 +2708,7 @@ class MovieSplashLabel(QLabel):
 class PokemonCollectionDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        with open(mypokemon_path, "r") as json_file:
-            captured_pokemon_data = json.load(json_file)
-            amount=len(captured_pokemon_data)
-        self.setWindowTitle(f"Captured Pokemon: {amount}")
+        self.setWindowTitle("Captured Pokemon")
         self.setMinimumWidth(750)
         self.setMinimumHeight(400)
         self.layout = QVBoxLayout(self)
@@ -2906,7 +2869,7 @@ class PokemonCollectionDialog(QDialog):
 
                         choose_pokemon_button = QPushButton("Pick as main Pokemon")
                         choose_pokemon_button.setIconSize(pixmap.size())
-                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender, position=position: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender, position))
+                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
 
                         container_layout = QVBoxLayout()
                         container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
@@ -3240,7 +3203,7 @@ class PokemonCollectionDialog(QDialog):
 
                         choose_pokemon_button = QPushButton("Pick as main Pokemon")
                         choose_pokemon_button.setIconSize(pixmap.size())
-                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=mainpokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender, position=position: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender, position))
+                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=mainpokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
 
                         container_layout = QVBoxLayout()
                         container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
@@ -3885,7 +3848,7 @@ def move_category_path(category):
     category_path = addon_dir / "addon_sprites" / png_file
     return category_path
 
-def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender, position):
+def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
     # Display the Pokémon image
     global mainpkmn, addon_dir, currdirname, mainpokemon_path
     mainpkmn = 1
@@ -3917,8 +3880,7 @@ def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks,
             "attacks": attacks,
             "base_experience": base_experience,
             "current_hp": calculate_hp(detail_stats["hp"],level, ev, iv),
-            "growth_rate": growth_rate,
-            "position": position
+            "growth_rate": growth_rate
         }
     ]
 
@@ -4317,7 +4279,8 @@ def load_custom_font(font_size):
 #test functions
 
 def find_experience_for_level(group_growth_rate, level):
-    if level > 100:
+    global remove_levelcap
+    if level > 100 and remove_levelcap is False:
     	level = 100
     if group_growth_rate == "medium":
         group_growth_rate = "medium-fast"
@@ -4328,52 +4291,50 @@ def find_experience_for_level(group_growth_rate, level):
     global next_lvl_file_path
     # Specify the growth rate and level you're interested in
     growth_rate = f'{group_growth_rate}'
-    # Open the CSV file
-    csv_file_path = str(next_lvl_file_path)  # Replace 'your_file_path.csv' with the actual path to your CSV file
-    with open(csv_file_path, 'r', encoding='utf-8') as file:
-        # Create a CSV reader
-        csv_reader = csv.DictReader(file, delimiter=';')
+    if level < 100:
+        # Open the CSV file
+        csv_file_path = str(next_lvl_file_path)  # Replace 'your_file_path.csv' with the actual path to your CSV file
+        with open(csv_file_path, 'r', encoding='utf-8') as file:
+            # Create a CSV reader
+            csv_reader = csv.DictReader(file, delimiter=';')
 
-        # Get the fieldnames from the CSV file
-        fieldnames = [field.strip() for field in csv_reader.fieldnames]
+            # Get the fieldnames from the CSV file
+            fieldnames = [field.strip() for field in csv_reader.fieldnames]
 
-        # Iterate through rows and find the experience for the specified growth rate and level
-        for row in csv_reader:
-            if row[fieldnames[0]] == str(level):  # Use the first fieldname to access the 'Level' column
-                experience = row[growth_rate]
-                break
+            # Iterate through rows and find the experience for the specified growth rate and level
+            for row in csv_reader:
+                if row[fieldnames[0]] == str(level):  # Use the first fieldname to access the 'Level' column
+                    experience = row[growth_rate]
+                    break
 
-        return experience
-
-def find_experience_for_mainpokemon():
-    global next_lvl_file_path
-    global mainpokemon_growth_rate
-    global mainpokemon_level
-    global mainpokemon_xp, pop_up_dialog_message_on_defeat
-    if mainpokemon_growth_rate == "medium":
-        mainpokemon_growth_rate = "medium-fast"
-    level = mainpokemon_level
-    # Specify the growth rate and level you're interested in
-    growth_rate = f'{mainpokemon_growth_rate}'
-    # Open the CSV file
-    csv_file_path = str(next_lvl_file_path)  # Replace 'your_file_path.csv' with the actual path to your CSV file
-    with open(csv_file_path, 'r', encoding='utf-8') as file:
-        # Create a CSV reader
-        csv_reader = csv.DictReader(file, delimiter=';')
-
-        # Get the fieldnames from the CSV file
-        fieldnames = [field.strip() for field in csv_reader.fieldnames]
-
-        # Iterate through rows and find the experience for the specified growth rate and level
-        for row in csv_reader:
-            if row[fieldnames[0]] == str(level):  # Use the first fieldname to access the 'Level' column
-                experience = row[growth_rate]
-                experience = int(experience)
-                experience -= mainpokemon_xp
-                #if pop_up_dialog_message_on_defeat is True:
-                    #showInfo((f"Your main Pokemon {mainpokemon_name} Lvl {level} needs {experience} XP to reach the next level."))
-                break
-
+            return experience
+    elif level > 99:
+        if group_growth_rate == "erractic":
+            if level < 50:
+                experience = (level ** 3) * (100 - level) // 50
+            elif 50 <= level < 68:
+                experience = (level ** 3) * (150 - level) // 100
+            elif 68 <= level < 98:
+                experience = (level ** 3) * (1911 - 10 * level) // 500
+            else:
+                experience = (level ** 3) * (160 - level) // 100
+        elif group_growth_rate == "fluctuating":
+            if level < 15:
+                experience = (level ** 3) * (level // 3 + 24) // 50
+            elif 15 <= level < 36:
+                experience = (level ** 3) * (level + 14) // 50
+            elif 36 <= level < 100:
+                experience = (level ** 3) * (level // 2 + 32) // 50
+        elif group_growth_rate == "fast":
+            experience = (4 * (level ** 3)) // 5
+        elif group_growth_rate == "medium-fast":
+            experience = level ** 3
+        elif group_growth_rate == "medium":
+            experience = level ** 3
+        elif group_growth_rate == "medium-slow":
+            experience = (6 * (level ** 3)) // 5 - 15 * (level ** 2) + 100 * level - 140
+        elif group_growth_rate == "slow":
+            experience = (5 * (level ** 3)) // 4
         return experience
 
 class Downloader(QObject):
@@ -6715,12 +6676,12 @@ class EvoWindow(QWidget):
 
         return pkmn_label
 
-    def display_pokemon_evo(self, prevo_id, evos_id, evos, pkmn_name, position, item_name):
+    def display_pokemon_evo(self, pkmn_name):
         self.setMaximumWidth(600)
         self.setMaximumHeight(530)
         self.clear_layout(self.layout())
         layout = self.layout()
-        pokemon_images, evolve_button, dont_evolve_button = self.pokemon_display_evo_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name)
+        pokemon_images, evolve_button, dont_evolve_button = self.pokemon_display_evo_pokemon(pkmn_name)
         layout.addWidget(pokemon_images)
         layout.addWidget(evolve_button)
         layout.addWidget(dont_evolve_button)
@@ -6728,15 +6689,23 @@ class EvoWindow(QWidget):
         self.setLayout(layout)
         self.show()
 
-    def pokemon_display_evo_pokemon(self, prevo_id, evos_id, evos, pkmn_name, position, item_name):
+    def pokemon_display_evo_pokemon(self, pkmn_name):
         global pokemon_hp, name, id, level, caught_pokemon, pkmnimgfolder, frontdefault, addon_dir, caught, evolve_image_path
         global mainpokemon_name, mainpokemon_id
         layout_pokemon = QHBoxLayout()
         # Update mainpokemon_evolution and handle evolution logic
-        pokemon_evo = evos
-        pokemon_evo_id = evos_id
-        pkmn_id = int(prevo_id)
-        window_title = (f"{pkmn_name.capitalize()} is evolving to {evos.capitalize()} ?")
+        pokemon_evos = search_pokedex(pkmn_name.lower(), "evos")
+        pkmn_id = int(search_pokedex(pkmn_name.lower(), "num"))
+        try:
+            if len(pokemon_evos) > 1:
+                pokemon_evo = random.choice(pokemon_evos)
+                pokemon_evo_id = int((search_pokedex(pokemon_evo.lower(), "num")))
+            else:
+                pokemon_evo = pokemon_evos[0]
+                pokemon_evo_id = int((search_pokedex(pokemon_evo.lower(), "num")))
+        except (IndexError, ValueError, TypeError) as e:
+            showInfo(f"Error finding evolution details: {e}")
+        window_title = (f"{pkmn_name.capitalize()} is evolving to {pokemon_evo.capitalize()} ?")
         # Display the Pokémon image
         pkmnimage_path = frontdefault / f"{pkmn_id}.png"
         #pkmnimage_path2 = addon_dir / frontdefault / f"{mainpokemon_prevo_id}.png"
@@ -6799,7 +6768,7 @@ class EvoWindow(QWidget):
         # Create buttons for catching and killing the Pokémon
         evolve_button = QPushButton("Evolve Pokémon")
         dont_evolve_button = QPushButton("Cancel Evolution")
-        qconnect(evolve_button.clicked, lambda: evolve_pokemon(prevo_id, evos_id, evos, pkmn_name, position, item_name))
+        qconnect(evolve_button.clicked, lambda: evolve_pokemon(pkmn_name))
         qconnect(dont_evolve_button.clicked, lambda: cancel_evolution(pkmn_name))
 
         # Set the merged image as the pixmap for the QLabel
@@ -7270,7 +7239,7 @@ class ItemWindow(QWidget):
             use_item_button.clicked.connect(lambda: self.Evolve_Fossil(item_name, fossil_id, fossil_pokemon_name))
         else:
             use_item_button = QPushButton("Evolve Pokemon")
-            use_item_button.clicked.connect(lambda: self.Check_Evo_Item(comboBox.currentText(), item_name, comboBox.currentIndex()))
+            use_item_button.clicked.connect(lambda: self.Check_Evo_Item(comboBox.currentText(), item_name))
             comboBox = QComboBox()
             self.PokemonList(comboBox)
             item_frame.addWidget(comboBox)
@@ -7322,25 +7291,19 @@ class ItemWindow(QWidget):
         play_effect_sound("HpHeal")
         showInfo(f"{pkmn_name} was healed for {heal_points}")
 
-    def Check_Evo_Item(self, pkmn_name, item_name, position):
+    def Check_Evo_Item(self, pkmn_name, item_name):
         try:
-            prevo_id = search_pokedex_by_name_for_id(pkmn_name.lower())
             evoName = search_pokedex(pkmn_name.lower(), "evos")
-            item_id = get_item_id(item_name)
-            fitting = False
-            if evoName:
-                for evos in evoName:
-                    evos_id = search_pokedex_by_name_for_id(evos.lower())
-                    evo_info = get_evolution_entry(evos_id)
-                    if evo_info:
-                        evoitem_id = evo_info.get("trigger_item_id", None)
-                        #evoItem = search_pokedex(evos.lower(), "evoItem")
-                        if evoitem_id == item_id:
-                            showInfo("Pokemon Evolution is fitting !")
-                            fitting = True
-                            evo_window.display_pokemon_evo(prevo_id, evos_id, evos, pkmn_name, position, item_name)
-                if fitting is False:
-                    showInfo("This Pokemon does not need this item.")
+            evoName = f"{evoName[0]}"
+            evoItem = search_pokedex(evoName.lower(), "evoItem")
+            item_name = item_name.replace("-", " ")  # Remove hyphens from item_name
+            evoItem = str(evoItem).lower()
+            if evoItem == item_name:  # Corrected this line to assign the item_name to evoItem
+                # Perform your action when the item matches the Pokémon's evolution item
+                showInfo("Pokemon Evolution is fitting !")
+                evo_window.display_pokemon_evo(pkmn_name)
+            else:
+                showInfo("This Pokemon does not need this item.")
         except Exception as e:
             showWarning(f"{e}")
     
