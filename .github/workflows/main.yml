@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
 
@@ -28,13 +28,12 @@ jobs:
           python -m pip install git+https://github.com/glutanimate/anki-addon-builder.git@4039b5bb743773a18cb2911e6dd38fa1e3f65982
           python -m pip install pyqt5
 
-      - name: setup git config
+      - name: Setup git config
         run: |
-          # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
 
-      - name: commit version bump and create tag
+      - name: Commit version bump and create tag
         run: |
           git commit --allow-empty -m "Bump Version to v${{ github.event.inputs.version }}"
           git push origin main
@@ -48,14 +47,14 @@ jobs:
         id: vars
         shell: bash
         run: |
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-          echo "::set-output name=module_name::$(ls src)"
-          echo "::set-output name=build_name::$(ls build | grep --color=never .ankiaddon)"
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "module_name=$(ls src)" >> $GITHUB_ENV
+          echo "build_name=$(ls build | grep --color=never .ankiaddon)" >> $GITHUB_ENV
 
-      - name: Create github release and upload ankiaddon file
+      - name: Create GitHub release and upload ankiaddon file
         uses: svenstaro/upload-release-action@2.2.1
         with:
-          repo_token: ${{ github.token }}
-          file: build/${{ steps.vars.outputs.build_name }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/${{ env.build_name }}
           tag: ${{ github.event.inputs.version }}
-          release_name: ${{ steps.vars.outputs.module_name }} v${{ github.event.inputs.version }}
+          release_name: ${{ env.module_name }} v${{ github.event.inputs.version }}
