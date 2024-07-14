@@ -33,5 +33,6 @@
   "automatic_battle": 0,
   "defeat_key": "5",
   "catch_key": "6",
-  "pokemon_buttons": true
+  "pokemon_buttons": true,
+  "misc.remove_level_cap": false
 }
