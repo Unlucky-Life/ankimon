@@ -1,3 +1,5 @@
+Configuration Help (Thanks to @h0tp for Rewriting the Configurations!):
+
 These settings do not sync and require a restart to apply.
 #### Battle
 
