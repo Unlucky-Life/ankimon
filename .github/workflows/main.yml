@@ -1,61 +1,84 @@
-name: Release Ankimon Add-on
+name: Create Add-on Release
 
 on:
-  push:
-    tags:
-      - 'v*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: version string (e.g. 6.1)
+        required: true
 
 jobs:
-  build:
+  create-release:
+    name: Version ${{ github.event.inputs.version }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
+          python-version: 3.8
 
       - name: Install dependencies
         run: |
-          set -x  # Enable debugging
-          python -m venv venv
-          source venv/bin/activate  # Use 'venv\Scripts\activate' on Windows
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install git+https://github.com/glutanimate/anki-addon-builder.git@4039b5bb743773a18cb2911e6dd38fa1e3f65982
+          python -m pip install pyqt5
 
-      - name: Build Ankimon add-on
+      - name: Setup git config
         run: |
-          set -x  # Enable debugging
-          source venv/bin/activate  # Use 'venv\Scripts\activate' on Windows
-          python setup.py sdist bdist_wheel
-          mkdir -p build
-          cp dist/*.ankiaddon build/
-        id: build_addon
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
 
-      - name: Get packaged add-on name
+      - name: Commit version bump and create tag
         run: |
-          set -x  # Enable debugging
-          FILE_NAME=$(ls build/*.ankiaddon)
-          echo "ADDON_NAME=$(basename $FILE_NAME)" >> $GITHUB_ENV
-        id: get_addon_name
+          git commit --allow-empty -m "Bump Version to v${{ github.event.inputs.version }}"
+          git push origin main
+          git tag ${{ github.event.inputs.version }}
+          git push origin tag ${{ github.event.inputs.version }}
+
+      - name: Create ankiaddon file
+        run: aab build -d ankiweb
+
+      - name: Declare some variables
+        id: vars
+        shell: bash
+        run: |
+          echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "MODULE_NAME=$(ls src)" >> $GITHUB_ENV
+          echo "BUILD_NAME=$(ls build | grep --color=never .ankiaddon)" >> $GITHUB_ENV
+        # Set outputs for other steps to use
+        echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        echo "::set-output name=module_name::$(ls src)"
+        echo "::set-output name=build_name::$(ls build | grep --color=never .ankiaddon)"
 
       - name: Print debugging information
         run: |
-          set -x  # Enable debugging
           echo "Build Directory Content:"
           ls build
-          echo "ADDON_NAME: ${{ env.ADDON_NAME }}"
+          echo "ADDON_NAME: ${{ env.BUILD_NAME }}"
 
-      - name: Create GitHub release and upload .ankiaddon file
-        uses: svenstaro/upload-release-action@2.2.1
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/${{ env.ADDON_NAME }}
-          tag: ${{ github.ref }}
-          release_name: Ankimon v${{ github.ref }}
+      - name: Create GitHub release
+        id: create_release
+        uses: actions/create-release@v1
         env:
-          LAST_SHA: ${{ github.sha }}
-          WITHOUT_SPACE: ${{ github.ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: ${{ env.MODULE_NAME }} v${{ github.event.inputs.version }}
+          draft: false
+          prerelease: false
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/${{ env.BUILD_NAME }}
+          asset_name: ${{ env.BUILD_NAME }}
+          asset_content_type: application/octet-stream
