@@ -11,44 +11,45 @@
 # Important - If you redistribute it and/or modify this addon - must give contribution in Title and Code
 # aswell as ask for permission to modify / redistribute this addon or the code itself
 
-import os, sys
-from aqt.utils import *
-from typing import Optional
-from aqt.qt import *
-import anki
-import threading
-from anki.hooks import addHook, wrap
-from aqt.reviewer import Reviewer
-from aqt import mw, editor, gui_hooks
-from aqt.qt import QDialog, QGridLayout, QLabel, QPixmap, QPainter, QFont, Qt, QVBoxLayout, QWidget, QAction
-import random
+import base64
 import csv
-from aqt.qt import *
-import requests
+import distutils.dir_util
 import json
-from PyQt6.QtGui import *
-from PyQt6.QtWidgets import *
+import os
+import pathlib
+import platform
+import random
+import shutil
+import sys
+import threading
+import time
+import wave
+from pathlib import Path
+from typing import List, Optional, Union
+
+import anki
+import aqt
+import markdown
+import requests
+from anki.collection import Collection
+from anki.hooks import addHook, wrap
+from aqt import editor, gui_hooks, mw, utils
+from aqt.qt import *
+from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
+                    QPixmap, Qt, QVBoxLayout, QWidget)
+from aqt.reviewer import Reviewer
+from aqt.utils import *
 from PyQt6.QtCore import *
-from PyQt6.QtWebEngineWidgets import *
-#from PyQt6.QtWidgets import QAction
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QDialog, QVBoxLayout, QLabel, QWidget
+#from PyQt6.QtCore import QUrl
+from PyQt6.QtGui import *
+from PyQt6.QtGui import QSurfaceFormat
 from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtMultimediaWidgets import QVideoWidget
-#from PyQt6.QtCore import QUrl
-import base64
-from aqt import utils
-from PyQt6.QtGui import QSurfaceFormat
-import aqt
-import pathlib
-from pathlib import Path
-from typing import List, Union
-import shutil
-import distutils.dir_util
-from anki.collection import Collection
-import csv
-import time, wave
-import platform
-import markdown
+from PyQt6.QtWebEngineWidgets import *
+from PyQt6.QtWidgets import *
+#from PyQt6.QtWidgets import QAction
+from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
+                             QPushButton, QVBoxLayout, QWidget)
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -594,8 +595,8 @@ def open_help_window():
         showWarning("Error in opening HelpGuide")
         
 try:
-    from aqt.sound import av_player
     from anki.sound import SoundOrVideoTag
+    from aqt.sound import av_player
     legacy_play = None
     from . import audios
 except (ImportError, ModuleNotFoundError):
@@ -2823,8 +2824,9 @@ def status_effect(stat, name, move, hp, slp_counter, stats, msg, acc):
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
 
 from PyQt6 import *
-from PyQt6.QtWidgets import QSplashScreen
 from PyQt6.QtGui import QMovie
+from PyQt6.QtWidgets import QSplashScreen
+
 
 class MovieSplashLabel(QLabel):
     def __init__(self, gif_path, parent=None):
@@ -5752,6 +5754,7 @@ class TestWindow(QWidget):
         global first_start, pkmn_window
         if first_start == False:
             from aqt import mw
+
             # Get the geometry of the main screen
             main_screen_geometry = mw.geometry()
             # Calculate the position to center the ItemWindow on the main screen
@@ -7465,6 +7468,7 @@ class ItemWindow(QWidget):
 
     def show_window(self):
         from aqt import mw
+
         # Get the geometry of the main screen
         main_screen_geometry = mw.geometry()
         
@@ -7662,6 +7666,7 @@ class AchievementWindow(QWidget):
 
     def show_window(self):
         from aqt import mw
+
         # Get the geometry of the main screen
         main_screen_geometry = mw.geometry()
         
@@ -7791,10 +7796,10 @@ mw.pokemenu.addAction(version_action)
     #https://archive.org/details/pokemon-dp-sound-library-disc-2_202205
     #https://www.sounds-resource.com/nintendo_switch/pokemonswordshield/
 
+from anki.hooks import addHook
 # addHook to function to Ankimote
 from aqt import mw
 from aqt.utils import showInfo
-from anki.hooks import addHook
 
 # Define lists to hold hook functions
 catch_pokemon_hooks = []
@@ -7835,11 +7840,12 @@ def on_profile_loaded():
 # Add hook to run on profile load
 addHook("profileLoaded", on_profile_loaded)
 
-from aqt import gui_hooks
 from anki.cards import Card
-from aqt.reviewer import Reviewer
 from aqt import mw  # Importing the main Anki window object
+from aqt import gui_hooks
+from aqt.reviewer import Reviewer
 from aqt.utils import downArrow, shortcut, showInfo
+
 
 def catch_shorcut_function():
     if hp > 1:
