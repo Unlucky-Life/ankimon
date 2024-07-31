@@ -6930,28 +6930,28 @@ evo_window = EvoWindow()
 # Erstellen einer Klasse, die von QObject erbt und die eventFilter Methode überschreibt
 class MyEventFilter(QObject):
     def eventFilter(self, obj, event):
-        if obj is mw and event.type() == QEvent.Type.KeyPress:
-            global system, ankimon_key, hp
-            open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
-            if system == "mac":
-                if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
-                    if test_window.isVisible():
-                        test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
+        if not (obj is mw and event.type() == QEvent.Type.KeyPress):
+            return False # Andere Event-Handler nicht blockieren
+        global system, ankimon_key, hp
+        open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
+        if system == "mac":
+            if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
+                if test_window.isVisible():
+                    test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
+                else:
+                    if first_start == False:
+                        test_window.display_first_start_up()
                     else:
-                        if first_start == False:
-                            test_window.display_first_start_up()
-                        else:
-                            test_window.open_dynamic_window()
-            else:
-                if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-                    if test_window.isVisible():
-                        test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
+                        test_window.open_dynamic_window()
+        else:
+            if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+                if test_window.isVisible():
+                    test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
+                else:
+                    if first_start == False:
+                        test_window.display_first_start_up()
                     else:
-                        if first_start == False:
-                            test_window.display_first_start_up()
-                        else:
-                            test_window.open_dynamic_window()
-        return False  # Andere Event-Handler nicht blockieren
+                        test_window.open_dynamic_window()
 
 # Erstellen und Installieren des Event Filters
 event_filter = MyEventFilter()
