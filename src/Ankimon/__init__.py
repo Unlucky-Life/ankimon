@@ -918,41 +918,40 @@ def pick_random_gender(pokemon_name):
         pokedex_data = json.load(file)
     pokemon_name = pokemon_name.lower()  # Normalize Pokémon name to lowercase
     pokemon = pokedex_data.get(pokemon_name)
-
-    if pokemon:
-        gender_ratio = pokemon.get("genderRatio")
-        if gender_ratio:
-            random_number = random.random()  # Generate a random number between 0 and 1
-            if random_number < gender_ratio["M"]:
-                #return "M"  # Male
-                gender = "M"
-                return gender
-            elif random_number > gender_ratio["M"]:
-                #return "F"  # Female
-                gender = "F"
-                return gender
-        else:
-            genders = pokemon.get("gender")
-            if genders:
-                if genders == "F":
-                    #return "M"
-                    gender = "F"
-                elif genders == "M":
-                    #return "F"
-                    gender = "M"
-                elif genders == "N":
-                    gender = "N"
-                return gender
-            else:
-                genders = ["M", "F"]
-                #genders = ["M", "♀"]
-                gender = random.choice(genders)
-                return gender
-                # Randomly choose between "M" and "F"
-    else:
+    if not pokemon:
         genders = ["M", "F"]
         gender = random.choice(genders)
         return gender
+
+    gender_ratio = pokemon.get("genderRatio")
+    if gender_ratio:
+        random_number = random.random()  # Generate a random number between 0 and 1
+        if random_number < gender_ratio["M"]:
+            #return "M"  # Male
+            gender = "M"
+            return gender
+        elif random_number > gender_ratio["M"]:
+            #return "F"  # Female
+            gender = "F"
+            return gender
+    else:
+        genders = pokemon.get("gender")
+        if genders:
+            if genders == "F":
+                #return "M"
+                gender = "F"
+            elif genders == "M":
+                #return "F"
+                gender = "M"
+            elif genders == "N":
+                gender = "N"
+            return gender
+        else:
+            genders = ["M", "F"]
+            #genders = ["M", "♀"]
+            gender = random.choice(genders)
+            return gender
+            # Randomly choose between "M" and "F"
 
 if database_complete != False:
     def get_levelup_move_for_pokemon(pokemon_name, level):
