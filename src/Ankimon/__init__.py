@@ -63,15 +63,13 @@ def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
     if not os.path.isdir(folder_path):
        return False
-    else:
-       return True
+    return True
 
 def check_file_exists(folder, filename):
     file_path = os.path.join(folder, filename)
     if os.path.isfile(file_path):
         return True
-    else:
-        return False
+    return False
 
 #safe route for updates
 user_path = addon_dir / "user_files"
