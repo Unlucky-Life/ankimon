@@ -6934,24 +6934,15 @@ class MyEventFilter(QObject):
             return False # Andere Event-Handler nicht blockieren
         global system, ankimon_key, hp
         open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
-        if system == "mac":
-            if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
-                if test_window.isVisible():
-                    test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
+        control_modifier = Qt.KeyboardModifier.MetaModifier if system == "mac" else Qt.KeyboardModifier.ControlModifier
+        if event.key() == open_window_key and event.modifiers() == control_modifier:
+            if test_window.isVisible():
+                test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
+            else:
+                if first_start == False:
+                    test_window.display_first_start_up()
                 else:
-                    if first_start == False:
-                        test_window.display_first_start_up()
-                    else:
-                        test_window.open_dynamic_window()
-        else:
-            if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-                if test_window.isVisible():
-                    test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
-                else:
-                    if first_start == False:
-                        test_window.display_first_start_up()
-                    else:
-                        test_window.open_dynamic_window()
+                    test_window.open_dynamic_window()
 
 # Erstellen und Installieren des Event Filters
 event_filter = MyEventFilter()
