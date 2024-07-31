@@ -7508,11 +7508,10 @@ def get_id_and_description_by_item_name(item_name):
     item_id = item_id_mapping.get(item_name.lower())
     if item_id is None:
         return None, None
-    else:
-        descriptions = read_descriptions_csv(csv_file_descriptions)
-        key = (item_id, 11, 9)  # Assuming version_group_id 11 and language_id 9
-        description = descriptions.get(key, None)
-        return description
+    descriptions = read_descriptions_csv(csv_file_descriptions)
+    key = (item_id, 11, 9)  # Assuming version_group_id 11 and language_id 9
+    description = descriptions.get(key, None)
+    return description
     
 item_window = ItemWindow()
 
