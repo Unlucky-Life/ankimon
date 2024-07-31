@@ -2308,9 +2308,8 @@ def on_review_card(*args):
         seconds = 0
         myseconds = 0
         general_card_count_for_battle += 1
-        if battle_sounds == True:
-            if general_card_count_for_battle == 1:
-                play_sound()
+        if battle_sounds == True and general_card_count_for_battle == 1:
+            play_sound()
         #test achievment system
         if card_counter == 100:
             check = check_for_badge(achievements,1)
