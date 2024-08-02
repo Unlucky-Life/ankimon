@@ -61,17 +61,11 @@ currdirname = addon_dir
 
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
-    if not os.path.isdir(folder_path):
-       return False
-    else:
-       return True
+    return os.path.isdir(folder_path)
 
 def check_file_exists(folder, filename):
     file_path = os.path.join(folder, filename)
-    if os.path.isfile(file_path):
-        return True
-    else:
-        return False
+    return os.path.isfile(file_path)
 
 #safe route for updates
 user_path = addon_dir / "user_files"
@@ -924,41 +918,40 @@ def pick_random_gender(pokemon_name):
         pokedex_data = json.load(file)
     pokemon_name = pokemon_name.lower()  # Normalize Pokémon name to lowercase
     pokemon = pokedex_data.get(pokemon_name)
-
-    if pokemon:
-        gender_ratio = pokemon.get("genderRatio")
-        if gender_ratio:
-            random_number = random.random()  # Generate a random number between 0 and 1
-            if random_number < gender_ratio["M"]:
-                #return "M"  # Male
-                gender = "M"
-                return gender
-            elif random_number > gender_ratio["M"]:
-                #return "F"  # Female
-                gender = "F"
-                return gender
-        else:
-            genders = pokemon.get("gender")
-            if genders:
-                if genders == "F":
-                    #return "M"
-                    gender = "F"
-                elif genders == "M":
-                    #return "F"
-                    gender = "M"
-                elif genders == "N":
-                    gender = "N"
-                return gender
-            else:
-                genders = ["M", "F"]
-                #genders = ["M", "♀"]
-                gender = random.choice(genders)
-                return gender
-                # Randomly choose between "M" and "F"
-    else:
+    if not pokemon:
         genders = ["M", "F"]
         gender = random.choice(genders)
         return gender
+
+    gender_ratio = pokemon.get("genderRatio")
+    if gender_ratio:
+        random_number = random.random()  # Generate a random number between 0 and 1
+        if random_number < gender_ratio["M"]:
+            #return "M"  # Male
+            gender = "M"
+            return gender
+        elif random_number > gender_ratio["M"]:
+            #return "F"  # Female
+            gender = "F"
+            return gender
+    else:
+        genders = pokemon.get("gender")
+        if genders:
+            if genders == "F":
+                #return "M"
+                gender = "F"
+            elif genders == "M":
+                #return "F"
+                gender = "M"
+            elif genders == "N":
+                gender = "N"
+            return gender
+        else:
+            genders = ["M", "F"]
+            #genders = ["M", "♀"]
+            gender = random.choice(genders)
+            return gender
+            # Randomly choose between "M" and "F"
 
 if database_complete != False:
     def get_levelup_move_for_pokemon(pokemon_name, level):
@@ -2308,9 +2301,8 @@ def on_review_card(*args):
         seconds = 0
         myseconds = 0
         general_card_count_for_battle += 1
-        if battle_sounds == True:
-            if general_card_count_for_battle == 1:
-                play_sound()
+        if battle_sounds == True and general_card_count_for_battle == 1:
+            play_sound()
         #test achievment system
         if card_counter == 100:
             check = check_for_badge(achievements,1)
@@ -6930,28 +6922,19 @@ evo_window = EvoWindow()
 # Erstellen einer Klasse, die von QObject erbt und die eventFilter Methode überschreibt
 class MyEventFilter(QObject):
     def eventFilter(self, obj, event):
-        if obj is mw and event.type() == QEvent.Type.KeyPress:
-            global system, ankimon_key, hp
-            open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
-            if system == "mac":
-                if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
-                    if test_window.isVisible():
-                        test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
-                    else:
-                        if first_start == False:
-                            test_window.display_first_start_up()
-                        else:
-                            test_window.open_dynamic_window()
+        if not (obj is mw and event.type() == QEvent.Type.KeyPress):
+            return False # Andere Event-Handler nicht blockieren
+        global system, ankimon_key, hp
+        open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
+        control_modifier = Qt.KeyboardModifier.MetaModifier if system == "mac" else Qt.KeyboardModifier.ControlModifier
+        if event.key() == open_window_key and event.modifiers() == control_modifier:
+            if test_window.isVisible():
+                test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
             else:
-                if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-                    if test_window.isVisible():
-                        test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
-                    else:
-                        if first_start == False:
-                            test_window.display_first_start_up()
-                        else:
-                            test_window.open_dynamic_window()
-        return False  # Andere Event-Handler nicht blockieren
+                if first_start == False:
+                    test_window.display_first_start_up()
+                else:
+                    test_window.open_dynamic_window()
 
 # Erstellen und Installieren des Event Filters
 event_filter = MyEventFilter()
@@ -7518,11 +7501,10 @@ def get_id_and_description_by_item_name(item_name):
     item_id = item_id_mapping.get(item_name.lower())
     if item_id is None:
         return None, None
-    else:
-        descriptions = read_descriptions_csv(csv_file_descriptions)
-        key = (item_id, 11, 9)  # Assuming version_group_id 11 and language_id 9
-        description = descriptions.get(key, None)
-        return description
+    descriptions = read_descriptions_csv(csv_file_descriptions)
+    key = (item_id, 11, 9)  # Assuming version_group_id 11 and language_id 9
+    description = descriptions.get(key, None)
+    return description
     
 item_window = ItemWindow()
 
