@@ -1534,15 +1534,14 @@ def find_details_move(move_name):
             move = moves_data.get(move_name.lower())  # Use get() to access the move by name
             if move:
                 return move
-            if move is None:
-                move_name = move_name.replace(" ", "")
-                try:
-                    move = moves_data.get(move_name.lower())
-                    return move
-                except:
-                    showInfo(f"Can't find the attack {move_name} in the database.")
-                    move = moves_data.get("tackle")
-                    return move
+            move_name = move_name.replace(" ", "")
+            try:
+                move = moves_data.get(move_name.lower())
+                return move
+            except:
+                showInfo(f"Can't find the attack {move_name} in the database.")
+                move = moves_data.get("tackle")
+                return move
     except FileNotFoundError:
         showInfo("Moves Data File Missing!\nPlease Download Moves Data")
         return None
