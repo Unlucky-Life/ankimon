@@ -51,6 +51,8 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
                              QPushButton, QVBoxLayout, QWidget)
 
+from texts import _bottomHTML_template
+
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
@@ -7881,30 +7883,7 @@ if reviewer_buttons is True:
             Review_linkHandelr_Original(reviewer, url)
 
     def _bottomHTML(self) -> str:
-        return """
-        <center id=outer>
-        <table id=innertable width=100%% cellspacing=0 cellpadding=0>
-        <tr>
-        <td align=start valign=top class=stat>
-        <button title="%(editkey)s" onclick="pycmd('edit');">%(edit)s</button></td>
-        <td align=center valign=top id=middle>
-        </td>
-        <td align=center valign=top class=stat>
-        <button title="%(CatchKey)s" onclick="pycmd('catch');">Catch Pokemon</button>
-        <button title="%(DefeatKey)s" onclick="pycmd('defeat');">Defeat Pokemon</button>
-        </td>
-        <td align=end valign=top class=stat>
-        <button title="%(morekey)s" onclick="pycmd('more');">%(more)s %(downArrow)s</button>
-        <span id=time class=stattxt></span>
-        </td>
-        </tr>
-        </table>
-        </center>
-        <script>
-        time = %(time)d;
-        timerStopped = false;
-        </script>
-        """ % dict(
+        return _bottomHTML_template % dict(
             edit=tr.studying_edit(),
             editkey=tr.actions_shortcut_key(val="E"),
             more=tr.studying_more(),
