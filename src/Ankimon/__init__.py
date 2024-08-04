@@ -51,7 +51,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
                              QPushButton, QVBoxLayout, QWidget)
 
-from texts import _bottomHTML_template, button_style
+from texts import _bottomHTML_template, button_style, pokedex_html_template
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -6986,34 +6986,6 @@ class Pokedex_Widget(QWidget):
 
         # Create a label and set HTML content
         label = QLabel()
-        pokedex_html_template = '''
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Pokédex</title>
-        <style>
-        .pokedex-table { width: 100%; border-collapse: collapse; }
-        .pokedex-table th, .pokedex-table td { border: 1px solid #ddd; text-align: left; padding: 8px; }
-        .pokedex-table tr:nth-child(even) { background-color: #f2f2f2; }
-        .pokedex-table th { padding-top: 12px; padding-bottom: 12px; background-color: #4CAF50; color: white; }
-        .pokemon-image { height: 50px; width: 50px; }
-        .pokemon-gray { filter: grayscale(100%); }
-        </style>
-        </head>
-        <body>
-        <table class="pokedex-table">
-        <tr>
-            <th>No.</th>
-            <th>Name</th>
-            <th>Image</th>
-        </tr>
-        <!-- Table Rows Will Go Here -->
-        </table>
-        </body>
-        </html>
-        '''
         # Extract the IDs of the Pokémon listed in the JSON file
         self.available_pokedex_ids = {pokemon['id'] for pokemon in self.captured_pokemon_data}
 
