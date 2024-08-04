@@ -22,3 +22,15 @@ _bottomHTML_template = """
         timerStopped = false;
         </script>
         """
+
+button_style = """
+    .button_style {
+        position: absolute;
+        white-space: nowrap;
+        font-size: small;
+        right: 0px;
+        transform: translate(-50%, -100%);
+        font-weight: normal;
+        display: inline-block;
+        }
+    """
