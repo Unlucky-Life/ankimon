@@ -205,7 +205,7 @@ rate_addon_text_label = """Thanks for using Ankimon!
                             \nIf you do not want to rate this addon. Feel free to press: I dont want to rate this addon.
                             """
 
-inject_life_bar_css_1 = f"""
+inject_life_bar_css_1 = """
             @keyframes shake {{
                 0% {{ transform: translateX(0) rotateZ(0); filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5)); }}
                 10% {{ transform: translateX(-10%) rotateZ(-5deg); }}
@@ -221,7 +221,7 @@ inject_life_bar_css_1 = f"""
             }}
             """
 
-inject_life_bar_css_2 = f"""
+inject_life_bar_css_2 = """
             #pokebackground {{
                 color: white;
                 background-color: blue;
