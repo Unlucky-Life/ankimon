@@ -55,7 +55,7 @@ from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     attack_details_window_template, attack_details_window_template_end, \
                     remember_attack_details_window_template, remember_attack_details_window_template_end, \
                     terms_text, rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
-                    
+                    thankyou_message_text
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -6219,11 +6219,7 @@ def rate_this_addon():
             thankyou_window = QDialog()
             thankyou_window.setWindowTitle("Thank you !") 
             thx_layout = QVBoxLayout(thankyou_window)
-            thx_label = QLabel("""
-            Thank you for Rating this Addon !
-                               
-            Please exit this window!
-            """)
+            thx_label = QLabel(thankyou_message_text)
             thx_layout.addWidget(thx_label)
             # Support button
             support_button = QPushButton("Support the Author")
