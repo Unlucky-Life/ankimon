@@ -40,14 +40,12 @@ from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
 from aqt.reviewer import Reviewer
 from aqt.utils import *
 from PyQt6.QtCore import *
-#from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import *
 from PyQt6.QtGui import QSurfaceFormat
 from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtMultimediaWidgets import QVideoWidget
 from PyQt6.QtWebEngineWidgets import *
 from PyQt6.QtWidgets import *
-#from PyQt6.QtWidgets import QAction
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
                              QPushButton, QVBoxLayout, QWidget)
 
@@ -6937,7 +6935,6 @@ class License(QWidget):
         label.setText(html_content)  # 'html_table' contains the HTML table string
         label.setWordWrap(True)
 
-        # Layout
         #layout = QVBoxLayout()
         scroll_layout.addWidget(label)
         # Set the widget for the scroll area
@@ -6987,7 +6984,6 @@ class Credits(QWidget):
         label.setText(html_content)  # 'html_table' contains the HTML table string
         label.setWordWrap(True)
 
-        # Layout
         #layout = QVBoxLayout()
         scroll_layout.addWidget(label)
         # Set the widget for the scroll area
