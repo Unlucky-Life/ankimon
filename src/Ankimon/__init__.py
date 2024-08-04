@@ -2910,9 +2910,8 @@ class PokemonCollectionDialog(QDialog):
                         pixmap = QPixmap()
                         pokemon_id = pokemon['id']
                         pokemon_name = pokemon['name']
-                        if not pokemon.get('nickname') or pokemon.get('nickname') is None:
-                            pokemon_nickname = None
-                        else:
+                        pokemon_nickname = None
+                        if pokemon.get('nickname') and pokemon.get('nickname') is not None:
                             pokemon_nickname = pokemon['nickname']
                         pokemon_gender = pokemon['gender']
                         pokemon_level = pokemon['level']
