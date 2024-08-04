@@ -196,3 +196,11 @@ terms_text = """§1 Disclaimer of Liability
                        
 Check out https://pokeapi.co/docs/v2#fairuse and https://github.com/smogon/pokemon-showdown for more information.
                        """
+
+rate_addon_text_label = """Thanks for using Ankimon! 
+                            \nI would like Ankimon to be known even more in the community, 
+                            \nand a rating would be amazing. Letting others know what you think of the addon.
+                            \nThis takes less than a minute.
+
+                            \nIf you do not want to rate this addon. Feel free to press: I dont want to rate this addon.
+                            """

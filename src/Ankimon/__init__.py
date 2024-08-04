@@ -54,7 +54,7 @@ from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
 from texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     attack_details_window_template, attack_details_window_template_end, \
                     remember_attack_details_window_template, remember_attack_details_window_template_end, \
-                    terms_text
+                    terms_text, rate_addon_text_label
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -6223,13 +6223,7 @@ def rate_this_addon():
         
         layout = QVBoxLayout(rate_window)
         
-        text_label = QLabel("""Thanks for using Ankimon! 
-                            \nI would like Ankimon to be known even more in the community, 
-                            \nand a rating would be amazing. Letting others know what you think of the addon.
-                            \nThis takes less than a minute.
-
-                            \nIf you do not want to rate this addon. Feel free to press: I dont want to rate this addon.
-                            """)
+        text_label = QLabel(rate_addon_text_label)
         layout.addWidget(text_label)
         
         # Rate button
