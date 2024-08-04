@@ -234,3 +234,9 @@ thankyou_message_text = """
                                
             Please exit this window!
             """
+
+dont_show_this_button_text = """This Pop Up wont turn up on startup anymore.
+            If you decide to rate this addon later on.
+            You can go to Ankimon => Rate This.
+            Anyway, have fun playing !
+            """
