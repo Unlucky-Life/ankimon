@@ -442,21 +442,18 @@ def addon_config_editor_will_display_json(text: str) -> str:
 gui_hooks.addon_config_editor_will_save_json.append(check_data.modify_json_configuration_on_save)
 gui_hooks.addon_config_editor_will_display_json.append(addon_config_editor_will_display_json)
 
-try:
-    def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5):
-        try:
-            # Attempt to get the URL
-            response = requests.get(url, timeout=timeout)
+def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5):
+    try:
+        # Attempt to get the URL
+        response = requests.get(url, timeout=timeout)
 
-            # Check if the response status code is 200 (OK)
-            if response.status_code == 200:
-                return True
-        except requests.ConnectionError:
-            # Connection error means no internet connectivity
-            return False
-    online_connectivity = test_online_connectivity()
-except:
-    online_connectivity = False
+        # Check if the response status code is 200 (OK)
+        if response.status_code == 200:
+            return True
+    except:
+        # Connection error means no internet connectivity
+        return False
+online_connectivity = test_online_connectivity()
 
 #Connect to GitHub and Check for Notification and HelpGuideChanges
 try:
