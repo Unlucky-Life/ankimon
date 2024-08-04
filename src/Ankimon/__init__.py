@@ -487,48 +487,47 @@ try:
             else:
                 return None, None
             
-    if online_connectivity != False:
-        if ssh != False:
-            # Custom Dialog class
-            class UpdateNotificationWindow(QDialog):
-                def __init__(self, content):
-                    super().__init__()
-                    global icon_path
-                    self.setWindowTitle("Ankimon Notifications")
-                    self.setGeometry(100, 100, 600, 400)
+    if online_connectivity and ssh != False:
+        # Custom Dialog class
+        class UpdateNotificationWindow(QDialog):
+            def __init__(self, content):
+                super().__init__()
+                global icon_path
+                self.setWindowTitle("Ankimon Notifications")
+                self.setGeometry(100, 100, 600, 400)
 
-                    layout = QVBoxLayout()
-                    self.text_edit = QTextEdit()
-                    self.text_edit.setReadOnly(True)
-                    self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-                    self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
-                    self.text_edit.setHtml(content)
-                    layout.addWidget(self.text_edit)
-                    self.setWindowIcon(QIcon(str(icon_path)))
+                layout = QVBoxLayout()
+                self.text_edit = QTextEdit()
+                self.text_edit.setReadOnly(True)
+                self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+                self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
+                self.text_edit.setHtml(content)
+                layout.addWidget(self.text_edit)
+                self.setWindowIcon(QIcon(str(icon_path)))
 
-                    self.setLayout(layout)
+                self.setLayout(layout)
 
-            # URL of the file on GitHub
-            github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
-            # Path to the local file
-            local_file_path = addon_dir / "updateinfos.md"
-            # Read content from GitHub
-            github_content, github_html_content = read_github_file(github_url)
-            # Read content from the local file
-            local_content = read_local_file(local_file_path)
-            # If local content exists and is the same as GitHub content, do not open dialog
-            if local_content is not None and compare_files(local_content, github_content):
-                pass
+        # URL of the file on GitHub
+        github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
+        # Path to the local file
+        local_file_path = addon_dir / "updateinfos.md"
+        # Read content from GitHub
+        github_content, github_html_content = read_github_file(github_url)
+        # Read content from the local file
+        local_content = read_local_file(local_file_path)
+        # If local content exists and is the same as GitHub content, do not open dialog
+        if local_content is not None and compare_files(local_content, github_content):
+            pass
+        else:
+            # Download new content from GitHub
+            if github_content is not None:
+                # Write new content to the local file
+                write_local_file(local_file_path, github_content)
+                dialog = UpdateNotificationWindow(github_html_content)
+                if no_more_news is False:
+                    dialog.exec()
             else:
-                # Download new content from GitHub
-                if github_content is not None:
-                    # Write new content to the local file
-                    write_local_file(local_file_path, github_content)
-                    dialog = UpdateNotificationWindow(github_html_content)
-                    if no_more_news is False:
-                        dialog.exec()
-                else:
-                    showWarning("Failed to retrieve Ankimon content from GitHub.")
+                showWarning("Failed to retrieve Ankimon content from GitHub.")
 except Exception as e:
     if ssh != False:
         showInfo(f"Error in try connect to GitHub: {e}")
