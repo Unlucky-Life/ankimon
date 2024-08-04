@@ -923,24 +923,16 @@ def pick_random_gender(pokemon_name):
     if gender_ratio:
         random_number = random.random()  # Generate a random number between 0 and 1
         return {"M" if random_number < gender_ratio["M"] else "F"}
+
+    genders = pokemon.get("gender")
+    if genders:
+        return genders
     else:
-        genders = pokemon.get("gender")
-        if genders:
-            if genders == "F":
-                #return "M"
-                gender = "F"
-            elif genders == "M":
-                #return "F"
-                gender = "M"
-            elif genders == "N":
-                gender = "N"
-            return gender
-        else:
-            genders = ["M", "F"]
-            #genders = ["M", "♀"]
-            gender = random.choice(genders)
-            return gender
-            # Randomly choose between "M" and "F"
+        genders = ["M", "F"]
+        #genders = ["M", "♀"]
+        gender = random.choice(genders)
+        return gender
+        # Randomly choose between "M" and "F"
 
 if database_complete != False:
     def get_levelup_move_for_pokemon(pokemon_name, level):
