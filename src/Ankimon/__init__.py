@@ -40,16 +40,20 @@ from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
 from aqt.reviewer import Reviewer
 from aqt.utils import *
 from PyQt6.QtCore import *
-#from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import *
 from PyQt6.QtGui import QSurfaceFormat
 from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtMultimediaWidgets import QVideoWidget
 from PyQt6.QtWebEngineWidgets import *
 from PyQt6.QtWidgets import *
-#from PyQt6.QtWidgets import QAction
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
                              QPushButton, QVBoxLayout, QWidget)
+
+from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
+                    attack_details_window_template, attack_details_window_template_end, \
+                    remember_attack_details_window_template, remember_attack_details_window_template_end, \
+                    terms_text, rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
+                    thankyou_message_text, dont_show_this_button_text
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -3674,58 +3678,7 @@ def attack_details_window(attacks):
     window.setWindowIcon(QIcon(str(icon_path)))
     layout = QVBoxLayout()
     # HTML content
-    html_content = """
-    <style>
-      .pokemon-table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: left;
-        margin-bottom: 20px;
-      }
-
-      .pokemon-table th, .pokemon-table td {
-        padding: 8px;
-        border: 1px solid #ddd; /* light grey border */
-      }
-
-      .pokemon-table th {
-        background-color: #040D12;
-      }
-
-      .pokemon-table tr:nth-child(even) {background-color: #f9f9f9;}
-
-      .pokemon-table .move-name {
-        text-align: center;
-        font-weight: bold;
-      }
-
-      .pokemon-table .basePower {
-        font-weight: bold;
-        text-align: center;
-      }
-
-      .pokemon-table .no-accuracy {
-        text-align: center;
-        color: yellow;
-      }
-    </style>
-    </head>
-    <body>
-
-    <table class="pokemon-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Category</th>
-          <th>Power</th>
-          <th>Accuracy</th>
-          <th>PP</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-    """
+    html_content = attack_details_window_template
     # Loop through the list of attacks and add them to the HTML content
     for attack in attacks:
         move = find_details_move(attack)
@@ -3747,13 +3700,7 @@ def attack_details_window(attacks):
           <td>{move['shortDesc']}</td>
         </tr>
         """
-    html_content += """
-      </tbody>
-    </table>
-
-    </body>
-    </html>
-    """
+    html_content += attack_details_window_template_end
 
     # Create a QLabel to display the HTML content
     label = QLabel(html_content)
@@ -3782,58 +3729,7 @@ def remember_attack_details_window(id, attack_set, all_attacks):
     layout = QHBoxLayout(content_widget)  # The main layout is now set on this widget
 
     # HTML content
-    html_content = """
-    <style>
-      .pokemon-table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: left;
-        margin-bottom: 20px;
-      }
-
-      .pokemon-table th, .pokemon-table td {
-        padding: 8px;
-        border: 1px solid #ddd; /* light grey border */
-      }
-
-      .pokemon-table th {
-        background-color: #040D12;
-      }
-
-      .pokemon-table tr:nth-child(even) {background-color: #f9f9f9;}
-
-      .pokemon-table .move-name {
-        text-align: center;
-        font-weight: bold;
-      }
-
-      .pokemon-table .basePower {
-        font-weight: bold;
-        text-align: center;
-      }
-
-      .pokemon-table .no-accuracy {
-        text-align: center;
-        color: yellow;
-      }
-    </style>
-    </head>
-    <body>
-
-    <table class="pokemon-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Category</th>
-          <th>Power</th>
-          <th>Accuracy</th>
-          <th>PP</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-    """
+    html_content = remember_attack_details_window_template
     # Loop through the list of attacks and add them to the HTML content
     for attack in all_attacks:
         move = find_details_move(attack)
@@ -3850,13 +3746,7 @@ def remember_attack_details_window(id, attack_set, all_attacks):
         </tr>
         """
 
-    html_content += """
-      </tbody>
-    </table>
-
-    </body>
-    </html>
-    """
+    html_content += remember_attack_details_window_template_end
 
     # Create a QLabel to display the HTML content
     label = QLabel(html_content)
@@ -4708,16 +4598,7 @@ class AgreementDialog(QDialog):
         # Add a label with the warning message
         title = QLabel("""Please agree to the terms before downloading the information:""")
         subtitle = QLabel("""Terms and Conditions Clause""")
-        terms = QLabel("""§1 Disclaimer of Liability
-(1) The user acknowledges that the use of the downloaded files is at their own risk. \n The provider assumes no liability for any damages, direct or indirect,\n that may arise from the download or use of such files.
-(2) The provider is not responsible for the content of the downloaded files or \n for the legal consequences that may result from the use of the files. \n Each user is obligated to inform themselves about the legality of the use \n before using the files and to use the files only in a manner that does not cause any legal violations.
-
-§2 Copyright Infringements
-(1) The user agrees to respect copyright and other protective rights of third parties. \n It is prohibited for the user to download, reproduce, distribute, or make publicly available any copyrighted works \n without the required permission of the rights holder.
-(2) In the event of a violation of copyright provisions, the user bears full responsibility and the resulting consequences. \n The provider reserves the right to take appropriate legal action \n in the event of becoming aware of any rights violations and to block access to the services.
-                       
-Check out https://pokeapi.co/docs/v2#fairuse and https://github.com/smogon/pokemon-showdown for more information.
-                       """)
+        terms = QLabel(terms_text)
         layout.addWidget(title)
         layout.addWidget(subtitle)
         layout.addWidget(terms)
@@ -5105,28 +4986,8 @@ if database_complete != False and mainpokemon_empty is False:
                 text-align: right;
                 }}
                 """
-            css += f"""
-            @keyframes shake {{
-                0% {{ transform: translateX(0) rotateZ(0); filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5)); }}
-                10% {{ transform: translateX(-10%) rotateZ(-5deg); }}
-                20% {{ transform: translateX(10%) rotateZ(5deg); }}
-                30% {{ transform: translateX(-10%) rotateZ(-5deg); }}
-                40% {{ transform: translateX(10%) rotateZ(5deg); }}
-                50% {{ transform: translateX(-10%) rotateZ(-5deg); }}
-                60% {{ transform: translateX(10%) rotateZ(5deg); }}
-                70% {{ transform: translateX(-10%) rotateZ(-5deg); }}
-                80% {{ transform: translateX(10%) rotateZ(5deg); }}
-                90% {{ transform: translateX(-10%) rotateZ(-5deg); }}
-                100% {{ transform: translateX(100vw); filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5)); }}
-            }}
-            """
-            css += f"""
-            #pokebackground {{
-                color: white;
-                background-color: blue;
-                z-index: 99999;
-            }}
-            """
+            css += inject_life_bar_css_1
+            css += inject_life_bar_css_2
             # background-image: url('{pokemon_image_file}'); Change to your image path */
             if styling_in_reviewer is True:
                 # Inject the CSS into the head of the HTML content
@@ -6341,13 +6202,7 @@ def rate_this_addon():
         
         layout = QVBoxLayout(rate_window)
         
-        text_label = QLabel("""Thanks for using Ankimon! 
-                            \nI would like Ankimon to be known even more in the community, 
-                            \nand a rating would be amazing. Letting others know what you think of the addon.
-                            \nThis takes less than a minute.
-
-                            \nIf you do not want to rate this addon. Feel free to press: I dont want to rate this addon.
-                            """)
+        text_label = QLabel(rate_addon_text_label)
         layout.addWidget(text_label)
         
         # Rate button
@@ -6362,11 +6217,7 @@ def rate_this_addon():
             thankyou_window = QDialog()
             thankyou_window.setWindowTitle("Thank you !") 
             thx_layout = QVBoxLayout(thankyou_window)
-            thx_label = QLabel("""
-            Thank you for Rating this Addon !
-                               
-            Please exit this window!
-            """)
+            thx_label = QLabel(thankyou_message_text)
             thx_layout.addWidget(thx_label)
             # Support button
             support_button = QPushButton("Support the Author")
@@ -6381,11 +6232,7 @@ def rate_this_addon():
             # Save the updated data back to the file
             with open(rate_path, 'w') as file:
                 json.dump(rate_data, file, indent=4)
-            showInfo("""This Pop Up wont turn up on startup anymore.
-            If you decide to rate this addon later on.
-            You can go to Ankimon => Rate This.
-            Anyway, have fun playing !
-            """)
+            showInfo(dont_show_this_button_text)
 
         def rate_this_button():
             rate_window.close()
@@ -6984,34 +6831,6 @@ class Pokedex_Widget(QWidget):
 
         # Create a label and set HTML content
         label = QLabel()
-        pokedex_html_template = '''
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Pokédex</title>
-        <style>
-        .pokedex-table { width: 100%; border-collapse: collapse; }
-        .pokedex-table th, .pokedex-table td { border: 1px solid #ddd; text-align: left; padding: 8px; }
-        .pokedex-table tr:nth-child(even) { background-color: #f2f2f2; }
-        .pokedex-table th { padding-top: 12px; padding-bottom: 12px; background-color: #4CAF50; color: white; }
-        .pokemon-image { height: 50px; width: 50px; }
-        .pokemon-gray { filter: grayscale(100%); }
-        </style>
-        </head>
-        <body>
-        <table class="pokedex-table">
-        <tr>
-            <th>No.</th>
-            <th>Name</th>
-            <th>Image</th>
-        </tr>
-        <!-- Table Rows Will Go Here -->
-        </table>
-        </body>
-        </html>
-        '''
         # Extract the IDs of the Pokémon listed in the JSON file
         self.available_pokedex_ids = {pokemon['id'] for pokemon in self.captured_pokemon_data}
 
@@ -7116,7 +6935,6 @@ class License(QWidget):
         label.setText(html_content)  # 'html_table' contains the HTML table string
         label.setWordWrap(True)
 
-        # Layout
         #layout = QVBoxLayout()
         scroll_layout.addWidget(label)
         # Set the widget for the scroll area
@@ -7166,7 +6984,6 @@ class Credits(QWidget):
         label.setText(html_content)  # 'html_table' contains the HTML table string
         label.setWordWrap(True)
 
-        # Layout
         #layout = QVBoxLayout()
         scroll_layout.addWidget(label)
         # Set the widget for the scroll area
@@ -7855,17 +7672,6 @@ Reviewer._shortcutKeys = wrap(Reviewer._shortcutKeys, _shortcutKeys_wrap, 'aroun
 
 if reviewer_buttons is True:
     #// Choosing styling for review other buttons in reviewer bottombar based on chosen style
-    button_style = """
-    .button_style {
-        position: absolute;
-        white-space: nowrap;
-        font-size: small;
-        right: 0px;
-        transform: translate(-50%, -100%);
-        font-weight: normal;
-        display: inline-block;
-        }
-    """
     Review_linkHandelr_Original = Reviewer._linkHandler
     # Define the HTML and styling for the custom button
     def custom_button():
@@ -7881,30 +7687,7 @@ if reviewer_buttons is True:
             Review_linkHandelr_Original(reviewer, url)
 
     def _bottomHTML(self) -> str:
-        return """
-        <center id=outer>
-        <table id=innertable width=100%% cellspacing=0 cellpadding=0>
-        <tr>
-        <td align=start valign=top class=stat>
-        <button title="%(editkey)s" onclick="pycmd('edit');">%(edit)s</button></td>
-        <td align=center valign=top id=middle>
-        </td>
-        <td align=center valign=top class=stat>
-        <button title="%(CatchKey)s" onclick="pycmd('catch');">Catch Pokemon</button>
-        <button title="%(DefeatKey)s" onclick="pycmd('defeat');">Defeat Pokemon</button>
-        </td>
-        <td align=end valign=top class=stat>
-        <button title="%(morekey)s" onclick="pycmd('more');">%(more)s %(downArrow)s</button>
-        <span id=time class=stattxt></span>
-        </td>
-        </tr>
-        </table>
-        </center>
-        <script>
-        time = %(time)d;
-        timerStopped = false;
-        </script>
-        """ % dict(
+        return _bottomHTML_template % dict(
             edit=tr.studying_edit(),
             editkey=tr.actions_shortcut_key(val="E"),
             more=tr.studying_more(),
