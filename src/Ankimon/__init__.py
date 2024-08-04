@@ -2925,11 +2925,10 @@ class PokemonCollectionDialog(QDialog):
                         pokemon_ev = pokemon['ev']
                         pokemon_iv = pokemon['iv']
                         pokemon_description = search_pokeapi_db_by_id(pokemon_id, "description")
+                        pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
                         if gif_in_collection is True:
                             pkmn_image_path = str(user_path_sprites / "front_default_gif" / f"{pokemon_id}.gif")
                             splash_label = MovieSplashLabel(pkmn_image_path)
-                        else:
-                            pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
                         pixmap.load(pkmn_image_path)
 
                         # Calculate the new dimensions to maintain the aspect ratio
