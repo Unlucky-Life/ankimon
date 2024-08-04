@@ -55,7 +55,7 @@ from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     attack_details_window_template, attack_details_window_template_end, \
                     remember_attack_details_window_template, remember_attack_details_window_template_end, \
                     terms_text, rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
-                    thankyou_message_text
+                    thankyou_message_text, dont_show_this_button_text
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -6234,11 +6234,7 @@ def rate_this_addon():
             # Save the updated data back to the file
             with open(rate_path, 'w') as file:
                 json.dump(rate_data, file, indent=4)
-            showInfo("""This Pop Up wont turn up on startup anymore.
-            If you decide to rate this addon later on.
-            You can go to Ankimon => Rate This.
-            Anyway, have fun playing !
-            """)
+            showInfo(dont_show_this_button_text)
 
         def rate_this_button():
             rate_window.close()
