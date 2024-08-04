@@ -63,3 +63,125 @@ pokedex_html_template = '''
         </body>
         </html>
         '''
+
+attack_details_window_template = """
+    <style>
+      .pokemon-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        margin-bottom: 20px;
+      }
+
+      .pokemon-table th, .pokemon-table td {
+        padding: 8px;
+        border: 1px solid #ddd; /* light grey border */
+      }
+
+      .pokemon-table th {
+        background-color: #040D12;
+      }
+
+      .pokemon-table tr:nth-child(even) {background-color: #f9f9f9;}
+
+      .pokemon-table .move-name {
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .pokemon-table .basePower {
+        font-weight: bold;
+        text-align: center;
+      }
+
+      .pokemon-table .no-accuracy {
+        text-align: center;
+        color: yellow;
+      }
+    </style>
+    </head>
+    <body>
+
+    <table class="pokemon-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>Power</th>
+          <th>Accuracy</th>
+          <th>PP</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+    """
+
+attack_details_window_template_end = """
+      </tbody>
+    </table>
+
+    </body>
+    </html>
+    """
+
+remember_attack_details_window = """
+    <style>
+      .pokemon-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        margin-bottom: 20px;
+      }
+
+      .pokemon-table th, .pokemon-table td {
+        padding: 8px;
+        border: 1px solid #ddd; /* light grey border */
+      }
+
+      .pokemon-table th {
+        background-color: #040D12;
+      }
+
+      .pokemon-table tr:nth-child(even) {background-color: #f9f9f9;}
+
+      .pokemon-table .move-name {
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .pokemon-table .basePower {
+        font-weight: bold;
+        text-align: center;
+      }
+
+      .pokemon-table .no-accuracy {
+        text-align: center;
+        color: yellow;
+      }
+    </style>
+    </head>
+    <body>
+
+    <table class="pokemon-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>Power</th>
+          <th>Accuracy</th>
+          <th>PP</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+    """
+
+remember_attack_details_window_template_end = """
+      </tbody>
+    </table>
+
+    </body>
+    </html>
+    """
