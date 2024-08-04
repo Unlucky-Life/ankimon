@@ -228,3 +228,9 @@ inject_life_bar_css_2 = f"""
                 z-index: 99999;
             }}
             """
+
+thankyou_message_text = """
+            Thank you for Rating this Addon !
+                               
+            Please exit this window!
+            """
