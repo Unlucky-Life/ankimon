@@ -2049,12 +2049,11 @@ def get_mainpokemon_evo(pokemon_name):
     global pokedex_path
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
-            if pokemon_name in pokedex_data:
-                pokemon_info = pokedex_data[pokemon_name]
-                evolutions = pokemon_info.get("evos", [])
-                return evolutions
-            else:
+            if pokemon_name not in pokedex_data:
                 return []
+            pokemon_info = pokedex_data[pokemon_name]
+            evolutions = pokemon_info.get("evos", [])
+            return evolutions
 
 def search_pokedex(pokemon_name,variable):
     global pokedex_path
