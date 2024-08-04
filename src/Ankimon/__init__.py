@@ -927,12 +927,12 @@ def pick_random_gender(pokemon_name):
     genders = pokemon.get("gender")
     if genders:
         return genders
-    else:
-        genders = ["M", "F"]
-        #genders = ["M", "♀"]
-        gender = random.choice(genders)
-        return gender
-        # Randomly choose between "M" and "F"
+
+    genders = ["M", "F"]
+    #genders = ["M", "♀"]
+    gender = random.choice(genders)
+    return gender
+    # Randomly choose between "M" and "F"
 
 if database_complete != False:
     def get_levelup_move_for_pokemon(pokemon_name, level):
