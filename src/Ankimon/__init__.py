@@ -51,7 +51,9 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
                              QPushButton, QVBoxLayout, QWidget)
 
-from texts import _bottomHTML_template, button_style, pokedex_html_template
+from texts import _bottomHTML_template, button_style, pokedex_html_template, \
+                    attack_details_window_template, attack_details_window_template_end, \
+                    remember_attack_details_window_template, remember_attack_details_window_template_end
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -3676,58 +3678,7 @@ def attack_details_window(attacks):
     window.setWindowIcon(QIcon(str(icon_path)))
     layout = QVBoxLayout()
     # HTML content
-    html_content = """
-    <style>
-      .pokemon-table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: left;
-        margin-bottom: 20px;
-      }
-
-      .pokemon-table th, .pokemon-table td {
-        padding: 8px;
-        border: 1px solid #ddd; /* light grey border */
-      }
-
-      .pokemon-table th {
-        background-color: #040D12;
-      }
-
-      .pokemon-table tr:nth-child(even) {background-color: #f9f9f9;}
-
-      .pokemon-table .move-name {
-        text-align: center;
-        font-weight: bold;
-      }
-
-      .pokemon-table .basePower {
-        font-weight: bold;
-        text-align: center;
-      }
-
-      .pokemon-table .no-accuracy {
-        text-align: center;
-        color: yellow;
-      }
-    </style>
-    </head>
-    <body>
-
-    <table class="pokemon-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Category</th>
-          <th>Power</th>
-          <th>Accuracy</th>
-          <th>PP</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-    """
+    html_content = attack_details_window_template
     # Loop through the list of attacks and add them to the HTML content
     for attack in attacks:
         move = find_details_move(attack)
@@ -3749,13 +3700,7 @@ def attack_details_window(attacks):
           <td>{move['shortDesc']}</td>
         </tr>
         """
-    html_content += """
-      </tbody>
-    </table>
-
-    </body>
-    </html>
-    """
+    html_content += attack_details_window_template_end
 
     # Create a QLabel to display the HTML content
     label = QLabel(html_content)
@@ -3784,58 +3729,7 @@ def remember_attack_details_window(id, attack_set, all_attacks):
     layout = QHBoxLayout(content_widget)  # The main layout is now set on this widget
 
     # HTML content
-    html_content = """
-    <style>
-      .pokemon-table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: left;
-        margin-bottom: 20px;
-      }
-
-      .pokemon-table th, .pokemon-table td {
-        padding: 8px;
-        border: 1px solid #ddd; /* light grey border */
-      }
-
-      .pokemon-table th {
-        background-color: #040D12;
-      }
-
-      .pokemon-table tr:nth-child(even) {background-color: #f9f9f9;}
-
-      .pokemon-table .move-name {
-        text-align: center;
-        font-weight: bold;
-      }
-
-      .pokemon-table .basePower {
-        font-weight: bold;
-        text-align: center;
-      }
-
-      .pokemon-table .no-accuracy {
-        text-align: center;
-        color: yellow;
-      }
-    </style>
-    </head>
-    <body>
-
-    <table class="pokemon-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Category</th>
-          <th>Power</th>
-          <th>Accuracy</th>
-          <th>PP</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-    """
+    html_content = remember_attack_details_window_template
     # Loop through the list of attacks and add them to the HTML content
     for attack in all_attacks:
         move = find_details_move(attack)
@@ -3852,13 +3746,7 @@ def remember_attack_details_window(id, attack_set, all_attacks):
         </tr>
         """
 
-    html_content += """
-      </tbody>
-    </table>
-
-    </body>
-    </html>
-    """
+    html_content += remember_attack_details_window_template_end
 
     # Create a QLabel to display the HTML content
     label = QLabel(html_content)
