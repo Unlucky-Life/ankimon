@@ -125,7 +125,7 @@ attack_details_window_template_end = """
     </html>
     """
 
-remember_attack_details_window = """
+remember_attack_details_window_template = """
     <style>
       .pokemon-table {
         width: 100%;
