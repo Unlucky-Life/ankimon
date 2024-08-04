@@ -3884,60 +3884,60 @@ def remember_attack_details_window(id, attack_set, all_attacks):
 
 def remember_attack(id, attacks, new_attack):
     global mainpokemon_path
-    if mainpokemon_path.is_file():
-        with open(mainpokemon_path, "r") as json_file:
-            main_pokemon_data = json.load(json_file)
-        for mainpkmndata in main_pokemon_data:
-            if mainpkmndata["id"] == id:
-                mainpokemon_name = mainpkmndata["name"]
-                attacks = mainpkmndata["attacks"]
-                if new_attack:
-                    msg = ""
-                    msg += f"Your {mainpkmndata['name'].capitalize()} can learn a new attack !"
-                    if len(attacks) < 4:
-                            attacks.append(new_attack)
-                            msg += f"\n Your {mainpkmndata['name'].capitalize()} has learned {new_attack} !"
-                            showInfo(f"{msg}")
-                    else:
-                            dialog = AttackDialog(attacks, new_attack)
-                            if dialog.exec() == QDialog.DialogCode.Accepted:
-                                selected_attack = dialog.selected_attack
-                                index_to_replace = None
-                                for index, attack in enumerate(attacks):
-                                    if attack == selected_attack:
-                                        index_to_replace = index
-                                        pass
-                                    else:
-                                        pass
-                                # If the attack is found, replace it with 'new_attack'
-                                if index_to_replace is not None:
-                                    attacks[index_to_replace] = new_attack
-                                    showInfo(f"Replaced '{selected_attack}' with '{new_attack}'")
-                                else:
-                                    # Handle the case where the user cancels the dialog
-                                    showInfo(f"{new_attack} will be discarded.")
-                mainpkmndata["attacks"] = attacks
-                mypkmndata = mainpkmndata
-                mainpkmndata = [mainpkmndata]
-                # Save the caught Pokémon's data to a JSON file
-                with open(str(mainpokemon_path), "w") as json_file:
-                    json.dump(mainpkmndata, json_file, indent=2)
-                
-                with open(str(mypokemon_path), "r") as output_file:
-                    mypokemondata = json.load(output_file)
-
-                # Find and replace the specified Pokémon's data in mypokemondata
-                for index, pokemon_data in enumerate(mypokemondata):
-                    if pokemon_data["name"] == mainpokemon_name:
-                        mypokemondata[index] = mypkmndata
-                        break
-                # Save the modified data to the output JSON file
-                with open(str(mypokemon_path), "w") as output_file:
-                    json.dump(mypokemondata, output_file, indent=2)
-            else:
-                showInfo("Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
-    else:
+    if not mainpokemon_path.is_file():
         showWarning("Missing Mainpokemon Data !")
+        return
+    with open(mainpokemon_path, "r") as json_file:
+        main_pokemon_data = json.load(json_file)
+    for mainpkmndata in main_pokemon_data:
+        if mainpkmndata["id"] == id:
+            mainpokemon_name = mainpkmndata["name"]
+            attacks = mainpkmndata["attacks"]
+            if new_attack:
+                msg = ""
+                msg += f"Your {mainpkmndata['name'].capitalize()} can learn a new attack !"
+                if len(attacks) < 4:
+                        attacks.append(new_attack)
+                        msg += f"\n Your {mainpkmndata['name'].capitalize()} has learned {new_attack} !"
+                        showInfo(f"{msg}")
+                else:
+                        dialog = AttackDialog(attacks, new_attack)
+                        if dialog.exec() == QDialog.DialogCode.Accepted:
+                            selected_attack = dialog.selected_attack
+                            index_to_replace = None
+                            for index, attack in enumerate(attacks):
+                                if attack == selected_attack:
+                                    index_to_replace = index
+                                    pass
+                                else:
+                                    pass
+                            # If the attack is found, replace it with 'new_attack'
+                            if index_to_replace is not None:
+                                attacks[index_to_replace] = new_attack
+                                showInfo(f"Replaced '{selected_attack}' with '{new_attack}'")
+                            else:
+                                # Handle the case where the user cancels the dialog
+                                showInfo(f"{new_attack} will be discarded.")
+            mainpkmndata["attacks"] = attacks
+            mypkmndata = mainpkmndata
+            mainpkmndata = [mainpkmndata]
+            # Save the caught Pokémon's data to a JSON file
+            with open(str(mainpokemon_path), "w") as json_file:
+                json.dump(mainpkmndata, json_file, indent=2)
+            
+            with open(str(mypokemon_path), "r") as output_file:
+                mypokemondata = json.load(output_file)
+
+            # Find and replace the specified Pokémon's data in mypokemondata
+            for index, pokemon_data in enumerate(mypokemondata):
+                if pokemon_data["name"] == mainpokemon_name:
+                    mypokemondata[index] = mypkmndata
+                    break
+            # Save the modified data to the output JSON file
+            with open(str(mypokemon_path), "w") as output_file:
+                json.dump(mypokemondata, output_file, indent=2)
+        else:
+            showInfo("Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
     
 def type_colors(type):
     type_colors = {
