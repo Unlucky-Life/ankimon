@@ -204,3 +204,27 @@ rate_addon_text_label = """Thanks for using Ankimon!
 
                             \nIf you do not want to rate this addon. Feel free to press: I dont want to rate this addon.
                             """
+
+inject_life_bar_css_1 = f"""
+            @keyframes shake {{
+                0% {{ transform: translateX(0) rotateZ(0); filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5)); }}
+                10% {{ transform: translateX(-10%) rotateZ(-5deg); }}
+                20% {{ transform: translateX(10%) rotateZ(5deg); }}
+                30% {{ transform: translateX(-10%) rotateZ(-5deg); }}
+                40% {{ transform: translateX(10%) rotateZ(5deg); }}
+                50% {{ transform: translateX(-10%) rotateZ(-5deg); }}
+                60% {{ transform: translateX(10%) rotateZ(5deg); }}
+                70% {{ transform: translateX(-10%) rotateZ(-5deg); }}
+                80% {{ transform: translateX(10%) rotateZ(5deg); }}
+                90% {{ transform: translateX(-10%) rotateZ(-5deg); }}
+                100% {{ transform: translateX(100vw); filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5)); }}
+            }}
+            """
+
+inject_life_bar_css_2 = f"""
+            #pokebackground {{
+                color: white;
+                background-color: blue;
+                z-index: 99999;
+            }}
+            """
