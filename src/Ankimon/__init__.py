@@ -51,7 +51,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
                              QPushButton, QVBoxLayout, QWidget)
 
-from texts import _bottomHTML_template
+from texts import _bottomHTML_template, button_style
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -7857,17 +7857,6 @@ Reviewer._shortcutKeys = wrap(Reviewer._shortcutKeys, _shortcutKeys_wrap, 'aroun
 
 if reviewer_buttons is True:
     #// Choosing styling for review other buttons in reviewer bottombar based on chosen style
-    button_style = """
-    .button_style {
-        position: absolute;
-        white-space: nowrap;
-        font-size: small;
-        right: 0px;
-        transform: translate(-50%, -100%);
-        font-weight: normal;
-        display: inline-block;
-        }
-    """
     Review_linkHandelr_Original = Reviewer._linkHandler
     # Define the HTML and styling for the custom button
     def custom_button():
