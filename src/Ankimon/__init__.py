@@ -4390,7 +4390,7 @@ def load_custom_font(font_size):
 def find_experience_for_level(group_growth_rate, level):
     global remove_levelcap
     if level > 100 and remove_levelcap is False:
-    	level = 100
+        level = 100
     if group_growth_rate == "medium":
         group_growth_rate = "medium-fast"
     elif group_growth_rate == "slow-then-very-fast":
