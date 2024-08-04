@@ -922,14 +922,7 @@ def pick_random_gender(pokemon_name):
     gender_ratio = pokemon.get("genderRatio")
     if gender_ratio:
         random_number = random.random()  # Generate a random number between 0 and 1
-        if random_number < gender_ratio["M"]:
-            #return "M"  # Male
-            gender = "M"
-            return gender
-        elif random_number > gender_ratio["M"]:
-            #return "F"  # Female
-            gender = "F"
-            return gender
+        return {"M" if random_number < gender_ratio["M"] else "F"}
     else:
         genders = pokemon.get("gender")
         if genders:
