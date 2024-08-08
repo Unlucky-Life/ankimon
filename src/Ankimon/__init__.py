@@ -2134,8 +2134,7 @@ def search_pokeapi_db(pkmn_name,variable):
                 if pokemon_data["name"] == pkmn_name:
                     var = pokemon_data.get(variable, None)
                     return var
-            else:
-                return None
+
 
 def search_pokeapi_db_by_id(pkmn_id,variable):
     global addon_dir
