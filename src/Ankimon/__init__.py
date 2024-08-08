@@ -6755,6 +6755,7 @@ class MyEventFilter(QObject):
                     test_window.display_first_start_up()
                 else:
                     test_window.open_dynamic_window()
+        return False
 
 # Erstellen und Installieren des Event Filters
 event_filter = MyEventFilter()
