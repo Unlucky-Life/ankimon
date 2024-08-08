@@ -2145,8 +2145,7 @@ def search_pokeapi_db_by_id(pkmn_id,variable):
                 if pokemon_data["id"] == pkmn_id:
                     var = pokemon_data.get(variable, None)
                     return var
-            else:
-                return None
+
             
 def mainpokemon_data():
     global mainpkmn
