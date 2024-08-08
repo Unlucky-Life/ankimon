@@ -446,21 +446,18 @@ def addon_config_editor_will_display_json(text: str) -> str:
 gui_hooks.addon_config_editor_will_save_json.append(check_data.modify_json_configuration_on_save)
 gui_hooks.addon_config_editor_will_display_json.append(addon_config_editor_will_display_json)
 
-try:
-    def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5):
-        try:
-            # Attempt to get the URL
-            response = requests.get(url, timeout=timeout)
+def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5):
+    try:
+        # Attempt to get the URL
+        response = requests.get(url, timeout=timeout)
 
-            # Check if the response status code is 200 (OK)
-            if response.status_code == 200:
-                return True
-        except requests.ConnectionError:
-            # Connection error means no internet connectivity
-            return False
-    online_connectivity = test_online_connectivity()
-except:
-    online_connectivity = False
+        # Check if the response status code is 200 (OK)
+        if response.status_code == 200:
+            return True
+    except:
+        # Connection error means no internet connectivity
+        return False
+online_connectivity = test_online_connectivity()
 
 #Connect to GitHub and Check for Notification and HelpGuideChanges
 try:
@@ -494,48 +491,47 @@ try:
             else:
                 return None, None
             
-    if online_connectivity != False:
-        if ssh != False:
-            # Custom Dialog class
-            class UpdateNotificationWindow(QDialog):
-                def __init__(self, content):
-                    super().__init__()
-                    global icon_path
-                    self.setWindowTitle("Ankimon Notifications")
-                    self.setGeometry(100, 100, 600, 400)
+    if online_connectivity and ssh != False:
+        # Custom Dialog class
+        class UpdateNotificationWindow(QDialog):
+            def __init__(self, content):
+                super().__init__()
+                global icon_path
+                self.setWindowTitle("Ankimon Notifications")
+                self.setGeometry(100, 100, 600, 400)
 
-                    layout = QVBoxLayout()
-                    self.text_edit = QTextEdit()
-                    self.text_edit.setReadOnly(True)
-                    self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-                    self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
-                    self.text_edit.setHtml(content)
-                    layout.addWidget(self.text_edit)
-                    self.setWindowIcon(QIcon(str(icon_path)))
+                layout = QVBoxLayout()
+                self.text_edit = QTextEdit()
+                self.text_edit.setReadOnly(True)
+                self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+                self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
+                self.text_edit.setHtml(content)
+                layout.addWidget(self.text_edit)
+                self.setWindowIcon(QIcon(str(icon_path)))
 
-                    self.setLayout(layout)
+                self.setLayout(layout)
 
-            # URL of the file on GitHub
-            github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
-            # Path to the local file
-            local_file_path = addon_dir / "updateinfos.md"
-            # Read content from GitHub
-            github_content, github_html_content = read_github_file(github_url)
-            # Read content from the local file
-            local_content = read_local_file(local_file_path)
-            # If local content exists and is the same as GitHub content, do not open dialog
-            if local_content is not None and compare_files(local_content, github_content):
-                pass
+        # URL of the file on GitHub
+        github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
+        # Path to the local file
+        local_file_path = addon_dir / "updateinfos.md"
+        # Read content from GitHub
+        github_content, github_html_content = read_github_file(github_url)
+        # Read content from the local file
+        local_content = read_local_file(local_file_path)
+        # If local content exists and is the same as GitHub content, do not open dialog
+        if local_content is not None and compare_files(local_content, github_content):
+            pass
+        else:
+            # Download new content from GitHub
+            if github_content is not None:
+                # Write new content to the local file
+                write_local_file(local_file_path, github_content)
+                dialog = UpdateNotificationWindow(github_html_content)
+                if no_more_news is False:
+                    dialog.exec()
             else:
-                # Download new content from GitHub
-                if github_content is not None:
-                    # Write new content to the local file
-                    write_local_file(local_file_path, github_content)
-                    dialog = UpdateNotificationWindow(github_html_content)
-                    if no_more_news is False:
-                        dialog.exec()
-                else:
-                    showWarning("Failed to retrieve Ankimon content from GitHub.")
+                showWarning("Failed to retrieve Ankimon content from GitHub.")
 except Exception as e:
     if ssh != False:
         showInfo(f"Error in try connect to GitHub: {e}")
@@ -930,32 +926,17 @@ def pick_random_gender(pokemon_name):
     gender_ratio = pokemon.get("genderRatio")
     if gender_ratio:
         random_number = random.random()  # Generate a random number between 0 and 1
-        if random_number < gender_ratio["M"]:
-            #return "M"  # Male
-            gender = "M"
-            return gender
-        elif random_number > gender_ratio["M"]:
-            #return "F"  # Female
-            gender = "F"
-            return gender
-    else:
-        genders = pokemon.get("gender")
-        if genders:
-            if genders == "F":
-                #return "M"
-                gender = "F"
-            elif genders == "M":
-                #return "F"
-                gender = "M"
-            elif genders == "N":
-                gender = "N"
-            return gender
-        else:
-            genders = ["M", "F"]
-            #genders = ["M", "♀"]
-            gender = random.choice(genders)
-            return gender
-            # Randomly choose between "M" and "F"
+        return {"M" if random_number < gender_ratio["M"] else "F"}
+
+    genders = pokemon.get("gender")
+    if genders:
+        return genders
+
+    genders = ["M", "F"]
+    #genders = ["M", "♀"]
+    gender = random.choice(genders)
+    return gender
+    # Randomly choose between "M" and "F"
 
 if database_complete != False:
     def get_levelup_move_for_pokemon(pokemon_name, level):
@@ -1182,31 +1163,30 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, heigh
     aw = parent or QApplication.activeWindow()
     if aw is None:
         return
-    else:
-        if reviewer_text_message_box != False:
-            # Assuming closeTooltip() and customCloseTooltip() are defined elsewhere
-            closeTooltip()
-            x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
-            y = aw.mapToGlobal(QPoint(0, aw.height() - 180)).y()
-            lab = CustomLabel(aw)
-            lab.setFrameShape(QFrame.Shape.StyledPanel)
-            lab.setLineWidth(2)
-            lab.setWindowFlags(Qt.WindowType.ToolTip)
-            lab.setText(msg)
-            lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
-            
-            if width > 0:
-                lab.setFixedWidth(width)
-            if height > 0:
-                lab.setFixedHeight(height)
-            
-            p = QPalette()
-            p.setColor(QPalette.ColorRole.Window, QColor(color))
-            p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
-            lab.setPalette(p)
-            lab.show()
-            lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))    
-            QTimer.singleShot(period, lambda: lab.hide())
+    if reviewer_text_message_box != False:
+        # Assuming closeTooltip() and customCloseTooltip() are defined elsewhere
+        closeTooltip()
+        x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
+        y = aw.mapToGlobal(QPoint(0, aw.height() - 180)).y()
+        lab = CustomLabel(aw)
+        lab.setFrameShape(QFrame.Shape.StyledPanel)
+        lab.setLineWidth(2)
+        lab.setWindowFlags(Qt.WindowType.ToolTip)
+        lab.setText(msg)
+        lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
+        
+        if width > 0:
+            lab.setFixedWidth(width)
+        if height > 0:
+            lab.setFixedHeight(height)
+        
+        p = QPalette()
+        p.setColor(QPalette.ColorRole.Window, QColor(color))
+        p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
+        lab.setPalette(p)
+        lab.show()
+        lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))    
+        QTimer.singleShot(period, lambda: lab.hide())
 
 pokemon_species = None
 # Your random Pokémon generation function using the PokeAPI
@@ -1558,16 +1538,14 @@ def find_details_move(move_name):
             move = moves_data.get(move_name.lower())  # Use get() to access the move by name
             if move:
                 return move
-            else:
-                if move is None:
-                    move_name = move_name.replace(" ", "")
-                    try:
-                        move = moves_data.get(move_name.lower())
-                        return move
-                    except:
-                        showInfo(f"Can't find the attack {move_name} in the database.")
-                        move = moves_data.get("tackle")
-                        return move
+            move_name = move_name.replace(" ", "")
+            try:
+                move = moves_data.get(move_name.lower())
+                return move
+            except:
+                showInfo(f"Can't find the attack {move_name} in the database.")
+                move = moves_data.get("tackle")
+                return move
     except FileNotFoundError:
         showInfo("Moves Data File Missing!\nPlease Download Moves Data")
         return None
@@ -2075,12 +2053,11 @@ def get_mainpokemon_evo(pokemon_name):
     global pokedex_path
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
-            if pokemon_name in pokedex_data:
-                pokemon_info = pokedex_data[pokemon_name]
-                evolutions = pokemon_info.get("evos", [])
-                return evolutions
-            else:
+            if pokemon_name not in pokedex_data:
                 return []
+            pokemon_info = pokedex_data[pokemon_name]
+            evolutions = pokemon_info.get("evos", [])
+            return evolutions
 
 def search_pokedex(pokemon_name,variable):
     global pokedex_path
@@ -2157,8 +2134,7 @@ def search_pokeapi_db(pkmn_name,variable):
                 if pokemon_data["name"] == pkmn_name:
                     var = pokemon_data.get(variable, None)
                     return var
-            else:
-                return None
+
 
 def search_pokeapi_db_by_id(pkmn_id,variable):
     global addon_dir
@@ -2169,8 +2145,7 @@ def search_pokeapi_db_by_id(pkmn_id,variable):
                 if pokemon_data["id"] == pkmn_id:
                     var = pokemon_data.get(variable, None)
                     return var
-            else:
-                return None
+
             
 def mainpokemon_data():
     global mainpkmn
@@ -2914,9 +2889,8 @@ class PokemonCollectionDialog(QDialog):
                         pixmap = QPixmap()
                         pokemon_id = pokemon['id']
                         pokemon_name = pokemon['name']
-                        if not pokemon.get('nickname') or pokemon.get('nickname') is None:
-                            pokemon_nickname = None
-                        else:
+                        pokemon_nickname = None
+                        if pokemon.get('nickname') and pokemon.get('nickname') is not None:
                             pokemon_nickname = pokemon['nickname']
                         pokemon_gender = pokemon['gender']
                         pokemon_level = pokemon['level']
@@ -2930,11 +2904,10 @@ class PokemonCollectionDialog(QDialog):
                         pokemon_ev = pokemon['ev']
                         pokemon_iv = pokemon['iv']
                         pokemon_description = search_pokeapi_db_by_id(pokemon_id, "description")
+                        pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
                         if gif_in_collection is True:
                             pkmn_image_path = str(user_path_sprites / "front_default_gif" / f"{pokemon_id}.gif")
                             splash_label = MovieSplashLabel(pkmn_image_path)
-                        else:
-                            pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
                         pixmap.load(pkmn_image_path)
 
                         # Calculate the new dimensions to maintain the aspect ratio
@@ -3776,60 +3749,60 @@ def remember_attack_details_window(id, attack_set, all_attacks):
 
 def remember_attack(id, attacks, new_attack):
     global mainpokemon_path
-    if mainpokemon_path.is_file():
-        with open(mainpokemon_path, "r") as json_file:
-            main_pokemon_data = json.load(json_file)
-        for mainpkmndata in main_pokemon_data:
-            if mainpkmndata["id"] == id:
-                mainpokemon_name = mainpkmndata["name"]
-                attacks = mainpkmndata["attacks"]
-                if new_attack:
-                    msg = ""
-                    msg += f"Your {mainpkmndata['name'].capitalize()} can learn a new attack !"
-                    if len(attacks) < 4:
-                            attacks.append(new_attack)
-                            msg += f"\n Your {mainpkmndata['name'].capitalize()} has learned {new_attack} !"
-                            showInfo(f"{msg}")
-                    else:
-                            dialog = AttackDialog(attacks, new_attack)
-                            if dialog.exec() == QDialog.DialogCode.Accepted:
-                                selected_attack = dialog.selected_attack
-                                index_to_replace = None
-                                for index, attack in enumerate(attacks):
-                                    if attack == selected_attack:
-                                        index_to_replace = index
-                                        pass
-                                    else:
-                                        pass
-                                # If the attack is found, replace it with 'new_attack'
-                                if index_to_replace is not None:
-                                    attacks[index_to_replace] = new_attack
-                                    showInfo(f"Replaced '{selected_attack}' with '{new_attack}'")
-                                else:
-                                    # Handle the case where the user cancels the dialog
-                                    showInfo(f"{new_attack} will be discarded.")
-                mainpkmndata["attacks"] = attacks
-                mypkmndata = mainpkmndata
-                mainpkmndata = [mainpkmndata]
-                # Save the caught Pokémon's data to a JSON file
-                with open(str(mainpokemon_path), "w") as json_file:
-                    json.dump(mainpkmndata, json_file, indent=2)
-                
-                with open(str(mypokemon_path), "r") as output_file:
-                    mypokemondata = json.load(output_file)
-
-                # Find and replace the specified Pokémon's data in mypokemondata
-                for index, pokemon_data in enumerate(mypokemondata):
-                    if pokemon_data["name"] == mainpokemon_name:
-                        mypokemondata[index] = mypkmndata
-                        break
-                # Save the modified data to the output JSON file
-                with open(str(mypokemon_path), "w") as output_file:
-                    json.dump(mypokemondata, output_file, indent=2)
-            else:
-                showInfo("Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
-    else:
+    if not mainpokemon_path.is_file():
         showWarning("Missing Mainpokemon Data !")
+        return
+    with open(mainpokemon_path, "r") as json_file:
+        main_pokemon_data = json.load(json_file)
+    for mainpkmndata in main_pokemon_data:
+        if mainpkmndata["id"] == id:
+            mainpokemon_name = mainpkmndata["name"]
+            attacks = mainpkmndata["attacks"]
+            if new_attack:
+                msg = ""
+                msg += f"Your {mainpkmndata['name'].capitalize()} can learn a new attack !"
+                if len(attacks) < 4:
+                        attacks.append(new_attack)
+                        msg += f"\n Your {mainpkmndata['name'].capitalize()} has learned {new_attack} !"
+                        showInfo(f"{msg}")
+                else:
+                        dialog = AttackDialog(attacks, new_attack)
+                        if dialog.exec() == QDialog.DialogCode.Accepted:
+                            selected_attack = dialog.selected_attack
+                            index_to_replace = None
+                            for index, attack in enumerate(attacks):
+                                if attack == selected_attack:
+                                    index_to_replace = index
+                                    pass
+                                else:
+                                    pass
+                            # If the attack is found, replace it with 'new_attack'
+                            if index_to_replace is not None:
+                                attacks[index_to_replace] = new_attack
+                                showInfo(f"Replaced '{selected_attack}' with '{new_attack}'")
+                            else:
+                                # Handle the case where the user cancels the dialog
+                                showInfo(f"{new_attack} will be discarded.")
+            mainpkmndata["attacks"] = attacks
+            mypkmndata = mainpkmndata
+            mainpkmndata = [mainpkmndata]
+            # Save the caught Pokémon's data to a JSON file
+            with open(str(mainpokemon_path), "w") as json_file:
+                json.dump(mainpkmndata, json_file, indent=2)
+            
+            with open(str(mypokemon_path), "r") as output_file:
+                mypokemondata = json.load(output_file)
+
+            # Find and replace the specified Pokémon's data in mypokemondata
+            for index, pokemon_data in enumerate(mypokemondata):
+                if pokemon_data["name"] == mainpokemon_name:
+                    mypokemondata[index] = mypkmndata
+                    break
+            # Save the modified data to the output JSON file
+            with open(str(mypokemon_path), "w") as output_file:
+                json.dump(mypokemondata, output_file, indent=2)
+        else:
+            showInfo("Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
     
 def type_colors(type):
     type_colors = {
@@ -4301,7 +4274,7 @@ def load_custom_font(font_size):
 def find_experience_for_level(group_growth_rate, level):
     global remove_levelcap
     if level > 100 and remove_levelcap is False:
-    	level = 100
+        level = 100
     if group_growth_rate == "medium":
         group_growth_rate = "medium-fast"
     elif group_growth_rate == "slow-then-very-fast":
@@ -6782,6 +6755,7 @@ class MyEventFilter(QObject):
                     test_window.display_first_start_up()
                 else:
                     test_window.open_dynamic_window()
+        return False
 
 # Erstellen und Installieren des Event Filters
 event_filter = MyEventFilter()
