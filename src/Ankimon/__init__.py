@@ -1958,7 +1958,7 @@ def catch_pokemon(nickname):
         if pop_up_dialog_message_on_defeat is True:
             showInfo("You have already caught the pokemon. Please close this window!") # Display a message when the Pokémon is caught
 
-def get_random_starter():
+def get_random_starter() -> tuple[str, str, str] | tuple[None, None, None]:
     global addon_dir, starters_path    # event if pokemon
     category = "Starter"
     try:
@@ -1991,12 +1991,12 @@ def get_random_starter():
         return None, None, None
 
 
-def calculate_max_hp_wildpokemon():
+def calculate_max_hp_wildpokemon() -> int:
     global stats, level, ev, iv
     wild_pk_max_hp = calculate_hp(stats["hp"], level, ev, iv)
     return wild_pk_max_hp
 
-def new_pokemon():
+def new_pokemon() -> None:
     global name, id, level, hp, max_hp, ability, type, enemy_attacks, attacks, base_experience, stats, battlescene_file, ev, iv, gender, battle_status
     # new pokemon
     gender = None
@@ -2012,7 +2012,7 @@ def new_pokemon():
     reviewer.web = mw.reviewer.web
     update_life_bar(reviewer, 0, 0)
 
-def calc_atk_dmg(level, critical, power, stat_atk, wild_stat_def, main_type, move_type, wild_type, critRatio):
+def calc_atk_dmg(level, critical, power, stat_atk, wild_stat_def, main_type, move_type, wild_type, critRatio)->float:
         if power is None:
             # You can choose a default power or handle it according to your requirements
             power = 0
@@ -2042,7 +2042,7 @@ def calc_atk_dmg(level, critical, power, stat_atk, wild_stat_def, main_type, mov
         # if wild pokemon type x main pokemon type => 0.5 not very eff.; 1.0 eff.; 2 very eff.
         return damage
 
-def calculate_hp(base_stat_hp, level, ev, iv):
+def calculate_hp(base_stat_hp, level, ev, iv) -> int:
     ev_value = ev["hp"] / 4
     iv_value = iv["hp"]
     #hp = int(((iv + 2 * (base_stat_hp + ev) + 100) * level) / 100 + 10)
@@ -2092,7 +2092,7 @@ def search_pokedex_by_id(pokemon_id):
                     return entry_name
     return 'Pokémon not found'
 
-def get_pokemon_diff_lang_name(pokemon_id):
+def get_pokemon_diff_lang_name(pokemon_id) -> str:
     global language
     global pokenames_lang_path
     with open(pokenames_lang_path, mode='r', encoding='utf-8') as file:
