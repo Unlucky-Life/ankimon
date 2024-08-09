@@ -7073,10 +7073,6 @@ class ItemWindow(QWidget):
         showInfo(f"{description}")
     
 
-def capitalize_each_word(item_name):
-    # Replace hyphens with spaces and capitalize each word
-    return ' '.join(word.capitalize() for word in item_name.replace("-", " ").split())
-
 def read_descriptions_csv(csv_file):
     descriptions = {}
     with open(csv_file, newline='', encoding='utf-8') as file:

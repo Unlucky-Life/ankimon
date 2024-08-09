@@ -186,3 +186,7 @@ def read_csv_file(csv_file):
         for row in reader:
             item_id_mapping[row['name'].lower()] = int(row['item_id'])
     return item_id_mapping
+
+def capitalize_each_word(item_name):
+    # Replace hyphens with spaces and capitalize each word
+    return ' '.join(word.capitalize() for word in item_name.replace("-", " ").split())
