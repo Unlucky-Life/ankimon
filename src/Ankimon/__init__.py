@@ -7073,19 +7073,6 @@ class ItemWindow(QWidget):
         showInfo(f"{description}")
     
 
-def read_descriptions_csv(csv_file):
-    descriptions = {}
-    with open(csv_file, newline='', encoding='utf-8') as file:
-        reader = csv.reader(file)
-        next(reader)  # Skip the header row
-        for row in reader:
-            item_id = int(row[0])
-            version_group_id = int(row[1])
-            language_id = int(row[2])
-            description = row[3].strip('"')
-            key = (item_id, version_group_id, language_id)
-            descriptions[key] = description
-    return descriptions
 
 def get_id_and_description_by_item_name(item_name):
     global csv_file_descriptions, csv_file_items

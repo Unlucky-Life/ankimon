@@ -190,3 +190,17 @@ def read_csv_file(csv_file):
 def capitalize_each_word(item_name):
     # Replace hyphens with spaces and capitalize each word
     return ' '.join(word.capitalize() for word in item_name.replace("-", " ").split())
+
+def read_descriptions_csv(csv_file):
+    descriptions = {}
+    with open(csv_file, newline='', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header row
+        for row in reader:
+            item_id = int(row[0])
+            version_group_id = int(row[1])
+            language_id = int(row[2])
+            description = row[3].strip('"')
+            key = (item_id, version_group_id, language_id)
+            descriptions[key] = description
+    return descriptions
