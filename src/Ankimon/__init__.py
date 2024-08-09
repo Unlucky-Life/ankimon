@@ -7280,7 +7280,7 @@ mw.pokemenu = QMenu('&Ankimon', mw)
 # and add it to the tools menu
 mw.form.menubar.addMenu(mw.pokemenu)
 
-if database_complete != False:
+if database_complete:
     pokecol_action = QAction("Show Pokemon Collection", mw)
     # set it to call testFunction when it's clicked
     mw.pokemenu.addAction(pokecol_action)
