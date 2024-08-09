@@ -1,4 +1,5 @@
 import base64
+import csv
 
 def special_pokemon_names_for_min_level(name):
     if name == "flabébé":
@@ -177,3 +178,11 @@ def type_colors(type):
 def calc_exp_gain(base_experience, w_pkmn_level):
     exp = int((base_experience * w_pkmn_level) / 7)
     return exp
+
+def read_csv_file(csv_file):
+    item_id_mapping = {}
+    with open(csv_file, newline='', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            item_id_mapping[row['name'].lower()] = int(row['item_id'])
+    return item_id_mapping

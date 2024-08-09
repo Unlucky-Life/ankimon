@@ -7072,13 +7072,6 @@ class ItemWindow(QWidget):
         description = get_id_and_description_by_item_name(item_name)
         showInfo(f"{description}")
     
-def read_csv_file(csv_file):
-    item_id_mapping = {}
-    with open(csv_file, newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            item_id_mapping[row['name'].lower()] = int(row['item_id'])
-    return item_id_mapping
 
 def capitalize_each_word(item_name):
     # Replace hyphens with spaces and capitalize each word
