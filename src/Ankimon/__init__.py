@@ -55,8 +55,14 @@ from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     terms_text, rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
                     thankyou_message_text, dont_show_this_button_text
 
-from .const import *
-from .business import *
+from .const import gen_ids
+from .business import special_pokemon_names_for_min_level, get_image_as_base64, \
+    split_string_by_length, split_japanese_string_by_length, capitalize_each_word, \
+    resize_pixmap_img, effectiveness_text, type_colors, \
+    calc_experience, get_multiplier_stats, get_multiplier_acc_eva, bP_none_moves, \
+    calc_exp_gain, \
+    read_csv_file, read_descriptions_csv
+    
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
