@@ -6054,7 +6054,7 @@ def rate_this_addon():
         rate_window.exec()
 
 
-if database_complete is True:
+if database_complete:
     with open(badgebag_path, 'r') as json_file:
         badge_list = json.load(json_file)
         if len(badge_list) > 2:
