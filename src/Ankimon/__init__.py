@@ -698,7 +698,7 @@ def answerCard_after(rev, card, ease):
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
 
 
-if database_complete != False:
+if database_complete:
     def get_random_moves_for_pokemon(pokemon_name, level):
         """
         Get up to 4 random moves learned by a Pokémon at a specific level and lower, along with the highest level,
@@ -864,7 +864,7 @@ def pick_random_gender(pokemon_name):
     return gender
     # Randomly choose between "M" and "F"
 
-if database_complete != False:
+if database_complete:
     def get_levelup_move_for_pokemon(pokemon_name, level):
         """
         Get a random move learned by a Pokémon at a specific level and lower, excluding moves that can be learned at a higher level.
