@@ -933,39 +933,6 @@ if database_complete:
             #return f"{pokemon_name} does not learn any new moves at level {level} or lower."
             return eligible_moves
 
-def split_string_by_length(input_string, max_length):
-    current_length = 0
-    current_line = []
-
-    for word in input_string.split():
-        word_length = len(word)  # Change this to calculate length in pixels
-
-        if current_length + len(current_line) + word_length <= max_length:
-            current_line.append(word)
-            current_length += word_length
-        else:
-            yield ' '.join(current_line)
-            current_line = [word]
-            current_length = word_length
-
-    yield ' '.join(current_line)
-
-def split_japanese_string_by_length(input_string, max_length):
-    max_length = 30
-    current_length = 0
-    current_line = ""
-
-    for char in input_string:
-        if current_length + 1 <= max_length:
-            current_line += char
-            current_length += 1
-        else:
-            yield current_line
-            current_line = char
-            current_length = 1
-
-    if current_line:  # Ensure the last line is also yielded
-        yield current_line
 
 def resize_pixmap_img(pixmap, max_width):
     original_width = pixmap.width()
