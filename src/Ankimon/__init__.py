@@ -4424,7 +4424,7 @@ def animate_pokemon():
     if show_mainpkmn_in_reviewer is True:
         reviewer.web.eval(f'document.getElementById("MyPokeImage").style="animation: shake {myseconds}s ease;"')
    
-if database_complete != False and mainpokemon_empty is False:
+if database_complete and mainpokemon_empty is False:
     def reviewer_reset_life_bar_inject():
         global life_bar_injected
         life_bar_injected = False
