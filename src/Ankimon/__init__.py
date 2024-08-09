@@ -167,21 +167,11 @@ poke_api_data = check_file_exists(user_path_data, "pokeapi_db.json")
 pokedex_data = check_file_exists(user_path_data, "pokedex.json")
 moves_data = check_file_exists(user_path_data, "moves.json")
 
-if (
-    pokedex_data
-    and learnsets_data
-    and moves_data
-    and back_sprites
-    and front_sprites
-    and front_default_gif
-    and back_default_gif
-    and item_sprites
-    and badges_sprites == True
-):    database_complete = True
-else:
-    database_complete = False
+database_complete = all([
+        pokedex_data, learnsets_data, moves_data, back_sprites, front_sprites, front_default_gif, back_default_gif, item_sprites, badges_sprites
+])
 
-if database_complete == True:
+if database_complete:
     owned_pokemon_ids = {}
 
     def extract_ids_from_file():
