@@ -91,3 +91,11 @@ def split_japanese_string_by_length(input_string, max_length):
 
     if current_line:  # Ensure the last line is also yielded
         yield current_line
+
+def resize_pixmap_img(pixmap, max_width):
+    original_width = pixmap.width()
+    original_height = pixmap.height()
+    new_width = max_width
+    new_height = (original_height * max_width) // original_width
+    pixmap2 = pixmap.scaled(new_width, new_height)
+    return pixmap2
