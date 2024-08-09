@@ -1815,9 +1815,6 @@ def cancel_evolution(pkmn_name):
         with open(str(mypokemon_path), "w") as output_file:
             json.dump(mypokemondata, output_file, indent=2)
 
-def calc_experience(base_experience, enemy_level):
-    exp = base_experience * enemy_level / 7
-    return exp
 
 def catch_pokemon(nickname):
     global pokemon_hp, name, ability, enemy_attacks, type, stats, base_experience, level, growth_rate, gender, id, iv, pop_up_dialog_message_on_defeat

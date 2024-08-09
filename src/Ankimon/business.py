@@ -99,3 +99,7 @@ def resize_pixmap_img(pixmap, max_width):
     new_height = (original_height * max_width) // original_width
     pixmap2 = pixmap.scaled(new_width, new_height)
     return pixmap2
+
+def calc_experience(base_experience, enemy_level):
+    exp = base_experience * enemy_level / 7
+    return exp
