@@ -2071,7 +2071,7 @@ def mainpokemon_data():
     except:
             pass
 #get main pokemon details:
-if database_complete != False:
+if database_complete:
     try:
         mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname = mainpokemon_data()
         starter = True
@@ -2112,21 +2112,6 @@ def get_effectiveness(move_type):
     # If the combination is not found, return None or a default value
     return None
 
-def effectiveness_text(effect_value):
-    if effect_value == 0:
-        effective_txt = "has missed."
-    elif effect_value <= 0.5:
-        effective_txt = "was not very effective."
-    elif effect_value <= 1:
-        effective_txt = "was effective."
-    elif effect_value <= 1.5:
-        effective_txt = "was very effective !"
-    elif effect_value <= 2:
-        effective_txt = "was super effective !"
-    else:
-        effective_txt = "was effective."
-        #return None
-    return effective_txt
 
 def calc_multiply_card_rating():
     global card_ratings_count
