@@ -6684,7 +6684,7 @@ class IDTableWidget(QWidget):
     def show_gen_chart(self):
         self.show()
 
-if database_complete!= False:
+if database_complete:
     if mypokemon_path.is_file() is False:
         starter_window.display_starter_pokemon()
     else:
