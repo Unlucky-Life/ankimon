@@ -5324,9 +5324,6 @@ def open_browser_window():
     url = "https://pokepast.es/"
     QDesktopServices.openUrl(QUrl(url))
 
-def calc_exp_gain(base_experience, w_pkmn_level):
-    exp = int((base_experience * w_pkmn_level) / 7)
-    return exp
 
 # Define the function to open the Pokémon Showdown Team Builder
 def open_team_builder():

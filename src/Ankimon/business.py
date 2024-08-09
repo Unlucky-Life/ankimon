@@ -173,3 +173,7 @@ def type_colors(type):
     }
 
     return type_colors.get(type, "Unknown")
+
+def calc_exp_gain(base_experience, w_pkmn_level):
+    exp = int((base_experience * w_pkmn_level) / 7)
+    return exp
