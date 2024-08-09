@@ -1,3 +1,5 @@
+import base64
+
 def special_pokemon_names_for_min_level(name):
     if name == "flabébé":
         return "flabebe"
@@ -50,3 +52,8 @@ def special_pokemon_names_for_min_level(name):
     else:
         #showWarning("Error in Handling Pokémon name")
         return name
+    
+def get_image_as_base64(path):
+    with open(path, 'rb') as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+    return encoded_string

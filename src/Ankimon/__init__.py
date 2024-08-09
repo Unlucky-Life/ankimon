@@ -697,10 +697,6 @@ def answerCard_after(rev, card, ease):
 
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
 
-def get_image_as_base64(path):
-    with open(path, 'rb') as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-    return encoded_string
 
 if database_complete != False:
     def get_random_moves_for_pokemon(pokemon_name, level):
