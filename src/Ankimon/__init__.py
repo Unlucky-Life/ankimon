@@ -1076,7 +1076,7 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, heigh
 
 pokemon_species = None
 # Your random Pokémon generation function using the PokeAPI
-if database_complete != False:
+if database_complete:
     def generate_random_pokemon():
         # Fetch random Pokémon data from Generation
         # Load the JSON file with Pokémon data
