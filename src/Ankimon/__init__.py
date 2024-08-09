@@ -11,7 +11,6 @@
 # Important - If you redistribute it and/or modify this addon - must give contribution in Title and Code
 # aswell as ask for permission to modify / redistribute this addon or the code itself
 
-import base64
 import csv
 import distutils.dir_util
 import json
