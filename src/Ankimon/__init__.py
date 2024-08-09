@@ -217,7 +217,7 @@ class CheckFiles(QDialog):
         self.setLayout(self.layout)
 
 dialog = CheckFiles()
-if database_complete != True:
+if not database_complete:
     dialog.show()
 
 if mainpokemon_path.is_file():
