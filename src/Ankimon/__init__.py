@@ -55,6 +55,8 @@ from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     terms_text, rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
                     thankyou_message_text, dont_show_this_button_text
 
+from .const import *
+
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
@@ -630,17 +632,6 @@ def play_sound():
             audios.will_use_audio_player()
             audios.audio(audio_path)
 
-gen_ids = {
-    "gen_1": 151,
-    "gen_2": 251,
-    "gen_3": 386,
-    "gen_4": 493,
-    "gen_5": 649,
-    "gen_6": 721,
-    "gen_7": 809,
-    "gen_8": 905,
-    "gen_9": 1025
-}
 
 gen_config = []
 for i in range(1,10):
