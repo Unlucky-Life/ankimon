@@ -12,21 +12,13 @@
 # aswell as ask for permission to modify / redistribute this addon or the code itself
 
 import csv
-import distutils.dir_util
 import json
 import os
-import pathlib
 import platform
 import random
-import shutil
-import sys
-import threading
-import time
-import wave
 from pathlib import Path
 from typing import List, Optional, Union
 
-import anki
 import aqt
 import markdown
 import requests
@@ -40,9 +32,6 @@ from aqt.reviewer import Reviewer
 from aqt.utils import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
-from PyQt6.QtGui import QSurfaceFormat
-from PyQt6.QtMultimedia import QMediaPlayer
-from PyQt6.QtMultimediaWidgets import QVideoWidget
 from PyQt6.QtWebEngineWidgets import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
