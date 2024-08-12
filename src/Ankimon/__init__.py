@@ -11,23 +11,14 @@
 # Important - If you redistribute it and/or modify this addon - must give contribution in Title and Code
 # aswell as ask for permission to modify / redistribute this addon or the code itself
 
-import base64
 import csv
-import distutils.dir_util
 import json
 import os
-import pathlib
 import platform
 import random
-import shutil
-import sys
-import threading
-import time
-import wave
 from pathlib import Path
 from typing import List, Optional, Union
 
-import anki
 import aqt
 import markdown
 import requests
@@ -41,9 +32,6 @@ from aqt.reviewer import Reviewer
 from aqt.utils import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
-from PyQt6.QtGui import QSurfaceFormat
-from PyQt6.QtMultimedia import QMediaPlayer
-from PyQt6.QtMultimediaWidgets import QVideoWidget
 from PyQt6.QtWebEngineWidgets import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
@@ -54,6 +42,15 @@ from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     remember_attack_details_window_template, remember_attack_details_window_template_end, \
                     terms_text, rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
                     thankyou_message_text, dont_show_this_button_text
+
+from .const import gen_ids
+from .business import special_pokemon_names_for_min_level, get_image_as_base64, \
+    split_string_by_length, split_japanese_string_by_length, capitalize_each_word, \
+    resize_pixmap_img, effectiveness_text, type_colors, \
+    calc_experience, get_multiplier_stats, get_multiplier_acc_eva, bP_none_moves, \
+    calc_exp_gain, \
+    read_csv_file, read_descriptions_csv
+    
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -167,21 +164,11 @@ poke_api_data = check_file_exists(user_path_data, "pokeapi_db.json")
 pokedex_data = check_file_exists(user_path_data, "pokedex.json")
 moves_data = check_file_exists(user_path_data, "moves.json")
 
-if (
-    pokedex_data
-    and learnsets_data
-    and moves_data
-    and back_sprites
-    and front_sprites
-    and front_default_gif
-    and back_default_gif
-    and item_sprites
-    and badges_sprites == True
-):    database_complete = True
-else:
-    database_complete = False
+database_complete = all([
+        pokedex_data, learnsets_data, moves_data, back_sprites, front_sprites, front_default_gif, back_default_gif, item_sprites, badges_sprites
+])
 
-if database_complete == True:
+if database_complete:
     owned_pokemon_ids = {}
 
     def extract_ids_from_file():
@@ -227,7 +214,7 @@ class CheckFiles(QDialog):
         self.setLayout(self.layout)
 
 dialog = CheckFiles()
-if database_complete != True:
+if not database_complete:
     dialog.show()
 
 if mainpokemon_path.is_file():
@@ -640,17 +627,6 @@ def play_sound():
             audios.will_use_audio_player()
             audios.audio(audio_path)
 
-gen_ids = {
-    "gen_1": 151,
-    "gen_2": 251,
-    "gen_3": 386,
-    "gen_4": 493,
-    "gen_5": 649,
-    "gen_6": 721,
-    "gen_7": 809,
-    "gen_8": 905,
-    "gen_9": 1025
-}
 
 gen_config = []
 for i in range(1,10):
@@ -683,58 +659,6 @@ def check_id_ok(id_num):
 # if index = 40 - 100 => normal ; multiply with damage
 # if index < 40 => attack misses
 
-def special_pokemon_names_for_min_level(name):
-    if name == "flabébé":
-        return "flabebe"
-    elif name == "sirfetch'd":
-        return "sirfetchd"
-    elif name == "farfetch'd":
-        return "farfetchd"
-    elif name == "porygon-z":
-        return "porygonz"
-    elif name == "kommo-o":
-        return "kommoo"
-    elif name == "hakamo-o":
-        return "hakamoo"
-    elif name == "jangmo-o":
-        return "jangmoo"
-    elif name == "mr. rime":
-        return "mrrime"
-    elif name == "mr. mime":
-        return "mrmime"
-    elif name == "mime jr.":
-        return "mimejr"
-    elif name == "nidoran♂":
-        return "nidoranm"
-    elif name == "nidoran":
-        return "nidoranf"
-    elif name == "keldeo[e]":
-        return "keldeo"
-    elif name == "mew[e]":
-        return "mew"
-    elif name == "deoxys[e]":
-        return "deoxys"
-    elif name == "jirachi[e]":
-        return "jirachi"
-    elif name == "arceus[e]":
-        return "arceus"
-    elif name == "shaymin[e]":
-        return "shaymin-land"
-    elif name == "darkrai [e]":
-        return "darkrai"
-    elif name == "manaphy[e]":
-        return "manaphy"
-    elif name == "phione[e]":
-        return "phione"
-    elif name == "celebi[e]":
-        return "celebi"
-    elif name == "magearna[e]":
-        return "magearna"
-    elif name == "type: null":
-        return "typenull"
-    else:
-        #showWarning("Error in Handling Pokémon name")
-        return name
 
 def special_pokemon_names_for_pokedex_to_poke_api_db(name):
     global pokedex_to_poke_api_db
@@ -767,12 +691,8 @@ def answerCard_after(rev, card, ease):
 
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
 
-def get_image_as_base64(path):
-    with open(path, 'rb') as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-    return encoded_string
 
-if database_complete != False:
+if database_complete:
     def get_random_moves_for_pokemon(pokemon_name, level):
         """
         Get up to 4 random moves learned by a Pokémon at a specific level and lower, along with the highest level,
@@ -926,7 +846,7 @@ def pick_random_gender(pokemon_name):
     gender_ratio = pokemon.get("genderRatio")
     if gender_ratio:
         random_number = random.random()  # Generate a random number between 0 and 1
-        return {"M" if random_number < gender_ratio["M"] else "F"}
+        return "M" if random_number < gender_ratio["M"] else "F"
 
     genders = pokemon.get("gender")
     if genders:
@@ -938,7 +858,7 @@ def pick_random_gender(pokemon_name):
     return gender
     # Randomly choose between "M" and "F"
 
-if database_complete != False:
+if database_complete:
     def get_levelup_move_for_pokemon(pokemon_name, level):
         """
         Get a random move learned by a Pokémon at a specific level and lower, excluding moves that can be learned at a higher level.
@@ -1007,47 +927,7 @@ if database_complete != False:
             #return f"{pokemon_name} does not learn any new moves at level {level} or lower."
             return eligible_moves
 
-def split_string_by_length(input_string, max_length):
-    current_length = 0
-    current_line = []
 
-    for word in input_string.split():
-        word_length = len(word)  # Change this to calculate length in pixels
-
-        if current_length + len(current_line) + word_length <= max_length:
-            current_line.append(word)
-            current_length += word_length
-        else:
-            yield ' '.join(current_line)
-            current_line = [word]
-            current_length = word_length
-
-    yield ' '.join(current_line)
-
-def split_japanese_string_by_length(input_string, max_length):
-    max_length = 30
-    current_length = 0
-    current_line = ""
-
-    for char in input_string:
-        if current_length + 1 <= max_length:
-            current_line += char
-            current_length += 1
-        else:
-            yield current_line
-            current_line = char
-            current_length = 1
-
-    if current_line:  # Ensure the last line is also yielded
-        yield current_line
-
-def resize_pixmap_img(pixmap, max_width):
-    original_width = pixmap.width()
-    original_height = pixmap.height()
-    new_width = max_width
-    new_height = (original_height * max_width) // original_width
-    pixmap2 = pixmap.scaled(new_width, new_height)
-    return pixmap2
 
 def random_battle_scene():
     global battlescene_path
@@ -1190,7 +1070,7 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, heigh
 
 pokemon_species = None
 # Your random Pokémon generation function using the PokeAPI
-if database_complete != False:
+if database_complete:
     def generate_random_pokemon():
         # Fetch random Pokémon data from Generation
         # Load the JSON file with Pokémon data
@@ -1929,9 +1809,6 @@ def cancel_evolution(pkmn_name):
         with open(str(mypokemon_path), "w") as output_file:
             json.dump(mypokemondata, output_file, indent=2)
 
-def calc_experience(base_experience, enemy_level):
-    exp = base_experience * enemy_level / 7
-    return exp
 
 def catch_pokemon(nickname):
     global pokemon_hp, name, ability, enemy_attacks, type, stats, base_experience, level, growth_rate, gender, id, iv, pop_up_dialog_message_on_defeat
@@ -2188,7 +2065,7 @@ def mainpokemon_data():
     except:
             pass
 #get main pokemon details:
-if database_complete != False:
+if database_complete:
     try:
         mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname = mainpokemon_data()
         starter = True
@@ -2229,21 +2106,6 @@ def get_effectiveness(move_type):
     # If the combination is not found, return None or a default value
     return None
 
-def effectiveness_text(effect_value):
-    if effect_value == 0:
-        effective_txt = "has missed."
-    elif effect_value <= 0.5:
-        effective_txt = "was not very effective."
-    elif effect_value <= 1:
-        effective_txt = "was effective."
-    elif effect_value <= 1.5:
-        effective_txt = "was very effective !"
-    elif effect_value <= 2:
-        effective_txt = "was super effective !"
-    else:
-        effective_txt = "was effective."
-        #return None
-    return effective_txt
 
 def calc_multiply_card_rating():
     global card_ratings_count
@@ -2655,35 +2517,6 @@ def create_status_html(status_name):
 
     return html
 
-def get_multiplier_stats(stage):
-    # Define the mapping of stage to factor
-    stage_to_factor = {
-        -6: 3/9, -5: 3/8, -4: 3/7, -3: 3/6, -2: 3/5, -1: 3/4,
-        0: 3/3,
-        1: 4/3, 2: 5/3, 3: 6/3, 4: 7/3, 5: 8/3, 6: 9/3
-    }
-
-    # Return the corresponding factor or a default value if the stage is out of range
-    return stage_to_factor.get(stage, "Invalid stage")
-
-def get_multiplier_acc_eva(stage):
-    # Define the mapping of stage to factor
-    stage_to_factor_new = {
-        -6: 2/8, -5: 2/7, -4: 2/6, -3: 2/5, -2: 2/4, -1: 2/3,
-        0: 2/2,
-        1: 3/2, 2: 4/2, 3: 5/2, 4: 6/2, 5: 7/2, 6: 8/2
-    }
-
-    # Return the corresponding factor or a default value if the stage is out of range
-    return stage_to_factor_new.get(stage, "Invalid stage")
-
-def bP_none_moves(move):
-    target =  move.get("target", None)
-    if target == "normal":
-        damage = move.get("damage")
-        if damage is None:
-            damage = 5
-        return damage
 
 
 def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpokemon_name):
@@ -3804,29 +3637,6 @@ def remember_attack(id, attacks, new_attack):
         else:
             showInfo("Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
     
-def type_colors(type):
-    type_colors = {
-        "Normal": "#A8A77A",
-        "Fire": "#EE8130",
-        "Water": "#6390F0",
-        "Electric": "#F7D02C",
-        "Grass": "#7AC74C",
-        "Ice": "#96D9D6",
-        "Fighting": "#C22E28",
-        "Poison": "#A33EA1",
-        "Ground": "#E2BF65",
-        "Flying": "#A98FF3",
-        "Psychic": "#F95587",
-        "Bug": "#A6B91A",
-        "Rock": "#B6A136",
-        "Ghost": "#735797",
-        "Dragon": "#6F35FC",
-        "Dark": "#705746",
-        "Steel": "#B7B7CE",
-        "Fairy": "#D685AD"
-    }
-
-    return type_colors.get(type, "Unknown")
 
 def type_icon_path(type):
     global addon_dir
@@ -4608,7 +4418,7 @@ def animate_pokemon():
     if show_mainpkmn_in_reviewer is True:
         reviewer.web.eval(f'document.getElementById("MyPokeImage").style="animation: shake {myseconds}s ease;"')
    
-if database_complete != False and mainpokemon_empty is False:
+if database_complete and mainpokemon_empty is False:
     def reviewer_reset_life_bar_inject():
         global life_bar_injected
         life_bar_injected = False
@@ -5508,9 +5318,6 @@ def open_browser_window():
     url = "https://pokepast.es/"
     QDesktopServices.openUrl(QUrl(url))
 
-def calc_exp_gain(base_experience, w_pkmn_level):
-    exp = int((base_experience * w_pkmn_level) / 7)
-    return exp
 
 # Define the function to open the Pokémon Showdown Team Builder
 def open_team_builder():
@@ -6241,7 +6048,7 @@ def rate_this_addon():
         rate_window.exec()
 
 
-if database_complete is True:
+if database_complete:
     with open(badgebag_path, 'r') as json_file:
         badge_list = json.load(json_file)
         if len(badge_list) > 2:
@@ -6871,7 +6678,7 @@ class IDTableWidget(QWidget):
     def show_gen_chart(self):
         self.show()
 
-if database_complete!= False:
+if database_complete:
     if mypokemon_path.is_file() is False:
         starter_window.display_starter_pokemon()
     else:
@@ -7259,31 +7066,7 @@ class ItemWindow(QWidget):
         description = get_id_and_description_by_item_name(item_name)
         showInfo(f"{description}")
     
-def read_csv_file(csv_file):
-    item_id_mapping = {}
-    with open(csv_file, newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            item_id_mapping[row['name'].lower()] = int(row['item_id'])
-    return item_id_mapping
 
-def capitalize_each_word(item_name):
-    # Replace hyphens with spaces and capitalize each word
-    return ' '.join(word.capitalize() for word in item_name.replace("-", " ").split())
-
-def read_descriptions_csv(csv_file):
-    descriptions = {}
-    with open(csv_file, newline='', encoding='utf-8') as file:
-        reader = csv.reader(file)
-        next(reader)  # Skip the header row
-        for row in reader:
-            item_id = int(row[0])
-            version_group_id = int(row[1])
-            language_id = int(row[2])
-            description = row[3].strip('"')
-            key = (item_id, version_group_id, language_id)
-            descriptions[key] = description
-    return descriptions
 
 def get_id_and_description_by_item_name(item_name):
     global csv_file_descriptions, csv_file_items
@@ -7491,7 +7274,7 @@ mw.pokemenu = QMenu('&Ankimon', mw)
 # and add it to the tools menu
 mw.form.menubar.addMenu(mw.pokemenu)
 
-if database_complete != False:
+if database_complete:
     pokecol_action = QAction("Show Pokemon Collection", mw)
     # set it to call testFunction when it's clicked
     mw.pokemenu.addAction(pokecol_action)
