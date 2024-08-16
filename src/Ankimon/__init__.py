@@ -6336,7 +6336,7 @@ class EvoWindow(QWidget):
         self.show()
 
     def pokemon_display_evo_pokemon(self, pkmn_name):
-        global pokemon_hp, name, id, level, caught_pokemon, caught, evolve_image_path
+        global pokemon_hp, name, id, level, caught_pokemon, caught
         global mainpokemon_name, mainpokemon_id
         layout_pokemon = QHBoxLayout()
         # Update mainpokemon_evolution and handle evolution logic
