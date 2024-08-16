@@ -1242,7 +1242,6 @@ def choose_random_pkmn_from_tier():
         showWarning(f" An error occured with generating following Pkmn Info: {id}{pokemon_species} \n Please post this error message over the Report Bug Issue")
 
 def get_pokemon_id_by_tier(tier):
-    global pokemon_species_normal_path, pokemon_species_baby_path, pokemon_species_mythical_path, pokemon_species_ultra_path, pokemon_species_legendary_path
     id_species_path = None
     if tier == "Normal":
         id_species_path = pokemon_species_normal_path
