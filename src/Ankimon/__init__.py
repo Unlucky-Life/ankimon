@@ -6526,7 +6526,6 @@ class IDTableWidget(QWidget):
 
     def initUI(self):
         self.setWindowTitle("Pokémon - Generations and ID")
-        global table_gen_id_html_path
         # Create a label and set HTML content
         label = QLabel()
         html_content = self.read_html_file(f"{table_gen_id_html_path}")  # Replace with the path to your HTML file
