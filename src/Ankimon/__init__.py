@@ -871,7 +871,6 @@ def random_battle_scene():
 
 if berries_sprites != False:
     def random_berries():
-        global berries_path
         berries = {}
         for index, filename in enumerate(os.listdir(berries_path)):
             if filename.endswith(".png"):
