@@ -6933,7 +6933,6 @@ class ItemWindow(QWidget):
 
 
 def get_id_and_description_by_item_name(item_name):
-    global csv_file_descriptions, csv_file_items
     item_name = capitalize_each_word(item_name)
     item_id_mapping = read_csv_file(csv_file_items)
     item_id = item_id_mapping.get(item_name.lower())
