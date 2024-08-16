@@ -639,7 +639,6 @@ if database_complete:
         Returns:
             list: A list of up to 4 random moves and their highest levels.
         """
-        global learnset_path
         # Load the JSON file
         with open(learnset_path, 'r') as file:
             learnsets = json.load(file)
@@ -703,7 +702,6 @@ if database_complete:
         Returns:
             list: A list of up to 4 random moves and their highest levels.
         """
-        global learnset_path
         # Load the JSON file
         with open(learnset_path, 'r') as file:
             learnsets = json.load(file)
@@ -803,7 +801,6 @@ if database_complete:
         Returns:
             str: A random move and its highest level.
         """
-        global learnset_path
         # Load the JSON file
         with open(learnset_path, 'r') as file:
             learnsets = json.load(file)
@@ -1007,7 +1004,6 @@ if database_complete:
     def generate_random_pokemon():
         # Fetch random Pokémon data from Generation
         # Load the JSON file with Pokémon data
-        global addon_dir
         global pokemon_encounter
         global hp, gender, name, enemy_attacks
         global mainpokemon_level
@@ -1547,7 +1543,6 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
 
 def evolve_pokemon(pkmn_name):
     global mainpokemon_path
-    global addon_dir
     global achievements
     try:
         evoName = search_pokedex(pkmn_name.lower(), "evos")
@@ -1769,7 +1764,7 @@ def catch_pokemon(nickname):
             showInfo("You have already caught the pokemon. Please close this window!") # Display a message when the Pokémon is caught
 
 def get_random_starter():
-    global addon_dir, starters_path    # event if pokemon
+    global starters_path    # event if pokemon
     category = "Starter"
     try:
         # Reload the JSON data from the file
@@ -1935,7 +1930,6 @@ def get_pokemon_descriptions(species_id):
         ["Description not found."]
 
 def search_pokeapi_db(pkmn_name,variable):
-    global addon_dir
     global pokeapi_db_path
     with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
@@ -1947,7 +1941,6 @@ def search_pokeapi_db(pkmn_name,variable):
 
 
 def search_pokeapi_db_by_id(pkmn_id,variable):
-    global addon_dir
     global pokeapi_db_path
     with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
@@ -3570,14 +3563,12 @@ def remember_attack(id, attacks, new_attack):
     
 
 def type_icon_path(type):
-    global addon_dir
     png_file = f"{type}.png"
     icon_path = addon_dir / "addon_sprites" / "Types"
     icon_png_file_path = icon_path / png_file
     return icon_png_file_path
 
 def move_category_path(category):
-    global addon_dir
     png_file = f"{category}_move.png"
     category_path = addon_dir / "addon_sprites" / png_file
     return category_path
@@ -3684,7 +3675,6 @@ def PokemonDetailsStats(detail_stats, growth_rate, level):
     return CompleteTable_layout
 
 def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
-    global addon_dir
     global mainpokemon_path
      # Load the data from the file
     with open(mainpokemon_path, 'r') as file:
@@ -3850,7 +3840,6 @@ def trade_pokemon(old_pokemon_name, pokemon_trade, position):
 
 def PokemonTradeIn(number_code, old_pokemon_name, position):
     if len(number_code) > 15:
-        global addon_dir
         # Split the string into a list of integers
         numbers = [int(num) for num in number_code.split(',')]
 
@@ -4299,7 +4288,6 @@ def show_agreement_and_download_database():
         pokeapi_db_downloader()
 
 def pokeapi_db_downloader():
-    global addon_dir
     dlg = LoadingDialog(addon_dir)
     dlg.exec()
 
@@ -5279,10 +5267,8 @@ class TestWindow(QWidget):
         #self.update()
     def init_ui(self):
         global test
-        global addon_dir
         layout = QVBoxLayout()
         # Main window layout
-        global addon_dir
         layout = QVBoxLayout()
         image_file = f"ankimon_logo.png"
         image_path = str(addon_dir) + "/" + image_file
@@ -5602,7 +5588,6 @@ class TestWindow(QWidget):
 
     def pokemon_display_item(self, item):
         global pokemon_encounter, user_path_sprites
-        global addon_dir
         global frontdefault
         bckgimage_path =  addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         item_path = user_path_sprites / "items" / f"{item}.png"
@@ -6140,7 +6125,6 @@ class StarterWindow(QWidget):
 
     def pokemon_display_starter(self, water_start, fire_start, grass_start):
         global pokemon_encounter
-        global addon_dir
         global frontdefault
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bckg.png"
         water_id = int(search_pokedex(water_start, "num"))
@@ -6215,7 +6199,6 @@ class StarterWindow(QWidget):
 
     def pokemon_display_chosen_starter(self, starter_name):
         global pokemon_encounter
-        global addon_dir
         global frontdefault
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         id = int(search_pokedex(starter_name, "num"))
@@ -6258,7 +6241,6 @@ class StarterWindow(QWidget):
     
     def pokemon_display_fossil_pokemon(self, fossil_id, fossil_name):
         global pokemon_encounter
-        global addon_dir
         global frontdefault
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         id = fossil_id
@@ -6325,7 +6307,7 @@ class EvoWindow(QWidget):
         self.show()
 
     def pokemon_display_evo(self, pkmn_name, prevo_name):
-        global addon_dir, frontdefault
+        global frontdefault
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         id = int(search_pokedex(pkmn_name.lower(), "num"))
 
@@ -6506,7 +6488,6 @@ class TableWidget(QWidget):
 
     def initUI(self):
         self.setWindowTitle("Pokémon Type Effectiveness Table")
-        global addon_dir
         global eff_chart_html_path
 
         # Create a label and set HTML content
@@ -6539,7 +6520,6 @@ class Pokedex_Widget(QWidget):
 
     def initUI(self):
         self.setWindowTitle("Pokédex")
-        global addon_dir
 
         # Create a label and set HTML content
         label = QLabel()
@@ -6629,7 +6609,6 @@ class License(QWidget):
 
     def initUI(self):
         self.setWindowTitle("AnkiMon License")
-        global addon_dir
 
         # Create a label and set HTML content
         label = QLabel()
@@ -6678,7 +6657,6 @@ class Credits(QWidget):
 
     def initUI(self):
         self.setWindowTitle("AnkiMon License")
-        global addon_dir
 
         # Create a label and set HTML content
         label = QLabel()
@@ -7051,7 +7029,6 @@ class AchievementWindow(QWidget):
         self.initUI()
 
     def initUI(self):
-        global addon_dir
         self.setWindowIcon(QIcon(str(icon_path)))
         self.setWindowTitle("Achievements")
         self.layout = QVBoxLayout()  # Main layout is now a QVBoxLayout
