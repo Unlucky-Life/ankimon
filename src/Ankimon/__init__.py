@@ -5696,7 +5696,7 @@ class TestWindow(QWidget):
             showWarning(f"An error occured in badges window {e}")
 
     def pokemon_display_dead_pokemon(self):
-        global pokemon_hp, name, id, level, type, caught_pokemon, caught, pokedex_image_path
+        global pokemon_hp, name, id, level, type, caught_pokemon, caught
         # Create the dialog
         lang_name = get_pokemon_diff_lang_name(int(id))
         window_title = (f"Would you want let the  wild {lang_name} free or catch the wild {lang_name} ?")
@@ -5839,7 +5839,7 @@ class TestWindow(QWidget):
         self.setMaximumHeight(300)
 
     def keyPressEvent(self, event):
-        global test, pokemon_encounter, pokedex_image_path, system, ankimon_key
+        global test, pokemon_encounter, system, ankimon_key
         open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
         if system == "mac":
             if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
@@ -6012,7 +6012,7 @@ class StarterWindow(QWidget):
             if widget:
                 widget.deleteLater()
     def keyPressEvent(self, event):
-        global test, pokemon_encounter, pokedex_image_path
+        global test, pokemon_encounter
         # Close the main window when the spacebar is pressed
         if event.key() == Qt.Key.Key_G:  # Updated to Key_G for PyQt 6
             # First encounter image
