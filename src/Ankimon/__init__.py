@@ -50,7 +50,7 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
     calc_experience, get_multiplier_stats, get_multiplier_acc_eva, bP_none_moves, \
     calc_exp_gain, \
     read_csv_file, read_descriptions_csv
-from .utils import check_folders_exist, check_file_exists
+from .utils import check_folders_exist, check_file_exists, test_online_connectivity
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -358,17 +358,6 @@ def addon_config_editor_will_display_json(text: str) -> str:
 gui_hooks.addon_config_editor_will_save_json.append(check_data.modify_json_configuration_on_save)
 gui_hooks.addon_config_editor_will_display_json.append(addon_config_editor_will_display_json)
 
-def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5):
-    try:
-        # Attempt to get the URL
-        response = requests.get(url, timeout=timeout)
-
-        # Check if the response status code is 200 (OK)
-        if response.status_code == 200:
-            return True
-    except:
-        # Connection error means no internet connectivity
-        return False
 online_connectivity = test_online_connectivity()
 
 #Connect to GitHub and Check for Notification and HelpGuideChanges
