@@ -1339,7 +1339,6 @@ def save_caught_pokemon(nickname):
         json.dump(caught_pokemon_data, json_file, indent=2)
 
 def find_details_move(move_name):
-    global moves_file_path
     try:
         with open(moves_file_path, "r", encoding="utf-8") as json_file:
             moves_data = json.load(json_file)
@@ -3767,7 +3766,6 @@ def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
         showWarning("You cant trade your Main Pokemon ! \n Please pick a different Main Pokemon and then you can trade this one.")
 
 def find_move_by_num(move_num):
-    global moves_file_path
     try:
         with open(moves_file_path, 'r', encoding='utf-8') as json_file:
             moves_data = json.load(json_file)
