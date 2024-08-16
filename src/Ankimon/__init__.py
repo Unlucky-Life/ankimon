@@ -6484,7 +6484,6 @@ class TableWidget(QWidget):
 
     def initUI(self):
         self.setWindowTitle("Pokémon Type Effectiveness Table")
-        global eff_chart_html_path
 
         # Create a label and set HTML content
         label = QLabel()
