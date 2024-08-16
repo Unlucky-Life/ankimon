@@ -1915,7 +1915,6 @@ def get_pokemon_descriptions(species_id):
         ["Description not found."]
 
 def search_pokeapi_db(pkmn_name,variable):
-    global pokeapi_db_path
     with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
             for pokemon_data in pokedex_data:
@@ -1926,7 +1925,6 @@ def search_pokeapi_db(pkmn_name,variable):
 
 
 def search_pokeapi_db_by_id(pkmn_id,variable):
-    global pokeapi_db_path
     with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
             for pokemon_data in pokedex_data:
@@ -3851,7 +3849,6 @@ def PokemonTradeIn(number_code, old_pokemon_name, position):
         evos = details.get("evos", "None")
         #type = search_pokedex(name, "types")
         #stats = search_pokedex(name, "baseStats")
-        global pokeapi_db_path
         with open(str(pokeapi_db_path), "r") as json_file:
             pokemon_data = json.load(json_file)
             for pokemon in pokemon_data:
@@ -4149,7 +4146,6 @@ class Downloader(QObject):
 
     def download_pokemon_data(self):
         try:
-            global pokeapi_db_path
             num_files = len(self.urls)
             self.downloading_data_txt.emit()
             for i, url in enumerate(self.urls, start=1):
@@ -4822,7 +4818,6 @@ def choose_pokemon(starter_name):
         ability = "No Ability"
     type = search_pokedex(starter_name, "types")
     name = search_pokedex(starter_name, "name")
-    global pokeapi_db_path
     generation_file = "pokeapi_db.json"
     growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
     base_experience = search_pokeapi_db_by_id(id, "base_experience")
@@ -4897,7 +4892,6 @@ def save_outside_pokemon(pokemon_name, pokemon_id):
         ability = "No Ability"
     type = search_pokedex(name, "types")
     name = search_pokedex(name, "name")
-    global pokeapi_db_path
     generation_file = "pokeapi_db.json"
     growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
     base_experience = search_pokeapi_db_by_id(id, "base_experience")
