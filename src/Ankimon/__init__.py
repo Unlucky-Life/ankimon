@@ -3998,7 +3998,6 @@ def find_experience_for_level(group_growth_rate, level):
         group_growth_rate = "fluctuating"
     elif group_growth_rate == "fast-then-very-slow":
         group_growth_rate = "fluctuating"
-    global next_lvl_file_path
     # Specify the growth rate and level you're interested in
     growth_rate = f'{group_growth_rate}'
     if level < 100:
