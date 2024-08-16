@@ -418,7 +418,6 @@ try:
         class UpdateNotificationWindow(QDialog):
             def __init__(self, content):
                 super().__init__()
-                global icon_path
                 self.setWindowTitle("Ankimon Notifications")
                 self.setGeometry(100, 100, 600, 400)
 
@@ -463,7 +462,6 @@ class HelpWindow(QDialog):
     def __init__(self):
         super().__init__()
         html_content = " "
-        global icon_path
         help_local_file_path = addon_dir / "HelpInfos.html"
         try:
             if online_connectivity != False:
@@ -3154,7 +3152,7 @@ def rename_pkmn(nickname, pkmn_name, position):
         showWarning(f"An error occured: {e}")
 
 def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position):
-    global frontdefault, type_style_file, language, icon_path, gif_in_collection
+    global frontdefault, type_style_file, language, gif_in_collection
     # Create the dialog
     try:
         lang_name = get_pokemon_diff_lang_name(int(id)).capitalize()
@@ -3414,7 +3412,6 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         showWarning(f"Error occured in Pokemon Details Button: {e}")
 
 def attack_details_window(attacks):
-    global icon_path
     window = QDialog()
     window.setWindowIcon(QIcon(str(icon_path)))
     layout = QVBoxLayout()
@@ -3453,7 +3450,6 @@ def attack_details_window(attacks):
     window.exec()
 
 def remember_attack_details_window(id, attack_set, all_attacks):
-    global icon_path
     window = QDialog()
     window.setWindowIcon(QIcon(str(icon_path)))
     layout = QHBoxLayout()
@@ -4358,7 +4354,7 @@ if database_complete and mainpokemon_empty is False:
         global life_bar_injected
         life_bar_injected = False
     def inject_life_bar(web_content, context):
-        global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, icon_path
+        global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp
         global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
         global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds, myseconds, view_main_front, styling_in_reviewer
 
@@ -4749,7 +4745,7 @@ if database_complete and mainpokemon_empty is False:
 
     def update_life_bar(reviewer, card, ease):
         global hp, name, id, frontdefault, battle_status, user_path_sprites, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
-        global mainpokemon_level, icon_path, empty_icon_path, seconds, myseconds, view_main_front, pokeball, styling_in_reviewer
+        global mainpokemon_level, empty_icon_path, seconds, myseconds, view_main_front, pokeball, styling_in_reviewer
         pokeball = check_pokecoll_in_list(search_pokedex(name.lower(), "num"))
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
@@ -5283,7 +5279,7 @@ class TestWindow(QWidget):
         #self.update()
     def init_ui(self):
         global test
-        global addon_dir, icon_path
+        global addon_dir
         layout = QVBoxLayout()
         # Main window layout
         global addon_dir
@@ -6731,7 +6727,6 @@ class ItemWindow(QWidget):
         self.initUI()
 
     def initUI(self):
-        global icon_path
         self.hp_heal_items = {
             'potion': 20,
             'sweet-heart': 20,
@@ -7056,7 +7051,7 @@ class AchievementWindow(QWidget):
         self.initUI()
 
     def initUI(self):
-        global addon_dir, icon_path
+        global addon_dir
         self.setWindowIcon(QIcon(str(icon_path)))
         self.setWindowTitle("Achievements")
         self.layout = QVBoxLayout()  # Main layout is now a QVBoxLayout
@@ -7183,7 +7178,6 @@ achievement_bag = AchievementWindow()
 class Version_Dialog(QDialog):
     def __init__(self):
         super().__init__()
-        global icon_path
         self.setWindowTitle("Ankimon Notifications")
         self.setGeometry(100, 100, 600, 400)
         layout = QVBoxLayout()
