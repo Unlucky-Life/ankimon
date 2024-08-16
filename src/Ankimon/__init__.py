@@ -1886,7 +1886,6 @@ def search_pokedex_by_id(pokemon_id):
 
 def get_pokemon_diff_lang_name(pokemon_id):
     global language
-    global pokenames_lang_path
     with open(pokenames_lang_path, mode='r', encoding='utf-8') as file:
         reader = csv.reader(file)
         next(reader)  # Skip the header row if there is one
