@@ -5848,7 +5848,7 @@ test_window = TestWindow()
 
 #Test window
 def rate_this_addon():
-    global rate_this, rate_path
+    global rate_this
     # Load rate data
     with open(rate_path, 'r') as file:
         rate_data = json.load(file)
