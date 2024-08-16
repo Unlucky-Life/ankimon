@@ -5627,7 +5627,7 @@ class TestWindow(QWidget):
 
     def pokemon_display_badge(self, badge_number):
         try:
-            global pokemon_encounter, badges_path, badges
+            global pokemon_encounter, badges
             bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
             badge_path = addon_dir / "user_files" / "sprites" / "badges" / f"{badge_number}.png"
 
