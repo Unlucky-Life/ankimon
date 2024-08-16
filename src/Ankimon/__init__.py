@@ -4062,7 +4062,7 @@ class Downloader(QObject):
         super().__init__(parent)
         self.addon_dir = Path(addon_dir)
         self.pokedex = []
-        global user_path_data, pkmnimgfolder, sound_list, items_list
+        global pkmnimgfolder, sound_list, items_list
         self.items_destination_to = user_path_sprites / "items"
         self.badges_destination_to = user_path_sprites / "badges"
         self.sounds_destination_to = user_path_sprites / "sounds"
