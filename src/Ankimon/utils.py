@@ -1,5 +1,6 @@
 import os
 import requests
+import json
 
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
