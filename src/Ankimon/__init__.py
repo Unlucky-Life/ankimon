@@ -520,7 +520,7 @@ except (ImportError, ModuleNotFoundError):
 
 
 def play_effect_sound(sound_type):
-    global effect_sound_timer, sound_effects, hurt_normal_sound_path, hurt_noteff_sound_path, hurt_supereff_sound_path, ownhplow_sound_path, hpheal_sound_path, fainted_sound_path
+    global effect_sound_timer, sound_effects
     
     if sound_effects is True:
         audio_path = None
