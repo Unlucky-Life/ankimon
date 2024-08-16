@@ -860,7 +860,6 @@ if database_complete:
 
 
 def random_battle_scene():
-    global battlescene_path
     battle_scenes = {}
     for index, filename in enumerate(os.listdir(battlescene_path)):
         if filename.endswith(".png"):
@@ -5310,7 +5309,7 @@ class TestWindow(QWidget):
         global caught
         global mainpkmn
         global mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_ability, mainpokemon_type, mainpokemon_xp, mainpokemon_stats, mainpokemon_attacks, mainpokemon_base_experience, mainpokemon_ev, mainpokemon_iv, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate
-        global battlescene_path, battlescene_path_without_dialog, battlescene_file, battle_ui_path
+        global battlescene_path_without_dialog, battlescene_file, battle_ui_path
         global attack_counter, merged_pixmap, window
         attack_counter = 0
         caught = 0
