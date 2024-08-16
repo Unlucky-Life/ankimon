@@ -1762,7 +1762,6 @@ def catch_pokemon(nickname):
             showInfo("You have already caught the pokemon. Please close this window!") # Display a message when the Pokémon is caught
 
 def get_random_starter():
-    global starters_path    # event if pokemon
     category = "Starter"
     try:
         # Reload the JSON data from the file
