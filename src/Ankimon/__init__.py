@@ -50,7 +50,8 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
     calc_experience, get_multiplier_stats, get_multiplier_acc_eva, bP_none_moves, \
     calc_exp_gain, \
     read_csv_file, read_descriptions_csv
-from .utils import check_folders_exist, check_file_exists, test_online_connectivity
+from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
+    addon_config_editor_will_display_json
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -323,36 +324,6 @@ check_data = CheckPokemonData(mainpokemon_path, mypokemon_path, config)
 
 gui_hooks.addon_config_editor_will_save_json.append(check_data.modify_json_configuration_on_save)
 gui_hooks.sync_did_finish.append(check_data.sync_on_anki_close)
-
-#dont show all mainpokemon and mypokemon information in config
-
-# Define the hook function
-def addon_config_editor_will_display_json(text: str) -> str:
-    """
-    This function modifies the JSON configuration text before displaying it to the user.
-    It replaces the values for the keys "pokemon_collection" and "mainpokemon".
-    
-    Args:
-        text (str): The JSON configuration text.
-    
-    Returns:
-        str: The modified JSON configuration text.
-    """
-    try:
-        # Parse the JSON text
-        config = json.loads(text)
-        
-        if "pokemon_collection" in config:
-            del config["pokemon_collection"]
-        if "mainpokemon" in config:
-            del config["mainpokemon"]
-        
-        # Convert back to JSON string
-        modified_text = json.dumps(config, indent=4)
-        return modified_text
-    except json.JSONDecodeError:
-        # Handle JSON parsing error
-        return text
     
 #On Save on Config, accept new config and add pokemon collection and mainpokemon to it
 gui_hooks.addon_config_editor_will_save_json.append(check_data.modify_json_configuration_on_save)

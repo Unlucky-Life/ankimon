@@ -20,3 +20,33 @@ def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life
     except:
         # Connection error means no internet connectivity
         return False
+    
+
+# Define the hook function
+def addon_config_editor_will_display_json(text: str) -> str:
+    """
+    This function modifies the JSON configuration text before displaying it to the user.
+    It replaces the values for the keys "pokemon_collection" and "mainpokemon".
+    
+    Args:
+        text (str): The JSON configuration text.
+    
+    Returns:
+        str: The modified JSON configuration text.
+    """
+    try:
+        # Parse the JSON text
+        config = json.loads(text)
+        
+        #dont show all mainpokemon and mypokemon information in config
+        if "pokemon_collection" in config:
+            del config["pokemon_collection"]
+        if "mainpokemon" in config:
+            del config["mainpokemon"]
+        
+        # Convert back to JSON string
+        modified_text = json.dumps(config, indent=4)
+        return modified_text
+    except json.JSONDecodeError:
+        # Handle JSON parsing error
+        return text
