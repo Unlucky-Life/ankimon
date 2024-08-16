@@ -107,7 +107,7 @@ if database_complete:
     owned_pokemon_ids = {}
 
     def extract_ids_from_file():
-        global owned_pokemon_ids, mypokemon_path
+        global owned_pokemon_ids
         filename = mypokemon_path
         with open(filename, 'r') as file:
             data = json.load(file)
@@ -1738,7 +1738,7 @@ def cancel_evolution(pkmn_name):
 
 def catch_pokemon(nickname):
     global pokemon_hp, name, ability, enemy_attacks, type, stats, base_experience, level, growth_rate, gender, id, iv, pop_up_dialog_message_on_defeat
-    global mypokemon_path, caught
+    global caught
     caught += 1
     if caught == 1:
         name = name.capitalize()
@@ -3806,7 +3806,6 @@ def find_pokemon_by_id(pokemon_id):
         showInfo(f"Error decoding JSON: {e}")
 
 def trade_pokemon(old_pokemon_name, pokemon_trade, position):
-    global mypokemon_path
     try:
         # Load the current list of Pokemon
         with open(mypokemon_path, 'r') as file:
@@ -3894,7 +3893,6 @@ def PokemonTradeIn(number_code, old_pokemon_name, position):
         #showInfo(f"{pokemon_trade}")
 
         #PokemonFree(old_pokemon_name)
-        #global mypokemon_path
         #with open(mypokemon_path, 'r') as file:
         #    pokemon_list = json.load(file)
 
@@ -3913,7 +3911,6 @@ def PokemonTradeIn(number_code, old_pokemon_name, position):
 
 
 def PokemonFree(position, name):
-    global mypokemon_path
     global mainpokemon_path
 
     # Confirmation dialog
@@ -4823,7 +4820,7 @@ if database_complete and mainpokemon_empty is False:
     gui_hooks.reviewer_did_answer_card.append(update_life_bar)
 
 def choose_pokemon(starter_name):
-    global mypokemon_path, mainpokemon_path
+    global mainpokemon_path
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
     name = search_pokedex(starter_name, "name")
@@ -4899,7 +4896,7 @@ def choose_pokemon(starter_name):
     starter_window.display_chosen_starter_pokemon(starter_name)
 
 def save_outside_pokemon(pokemon_name, pokemon_id):
-    global mypokemon_path, mainpokemon_path
+    global mainpokemon_path
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
     name = search_pokedex_by_id(pokemon_id)
@@ -5061,7 +5058,6 @@ def export_all_pkmn_showdown():
     info_label = QLabel(info)
 
     # Get all pokemon data
-    global mypokemon_path
     pokemon_info_complete_text = ""
     try:
         with (open(mypokemon_path, "r") as json_file):
@@ -5153,7 +5149,6 @@ def flex_pokemon_collection():
     info_label = QLabel(info)
 
 # Get all pokemon data
-    global mypokemon_path
     pokemon_info_complete_text = ""
     try:
         with (open(mypokemon_path, "r") as json_file):
@@ -6509,7 +6504,6 @@ class Pokedex_Widget(QWidget):
         self.initUI()
 
     def read_poke_coll(self):
-        global mypokemon_path
         with (open(mypokemon_path, "r") as json_file):
             self.captured_pokemon_data = json.load(json_file)
 
