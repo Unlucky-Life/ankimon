@@ -56,8 +56,6 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
 
-# Find current directory
-currdirname = addon_dir
 
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
@@ -3590,7 +3588,7 @@ def move_category_path(category):
 
 def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
     # Display the Pokémon image
-    global mainpkmn, addon_dir, currdirname, mainpokemon_path
+    global mainpkmn, addon_dir, mainpokemon_path
     mainpkmn = 1
     # Capitalize the first letter of the Pokémon's name
     capitalized_name = name.capitalize()
