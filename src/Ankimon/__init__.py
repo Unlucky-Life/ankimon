@@ -764,7 +764,6 @@ def pick_random_gender(pokemon_name):
     Returns:
         str: "M" for male, "F" for female, or "Genderless" for genderless Pokémon.
     """
-    global pokedex_path
     with open(pokedex_path, 'r', encoding="utf-8") as file:
         pokedex_data = json.load(file)
     pokemon_name = pokemon_name.lower()  # Normalize Pokémon name to lowercase
@@ -1849,7 +1848,6 @@ def calculate_hp(base_stat_hp, level, ev, iv):
     return hp
 
 def get_mainpokemon_evo(pokemon_name):
-    global pokedex_path
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
             if pokemon_name not in pokedex_data:
@@ -1859,7 +1857,6 @@ def get_mainpokemon_evo(pokemon_name):
             return evolutions
 
 def search_pokedex(pokemon_name,variable):
-    global pokedex_path
     pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
@@ -1871,7 +1868,6 @@ def search_pokedex(pokemon_name,variable):
                 return []
 
 def search_pokedex_by_name_for_id(pokemon_name, variable):
-    global pokedex_path
     pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
@@ -1883,7 +1879,6 @@ def search_pokedex_by_name_for_id(pokemon_name, variable):
                 return None
 
 def search_pokedex_by_id(pokemon_id):
-    global pokedex_path
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file) 
             for entry_name, attributes in pokedex_data.items():
@@ -3780,7 +3775,6 @@ def find_move_by_num(move_num):
 
 
 def find_pokemon_by_id(pokemon_id):
-    global pokedex_path
     try:
         # Open and load the pokedex file
         with open(pokedex_path, 'r', encoding='utf-8') as json_file:
