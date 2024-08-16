@@ -7,6 +7,8 @@ user_path = addon_dir / "user_files"
 user_path_data = addon_dir / "user_files" / "data_files"
 user_path_sprites = addon_dir / "user_files" / "sprites"
 
+font_path = addon_dir / "addon_files"
+
 # Assign Pokemon Image folder directory name
 pkmnimgfolder = addon_dir / "user_files" / "sprites"
 backdefault = addon_dir / "user_files" / "sprites" / "back_default"

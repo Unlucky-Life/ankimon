@@ -80,7 +80,6 @@ with open(sound_list_path, 'r') as json_file:
 profilename = mw.pm.name
 #profilefolder = Path(mw.pm.profileFolder())
 #mediafolder = Path(mw.col.media.dir())
-font_path = addon_dir / "addon_files"
 
 mainpkmn = 0
 mainpokemon_hp = 100
