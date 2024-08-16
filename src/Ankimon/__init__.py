@@ -4062,7 +4062,7 @@ class Downloader(QObject):
         super().__init__(parent)
         self.addon_dir = Path(addon_dir)
         self.pokedex = []
-        global user_path_data, user_path_sprites, pkmnimgfolder, sound_list, items_list
+        global user_path_data, pkmnimgfolder, sound_list, items_list
         self.items_destination_to = user_path_sprites / "items"
         self.badges_destination_to = user_path_sprites / "badges"
         self.sounds_destination_to = user_path_sprites / "sounds"
@@ -4162,7 +4162,7 @@ class Downloader(QObject):
 
     def download_pokemon_data(self):
         try:
-            global user_path_sprites, pkmnimgfolder, pokeapi_db_path
+            global pkmnimgfolder, pokeapi_db_path
             num_files = len(self.urls)
             self.downloading_data_txt.emit()
             for i, url in enumerate(self.urls, start=1):
@@ -4331,7 +4331,7 @@ if database_complete and mainpokemon_empty is False:
         life_bar_injected = False
     def inject_life_bar(web_content, context):
         global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp
-        global user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
+        global mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
         global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds, myseconds, view_main_front, styling_in_reviewer
 
         experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
@@ -4720,7 +4720,7 @@ if database_complete and mainpokemon_empty is False:
         return web_content
 
     def update_life_bar(reviewer, card, ease):
-        global hp, name, id, battle_status, user_path_sprites, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
+        global hp, name, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
         global mainpokemon_level, empty_icon_path, seconds, myseconds, view_main_front, pokeball, styling_in_reviewer
         pokeball = check_pokecoll_in_list(search_pokedex(name.lower(), "num"))
         if reviewer_image_gif == False:
@@ -5571,7 +5571,7 @@ class TestWindow(QWidget):
         return image_label
 
     def pokemon_display_item(self, item):
-        global pokemon_encounter, user_path_sprites
+        global pokemon_encounter
         bckgimage_path =  addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         item_path = user_path_sprites / "items" / f"{item}.png"
 
