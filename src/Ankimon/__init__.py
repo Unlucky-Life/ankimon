@@ -1985,7 +1985,7 @@ if database_complete:
     battlescene_file = random_battle_scene()
 
 def get_effectiveness(move_type):
-    global mainpokemon_type, effectiveness_chart_file_path, type
+    global mainpokemon_type, type
     move_type = move_type.capitalize()
     attacking_types = []
     attacking_types.append(move_type)
