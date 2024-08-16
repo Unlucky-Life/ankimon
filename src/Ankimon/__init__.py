@@ -43,7 +43,7 @@ from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     terms_text, rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
                     thankyou_message_text, dont_show_this_button_text
 
-from .const import gen_ids
+from .const import gen_ids, status_colors_html, status_colors_label
 from .business import special_pokemon_names_for_min_level, get_image_as_base64, \
     split_string_by_length, split_japanese_string_by_length, capitalize_each_word, \
     resize_pixmap_img, effectiveness_text, type_colors, \
@@ -2306,21 +2306,9 @@ def on_review_card(*args):
 
 
 def create_status_label(status_name):
-    #to create status symbols
-    # Define the background and outline colors for each status
-    status_colors = {
-        "burned": {"background": "#FF4500", "outline": "#C13500"},
-        "frozen": {"background": "#ADD8E6", "outline": "#91B0C0"},
-        "paralysis": {"background": "#FFFF00", "outline": "#CCCC00"},
-        "poisoned": {"background": "#A020F0", "outline": "#8000C0"},
-        "asleep": {"background": "#FFC0CB", "outline": "#D895A1"},
-        "confusion": {"background": "#FFA500", "outline": "#CC8400"},
-        "flinching": {"background": "#808080", "outline": "#666666"},
-        "fainted": {"background": "#000000", "outline": "#000000", "text_color": "#FFFFFF"},
-    }
 
     # Get the colors for the given status name
-    colors = status_colors.get(status_name.lower())
+    colors = status_colors_label.get(status_name.lower())
 
     # If the status name is valid, create and style the QLabel
     if colors:
@@ -2344,21 +2332,9 @@ def create_status_label(status_name):
     return label
 def create_status_html(status_name):
     global show_mainpkmn_in_reviewer, hp_bar_thickness, xp_bar_spacer
-    status_colors = {
-        "brn": {"background": "#FF4500", "outline": "#C13500", "name": "Burned"},
-        "frz": {"background": "#ADD8E6", "outline": "#91B0C0", "name": "Frozen"},
-        "par": {"background": "#FFFF00", "outline": "#CCCC00", "name": "Paralysis"},
-        "psn": {"background": "#A020F0", "outline": "#8000C0", "name": "Poisoned"},
-        "tox": {"background": "#A545FF", "outline": "#842BFF", "name": "Badly Poisoned"},
-        "slp": {"background": "#FFC0CB", "outline": "#D895A1", "name": "Asleep"},
-        "confusion": {"background": "#FFA500", "outline": "#CC8400", "name": "Confusion"},
-        "flinching": {"background": "#808080", "outline": "#666666", "name": "Flinching"},
-        "fainted": {"background": "#000000", "outline": "#000000", "text_color": "#FFFFFF", "name": "Fainted"},
-        "fighting": {"background": "#C03028", "outline": "#7D1F1A", "name": "Fighting"},  # Example colors for Fighting
-    }
 
     # Get the colors for the given status name
-    colors = status_colors.get(status_name.lower())
+    colors = status_colors_html.get(status_name.lower())
 
     # If the status name is valid, create the HTML with inline CSS
     if colors:
