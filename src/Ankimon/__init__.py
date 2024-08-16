@@ -1114,7 +1114,7 @@ if database_complete:
             # Set the layout for the dialog
 
 def kill_pokemon():
-    global level, hp, name, image_url, mainpokemon_xp, mainpokemon_base_experience, mainpokemon_name, mainpokemon_level, mainpokemon_path, mainpokemon_growth_rate, mainpokemon_hp, ev_yield
+    global level, hp, name, image_url, mainpokemon_xp, mainpokemon_base_experience, mainpokemon_name, mainpokemon_level, mainpokemon_growth_rate, mainpokemon_hp, ev_yield
     global pkmn_window
     name = name.capitalize()
     exp = int(calc_experience(mainpokemon_base_experience, level))
@@ -1540,7 +1540,6 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
     return mainpokemon_level
 
 def evolve_pokemon(pkmn_name):
-    global mainpokemon_path
     global achievements
     try:
         evoName = search_pokedex(pkmn_name.lower(), "evos")
@@ -3502,7 +3501,6 @@ def remember_attack_details_window(id, attack_set, all_attacks):
     window.exec()
 
 def remember_attack(id, attacks, new_attack):
-    global mainpokemon_path
     if not mainpokemon_path.is_file():
         showWarning("Missing Mainpokemon Data !")
         return
@@ -3572,7 +3570,7 @@ def move_category_path(category):
 
 def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
     # Display the Pokémon image
-    global mainpkmn, mainpokemon_path
+    global mainpkmn
     mainpkmn = 1
     # Capitalize the first letter of the Pokémon's name
     capitalized_name = name.capitalize()
@@ -3672,7 +3670,6 @@ def PokemonDetailsStats(detail_stats, growth_rate, level):
     return CompleteTable_layout
 
 def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
-    global mainpokemon_path
      # Load the data from the file
     with open(mainpokemon_path, 'r') as file:
         pokemon_data = json.load(file)
@@ -3911,8 +3908,6 @@ def PokemonTradeIn(number_code, old_pokemon_name, position):
 
 
 def PokemonFree(position, name):
-    global mainpokemon_path
-
     # Confirmation dialog
     reply = QMessageBox.question(None, "Confirm Release", 
                                  f"Are you sure you want to release {name}?", 
@@ -4820,7 +4815,6 @@ if database_complete and mainpokemon_empty is False:
     gui_hooks.reviewer_did_answer_card.append(update_life_bar)
 
 def choose_pokemon(starter_name):
-    global mainpokemon_path
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
     name = search_pokedex(starter_name, "name")
@@ -4896,7 +4890,6 @@ def choose_pokemon(starter_name):
     starter_window.display_chosen_starter_pokemon(starter_name)
 
 def save_outside_pokemon(pokemon_name, pokemon_id):
-    global mainpokemon_path
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
     name = search_pokedex_by_id(pokemon_id)
@@ -5316,7 +5309,7 @@ class TestWindow(QWidget):
         global caught_pokemon, message_box_text
         global pkmnimgfolder, backdefault
         global caught
-        global mainpkmn, mainpokemon_path
+        global mainpkmn
         global mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_ability, mainpokemon_type, mainpokemon_xp, mainpokemon_stats, mainpokemon_attacks, mainpokemon_base_experience, mainpokemon_ev, mainpokemon_iv, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate
         global battlescene_path, battlescene_path_without_dialog, battlescene_file, battle_ui_path
         global attack_counter, merged_pixmap, window
