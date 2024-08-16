@@ -550,7 +550,7 @@ def play_effect_sound(sound_type):
 def play_sound():
     global sounds
     if sounds is True:
-        global id, addon_dir
+        global id
         #id = search_pokedex(name.lower(), "id")
         file_name = f"{id}.ogg"
         #file_name = f"{name.lower()}.mp3"
@@ -1127,7 +1127,7 @@ def kill_pokemon():
 caught = 0
 
 def display_dead_pokemon():
-    global pokemon_hp, name, id, level, caught_pokemon, pkmnimgfolder, frontdefault, addon_dir, caught
+    global pokemon_hp, name, id, level, caught_pokemon, pkmnimgfolder, frontdefault, caught
     # Create the dialog
     w_dead_pokemon = QDialog(mw)
     w_dead_pokemon.setWindowTitle(f"Would you want to kill or catch the wild {name} ?")
@@ -3572,7 +3572,7 @@ def move_category_path(category):
 
 def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
     # Display the Pokémon image
-    global mainpkmn, addon_dir, mainpokemon_path
+    global mainpkmn, mainpokemon_path
     mainpkmn = 1
     # Capitalize the first letter of the Pokémon's name
     capitalized_name = name.capitalize()
@@ -4339,7 +4339,7 @@ if database_complete and mainpokemon_empty is False:
         life_bar_injected = False
     def inject_life_bar(web_content, context):
         global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp
-        global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
+        global frontdefault, backdefault, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
         global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds, myseconds, view_main_front, styling_in_reviewer
 
         experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
@@ -4823,7 +4823,7 @@ if database_complete and mainpokemon_empty is False:
     gui_hooks.reviewer_did_answer_card.append(update_life_bar)
 
 def choose_pokemon(starter_name):
-    global mypokemon_path, addon_dir, mainpokemon_path
+    global mypokemon_path, mainpokemon_path
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
     name = search_pokedex(starter_name, "name")
@@ -4899,7 +4899,7 @@ def choose_pokemon(starter_name):
     starter_window.display_chosen_starter_pokemon(starter_name)
 
 def save_outside_pokemon(pokemon_name, pokemon_id):
-    global mypokemon_path, addon_dir, mainpokemon_path
+    global mypokemon_path, mainpokemon_path
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
     name = search_pokedex_by_id(pokemon_id)
@@ -5319,7 +5319,7 @@ class TestWindow(QWidget):
         global pokemon_encounter
         global hp, name, id, stats, level, max_hp, base_experience, ev, iv, gender
         global caught_pokemon, message_box_text
-        global pkmnimgfolder, backdefault, addon_dir
+        global pkmnimgfolder, backdefault
         global caught
         global mainpkmn, mainpokemon_path
         global mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_ability, mainpokemon_type, mainpokemon_xp, mainpokemon_stats, mainpokemon_attacks, mainpokemon_base_experience, mainpokemon_ev, mainpokemon_iv, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate
@@ -5652,7 +5652,7 @@ class TestWindow(QWidget):
 
     def pokemon_display_badge(self, badge_number):
         try:
-            global pokemon_encounter, addon_dir, badges_path, badges
+            global pokemon_encounter, badges_path, badges
             bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
             badge_path = addon_dir / "user_files" / "sprites" / "badges" / f"{badge_number}.png"
 
@@ -5713,7 +5713,7 @@ class TestWindow(QWidget):
             showWarning(f"An error occured in badges window {e}")
 
     def pokemon_display_dead_pokemon(self):
-        global pokemon_hp, name, id, level, type, caught_pokemon, pkmnimgfolder, frontdefault, addon_dir, caught, pokedex_image_path
+        global pokemon_hp, name, id, level, type, caught_pokemon, pkmnimgfolder, frontdefault, caught, pokedex_image_path
         # Create the dialog
         lang_name = get_pokemon_diff_lang_name(int(id))
         window_title = (f"Would you want let the  wild {lang_name} free or catch the wild {lang_name} ?")
