@@ -50,22 +50,12 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
     calc_experience, get_multiplier_stats, get_multiplier_acc_eva, bP_none_moves, \
     calc_exp_gain, \
     read_csv_file, read_descriptions_csv
+from .utils import check_folders_exist, check_file_exists
     
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
-
-
-def check_folders_exist(parent_directory, folder):
-    folder_path = os.path.join(parent_directory, folder)
-    return os.path.isdir(folder_path)
-
-def check_file_exists(folder, filename):
-    file_path = os.path.join(folder, filename)
-    return os.path.isfile(file_path)
-
-
 
 items_list = []
 with open(items_list_path, 'r') as file:
