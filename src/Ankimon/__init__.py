@@ -1898,7 +1898,6 @@ def get_pokemon_diff_lang_name(pokemon_id):
 
 def get_pokemon_descriptions(species_id):
     global language
-    global pokedesc_lang_path
     descriptions = []  # Initialize an empty list to store matching descriptions
     with open(pokedesc_lang_path, mode='r', encoding='utf-8') as csv_file:
         csv_reader = csv.DictReader(csv_file)
