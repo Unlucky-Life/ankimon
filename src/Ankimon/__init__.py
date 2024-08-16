@@ -1127,7 +1127,7 @@ def kill_pokemon():
 caught = 0
 
 def display_dead_pokemon():
-    global pokemon_hp, name, id, level, caught_pokemon, pkmnimgfolder, caught
+    global pokemon_hp, name, id, level, caught_pokemon, caught
     # Create the dialog
     w_dead_pokemon = QDialog(mw)
     w_dead_pokemon.setWindowTitle(f"Would you want to kill or catch the wild {name} ?")
@@ -4062,7 +4062,7 @@ class Downloader(QObject):
         super().__init__(parent)
         self.addon_dir = Path(addon_dir)
         self.pokedex = []
-        global pkmnimgfolder, sound_list, items_list
+        global sound_list, items_list
         self.items_destination_to = user_path_sprites / "items"
         self.badges_destination_to = user_path_sprites / "badges"
         self.sounds_destination_to = user_path_sprites / "sounds"
@@ -4162,7 +4162,7 @@ class Downloader(QObject):
 
     def download_pokemon_data(self):
         try:
-            global pkmnimgfolder, pokeapi_db_path
+            global pokeapi_db_path
             num_files = len(self.urls)
             self.downloading_data_txt.emit()
             for i, url in enumerate(self.urls, start=1):
@@ -5307,7 +5307,6 @@ class TestWindow(QWidget):
         global pokemon_encounter
         global hp, name, id, stats, level, max_hp, base_experience, ev, iv, gender
         global caught_pokemon, message_box_text
-        global pkmnimgfolder
         global caught
         global mainpkmn
         global mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_ability, mainpokemon_type, mainpokemon_xp, mainpokemon_stats, mainpokemon_attacks, mainpokemon_base_experience, mainpokemon_ev, mainpokemon_iv, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate
@@ -5700,7 +5699,7 @@ class TestWindow(QWidget):
             showWarning(f"An error occured in badges window {e}")
 
     def pokemon_display_dead_pokemon(self):
-        global pokemon_hp, name, id, level, type, caught_pokemon, pkmnimgfolder, caught, pokedex_image_path
+        global pokemon_hp, name, id, level, type, caught_pokemon, caught, pokedex_image_path
         # Create the dialog
         lang_name = get_pokemon_diff_lang_name(int(id))
         window_title = (f"Would you want let the  wild {lang_name} free or catch the wild {lang_name} ?")
@@ -6340,7 +6339,7 @@ class EvoWindow(QWidget):
         self.show()
 
     def pokemon_display_evo_pokemon(self, pkmn_name):
-        global pokemon_hp, name, id, level, caught_pokemon, pkmnimgfolder, caught, evolve_image_path
+        global pokemon_hp, name, id, level, caught_pokemon, caught, evolve_image_path
         global mainpokemon_name, mainpokemon_id
         layout_pokemon = QHBoxLayout()
         # Update mainpokemon_evolution and handle evolution logic
