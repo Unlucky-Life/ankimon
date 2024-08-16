@@ -880,7 +880,6 @@ if berries_sprites != False:
 
 if item_sprites != False:
     def random_item():
-        global items_path
         # Initialize an empty list to store the file names
         item_names = []
         # Iterate over each file in the directory
@@ -906,7 +905,6 @@ if item_sprites != False:
         return item_name
 
     def random_fossil():
-        global items_path
         fossil_names = []
         # Iterate over each file in the directory
         for file in os.listdir(items_path):
