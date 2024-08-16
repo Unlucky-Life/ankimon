@@ -3140,7 +3140,7 @@ def rename_pkmn(nickname, pkmn_name, position):
         showWarning(f"An error occured: {e}")
 
 def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position):
-    global type_style_file, language, gif_in_collection
+    global language, gif_in_collection
     # Create the dialog
     try:
         lang_name = get_pokemon_diff_lang_name(int(id)).capitalize()
