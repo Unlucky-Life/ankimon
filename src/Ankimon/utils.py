@@ -1,3 +1,5 @@
+import os
+
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
     return os.path.isdir(folder_path)
