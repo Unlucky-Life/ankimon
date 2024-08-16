@@ -1204,6 +1204,7 @@ def display_dead_pokemon():
 
 def get_pokemon_by_category(category_name):
     # Reload the JSON data from the file
+    # TODO: not declared
     global all_species_path
     with open(all_species_path, 'r') as file:
         pokemon_data = json.load(file)
