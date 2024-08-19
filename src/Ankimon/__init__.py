@@ -36,111 +36,39 @@ from PyQt6.QtWebEngineWidgets import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
                              QPushButton, QVBoxLayout, QWidget)
-
+from .resources import *
 from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     attack_details_window_template, attack_details_window_template_end, \
                     remember_attack_details_window_template, remember_attack_details_window_template_end, \
                     terms_text, rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
                     thankyou_message_text, dont_show_this_button_text
 
-from .const import gen_ids
+from .const import gen_ids, status_colors_html, status_colors_label
 from .business import special_pokemon_names_for_min_level, get_image_as_base64, \
     split_string_by_length, split_japanese_string_by_length, capitalize_each_word, \
     resize_pixmap_img, effectiveness_text, type_colors, \
     calc_experience, get_multiplier_stats, get_multiplier_acc_eva, bP_none_moves, \
     calc_exp_gain, \
     read_csv_file, read_descriptions_csv
+from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
+    addon_config_editor_will_display_json
     
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
 
-# Find current directory
-addon_dir = Path(__file__).parents[0]
-currdirname = addon_dir
-
-def check_folders_exist(parent_directory, folder):
-    folder_path = os.path.join(parent_directory, folder)
-    return os.path.isdir(folder_path)
-
-def check_file_exists(folder, filename):
-    file_path = os.path.join(folder, filename)
-    return os.path.isfile(file_path)
-
-#safe route for updates
-user_path = addon_dir / "user_files"
-user_path_data = addon_dir / "user_files" / "data_files"
-user_path_sprites = addon_dir / "user_files" / "sprites"
-
-# Assign Pokemon Image folder directory name
-pkmnimgfolder = addon_dir / "user_files" / "sprites"
-backdefault = addon_dir / "user_files" / "sprites" / "back_default"
-frontdefault = addon_dir / "user_files" / "sprites" / "front_default"
-#Assign saved Pokemon Directory
-mypokemon_path = addon_dir / "user_files" / "mypokemon.json"
-mainpokemon_path = addon_dir / "user_files" / "mainpokemon.json"
-battlescene_path = addon_dir / "addon_sprites" / "battle_scenes"
-battlescene_path_without_dialog = addon_dir / "addon_sprites" / "battle_scenes_without_dialog"
-battle_ui_path = addon_dir / "pkmnbattlescene - UI_transp"
-type_style_file = addon_dir / "addon_files" / "types.json"
-next_lvl_file_path = addon_dir / "addon_files" / "ExpPokemonAddon.csv"
-berries_path = addon_dir / "user_files" / "sprites" / "berries"
-background_dialog_image_path  = addon_dir / "background_dialog_image.png"
-pokedex_image_path = addon_dir / "addon_sprites" / "pokedex_template.jpg"
-evolve_image_path = addon_dir / "addon_sprites" / "evo_temp.jpg"
-learnset_path = addon_dir / "user_files" / "data_files" / "learnsets.json"
-pokedex_path = addon_dir / "user_files" / "data_files" / "pokedex.json"
-moves_file_path = addon_dir / "user_files" / "data_files" / "moves.json"
-items_path = addon_dir / "user_files" / "sprites" / "items"
-badges_path = addon_dir / "user_files" / "sprites" / "badges"
-itembag_path = addon_dir / "user_files" / "items.json"
-badgebag_path = addon_dir / "user_files" / "badges.json"
-pokenames_lang_path = addon_dir / "user_files" / "data_files" / "pokemon_species_names.csv"
-pokedesc_lang_path = addon_dir / "user_files" / "data_files" / "pokemon_species_flavor_text.csv"
-pokeapi_db_path = user_path_data / "pokeapi_db.json"
-starters_path = addon_dir / "addon_files" / "starters.json"
-eff_chart_html_path = addon_dir / "addon_files" / "eff_chart_html.html"
-effectiveness_chart_file_path = addon_dir / "addon_files" / "eff_chart.json"
-table_gen_id_html_path = addon_dir / "addon_files" / "table_gen_id.html"
-icon_path = addon_dir / "addon_files" / "pokeball.png"
-sound_list_path = addon_dir / "addon_files" / "sound_list.json"
-badges_list_path = addon_dir / "addon_files" / "badges.json"
-items_list_path = addon_dir / "addon_files" / "items.json"
-rate_path = addon_dir / "user_files" / "rate_this.json"
-csv_file_items = addon_dir / "user_files" / "data_files" / "item_names.csv"
-csv_file_descriptions = addon_dir / "user_files" / "data_files" / "item_flavor_text.csv"
-
-
 items_list = []
 with open(items_list_path, 'r') as file:
     items_list = json.load(file)
 
-
-
-#effect sounds paths
-hurt_normal_sound_path = addon_dir / "addon_sprites" / "sounds" / "HurtNormal.mp3"
-hurt_noteff_sound_path = addon_dir / "addon_sprites" / "sounds" / "HurtNotEffective.mp3"
-hurt_supereff_sound_path = addon_dir / "addon_sprites" / "sounds" / "HurtSuper.mp3"
-ownhplow_sound_path = addon_dir / "addon_sprites" / "sounds" / "OwnHpLow.mp3"
-hpheal_sound_path = addon_dir / "addon_sprites" / "sounds" / "HpHeal.mp3"
-fainted_sound_path = addon_dir / "addon_sprites" / "sounds" / "Fainted.mp3"
-
 with open(sound_list_path, 'r') as json_file:
     sound_list = json.load(json_file)
-
-#pokemon species id files
-pokemon_species_normal_path = addon_dir / "user_files" / "pkmn_data" / "normal.json"
-pokemon_species_legendary_path = addon_dir / "user_files" / "pkmn_data" / "legendary.json"
-pokemon_species_ultra_path = addon_dir / "user_files" / "pkmn_data" / "ultra.json"
-pokemon_species_mythical_path = addon_dir / "user_files" / "pkmn_data" / "mythical.json"
-pokemon_species_baby_path = addon_dir / "user_files" / "pkmn_data" / "baby.json"
 
 # Get the profile folder
 profilename = mw.pm.name
 #profilefolder = Path(mw.pm.profileFolder())
 #mediafolder = Path(mw.col.media.dir())
-font_path = addon_dir / "addon_files"
 
 mainpkmn = 0
 mainpokemon_hp = 100
@@ -157,8 +85,6 @@ front_default_gif = check_folders_exist(pkmnimgfolder, "front_default_gif")
 item_sprites = check_folders_exist(pkmnimgfolder, "items")
 badges_sprites = check_folders_exist(pkmnimgfolder, "badges")
 berries_sprites = check_folders_exist(addon_dir, "berries")
-poke_api_data = check_file_exists(user_path_data, "pokeapi_db.json")
-pokedex_data = check_file_exists(user_path_data, "pokedex.json")
 learnsets_data = check_file_exists(user_path_data, "learnsets.json")
 poke_api_data = check_file_exists(user_path_data, "pokeapi_db.json")
 pokedex_data = check_file_exists(user_path_data, "pokedex.json")
@@ -172,7 +98,7 @@ if database_complete:
     owned_pokemon_ids = {}
 
     def extract_ids_from_file():
-        global owned_pokemon_ids, mypokemon_path
+        global owned_pokemon_ids
         filename = mypokemon_path
         with open(filename, 'r') as file:
             data = json.load(file)
@@ -398,52 +324,11 @@ check_data = CheckPokemonData(mainpokemon_path, mypokemon_path, config)
 
 gui_hooks.addon_config_editor_will_save_json.append(check_data.modify_json_configuration_on_save)
 gui_hooks.sync_did_finish.append(check_data.sync_on_anki_close)
-
-#dont show all mainpokemon and mypokemon information in config
-
-# Define the hook function
-def addon_config_editor_will_display_json(text: str) -> str:
-    """
-    This function modifies the JSON configuration text before displaying it to the user.
-    It replaces the values for the keys "pokemon_collection" and "mainpokemon".
-    
-    Args:
-        text (str): The JSON configuration text.
-    
-    Returns:
-        str: The modified JSON configuration text.
-    """
-    try:
-        # Parse the JSON text
-        config = json.loads(text)
-        
-        if "pokemon_collection" in config:
-            del config["pokemon_collection"]
-        if "mainpokemon" in config:
-            del config["mainpokemon"]
-        
-        # Convert back to JSON string
-        modified_text = json.dumps(config, indent=4)
-        return modified_text
-    except json.JSONDecodeError:
-        # Handle JSON parsing error
-        return text
     
 #On Save on Config, accept new config and add pokemon collection and mainpokemon to it
 gui_hooks.addon_config_editor_will_save_json.append(check_data.modify_json_configuration_on_save)
 gui_hooks.addon_config_editor_will_display_json.append(addon_config_editor_will_display_json)
 
-def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5):
-    try:
-        # Attempt to get the URL
-        response = requests.get(url, timeout=timeout)
-
-        # Check if the response status code is 200 (OK)
-        if response.status_code == 200:
-            return True
-    except:
-        # Connection error means no internet connectivity
-        return False
 online_connectivity = test_online_connectivity()
 
 #Connect to GitHub and Check for Notification and HelpGuideChanges
@@ -483,7 +368,6 @@ try:
         class UpdateNotificationWindow(QDialog):
             def __init__(self, content):
                 super().__init__()
-                global icon_path
                 self.setWindowTitle("Ankimon Notifications")
                 self.setGeometry(100, 100, 600, 400)
 
@@ -528,7 +412,6 @@ class HelpWindow(QDialog):
     def __init__(self):
         super().__init__()
         html_content = " "
-        global icon_path
         help_local_file_path = addon_dir / "HelpInfos.html"
         try:
             if online_connectivity != False:
@@ -587,7 +470,7 @@ except (ImportError, ModuleNotFoundError):
 
 
 def play_effect_sound(sound_type):
-    global effect_sound_timer, sound_effects, hurt_normal_sound_path, hurt_noteff_sound_path, hurt_supereff_sound_path, ownhplow_sound_path, hpheal_sound_path, fainted_sound_path
+    global effect_sound_timer, sound_effects
     
     if sound_effects is True:
         audio_path = None
@@ -617,7 +500,7 @@ def play_effect_sound(sound_type):
 def play_sound():
     global sounds
     if sounds is True:
-        global id, addon_dir
+        global id
         #id = search_pokedex(name.lower(), "id")
         file_name = f"{id}.ogg"
         #file_name = f"{name.lower()}.mp3"
@@ -706,7 +589,6 @@ if database_complete:
         Returns:
             list: A list of up to 4 random moves and their highest levels.
         """
-        global learnset_path
         # Load the JSON file
         with open(learnset_path, 'r') as file:
             learnsets = json.load(file)
@@ -770,7 +652,6 @@ if database_complete:
         Returns:
             list: A list of up to 4 random moves and their highest levels.
         """
-        global learnset_path
         # Load the JSON file
         with open(learnset_path, 'r') as file:
             learnsets = json.load(file)
@@ -833,7 +714,6 @@ def pick_random_gender(pokemon_name):
     Returns:
         str: "M" for male, "F" for female, or "Genderless" for genderless Pokémon.
     """
-    global pokedex_path
     with open(pokedex_path, 'r', encoding="utf-8") as file:
         pokedex_data = json.load(file)
     pokemon_name = pokemon_name.lower()  # Normalize Pokémon name to lowercase
@@ -870,7 +750,6 @@ if database_complete:
         Returns:
             str: A random move and its highest level.
         """
-        global learnset_path
         # Load the JSON file
         with open(learnset_path, 'r') as file:
             learnsets = json.load(file)
@@ -930,7 +809,6 @@ if database_complete:
 
 
 def random_battle_scene():
-    global battlescene_path
     battle_scenes = {}
     for index, filename in enumerate(os.listdir(battlescene_path)):
         if filename.endswith(".png"):
@@ -942,7 +820,6 @@ def random_battle_scene():
 
 if berries_sprites != False:
     def random_berries():
-        global berries_path
         berries = {}
         for index, filename in enumerate(os.listdir(berries_path)):
             if filename.endswith(".png"):
@@ -953,7 +830,6 @@ if berries_sprites != False:
 
 if item_sprites != False:
     def random_item():
-        global items_path
         # Initialize an empty list to store the file names
         item_names = []
         # Iterate over each file in the directory
@@ -979,7 +855,6 @@ if item_sprites != False:
         return item_name
 
     def random_fossil():
-        global items_path
         fossil_names = []
         # Iterate over each file in the directory
         for file in os.listdir(items_path):
@@ -1074,7 +949,6 @@ if database_complete:
     def generate_random_pokemon():
         # Fetch random Pokémon data from Generation
         # Load the JSON file with Pokémon data
-        global addon_dir
         global pokemon_encounter
         global hp, gender, name, enemy_attacks
         global mainpokemon_level
@@ -1185,7 +1059,7 @@ if database_complete:
             # Set the layout for the dialog
 
 def kill_pokemon():
-    global level, hp, name, image_url, mainpokemon_xp, mainpokemon_base_experience, mainpokemon_name, mainpokemon_level, mainpokemon_path, mainpokemon_growth_rate, mainpokemon_hp, ev_yield
+    global level, hp, name, image_url, mainpokemon_xp, mainpokemon_base_experience, mainpokemon_name, mainpokemon_level, mainpokemon_growth_rate, mainpokemon_hp, ev_yield
     global pkmn_window
     name = name.capitalize()
     exp = int(calc_experience(mainpokemon_base_experience, level))
@@ -1198,7 +1072,7 @@ def kill_pokemon():
 caught = 0
 
 def display_dead_pokemon():
-    global pokemon_hp, name, id, level, caught_pokemon, pkmnimgfolder, frontdefault, addon_dir, caught
+    global pokemon_hp, name, id, level, caught_pokemon, caught
     # Create the dialog
     w_dead_pokemon = QDialog(mw)
     w_dead_pokemon.setWindowTitle(f"Would you want to kill or catch the wild {name} ?")
@@ -1280,6 +1154,7 @@ def display_dead_pokemon():
 
 def get_pokemon_by_category(category_name):
     # Reload the JSON data from the file
+    # TODO: not declared
     global all_species_path
     with open(all_species_path, 'r') as file:
         pokemon_data = json.load(file)
@@ -1313,7 +1188,6 @@ def choose_random_pkmn_from_tier():
         showWarning(f" An error occured with generating following Pkmn Info: {id}{pokemon_species} \n Please post this error message over the Report Bug Issue")
 
 def get_pokemon_id_by_tier(tier):
-    global pokemon_species_normal_path, pokemon_species_baby_path, pokemon_species_mythical_path, pokemon_species_ultra_path, pokemon_species_legendary_path
     id_species_path = None
     if tier == "Normal":
         id_species_path = pokemon_species_normal_path
@@ -1411,7 +1285,6 @@ def save_caught_pokemon(nickname):
         json.dump(caught_pokemon_data, json_file, indent=2)
 
 def find_details_move(move_name):
-    global moves_file_path
     try:
         with open(moves_file_path, "r", encoding="utf-8") as json_file:
             moves_data = json.load(json_file)
@@ -1613,8 +1486,6 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
     return mainpokemon_level
 
 def evolve_pokemon(pkmn_name):
-    global mainpokemon_path
-    global addon_dir
     global achievements
     try:
         evoName = search_pokedex(pkmn_name.lower(), "evos")
@@ -1812,7 +1683,7 @@ def cancel_evolution(pkmn_name):
 
 def catch_pokemon(nickname):
     global pokemon_hp, name, ability, enemy_attacks, type, stats, base_experience, level, growth_rate, gender, id, iv, pop_up_dialog_message_on_defeat
-    global mypokemon_path, caught
+    global caught
     caught += 1
     if caught == 1:
         name = name.capitalize()
@@ -1836,7 +1707,6 @@ def catch_pokemon(nickname):
             showInfo("You have already caught the pokemon. Please close this window!") # Display a message when the Pokémon is caught
 
 def get_random_starter():
-    global addon_dir, starters_path    # event if pokemon
     category = "Starter"
     try:
         # Reload the JSON data from the file
@@ -1927,7 +1797,6 @@ def calculate_hp(base_stat_hp, level, ev, iv):
     return hp
 
 def get_mainpokemon_evo(pokemon_name):
-    global pokedex_path
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
             if pokemon_name not in pokedex_data:
@@ -1937,7 +1806,6 @@ def get_mainpokemon_evo(pokemon_name):
             return evolutions
 
 def search_pokedex(pokemon_name,variable):
-    global pokedex_path
     pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
@@ -1949,7 +1817,6 @@ def search_pokedex(pokemon_name,variable):
                 return []
 
 def search_pokedex_by_name_for_id(pokemon_name, variable):
-    global pokedex_path
     pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
@@ -1961,7 +1828,6 @@ def search_pokedex_by_name_for_id(pokemon_name, variable):
                 return None
 
 def search_pokedex_by_id(pokemon_id):
-    global pokedex_path
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file) 
             for entry_name, attributes in pokedex_data.items():
@@ -1971,7 +1837,6 @@ def search_pokedex_by_id(pokemon_id):
 
 def get_pokemon_diff_lang_name(pokemon_id):
     global language
-    global pokenames_lang_path
     with open(pokenames_lang_path, mode='r', encoding='utf-8') as file:
         reader = csv.reader(file)
         next(reader)  # Skip the header row if there is one
@@ -1984,7 +1849,6 @@ def get_pokemon_diff_lang_name(pokemon_id):
 
 def get_pokemon_descriptions(species_id):
     global language
-    global pokedesc_lang_path
     descriptions = []  # Initialize an empty list to store matching descriptions
     with open(pokedesc_lang_path, mode='r', encoding='utf-8') as csv_file:
         csv_reader = csv.DictReader(csv_file)
@@ -2002,8 +1866,6 @@ def get_pokemon_descriptions(species_id):
         ["Description not found."]
 
 def search_pokeapi_db(pkmn_name,variable):
-    global addon_dir
-    global pokeapi_db_path
     with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
             for pokemon_data in pokedex_data:
@@ -2014,8 +1876,6 @@ def search_pokeapi_db(pkmn_name,variable):
 
 
 def search_pokeapi_db_by_id(pkmn_id,variable):
-    global addon_dir
-    global pokeapi_db_path
     with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
             for pokemon_data in pokedex_data:
@@ -2076,7 +1936,7 @@ if database_complete:
     battlescene_file = random_battle_scene()
 
 def get_effectiveness(move_type):
-    global mainpokemon_type, effectiveness_chart_file_path, type
+    global mainpokemon_type, type
     move_type = move_type.capitalize()
     attacking_types = []
     attacking_types.append(move_type)
@@ -2396,21 +2256,9 @@ def on_review_card(*args):
 
 
 def create_status_label(status_name):
-    #to create status symbols
-    # Define the background and outline colors for each status
-    status_colors = {
-        "burned": {"background": "#FF4500", "outline": "#C13500"},
-        "frozen": {"background": "#ADD8E6", "outline": "#91B0C0"},
-        "paralysis": {"background": "#FFFF00", "outline": "#CCCC00"},
-        "poisoned": {"background": "#A020F0", "outline": "#8000C0"},
-        "asleep": {"background": "#FFC0CB", "outline": "#D895A1"},
-        "confusion": {"background": "#FFA500", "outline": "#CC8400"},
-        "flinching": {"background": "#808080", "outline": "#666666"},
-        "fainted": {"background": "#000000", "outline": "#000000", "text_color": "#FFFFFF"},
-    }
 
     # Get the colors for the given status name
-    colors = status_colors.get(status_name.lower())
+    colors = status_colors_label.get(status_name.lower())
 
     # If the status name is valid, create and style the QLabel
     if colors:
@@ -2434,21 +2282,9 @@ def create_status_label(status_name):
     return label
 def create_status_html(status_name):
     global show_mainpkmn_in_reviewer, hp_bar_thickness, xp_bar_spacer
-    status_colors = {
-        "brn": {"background": "#FF4500", "outline": "#C13500", "name": "Burned"},
-        "frz": {"background": "#ADD8E6", "outline": "#91B0C0", "name": "Frozen"},
-        "par": {"background": "#FFFF00", "outline": "#CCCC00", "name": "Paralysis"},
-        "psn": {"background": "#A020F0", "outline": "#8000C0", "name": "Poisoned"},
-        "tox": {"background": "#A545FF", "outline": "#842BFF", "name": "Badly Poisoned"},
-        "slp": {"background": "#FFC0CB", "outline": "#D895A1", "name": "Asleep"},
-        "confusion": {"background": "#FFA500", "outline": "#CC8400", "name": "Confusion"},
-        "flinching": {"background": "#808080", "outline": "#666666", "name": "Flinching"},
-        "fainted": {"background": "#000000", "outline": "#000000", "text_color": "#FFFFFF", "name": "Fainted"},
-        "fighting": {"background": "#C03028", "outline": "#7D1F1A", "name": "Fighting"},  # Example colors for Fighting
-    }
 
     # Get the colors for the given status name
-    colors = status_colors.get(status_name.lower())
+    colors = status_colors_html.get(status_name.lower())
 
     # If the status name is valid, create the HTML with inline CSS
     if colors:
@@ -3219,7 +3055,7 @@ def rename_pkmn(nickname, pkmn_name, position):
         showWarning(f"An error occured: {e}")
 
 def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position):
-    global frontdefault, type_style_file, language, icon_path, gif_in_collection
+    global language, gif_in_collection
     # Create the dialog
     try:
         lang_name = get_pokemon_diff_lang_name(int(id)).capitalize()
@@ -3479,7 +3315,6 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         showWarning(f"Error occured in Pokemon Details Button: {e}")
 
 def attack_details_window(attacks):
-    global icon_path
     window = QDialog()
     window.setWindowIcon(QIcon(str(icon_path)))
     layout = QVBoxLayout()
@@ -3518,7 +3353,6 @@ def attack_details_window(attacks):
     window.exec()
 
 def remember_attack_details_window(id, attack_set, all_attacks):
-    global icon_path
     window = QDialog()
     window.setWindowIcon(QIcon(str(icon_path)))
     layout = QHBoxLayout()
@@ -3581,7 +3415,6 @@ def remember_attack_details_window(id, attack_set, all_attacks):
     window.exec()
 
 def remember_attack(id, attacks, new_attack):
-    global mainpokemon_path
     if not mainpokemon_path.is_file():
         showWarning("Missing Mainpokemon Data !")
         return
@@ -3639,21 +3472,19 @@ def remember_attack(id, attacks, new_attack):
     
 
 def type_icon_path(type):
-    global addon_dir
     png_file = f"{type}.png"
     icon_path = addon_dir / "addon_sprites" / "Types"
     icon_png_file_path = icon_path / png_file
     return icon_png_file_path
 
 def move_category_path(category):
-    global addon_dir
     png_file = f"{category}_move.png"
     category_path = addon_dir / "addon_sprites" / png_file
     return category_path
 
 def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
     # Display the Pokémon image
-    global mainpkmn, addon_dir, currdirname, mainpokemon_path
+    global mainpkmn
     mainpkmn = 1
     # Capitalize the first letter of the Pokémon's name
     capitalized_name = name.capitalize()
@@ -3753,8 +3584,6 @@ def PokemonDetailsStats(detail_stats, growth_rate, level):
     return CompleteTable_layout
 
 def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
-    global addon_dir
-    global mainpokemon_path
      # Load the data from the file
     with open(mainpokemon_path, 'r') as file:
         pokemon_data = json.load(file)
@@ -3847,7 +3676,6 @@ def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
         showWarning("You cant trade your Main Pokemon ! \n Please pick a different Main Pokemon and then you can trade this one.")
 
 def find_move_by_num(move_num):
-    global moves_file_path
     try:
         with open(moves_file_path, 'r', encoding='utf-8') as json_file:
             moves_data = json.load(json_file)
@@ -3868,7 +3696,6 @@ def find_move_by_num(move_num):
 
 
 def find_pokemon_by_id(pokemon_id):
-    global pokedex_path
     try:
         # Open and load the pokedex file
         with open(pokedex_path, 'r', encoding='utf-8') as json_file:
@@ -3889,7 +3716,6 @@ def find_pokemon_by_id(pokemon_id):
         showInfo(f"Error decoding JSON: {e}")
 
 def trade_pokemon(old_pokemon_name, pokemon_trade, position):
-    global mypokemon_path
     try:
         # Load the current list of Pokemon
         with open(mypokemon_path, 'r') as file:
@@ -3919,7 +3745,6 @@ def trade_pokemon(old_pokemon_name, pokemon_trade, position):
 
 def PokemonTradeIn(number_code, old_pokemon_name, position):
     if len(number_code) > 15:
-        global addon_dir
         # Split the string into a list of integers
         numbers = [int(num) for num in number_code.split(',')]
 
@@ -3951,7 +3776,6 @@ def PokemonTradeIn(number_code, old_pokemon_name, position):
         evos = details.get("evos", "None")
         #type = search_pokedex(name, "types")
         #stats = search_pokedex(name, "baseStats")
-        global pokeapi_db_path
         with open(str(pokeapi_db_path), "r") as json_file:
             pokemon_data = json.load(json_file)
             for pokemon in pokemon_data:
@@ -3978,7 +3802,6 @@ def PokemonTradeIn(number_code, old_pokemon_name, position):
         #showInfo(f"{pokemon_trade}")
 
         #PokemonFree(old_pokemon_name)
-        #global mypokemon_path
         #with open(mypokemon_path, 'r') as file:
         #    pokemon_list = json.load(file)
 
@@ -3997,9 +3820,6 @@ def PokemonTradeIn(number_code, old_pokemon_name, position):
 
 
 def PokemonFree(position, name):
-    global mypokemon_path
-    global mainpokemon_path
-
     # Confirmation dialog
     reply = QMessageBox.question(None, "Confirm Release", 
                                  f"Are you sure you want to release {name}?", 
@@ -4091,7 +3911,6 @@ def find_experience_for_level(group_growth_rate, level):
         group_growth_rate = "fluctuating"
     elif group_growth_rate == "fast-then-very-slow":
         group_growth_rate = "fluctuating"
-    global next_lvl_file_path
     # Specify the growth rate and level you're interested in
     growth_rate = f'{group_growth_rate}'
     if level < 100:
@@ -4154,7 +3973,7 @@ class Downloader(QObject):
         super().__init__(parent)
         self.addon_dir = Path(addon_dir)
         self.pokedex = []
-        global user_path_data, user_path_sprites, pkmnimgfolder, backdefault, frontdefault, sound_list, items_list
+        global sound_list, items_list
         self.items_destination_to = user_path_sprites / "items"
         self.badges_destination_to = user_path_sprites / "badges"
         self.sounds_destination_to = user_path_sprites / "sounds"
@@ -4254,7 +4073,6 @@ class Downloader(QObject):
 
     def download_pokemon_data(self):
         try:
-            global user_path_sprites, pkmnimgfolder, backdefault, frontdefault, pokeapi_db_path
             num_files = len(self.urls)
             self.downloading_data_txt.emit()
             for i, url in enumerate(self.urls, start=1):
@@ -4368,7 +4186,6 @@ def show_agreement_and_download_database():
         pokeapi_db_downloader()
 
 def pokeapi_db_downloader():
-    global addon_dir
     dlg = LoadingDialog(addon_dir)
     dlg.exec()
 
@@ -4423,8 +4240,8 @@ if database_complete and mainpokemon_empty is False:
         global life_bar_injected
         life_bar_injected = False
     def inject_life_bar(web_content, context):
-        global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp, icon_path
-        global frontdefault, backdefault, addon_dir, user_path_sprites, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
+        global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp
+        global mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
         global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds, myseconds, view_main_front, styling_in_reviewer
 
         experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
@@ -4813,8 +4630,8 @@ if database_complete and mainpokemon_empty is False:
         return web_content
 
     def update_life_bar(reviewer, card, ease):
-        global hp, name, id, frontdefault, battle_status, user_path_sprites, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
-        global mainpokemon_level, icon_path, empty_icon_path, seconds, myseconds, view_main_front, pokeball, styling_in_reviewer
+        global hp, name, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
+        global mainpokemon_level, empty_icon_path, seconds, myseconds, view_main_front, pokeball, styling_in_reviewer
         pokeball = check_pokecoll_in_list(search_pokedex(name.lower(), "num"))
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
@@ -4908,7 +4725,6 @@ if database_complete and mainpokemon_empty is False:
     gui_hooks.reviewer_did_answer_card.append(update_life_bar)
 
 def choose_pokemon(starter_name):
-    global mypokemon_path, addon_dir, mainpokemon_path
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
     name = search_pokedex(starter_name, "name")
@@ -4929,7 +4745,6 @@ def choose_pokemon(starter_name):
         ability = "No Ability"
     type = search_pokedex(starter_name, "types")
     name = search_pokedex(starter_name, "name")
-    global pokeapi_db_path
     generation_file = "pokeapi_db.json"
     growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
     base_experience = search_pokeapi_db_by_id(id, "base_experience")
@@ -4984,7 +4799,6 @@ def choose_pokemon(starter_name):
     starter_window.display_chosen_starter_pokemon(starter_name)
 
 def save_outside_pokemon(pokemon_name, pokemon_id):
-    global mypokemon_path, addon_dir, mainpokemon_path
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
     name = search_pokedex_by_id(pokemon_id)
@@ -5005,7 +4819,6 @@ def save_outside_pokemon(pokemon_name, pokemon_id):
         ability = "No Ability"
     type = search_pokedex(name, "types")
     name = search_pokedex(name, "name")
-    global pokeapi_db_path
     generation_file = "pokeapi_db.json"
     growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
     base_experience = search_pokeapi_db_by_id(id, "base_experience")
@@ -5146,7 +4959,6 @@ def export_all_pkmn_showdown():
     info_label = QLabel(info)
 
     # Get all pokemon data
-    global mypokemon_path
     pokemon_info_complete_text = ""
     try:
         with (open(mypokemon_path, "r") as json_file):
@@ -5238,7 +5050,6 @@ def flex_pokemon_collection():
     info_label = QLabel(info)
 
 # Get all pokemon data
-    global mypokemon_path
     pokemon_info_complete_text = ""
     try:
         with (open(mypokemon_path, "r") as json_file):
@@ -5348,10 +5159,8 @@ class TestWindow(QWidget):
         #self.update()
     def init_ui(self):
         global test
-        global addon_dir, icon_path
         layout = QVBoxLayout()
         # Main window layout
-        global addon_dir
         layout = QVBoxLayout()
         image_file = f"ankimon_logo.png"
         image_path = str(addon_dir) + "/" + image_file
@@ -5406,11 +5215,10 @@ class TestWindow(QWidget):
         global pokemon_encounter
         global hp, name, id, stats, level, max_hp, base_experience, ev, iv, gender
         global caught_pokemon, message_box_text
-        global pkmnimgfolder, backdefault, addon_dir
         global caught
-        global mainpkmn, mainpokemon_path
+        global mainpkmn
         global mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_ability, mainpokemon_type, mainpokemon_xp, mainpokemon_stats, mainpokemon_attacks, mainpokemon_base_experience, mainpokemon_ev, mainpokemon_iv, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate
-        global battlescene_path, battlescene_path_without_dialog, battlescene_file, battle_ui_path
+        global battlescene_file
         global attack_counter, merged_pixmap, window
         attack_counter = 0
         caught = 0
@@ -5670,9 +5478,7 @@ class TestWindow(QWidget):
         return image_label
 
     def pokemon_display_item(self, item):
-        global pokemon_encounter, user_path_sprites
-        global addon_dir
-        global frontdefault
+        global pokemon_encounter
         bckgimage_path =  addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         item_path = user_path_sprites / "items" / f"{item}.png"
 
@@ -5740,7 +5546,7 @@ class TestWindow(QWidget):
 
     def pokemon_display_badge(self, badge_number):
         try:
-            global pokemon_encounter, addon_dir, badges_path, badges
+            global pokemon_encounter, badges
             bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
             badge_path = addon_dir / "user_files" / "sprites" / "badges" / f"{badge_number}.png"
 
@@ -5801,7 +5607,7 @@ class TestWindow(QWidget):
             showWarning(f"An error occured in badges window {e}")
 
     def pokemon_display_dead_pokemon(self):
-        global pokemon_hp, name, id, level, type, caught_pokemon, pkmnimgfolder, frontdefault, addon_dir, caught, pokedex_image_path
+        global pokemon_hp, name, id, level, type, caught_pokemon, caught
         # Create the dialog
         lang_name = get_pokemon_diff_lang_name(int(id))
         window_title = (f"Would you want let the  wild {lang_name} free or catch the wild {lang_name} ?")
@@ -5944,7 +5750,7 @@ class TestWindow(QWidget):
         self.setMaximumHeight(300)
 
     def keyPressEvent(self, event):
-        global test, pokemon_encounter, pokedex_image_path, system, ankimon_key
+        global test, pokemon_encounter, system, ankimon_key
         open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
         if system == "mac":
             if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
@@ -5969,7 +5775,7 @@ test_window = TestWindow()
 
 #Test window
 def rate_this_addon():
-    global rate_this, rate_path, itembag_path
+    global rate_this
     # Load rate data
     with open(rate_path, 'r') as file:
         rate_data = json.load(file)
@@ -6117,7 +5923,7 @@ class StarterWindow(QWidget):
             if widget:
                 widget.deleteLater()
     def keyPressEvent(self, event):
-        global test, pokemon_encounter, pokedex_image_path
+        global test, pokemon_encounter
         # Close the main window when the spacebar is pressed
         if event.key() == Qt.Key.Key_G:  # Updated to Key_G for PyQt 6
             # First encounter image
@@ -6209,8 +6015,6 @@ class StarterWindow(QWidget):
 
     def pokemon_display_starter(self, water_start, fire_start, grass_start):
         global pokemon_encounter
-        global addon_dir
-        global frontdefault
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bckg.png"
         water_id = int(search_pokedex(water_start, "num"))
         grass_id = int(search_pokedex(grass_start, "num"))
@@ -6284,8 +6088,6 @@ class StarterWindow(QWidget):
 
     def pokemon_display_chosen_starter(self, starter_name):
         global pokemon_encounter
-        global addon_dir
-        global frontdefault
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         id = int(search_pokedex(starter_name, "num"))
 
@@ -6327,8 +6129,6 @@ class StarterWindow(QWidget):
     
     def pokemon_display_fossil_pokemon(self, fossil_id, fossil_name):
         global pokemon_encounter
-        global addon_dir
-        global frontdefault
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         id = fossil_id
 
@@ -6394,7 +6194,6 @@ class EvoWindow(QWidget):
         self.show()
 
     def pokemon_display_evo(self, pkmn_name, prevo_name):
-        global addon_dir, frontdefault
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         id = int(search_pokedex(pkmn_name.lower(), "num"))
 
@@ -6448,7 +6247,7 @@ class EvoWindow(QWidget):
         self.show()
 
     def pokemon_display_evo_pokemon(self, pkmn_name):
-        global pokemon_hp, name, id, level, caught_pokemon, pkmnimgfolder, frontdefault, addon_dir, caught, evolve_image_path
+        global pokemon_hp, name, id, level, caught_pokemon, caught
         global mainpokemon_name, mainpokemon_id
         layout_pokemon = QHBoxLayout()
         # Update mainpokemon_evolution and handle evolution logic
@@ -6575,8 +6374,6 @@ class TableWidget(QWidget):
 
     def initUI(self):
         self.setWindowTitle("Pokémon Type Effectiveness Table")
-        global addon_dir
-        global eff_chart_html_path
 
         # Create a label and set HTML content
         label = QLabel()
@@ -6602,13 +6399,11 @@ class Pokedex_Widget(QWidget):
         self.initUI()
 
     def read_poke_coll(self):
-        global mypokemon_path
         with (open(mypokemon_path, "r") as json_file):
             self.captured_pokemon_data = json.load(json_file)
 
     def initUI(self):
         self.setWindowTitle("Pokédex")
-        global addon_dir
 
         # Create a label and set HTML content
         label = QLabel()
@@ -6658,7 +6453,6 @@ class IDTableWidget(QWidget):
 
     def initUI(self):
         self.setWindowTitle("Pokémon - Generations and ID")
-        global table_gen_id_html_path
         # Create a label and set HTML content
         label = QLabel()
         html_content = self.read_html_file(f"{table_gen_id_html_path}")  # Replace with the path to your HTML file
@@ -6698,7 +6492,6 @@ class License(QWidget):
 
     def initUI(self):
         self.setWindowTitle("AnkiMon License")
-        global addon_dir
 
         # Create a label and set HTML content
         label = QLabel()
@@ -6747,7 +6540,6 @@ class Credits(QWidget):
 
     def initUI(self):
         self.setWindowTitle("AnkiMon License")
-        global addon_dir
 
         # Create a label and set HTML content
         label = QLabel()
@@ -6796,7 +6588,6 @@ class ItemWindow(QWidget):
         self.initUI()
 
     def initUI(self):
-        global icon_path
         self.hp_heal_items = {
             'potion': 20,
             'sweet-heart': 20,
@@ -7069,7 +6860,6 @@ class ItemWindow(QWidget):
 
 
 def get_id_and_description_by_item_name(item_name):
-    global csv_file_descriptions, csv_file_items
     item_name = capitalize_each_word(item_name)
     item_id_mapping = read_csv_file(csv_file_items)
     item_id = item_id_mapping.get(item_name.lower())
@@ -7121,7 +6911,6 @@ class AchievementWindow(QWidget):
         self.initUI()
 
     def initUI(self):
-        global addon_dir, icon_path
         self.setWindowIcon(QIcon(str(icon_path)))
         self.setWindowTitle("Achievements")
         self.layout = QVBoxLayout()  # Main layout is now a QVBoxLayout
@@ -7248,7 +7037,6 @@ achievement_bag = AchievementWindow()
 class Version_Dialog(QDialog):
     def __init__(self):
         super().__init__()
-        global icon_path
         self.setWindowTitle("Ankimon Notifications")
         self.setGeometry(100, 100, 600, 400)
         layout = QVBoxLayout()
