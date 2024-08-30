@@ -260,8 +260,8 @@ class CheckPokemonData(QDialog):
             self.mainpokemon_sync_data = json.load(file)
 
     def sync_pokemons(self):
-        self.mainpokemon_web_data = self.config.get('mainpokemon', '')
-        self.pokemon_collection_web_data = self.config.get('pokemon_collection', '')
+        self.mainpokemon_web_data = self.config.get('mainpokemon', [])
+        self.pokemon_collection_web_data = self.config.get('pokemon_collection', [])
         #showInfo("Pokémon data synced.")
         #showInfo(f"Mainpokemon {mainpokemon}")
         #showInfo(f"Pokémon Collection {pokemon_collection}")    #function to sync pokemon data to ankiweb and local files
