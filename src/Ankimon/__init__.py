@@ -4972,7 +4972,7 @@ def export_all_pkmn_showdown():
                     )
                     for attack in pokemon_attacks:
                         pokemon_info += f"- {attack}\n"
-                    pokemon_info += f"\n"
+                    pokemon_info += "\n"
                     pokemon_info_complete_text += pokemon_info
 
                     # Create labels to display the text
@@ -5063,7 +5063,7 @@ def flex_pokemon_collection():
                     )
                     for attack in pokemon_attacks:
                         pokemon_info += f"- {attack}\n"
-                    pokemon_info += f"\n"
+                    pokemon_info += "\n"
                     pokemon_info_complete_text += pokemon_info
 
                     # Create labels to display the text
@@ -5129,7 +5129,7 @@ class TestWindow(QWidget):
         layout = QVBoxLayout()
         # Main window layout
         layout = QVBoxLayout()
-        image_file = f"ankimon_logo.png"
+        image_file = "ankimon_logo.png"
         image_path = str(addon_dir) + "/" + image_file
         image_label = QLabel()
         pixmap = QPixmap()
@@ -5553,7 +5553,7 @@ class TestWindow(QWidget):
 
             # custom font
             custom_font = load_custom_font(int(20))
-            message_box_text = f"You have received a badge for:"
+            message_box_text = "You have received a badge for:"
             message_box_text2 = f"{badges[str(badge_number)]}!"
             # Draw the text on top of the image
             # Adjust the font size as needed
