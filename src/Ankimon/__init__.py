@@ -48,7 +48,7 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
     split_string_by_length, split_japanese_string_by_length, capitalize_each_word, \
     resize_pixmap_img, effectiveness_text, type_colors, \
     calc_experience, get_multiplier_stats, get_multiplier_acc_eva, bP_none_moves, \
-    calc_exp_gain, \
+    calc_exp_gain, calculate_hp, \
     read_csv_file, read_descriptions_csv
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
     addon_config_editor_will_display_json
@@ -1766,13 +1766,6 @@ def calc_atk_dmg(level, critical, power, stat_atk, wild_stat_def, main_type, mov
         # if main pkmn type = move type => damage * 1,5
         # if wild pokemon type x main pokemon type => 0.5 not very eff.; 1.0 eff.; 2 very eff.
         return damage
-
-def calculate_hp(base_stat_hp, level, ev, iv):
-    ev_value = ev["hp"] / 4
-    iv_value = iv["hp"]
-    #hp = int(((iv + 2 * (base_stat_hp + ev) + 100) * level) / 100 + 10)
-    hp = int((((((base_stat_hp + iv_value) * 2 ) + ev_value) * level) / 100) + level + 10)
-    return hp
 
 def get_mainpokemon_evo(pokemon_name):
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
