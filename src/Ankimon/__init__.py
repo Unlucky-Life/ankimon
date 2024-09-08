@@ -469,31 +469,29 @@ except (ImportError, ModuleNotFoundError):
 
 def play_effect_sound(sound_type):
     global effect_sound_timer, sound_effects
-    
-    if sound_effects is True:
-        audio_path = None
-        if sound_type == "HurtNotEffective":
-            audio_path = hurt_noteff_sound_path
-        elif sound_type == "HurtNormal":
-            audio_path = hurt_normal_sound_path
-        elif sound_type == "HurtSuper":
-            audio_path = hurt_supereff_sound_path
-        elif sound_type == "OwnHpLow":
-            audio_path = ownhplow_sound_path
-        elif sound_type == "HpHeal":
-            audio_path = hpheal_sound_path
-        elif sound_type == "Fainted":
-            audio_path = fainted_sound_path
+    if not sound_effects:
+        return
+    audio_path = None
+    if sound_type == "HurtNotEffective":
+        audio_path = hurt_noteff_sound_path
+    elif sound_type == "HurtNormal":
+        audio_path = hurt_normal_sound_path
+    elif sound_type == "HurtSuper":
+        audio_path = hurt_supereff_sound_path
+    elif sound_type == "OwnHpLow":
+        audio_path = ownhplow_sound_path
+    elif sound_type == "HpHeal":
+        audio_path = hpheal_sound_path
+    elif sound_type == "Fainted":
+        audio_path = fainted_sound_path
 
-        if not audio_path.is_file():
-            return
-        else:   
-            audio_path = Path(audio_path)
-            #threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
-            audios.will_use_audio_player()
-            audios.audio(audio_path)
-    else:
-        pass
+    if not audio_path.is_file():
+        return
+    audio_path = Path(audio_path)
+    #threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
+    audios.will_use_audio_player()
+    audios.audio(audio_path)
+
 
 def play_sound():
     global sounds
