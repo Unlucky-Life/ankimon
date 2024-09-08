@@ -12,11 +12,6 @@ from aqt import gui_hooks
 import aqt.sound
 from aqt.sound import SoundOrVideoTag, AVPlayer
 
-try:  # 2.1.50+
-    pass
-except:
-    pass  # type: ignore
-
 
 class CustomAVPlayer(AVPlayer):
     no_interrupt = False
