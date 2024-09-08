@@ -1847,7 +1847,6 @@ def search_pokeapi_db(pkmn_name,variable):
     with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
             for pokemon_data in pokedex_data:
-                name = pokemon_data["name"]
                 if pokemon_data["name"] == pkmn_name:
                     var = pokemon_data.get(variable, None)
                     return var
