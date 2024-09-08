@@ -335,7 +335,7 @@ online_connectivity = test_online_connectivity()
 try:
     if ssh != False:
         # Function to check if the content of the two files is the same
-        def compare_files(local_content, github_content):
+        def compare_files(local_content, github_content)->bool:
             return local_content == github_content
 
         # Function to read the content of the local file
@@ -391,9 +391,7 @@ try:
         # Read content from the local file
         local_content = read_local_file(local_file_path)
         # If local content exists and is the same as GitHub content, do not open dialog
-        if local_content is not None and compare_files(local_content, github_content):
-            pass
-        else:
+        if local_content is None or not compare_files(local_content, github_content):
             # Download new content from GitHub
             if github_content is not None:
                 # Write new content to the local file
