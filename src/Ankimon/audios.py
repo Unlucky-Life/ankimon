@@ -7,17 +7,15 @@
 #If the author has any issues with this being posted here, please let me know!
 
 from pathlib import Path
-from typing import Literal, Union
 
-from aqt import mw, gui_hooks
-from aqt.webview import AnkiWebView, WebContent
+from aqt import gui_hooks
 import aqt.sound
 from aqt.sound import SoundOrVideoTag, AVPlayer
 
 try:  # 2.1.50+
-    from anki.utils import is_win
+    pass
 except:
-    from anki.utils import isWin as is_win  # type: ignore
+    pass  # type: ignore
 
 
 class CustomAVPlayer(AVPlayer):
