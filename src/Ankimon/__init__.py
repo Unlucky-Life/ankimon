@@ -512,9 +512,7 @@ for i in range(1,10):
     gen_config.append(config[f"gen{i}"])
 
 def check_id_ok(id_num):
-    if isinstance(id_num, int):
-        pass
-    elif isinstance(id_num, list):
+    if isinstance(id_num, list):
         if len(id_num) > 0:
             id_num = id_num[0]
         else:
@@ -985,9 +983,7 @@ if database_complete:
                 min_level = 0
             if min_level < level:
                 id_check = check_id_ok(id)
-                if id_check:
-                    pass
-                else:
+                if not id_check:
                     return generate_random_pokemon()
                 abilities = search_pokedex(name, "abilities")
                 # Filter abilities to include only those with numeric keys
@@ -1375,9 +1371,6 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                                         for index, attack in enumerate(attacks):
                                             if attack == selected_attack:
                                                 index_to_replace = index
-                                                pass
-                                            else:
-                                                pass
                                         # If the attack is found, replace it with 'new_attack'
                                         if index_to_replace is not None:
                                             attacks[index_to_replace] = new_attack
@@ -1408,9 +1401,6 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                                 for index, attack in enumerate(attacks):
                                     if attack == selected_attack:
                                         index_to_replace = index
-                                        pass
-                                    else:
-                                        pass
                                 # If the attack is found, replace it with 'new_attack'
                                 if index_to_replace is not None:
                                     attacks[index_to_replace] = new_attack
@@ -1514,9 +1504,6 @@ def evolve_pokemon(pkmn_name):
                                         for index, attack in enumerate(attacks):
                                             if attack == selected_attack:
                                                 index_to_replace = index
-                                                pass
-                                            else:
-                                                pass
                                         # If the attack is found, replace it with 'new_attack'
                                         if index_to_replace is not None:
                                             attacks[index_to_replace] = new_attack
@@ -1576,9 +1563,7 @@ def evolve_pokemon(pkmn_name):
                                     if pokemon_data["name"] == pkmn_name.capitalize():
                                         mypokemondata[index] = pokemon
                                         break
-                                    else:
-                                        pass
-                                            # Save the modified data to the output JSON file
+                                # Save the modified data to the output JSON file
                                 with open(str(mainpokemon_path), "w") as output_file:
                                         pokemon = [pokemon]
                                         json.dump(pokemon, output_file, indent=2)
@@ -1613,9 +1598,6 @@ def cancel_evolution(pkmn_name):
                                 for index, attack in enumerate(attacks):
                                     if attack == selected_attack:
                                         index_to_replace = index
-                                        pass
-                                    else:
-                                        pass
                                 # If the attack is found, replace it with 'new_attack'
                                 if index_to_replace is not None:
                                     attacks[index_to_replace] = new_attack
@@ -3435,9 +3417,6 @@ def remember_attack(id, attacks, new_attack):
                             for index, attack in enumerate(attacks):
                                 if attack == selected_attack:
                                     index_to_replace = index
-                                    pass
-                                else:
-                                    pass
                             # If the attack is found, replace it with 'new_attack'
                             if index_to_replace is not None:
                                 attacks[index_to_replace] = new_attack
@@ -5925,9 +5904,6 @@ class StarterWindow(QWidget):
             # First encounter image
             if not self.starter:
                 self.display_starter_pokemon()
-            # If self.starter is True, simply pass (do nothing)
-            else:
-                pass
 
     def display_starter_pokemon(self):
         self.setMaximumWidth(512)
