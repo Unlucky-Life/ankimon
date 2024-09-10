@@ -28,11 +28,12 @@ from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
 from aqt.reviewer import Reviewer
 from aqt.utils import *
 from PyQt6 import *
-from PyQt6.QtCore import *
-from PyQt6.QtGui import QIcon, QColor, QPalette
+from PyQt6.QtCore import QPoint, QTimer, QThread, QEvent, QObject, QUrl
+from PyQt6.QtGui import QIcon, QColor, QPalette, QDesktopServices, QPen, QFontDatabase
 from PyQt6.QtWebEngineWidgets import *
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel,
-                             QPushButton, QVBoxLayout, QWidget, QMessageBox, QCheckBox, QTextEdit, QHBoxLayout, QComboBox, QLineEdit, QScrollArea, )
+                             QPushButton, QVBoxLayout, QWidget, QMessageBox, QCheckBox, QTextEdit, QHBoxLayout, QComboBox, QLineEdit, QScrollArea, 
+                             QFrame, QMenu, QLayout, QProgressBar)
 from .resources import *
 from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     attack_details_window_template, attack_details_window_template_end, \
