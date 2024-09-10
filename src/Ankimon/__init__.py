@@ -50,7 +50,7 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
     addon_config_editor_will_display_json
 
-from .gui_entities import MovieSplashLabel
+from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -4150,41 +4150,6 @@ def show_agreement_and_download_database():
 def pokeapi_db_downloader():
     dlg = LoadingDialog(addon_dir)
     dlg.exec()
-
-class AgreementDialog(QDialog):
-    def __init__(self):
-        super().__init__()
-
-        # Setup the dialog layout
-        layout = QVBoxLayout()
-        # Add a label with the warning message
-        title = QLabel("""Please agree to the terms before downloading the information:""")
-        subtitle = QLabel("""Terms and Conditions Clause""")
-        terms = QLabel(terms_text)
-        layout.addWidget(title)
-        layout.addWidget(subtitle)
-        layout.addWidget(terms)
-         # Ensure the terms QLabel is readable and scrolls if necessary
-        terms.setWordWrap(True)
-        terms.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # Add a checkbox for the user to agree to the terms
-        self.checkbox = QCheckBox("I agree to the above named terms.")
-        layout.addWidget(self.checkbox)
-
-        # Add a button to proceed
-        proceed_button = QPushButton("Proceed")
-        proceed_button.clicked.connect(self.on_proceed_clicked)
-        layout.addWidget(proceed_button)
-
-        self.setLayout(layout)
-
-    def on_proceed_clicked(self):
-        if self.checkbox.isChecked():
-            self.accept()  # Close the dialog and return success
-        else:
-            QMessageBox.warning(self, "Agreement Required", "You must agree to the terms to proceed.")
 
 life_bar_injected = False
 
