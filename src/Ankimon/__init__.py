@@ -363,24 +363,6 @@ try:
                 return None, None
             
     if online_connectivity and ssh != False:
-        # Custom Dialog class
-        class UpdateNotificationWindow(QDialog):
-            def __init__(self, content):
-                super().__init__()
-                self.setWindowTitle("Ankimon Notifications")
-                self.setGeometry(100, 100, 600, 400)
-
-                layout = QVBoxLayout()
-                self.text_edit = QTextEdit()
-                self.text_edit.setReadOnly(True)
-                self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-                self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
-                self.text_edit.setHtml(content)
-                layout.addWidget(self.text_edit)
-                self.setWindowIcon(QIcon(str(icon_path)))
-
-                self.setLayout(layout)
-
         # URL of the file on GitHub
         github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
         # Path to the local file

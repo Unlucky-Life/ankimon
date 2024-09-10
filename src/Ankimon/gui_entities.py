@@ -1,5 +1,9 @@
-from PyQt6.QtGui import QMovie
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtGui import QMovie, QIcon
+from PyQt6.QtWidgets import QLabel, QVBoxLayout, QTextEdit
+from aqt.qt import QDialog
+from PyQt6.QtCore import Qt
+
+from .resources import icon_path
 
 
 class MovieSplashLabel(QLabel):
@@ -15,3 +19,21 @@ class MovieSplashLabel(QLabel):
 
     def hideEvent(self, event):
         self.movie.stop()
+
+class UpdateNotificationWindow(QDialog):
+    """Custom Dialog class"""
+    def __init__(self, content):
+        super().__init__()
+        self.setWindowTitle("Ankimon Notifications")
+        self.setGeometry(100, 100, 600, 400)
+
+        layout = QVBoxLayout()
+        self.text_edit = QTextEdit()
+        self.text_edit.setReadOnly(True)
+        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
+        self.text_edit.setHtml(content)
+        layout.addWidget(self.text_edit)
+        self.setWindowIcon(QIcon(str(icon_path)))
+
+        self.setLayout(layout)
