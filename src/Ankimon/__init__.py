@@ -52,9 +52,9 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
     calc_exp_gain, \
     read_csv_file, read_descriptions_csv
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
-    addon_config_editor_will_display_json
+    addon_config_editor_will_display_json, read_local_file
 
-from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog
+from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, Version_Dialog
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -340,14 +340,6 @@ try:
         # Function to check if the content of the two files is the same
         def compare_files(local_content, github_content):
             return local_content == github_content
-
-        # Function to read the content of the local file
-        def read_local_file(file_path):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as file:
-                    return file.read()
-            except FileNotFoundError:
-                return None
 
         # Function to write content to a local file
         def write_local_file(file_path, content):
@@ -6956,28 +6948,6 @@ def report_bug():
     QDesktopServices.openUrl(QUrl(bug_url))
 
 achievement_bag = AchievementWindow()
-
-# Custom Dialog class
-class Version_Dialog(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Ankimon Notifications")
-        self.setGeometry(100, 100, 600, 400)
-        layout = QVBoxLayout()
-        self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)
-        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
-        self.local_file_path = addon_dir / "update_notes.md"
-        self.local_content = read_local_file(self.local_file_path)
-        self.html_content = markdown.markdown(self.local_content)
-        self.text_edit.setHtml(self.html_content)
-        layout.addWidget(self.text_edit)
-        self.setWindowIcon(QIcon(str(icon_path)))
-        self.setLayout(layout)
-    
-    def open(self):
-        self.exec()
 
 version_dialog = Version_Dialog()
 
