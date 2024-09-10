@@ -1,7 +1,7 @@
 import markdown
 
 from PyQt6.QtGui import QMovie, QIcon
-from PyQt6.QtWidgets import QLabel, QVBoxLayout, QTextEdit, QCheckBox, QPushButton, QMessageBox
+from PyQt6.QtWidgets import QLabel, QVBoxLayout, QTextEdit, QCheckBox, QPushButton, QMessageBox, QWidget, QScrollArea, QGridLayout
 from aqt.qt import QDialog
 from PyQt6.QtCore import Qt
 
@@ -99,3 +99,49 @@ class Version_Dialog(QDialog):
     
     def open(self):
         self.exec()
+
+class License(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle("AnkiMon License")
+
+        # Create a label and set HTML content
+        label = QLabel()
+        html_content = self.read_html_file(f"{addon_dir}/license.html")  # Replace with the path to your HTML file
+        # Create a QScrollArea to enable scrolling
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+
+        # Create a layout for the scroll area using QGridLayout
+        scroll_layout = QGridLayout()
+
+        # Create a widget to hold the layout
+        container = QWidget()
+
+        label.setText(html_content)  # 'html_table' contains the HTML table string
+        label.setWordWrap(True)
+
+        #layout = QVBoxLayout()
+        scroll_layout.addWidget(label)
+        # Set the widget for the scroll area
+        scroll_area.setWidget(container)
+
+        # Set the layout for the container
+        container.setLayout(scroll_layout)
+
+        # Set the widget for the scroll area
+        scroll_area.setWidget(container)
+
+        # Add the scroll area to the dialog
+        window_layout = QVBoxLayout()
+        window_layout.addWidget(scroll_area)
+        self.setLayout(window_layout)
+    def read_html_file(self, file_path):
+        """Reads an HTML file and returns its content as a string."""
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    def show_window(self):
+        self.show()

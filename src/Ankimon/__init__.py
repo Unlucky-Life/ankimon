@@ -54,7 +54,7 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
     addon_config_editor_will_display_json, read_local_file
 
-from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, Version_Dialog
+from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, Version_Dialog, License
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -6404,52 +6404,6 @@ if database_complete:
 eff_chart = TableWidget()
 pokedex = Pokedex_Widget()
 gen_id_chart = IDTableWidget()
-
-class License(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle("AnkiMon License")
-
-        # Create a label and set HTML content
-        label = QLabel()
-        html_content = self.read_html_file(f"{addon_dir}/license.html")  # Replace with the path to your HTML file
-        # Create a QScrollArea to enable scrolling
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-
-        # Create a layout for the scroll area using QGridLayout
-        scroll_layout = QGridLayout()
-
-        # Create a widget to hold the layout
-        container = QWidget()
-
-        label.setText(html_content)  # 'html_table' contains the HTML table string
-        label.setWordWrap(True)
-
-        #layout = QVBoxLayout()
-        scroll_layout.addWidget(label)
-        # Set the widget for the scroll area
-        scroll_area.setWidget(container)
-
-        # Set the layout for the container
-        container.setLayout(scroll_layout)
-
-        # Set the widget for the scroll area
-        scroll_area.setWidget(container)
-
-        # Add the scroll area to the dialog
-        window_layout = QVBoxLayout()
-        window_layout.addWidget(scroll_area)
-        self.setLayout(window_layout)
-    def read_html_file(self, file_path):
-        """Reads an HTML file and returns its content as a string."""
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-    def show_window(self):
-        self.show()
 
 license = License()
 
