@@ -4690,7 +4690,7 @@ if database_complete and mainpokemon_empty is False:
             # Refresh the reviewer content to apply the updated life bar
             reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
             reviewer.web.eval('document.getElementById("life-bar").style.background = "linear-gradient(to right, ' + str(hp_color) + ', ' + str(hp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
-            reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px ' + hp_color + ', 0 0 30px rgba(54, 54, 56, 1)";');
+            reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px ' + hp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')
             if xp_bar_config is True:
                 experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
                 xp_bar_percent = int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)
@@ -4714,7 +4714,7 @@ if database_complete and mainpokemon_empty is False:
                 main_hp_display_text = f"HP: {mainpokemon_hp}/{mainpkmn_max_hp}"
                 reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(mainpkmn_hp_percent) + '%";')
                 reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
-                reviewer.web.eval('document.getElementById("mylife-bar").style.boxShadow = "0 0 10px ' + myhp_color + ', 0 0 30px rgba(54, 54, 56, 1)";');
+                reviewer.web.eval('document.getElementById("mylife-bar").style.boxShadow = "0 0 10px ' + myhp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')
                 reviewer.web.eval(f'document.getElementById("MyPokeImage").innerHTML = `{new_html_content_mainpkmn}`;')
                 reviewer.web.eval('document.getElementById("myname-display").innerText = "' + main_name_display_text + '";')
                 reviewer.web.eval('document.getElementById("myhp-display").innerText = "' + main_hp_display_text + '";')
@@ -5005,7 +5005,7 @@ def export_all_pkmn_showdown():
                     )
                     for attack in pokemon_attacks:
                         pokemon_info += f"- {attack}\n"
-                    pokemon_info += f"\n"
+                    pokemon_info += "\n"
                     pokemon_info_complete_text += pokemon_info
 
                     # Create labels to display the text
@@ -5096,7 +5096,7 @@ def flex_pokemon_collection():
                     )
                     for attack in pokemon_attacks:
                         pokemon_info += f"- {attack}\n"
-                    pokemon_info += f"\n"
+                    pokemon_info += "\n"
                     pokemon_info_complete_text += pokemon_info
 
                     # Create labels to display the text
@@ -5162,7 +5162,7 @@ class TestWindow(QWidget):
         layout = QVBoxLayout()
         # Main window layout
         layout = QVBoxLayout()
-        image_file = f"ankimon_logo.png"
+        image_file = "ankimon_logo.png"
         image_path = str(addon_dir) + "/" + image_file
         image_label = QLabel()
         pixmap = QPixmap()
