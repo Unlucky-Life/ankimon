@@ -27,12 +27,15 @@ from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
                     QPixmap, Qt, QVBoxLayout, QWidget, qconnect)
 from aqt.reviewer import Reviewer
 from aqt.utils import *
+from aqt.utils import downArrow, showInfo
 from PyQt6 import *
 from PyQt6.QtCore import QPoint, QTimer, QThread, QEvent, QObject, QUrl
 from PyQt6.QtGui import QIcon, QColor, QPalette, QDesktopServices, QPen, QFontDatabase
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel,
                              QPushButton, QVBoxLayout, QWidget, QMessageBox, QCheckBox, QTextEdit, QHBoxLayout, QComboBox, QLineEdit, QScrollArea, 
                              QFrame, QMenu, QLayout, QProgressBar)
+
+
 from .resources import *
 from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     attack_details_window_template, attack_details_window_template_end, \
@@ -7110,12 +7113,6 @@ def on_profile_loaded():
 
 # Add hook to run on profile load
 addHook("profileLoaded", on_profile_loaded)
-
-from aqt import mw  # Importing the main Anki window object
-from aqt import gui_hooks
-from aqt.reviewer import Reviewer
-from aqt.utils import downArrow, showInfo
-
 
 def catch_shorcut_function():
     if hp > 1:
