@@ -23,7 +23,6 @@ import markdown
 import requests
 from anki.hooks import addHook, wrap
 from aqt import gui_hooks, mw, utils
-from aqt.qt import *
 from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
                     QPixmap, Qt, QVBoxLayout, QWidget)
 from aqt.reviewer import Reviewer
@@ -31,7 +30,6 @@ from aqt.utils import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWebEngineWidgets import *
-from PyQt6.QtWidgets import *
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
                              QPushButton, QVBoxLayout, QWidget)
 from .resources import *
@@ -2463,7 +2461,6 @@ gui_hooks.reviewer_did_answer_card.append(on_review_card)
 
 from PyQt6 import *
 from PyQt6.QtGui import QMovie
-from PyQt6.QtWidgets import QSplashScreen
 
 
 class MovieSplashLabel(QLabel):
