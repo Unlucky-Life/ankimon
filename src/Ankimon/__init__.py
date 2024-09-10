@@ -24,20 +24,20 @@ import requests
 from anki.hooks import addHook, wrap
 from aqt import gui_hooks, mw, utils
 from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
-                    QPixmap, Qt, QVBoxLayout, QWidget)
+                    QPixmap, Qt, QVBoxLayout, QWidget, qconnect)
 from aqt.reviewer import Reviewer
 from aqt.utils import *
 from PyQt6 import *
 from PyQt6.QtCore import *
-from PyQt6.QtGui import *
+from PyQt6.QtGui import QIcon, QColor, QPalette
 from PyQt6.QtWebEngineWidgets import *
-from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
-                             QPushButton, QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import (QApplication, QDialog, QLabel,
+                             QPushButton, QVBoxLayout, QWidget, QMessageBox, QCheckBox, QTextEdit, QHBoxLayout, QComboBox, QLineEdit, QScrollArea, )
 from .resources import *
 from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     attack_details_window_template, attack_details_window_template_end, \
                     remember_attack_details_window_template, remember_attack_details_window_template_end, \
-                    terms_text, rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
+                    rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
                     thankyou_message_text, dont_show_this_button_text
 
 from .const import gen_ids, status_colors_html, status_colors_label
