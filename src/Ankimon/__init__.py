@@ -1929,7 +1929,7 @@ if database_complete:
     try:
         mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname = mainpokemon_data()
         starter = True
-    except Exception as e:
+    except Exception:
         starter = False
         mainpokemon_level = 5
     name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
@@ -2041,7 +2041,7 @@ def on_review_card(*args):
             msg += f"{multiplier}x Multiplier"
             #failed card = enemy attack
             if pokemon_encounter > 0 and hp > 0 and dmg_in_reviewer is True and multiplier < 1:
-                msg += f" \n "
+                msg += " \n "
                 try:
                     max_attempts = 3  # Set the maximum number of attempts
                     for _ in range(max_attempts):
@@ -4595,17 +4595,17 @@ if database_complete and mainpokemon_empty is False:
                 # Inject a div element at the end of the body for the life bar
                 #web_content.body += f'<div id="pokebackground">' try adding backgroudns to battle
                 if hp_bar_config is True:
-                    web_content.body += f'<div id="life-bar"></div>'
+                    web_content.body += '<div id="life-bar"></div>'
                 if xp_bar_config is True:
-                    web_content.body += f'<div id="xp-bar"></div>'
-                    web_content.body += f'<div id="next_lvl_text">Next Level</div>'
-                    web_content.body += f'<div id="xp_text">XP</div>'
+                    web_content.body += '<div id="xp-bar"></div>'
+                    web_content.body += '<div id="next_lvl_text">Next Level</div>'
+                    web_content.body += '<div id="xp_text">XP</div>'
                 # Inject a div element for the text display
                 web_content.body += f'<div id="name-display">{name.capitalize()} LvL: {level}</div>'
                 if hp > 0:
                     web_content.body += f'{create_status_html(f"{battle_status}")}'
                 else:
-                    web_content.body += f'{create_status_html(f"fainted")}'
+                    web_content.body += f'{create_status_html("fainted")}'
 
                 web_content.body += f'<div id="hp-display">HP: {hp}/{max_hp}</div>'
                 # Inject a div element at the end of the body for the life bar
@@ -4618,13 +4618,13 @@ if database_complete and mainpokemon_empty is False:
                     web_content.body += f'<div id="myhp-display">HP: {mainpokemon_hp}/{mainpkmn_max_hp}</div>'
                     # Inject a div element at the end of the body for the life bar
                     if hp_bar_config is True:
-                        web_content.body += f'<div id="mylife-bar"></div>'
+                        web_content.body += '<div id="mylife-bar"></div>'
                 # Set the flag to True to indicate that the life bar has been injected
                 if pokeball == True:
                     icon_base_64 = get_image_as_base64(icon_path)
                     web_content.body += f'<div id="PokeIcon"><img src="data:image/png;base64,{icon_base_64}" alt="PokeIcon"></div>'
                 else:
-                    web_content.body += f'<div id="PokeIcon"></div>'
+                    web_content.body += '<div id="PokeIcon"></div>'
                 web_content.body += '</div>'
                 life_bar_injected = True
         return web_content
@@ -5586,7 +5586,7 @@ class TestWindow(QWidget):
 
             # custom font
             custom_font = load_custom_font(int(20))
-            message_box_text = f"You have received a badge for:"
+            message_box_text = "You have received a badge for:"
             message_box_text2 = f"{badges[str(badge_number)]}!"
             # Draw the text on top of the image
             # Adjust the font size as needed
