@@ -4159,7 +4159,6 @@ life_bar_injected = False
 
 def animate_pokemon():
     seconds = 2
-    from aqt import mw
     reviewer = mw.reviewer
     reviewer.web = mw.reviewer.web
     reviewer.web.eval(f'document.getElementById("PokeImage").style="animation: shake {seconds}s ease;"')
@@ -5126,8 +5125,6 @@ class TestWindow(QWidget):
     def display_first_start_up(self):
         global first_start, pkmn_window
         if first_start == False:
-            from aqt import mw
-
             # Get the geometry of the main screen
             main_screen_geometry = mw.geometry()
             # Calculate the position to center the ItemWindow on the main screen
@@ -6770,8 +6767,6 @@ class ItemWindow(QWidget):
         self.renewWidgets()
 
     def show_window(self):
-        from aqt import mw
-
         # Get the geometry of the main screen
         main_screen_geometry = mw.geometry()
         
@@ -6941,8 +6936,6 @@ class AchievementWindow(QWidget):
         self.renewWidgets()
 
     def show_window(self):
-        from aqt import mw
-
         # Get the geometry of the main screen
         main_screen_geometry = mw.geometry()
         
