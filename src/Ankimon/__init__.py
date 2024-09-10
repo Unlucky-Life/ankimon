@@ -17,14 +17,12 @@ import os
 import platform
 import random
 from pathlib import Path
-from typing import List, Optional, Union
 
 import aqt
 import markdown
 import requests
-from anki.collection import Collection
 from anki.hooks import addHook, wrap
-from aqt import editor, gui_hooks, mw, utils
+from aqt import gui_hooks, mw, utils
 from aqt.qt import *
 from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
                     QPixmap, Qt, QVBoxLayout, QWidget)
@@ -7184,11 +7182,10 @@ def on_profile_loaded():
 # Add hook to run on profile load
 addHook("profileLoaded", on_profile_loaded)
 
-from anki.cards import Card
 from aqt import mw  # Importing the main Anki window object
 from aqt import gui_hooks
 from aqt.reviewer import Reviewer
-from aqt.utils import downArrow, shortcut, showInfo
+from aqt.utils import downArrow, showInfo
 
 
 def catch_shorcut_function():
