@@ -27,6 +27,7 @@ from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
                     QPixmap, Qt, QVBoxLayout, QWidget)
 from aqt.reviewer import Reviewer
 from aqt.utils import *
+from PyQt6 import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWebEngineWidgets import *
@@ -48,6 +49,8 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
     read_csv_file, read_descriptions_csv
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
     addon_config_editor_will_display_json
+
+from .gui_entities import MovieSplashLabel
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -2458,24 +2461,6 @@ def status_effect(stat, name, move, hp, slp_counter, stats, msg, acc):
 
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
-
-from PyQt6 import *
-from PyQt6.QtGui import QMovie
-
-
-class MovieSplashLabel(QLabel):
-    def __init__(self, gif_path, parent=None):
-        super().__init__(parent)
-        self.movie = QMovie(gif_path)
-        self.movie.jumpToFrame(0)
-        self.setMovie(self.movie)
-        self.movie.frameChanged.connect(self.repaint)
-
-    def showEvent(self, event):
-        self.movie.start()
-
-    def hideEvent(self, event):
-        self.movie.stop()
 
 
 class PokemonCollectionDialog(QDialog):
