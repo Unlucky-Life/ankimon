@@ -28,6 +28,7 @@ from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
 from aqt.reviewer import Reviewer
 from aqt.utils import *
 from aqt.utils import downArrow, showInfo
+
 from PyQt6 import *
 from PyQt6.QtCore import QPoint, QTimer, QThread, QEvent, QObject, QUrl
 from PyQt6.QtGui import QIcon, QColor, QPalette, QDesktopServices, QPen, QFontDatabase
@@ -7069,11 +7070,6 @@ mw.pokemenu.addAction(version_action)
     #https://www.reddit.com/r/PokemonROMhacks/comments/9xgl7j/pokemon_sound_effects_collection_over_3200_sfx/
     #https://archive.org/details/pokemon-dp-sound-library-disc-2_202205
     #https://www.sounds-resource.com/nintendo_switch/pokemonswordshield/
-
-from anki.hooks import addHook
-# addHook to function to Ankimote
-from aqt import mw
-from aqt.utils import showInfo
 
 # Define lists to hold hook functions
 catch_pokemon_hooks = []
