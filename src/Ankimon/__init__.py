@@ -197,7 +197,7 @@ remove_levelcap = config["misc.remove_level_cap"] #default: false; true = no mor
 
 
 if sound_effects is True:
-    import playsound
+    from . import playsound
 
 if view_main_front is True and reviewer_image_gif is True:
     view_main_front = -1
