@@ -17,30 +17,31 @@ import os
 import platform
 import random
 from pathlib import Path
-from typing import List, Optional, Union
 
 import aqt
 import markdown
 import requests
-from anki.collection import Collection
 from anki.hooks import addHook, wrap
-from aqt import editor, gui_hooks, mw, utils
-from aqt.qt import *
+from aqt import gui_hooks, mw, utils
 from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
-                    QPixmap, Qt, QVBoxLayout, QWidget)
+                    QPixmap, Qt, QVBoxLayout, QWidget, qconnect)
 from aqt.reviewer import Reviewer
 from aqt.utils import *
-from PyQt6.QtCore import *
-from PyQt6.QtGui import *
-from PyQt6.QtWebEngineWidgets import *
-from PyQt6.QtWidgets import *
-from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
-                             QPushButton, QVBoxLayout, QWidget)
+from aqt.utils import downArrow, showInfo
+
+from PyQt6 import *
+from PyQt6.QtCore import QPoint, QTimer, QThread, QEvent, QObject, QUrl
+from PyQt6.QtGui import QIcon, QColor, QPalette, QDesktopServices, QPen, QFontDatabase
+from PyQt6.QtWidgets import (QApplication, QDialog, QLabel,
+                             QPushButton, QVBoxLayout, QWidget, QMessageBox, QCheckBox, QTextEdit, QHBoxLayout, QComboBox, QLineEdit, QScrollArea, 
+                             QFrame, QMenu, QLayout, QProgressBar)
+
+
 from .resources import *
 from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
                     attack_details_window_template, attack_details_window_template_end, \
                     remember_attack_details_window_template, remember_attack_details_window_template_end, \
-                    terms_text, rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
+                    rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
                     thankyou_message_text, dont_show_this_button_text
 
 from .const import gen_ids, status_colors_html, status_colors_label
@@ -51,7 +52,9 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
     calc_exp_gain, \
     read_csv_file, read_descriptions_csv
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
-    addon_config_editor_will_display_json
+    addon_config_editor_will_display_json, read_local_file
+
+from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, Version_Dialog, License, Credits
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -338,14 +341,6 @@ try:
         def compare_files(local_content, github_content):
             return local_content == github_content
 
-        # Function to read the content of the local file
-        def read_local_file(file_path):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as file:
-                    return file.read()
-            except FileNotFoundError:
-                return None
-
         # Function to write content to a local file
         def write_local_file(file_path, content):
             with open(file_path, 'w', encoding='utf-8') as file:
@@ -364,24 +359,6 @@ try:
                 return None, None
             
     if online_connectivity and ssh != False:
-        # Custom Dialog class
-        class UpdateNotificationWindow(QDialog):
-            def __init__(self, content):
-                super().__init__()
-                self.setWindowTitle("Ankimon Notifications")
-                self.setGeometry(100, 100, 600, 400)
-
-                layout = QVBoxLayout()
-                self.text_edit = QTextEdit()
-                self.text_edit.setReadOnly(True)
-                self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-                self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
-                self.text_edit.setHtml(content)
-                layout.addWidget(self.text_edit)
-                self.setWindowIcon(QIcon(str(icon_path)))
-
-                self.setLayout(layout)
-
         # URL of the file on GitHub
         github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
         # Path to the local file
@@ -1929,7 +1906,7 @@ if database_complete:
     try:
         mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname = mainpokemon_data()
         starter = True
-    except Exception as e:
+    except Exception:
         starter = False
         mainpokemon_level = 5
     name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
@@ -2041,7 +2018,7 @@ def on_review_card(*args):
             msg += f"{multiplier}x Multiplier"
             #failed card = enemy attack
             if pokemon_encounter > 0 and hp > 0 and dmg_in_reviewer is True and multiplier < 1:
-                msg += f" \n "
+                msg += " \n "
                 try:
                     max_attempts = 3  # Set the maximum number of attempts
                     for _ in range(max_attempts):
@@ -2462,25 +2439,6 @@ def status_effect(stat, name, move, hp, slp_counter, stats, msg, acc):
 
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
-
-from PyQt6 import *
-from PyQt6.QtGui import QMovie
-from PyQt6.QtWidgets import QSplashScreen
-
-
-class MovieSplashLabel(QLabel):
-    def __init__(self, gif_path, parent=None):
-        super().__init__(parent)
-        self.movie = QMovie(gif_path)
-        self.movie.jumpToFrame(0)
-        self.setMovie(self.movie)
-        self.movie.frameChanged.connect(self.repaint)
-
-    def showEvent(self, event):
-        self.movie.start()
-
-    def hideEvent(self, event):
-        self.movie.stop()
 
 
 class PokemonCollectionDialog(QDialog):
@@ -4189,46 +4147,10 @@ def pokeapi_db_downloader():
     dlg = LoadingDialog(addon_dir)
     dlg.exec()
 
-class AgreementDialog(QDialog):
-    def __init__(self):
-        super().__init__()
-
-        # Setup the dialog layout
-        layout = QVBoxLayout()
-        # Add a label with the warning message
-        title = QLabel("""Please agree to the terms before downloading the information:""")
-        subtitle = QLabel("""Terms and Conditions Clause""")
-        terms = QLabel(terms_text)
-        layout.addWidget(title)
-        layout.addWidget(subtitle)
-        layout.addWidget(terms)
-         # Ensure the terms QLabel is readable and scrolls if necessary
-        terms.setWordWrap(True)
-        terms.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # Add a checkbox for the user to agree to the terms
-        self.checkbox = QCheckBox("I agree to the above named terms.")
-        layout.addWidget(self.checkbox)
-
-        # Add a button to proceed
-        proceed_button = QPushButton("Proceed")
-        proceed_button.clicked.connect(self.on_proceed_clicked)
-        layout.addWidget(proceed_button)
-
-        self.setLayout(layout)
-
-    def on_proceed_clicked(self):
-        if self.checkbox.isChecked():
-            self.accept()  # Close the dialog and return success
-        else:
-            QMessageBox.warning(self, "Agreement Required", "You must agree to the terms to proceed.")
-
 life_bar_injected = False
 
 def animate_pokemon():
     seconds = 2
-    from aqt import mw
     reviewer = mw.reviewer
     reviewer.web = mw.reviewer.web
     reviewer.web.eval(f'document.getElementById("PokeImage").style="animation: shake {seconds}s ease;"')
@@ -4595,17 +4517,17 @@ if database_complete and mainpokemon_empty is False:
                 # Inject a div element at the end of the body for the life bar
                 #web_content.body += f'<div id="pokebackground">' try adding backgroudns to battle
                 if hp_bar_config is True:
-                    web_content.body += f'<div id="life-bar"></div>'
+                    web_content.body += '<div id="life-bar"></div>'
                 if xp_bar_config is True:
-                    web_content.body += f'<div id="xp-bar"></div>'
-                    web_content.body += f'<div id="next_lvl_text">Next Level</div>'
-                    web_content.body += f'<div id="xp_text">XP</div>'
+                    web_content.body += '<div id="xp-bar"></div>'
+                    web_content.body += '<div id="next_lvl_text">Next Level</div>'
+                    web_content.body += '<div id="xp_text">XP</div>'
                 # Inject a div element for the text display
                 web_content.body += f'<div id="name-display">{name.capitalize()} LvL: {level}</div>'
                 if hp > 0:
                     web_content.body += f'{create_status_html(f"{battle_status}")}'
                 else:
-                    web_content.body += f'{create_status_html(f"fainted")}'
+                    web_content.body += f'{create_status_html("fainted")}'
 
                 web_content.body += f'<div id="hp-display">HP: {hp}/{max_hp}</div>'
                 # Inject a div element at the end of the body for the life bar
@@ -4618,13 +4540,13 @@ if database_complete and mainpokemon_empty is False:
                     web_content.body += f'<div id="myhp-display">HP: {mainpokemon_hp}/{mainpkmn_max_hp}</div>'
                     # Inject a div element at the end of the body for the life bar
                     if hp_bar_config is True:
-                        web_content.body += f'<div id="mylife-bar"></div>'
+                        web_content.body += '<div id="mylife-bar"></div>'
                 # Set the flag to True to indicate that the life bar has been injected
                 if pokeball == True:
                     icon_base_64 = get_image_as_base64(icon_path)
                     web_content.body += f'<div id="PokeIcon"><img src="data:image/png;base64,{icon_base_64}" alt="PokeIcon"></div>'
                 else:
-                    web_content.body += f'<div id="PokeIcon"></div>'
+                    web_content.body += '<div id="PokeIcon"></div>'
                 web_content.body += '</div>'
                 life_bar_injected = True
         return web_content
@@ -4690,7 +4612,7 @@ if database_complete and mainpokemon_empty is False:
             # Refresh the reviewer content to apply the updated life bar
             reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
             reviewer.web.eval('document.getElementById("life-bar").style.background = "linear-gradient(to right, ' + str(hp_color) + ', ' + str(hp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
-            reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px ' + hp_color + ', 0 0 30px rgba(54, 54, 56, 1)";');
+            reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px ' + hp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')
             if xp_bar_config is True:
                 experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
                 xp_bar_percent = int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)
@@ -4714,7 +4636,7 @@ if database_complete and mainpokemon_empty is False:
                 main_hp_display_text = f"HP: {mainpokemon_hp}/{mainpkmn_max_hp}"
                 reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(mainpkmn_hp_percent) + '%";')
                 reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
-                reviewer.web.eval('document.getElementById("mylife-bar").style.boxShadow = "0 0 10px ' + myhp_color + ', 0 0 30px rgba(54, 54, 56, 1)";');
+                reviewer.web.eval('document.getElementById("mylife-bar").style.boxShadow = "0 0 10px ' + myhp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')
                 reviewer.web.eval(f'document.getElementById("MyPokeImage").innerHTML = `{new_html_content_mainpkmn}`;')
                 reviewer.web.eval('document.getElementById("myname-display").innerText = "' + main_name_display_text + '";')
                 reviewer.web.eval('document.getElementById("myhp-display").innerText = "' + main_hp_display_text + '";')
@@ -5005,7 +4927,7 @@ def export_all_pkmn_showdown():
                     )
                     for attack in pokemon_attacks:
                         pokemon_info += f"- {attack}\n"
-                    pokemon_info += f"\n"
+                    pokemon_info += "\n"
                     pokemon_info_complete_text += pokemon_info
 
                     # Create labels to display the text
@@ -5096,7 +5018,7 @@ def flex_pokemon_collection():
                     )
                     for attack in pokemon_attacks:
                         pokemon_info += f"- {attack}\n"
-                    pokemon_info += f"\n"
+                    pokemon_info += "\n"
                     pokemon_info_complete_text += pokemon_info
 
                     # Create labels to display the text
@@ -5162,7 +5084,7 @@ class TestWindow(QWidget):
         layout = QVBoxLayout()
         # Main window layout
         layout = QVBoxLayout()
-        image_file = f"ankimon_logo.png"
+        image_file = "ankimon_logo.png"
         image_path = str(addon_dir) + "/" + image_file
         image_label = QLabel()
         pixmap = QPixmap()
@@ -5195,8 +5117,6 @@ class TestWindow(QWidget):
     def display_first_start_up(self):
         global first_start, pkmn_window
         if first_start == False:
-            from aqt import mw
-
             # Get the geometry of the main screen
             main_screen_geometry = mw.geometry()
             # Calculate the position to center the ItemWindow on the main screen
@@ -5586,7 +5506,7 @@ class TestWindow(QWidget):
 
             # custom font
             custom_font = load_custom_font(int(20))
-            message_box_text = f"You have received a badge for:"
+            message_box_text = "You have received a badge for:"
             message_box_text2 = f"{badges[str(badge_number)]}!"
             # Draw the text on top of the image
             # Adjust the font size as needed
@@ -6485,99 +6405,7 @@ eff_chart = TableWidget()
 pokedex = Pokedex_Widget()
 gen_id_chart = IDTableWidget()
 
-class License(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle("AnkiMon License")
-
-        # Create a label and set HTML content
-        label = QLabel()
-        html_content = self.read_html_file(f"{addon_dir}/license.html")  # Replace with the path to your HTML file
-        # Create a QScrollArea to enable scrolling
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-
-        # Create a layout for the scroll area using QGridLayout
-        scroll_layout = QGridLayout()
-
-        # Create a widget to hold the layout
-        container = QWidget()
-
-        label.setText(html_content)  # 'html_table' contains the HTML table string
-        label.setWordWrap(True)
-
-        #layout = QVBoxLayout()
-        scroll_layout.addWidget(label)
-        # Set the widget for the scroll area
-        scroll_area.setWidget(container)
-
-        # Set the layout for the container
-        container.setLayout(scroll_layout)
-
-        # Set the widget for the scroll area
-        scroll_area.setWidget(container)
-
-        # Add the scroll area to the dialog
-        window_layout = QVBoxLayout()
-        window_layout.addWidget(scroll_area)
-        self.setLayout(window_layout)
-    def read_html_file(self, file_path):
-        """Reads an HTML file and returns its content as a string."""
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-    def show_window(self):
-        self.show()
-
 license = License()
-
-class Credits(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle("AnkiMon License")
-
-        # Create a label and set HTML content
-        label = QLabel()
-        html_content = self.read_html_file(f"{addon_dir}/credits.html")  # Replace with the path to your HTML file
-        # Create a QScrollArea to enable scrolling
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-
-        # Create a layout for the scroll area using QGridLayout
-        scroll_layout = QGridLayout()
-
-        # Create a widget to hold the layout
-        container = QWidget()
-
-        label.setText(html_content)  # 'html_table' contains the HTML table string
-        label.setWordWrap(True)
-
-        #layout = QVBoxLayout()
-        scroll_layout.addWidget(label)
-        # Set the widget for the scroll area
-        scroll_area.setWidget(container)
-
-        # Set the layout for the container
-        container.setLayout(scroll_layout)
-
-        # Set the widget for the scroll area
-        scroll_area.setWidget(container)
-
-        # Add the scroll area to the dialog
-        window_layout = QVBoxLayout()
-        window_layout.addWidget(scroll_area)
-        self.setLayout(window_layout)
-    def read_html_file(self, file_path):
-        """Reads an HTML file and returns its content as a string."""
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-    def show_window(self):
-        self.show()
 
 credits = Credits()
 
@@ -6839,8 +6667,6 @@ class ItemWindow(QWidget):
         self.renewWidgets()
 
     def show_window(self):
-        from aqt import mw
-
         # Get the geometry of the main screen
         main_screen_geometry = mw.geometry()
         
@@ -7010,8 +6836,6 @@ class AchievementWindow(QWidget):
         self.renewWidgets()
 
     def show_window(self):
-        from aqt import mw
-
         # Get the geometry of the main screen
         main_screen_geometry = mw.geometry()
         
@@ -7032,28 +6856,6 @@ def report_bug():
     QDesktopServices.openUrl(QUrl(bug_url))
 
 achievement_bag = AchievementWindow()
-
-# Custom Dialog class
-class Version_Dialog(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Ankimon Notifications")
-        self.setGeometry(100, 100, 600, 400)
-        layout = QVBoxLayout()
-        self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)
-        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
-        self.local_file_path = addon_dir / "update_notes.md"
-        self.local_content = read_local_file(self.local_file_path)
-        self.html_content = markdown.markdown(self.local_content)
-        self.text_edit.setHtml(self.html_content)
-        layout.addWidget(self.text_edit)
-        self.setWindowIcon(QIcon(str(icon_path)))
-        self.setLayout(layout)
-    
-    def open(self):
-        self.exec()
 
 version_dialog = Version_Dialog()
 
@@ -7140,11 +6942,6 @@ mw.pokemenu.addAction(version_action)
     #https://archive.org/details/pokemon-dp-sound-library-disc-2_202205
     #https://www.sounds-resource.com/nintendo_switch/pokemonswordshield/
 
-from anki.hooks import addHook
-# addHook to function to Ankimote
-from aqt import mw
-from aqt.utils import showInfo
-
 # Define lists to hold hook functions
 catch_pokemon_hooks = []
 defeat_pokemon_hooks = []
@@ -7183,13 +6980,6 @@ def on_profile_loaded():
 
 # Add hook to run on profile load
 addHook("profileLoaded", on_profile_loaded)
-
-from anki.cards import Card
-from aqt import mw  # Importing the main Anki window object
-from aqt import gui_hooks
-from aqt.reviewer import Reviewer
-from aqt.utils import downArrow, shortcut, showInfo
-
 
 def catch_shorcut_function():
     if hp > 1:
