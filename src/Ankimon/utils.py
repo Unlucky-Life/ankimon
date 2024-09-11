@@ -51,3 +51,11 @@ def addon_config_editor_will_display_json(text: str) -> str:
     except json.JSONDecodeError:
         # Handle JSON parsing error
         return text
+    
+# Function to read the content of the local file
+def read_local_file(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except FileNotFoundError:
+        return None
