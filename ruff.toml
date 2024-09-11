@@ -1,0 +1,24 @@
+extend-select = [
+    "B",  # flake8-bugbear (B)
+#    "I",  # iisort https://pypi.org/project/isort/
+#    "W",  # pycodestyle warning
+#    "N",  # pep8-naming
+#    "SIM"  # flake8-simplify
+]
+ 
+ignore = [
+    "E501", # line too long
+    "E722", #Do not use bare `except`, на будущее
+    "B011", # Do not assert False(python -O removes this calls), но pytest работает только с выключенной оптимизацией
+    "N802", # Function name should be lowercase, на будущее
+    "N803", # Argument name should be lowercase, на будущее
+    "N806", # Variable in function should be lowercase, на будущее
+    "N817", # CamelCase `LowLevel` imported as acronym `LL`
+    # эти плохо работают с фикстурами
+#    "F401", # imported but unused
+#    "F403", # import *` used; unable to detect undefined names
+#    "F405", # may be undefined, or defined from star imports
+#    "F811", # Redefinition of unused
+    #
+    
+]
