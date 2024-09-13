@@ -1,6 +1,7 @@
 import os
 import requests
 import json
+import markdown
 
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
@@ -59,3 +60,24 @@ def read_local_file(file_path):
             return file.read()
     except FileNotFoundError:
         return None
+    
+# Function to check if the file exists on GitHub and read its content
+def read_github_file(url):
+    response = requests.get(url)
+        
+    if response.status_code == 200:
+        # File exists, parse the Markdown content
+        content = response.text
+        html_content = markdown.markdown(content)
+        return content, html_content
+    else:
+        return None, None
+
+# Function to check if the content of the two files is the same
+def compare_files(local_content, github_content):
+    return local_content == github_content
+
+# Function to write content to a local file
+def write_local_file(file_path, content):
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(content)

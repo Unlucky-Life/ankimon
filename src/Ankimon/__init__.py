@@ -52,7 +52,8 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
     calc_exp_gain, \
     read_csv_file, read_descriptions_csv
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
-    addon_config_editor_will_display_json, read_local_file
+    addon_config_editor_will_display_json, read_local_file, read_github_file, \
+    compare_files, write_local_file
 
 from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, Version_Dialog, License, Credits
     
@@ -335,29 +336,7 @@ gui_hooks.addon_config_editor_will_display_json.append(addon_config_editor_will_
 online_connectivity = test_online_connectivity()
 
 #Connect to GitHub and Check for Notification and HelpGuideChanges
-try:
-    if ssh != False:
-        # Function to check if the content of the two files is the same
-        def compare_files(local_content, github_content):
-            return local_content == github_content
-
-        # Function to write content to a local file
-        def write_local_file(file_path, content):
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.write(content)
-
-        # Function to check if the file exists on GitHub and read its content
-        def read_github_file(url):
-            response = requests.get(url)
-                
-            if response.status_code == 200:
-                # File exists, parse the Markdown content
-                content = response.text
-                html_content = markdown.markdown(content)
-                return content, html_content
-            else:
-                return None, None
-            
+try:           
     if online_connectivity and ssh != False:
         # URL of the file on GitHub
         github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
