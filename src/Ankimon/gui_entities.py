@@ -323,11 +323,6 @@ class Pokedex_Widget(QWidget):
             <td><img src="{pokedex_number}.png" alt="{name}" class="pokemon-image {image_class}" /></td>
         </tr>
         '''
-
-    def read_html_file(self, file_path):
-        """Reads an HTML file and returns its content as a string."""
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
         
     def show_pokedex(self):
         self.read_poke_coll()
