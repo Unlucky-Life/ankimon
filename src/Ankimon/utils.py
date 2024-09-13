@@ -82,7 +82,7 @@ def write_local_file(file_path, content):
     with open(file_path, 'w', encoding='utf-8') as file:
         file.write(content)
 
-def read_html_file(self, file_path):
+def read_html_file(file_path):
     """Reads an HTML file and returns its content as a string."""
     with open(file_path, 'r', encoding='utf-8') as file:
         return file.read()
