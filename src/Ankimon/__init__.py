@@ -19,7 +19,6 @@ import random
 from pathlib import Path
 
 import aqt
-import markdown
 import requests
 from anki.hooks import addHook, wrap
 from aqt import gui_hooks, mw, utils
