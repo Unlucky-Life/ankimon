@@ -52,7 +52,8 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
     read_csv_file, read_descriptions_csv
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
     addon_config_editor_will_display_json, read_local_file, read_github_file, \
-    compare_files, write_local_file, random_battle_scene
+    compare_files, write_local_file, random_battle_scene, random_berries, \
+    random_item, random_fossil
 
 from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
     Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget, \
@@ -602,57 +603,6 @@ if database_complete:
             #return f"{pokemon_name} does not learn any new moves at level {level} or lower."
             return eligible_moves
 
-if berries_sprites != False:
-    def random_berries():
-        berries = {}
-        for index, filename in enumerate(os.listdir(berries_path)):
-            if filename.endswith(".png"):
-                berries[index + 1] = filename
-        # Get the corresponding file name
-        berries_file = berries.get(random.randint(1, len(berries)))
-        return berries_file
-
-if item_sprites != False:
-    def random_item():
-        # Initialize an empty list to store the file names
-        item_names = []
-        # Iterate over each file in the directory
-        for file in os.listdir(items_path):
-            # Check if the file is a .png file
-            if file.endswith(".png"):
-                # Append the file name without the .png extension to the list
-                item_names.append(file[:-4])
-        item_names = [name for name in item_names if not name.endswith("-ball")]
-        item_names = [name for name in item_names if not name.endswith("-repel")]
-        item_names = [name for name in item_names if not name.endswith("-incense")]
-        item_names = [name for name in item_names if not name.endswith("-fang")]
-        item_names = [name for name in item_names if not name.endswith("dust")]
-        item_names = [name for name in item_names if not name.endswith("-piece")]
-        item_names = [name for name in item_names if not name.endswith("-nugget")]
-        item_name = random.choice(item_names)
-        # add item to item list
-        with open(itembag_path, 'r') as json_file:
-            itembag_list = json.load(json_file)
-            itembag_list.append(item_name)
-        with open(itembag_path, 'w') as json_file:
-            json.dump(itembag_list, json_file)
-        return item_name
-
-    def random_fossil():
-        fossil_names = []
-        # Iterate over each file in the directory
-        for file in os.listdir(items_path):
-            # Check if the file is a .png file
-            if file.endswith("-fossil.png"):
-                # Append the file name without the .png extension to the list
-                fossil_names.append(file[:-4])
-        fossil_name = random.choice(fossil_names)
-        with open(itembag_path, 'r') as json_file:
-            itembag_list = json.load(json_file)
-            itembag_list.append(fossil_name)
-        with open(itembag_path, 'w') as json_file:
-            json.dump(itembag_list, json_file, indent=2)
-        return fossil_name
 
 #def copy_directory(dir_addon: str, dir_anki: str = None)
 #       if not dir_anki:

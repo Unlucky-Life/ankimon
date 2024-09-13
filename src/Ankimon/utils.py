@@ -4,7 +4,7 @@ import json
 import markdown
 import random
 
-from .resources import battlescene_path
+from .resources import battlescene_path, berries_path, items_path, itembag_path
 
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
@@ -92,6 +92,7 @@ def read_html_file(file_path):
     
 def random_battle_scene():
     # TODO: choice?
+    # TODO: merge with random_berries and
     battle_scenes = {}
     for index, filename in enumerate(os.listdir(battlescene_path)):
         if filename.endswith(".png"):
@@ -99,3 +100,53 @@ def random_battle_scene():
     # Get the corresponding file name
     battlescene_file = battle_scenes.get(random.randint(1, len(battle_scenes)))
     return battlescene_file
+
+def random_berries():
+    berries = {}
+    for index, filename in enumerate(os.listdir(berries_path)):
+        if filename.endswith(".png"):
+            berries[index + 1] = filename
+    # Get the corresponding file name
+    berries_file = berries.get(random.randint(1, len(berries)))
+    return berries_file
+
+def random_item():
+    # Initialize an empty list to store the file names
+    item_names = []
+    # Iterate over each file in the directory
+    for file in os.listdir(items_path):
+        # Check if the file is a .png file
+        if file.endswith(".png"):
+            # Append the file name without the .png extension to the list
+            item_names.append(file[:-4])
+    item_names = [name for name in item_names if not name.endswith("-ball")]
+    item_names = [name for name in item_names if not name.endswith("-repel")]
+    item_names = [name for name in item_names if not name.endswith("-incense")]
+    item_names = [name for name in item_names if not name.endswith("-fang")]
+    item_names = [name for name in item_names if not name.endswith("dust")]
+    item_names = [name for name in item_names if not name.endswith("-piece")]
+    item_names = [name for name in item_names if not name.endswith("-nugget")]
+    item_name = random.choice(item_names)
+    # add item to item list
+    with open(itembag_path, 'r') as json_file:
+        itembag_list = json.load(json_file)
+        itembag_list.append(item_name)
+    with open(itembag_path, 'w') as json_file:
+        json.dump(itembag_list, json_file)
+    return item_name
+
+def random_fossil():
+    fossil_names = []
+    # Iterate over each file in the directory
+    for file in os.listdir(items_path):
+        # Check if the file is a .png file
+        if file.endswith("-fossil.png"):
+            # Append the file name without the .png extension to the list
+            fossil_names.append(file[:-4])
+    fossil_name = random.choice(fossil_names)
+    with open(itembag_path, 'r') as json_file:
+        itembag_list = json.load(json_file)
+        itembag_list.append(fossil_name)
+    with open(itembag_path, 'w') as json_file:
+        json.dump(itembag_list, json_file, indent=2)
+    return fossil_name
