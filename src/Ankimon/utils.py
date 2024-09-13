@@ -2,6 +2,9 @@ import os
 import requests
 import json
 import markdown
+import random
+
+from .resources import battlescene_path
 
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
@@ -86,3 +89,13 @@ def read_html_file(file_path):
     """Reads an HTML file and returns its content as a string."""
     with open(file_path, 'r', encoding='utf-8') as file:
         return file.read()
+    
+def random_battle_scene():
+    # TODO: choice?
+    battle_scenes = {}
+    for index, filename in enumerate(os.listdir(battlescene_path)):
+        if filename.endswith(".png"):
+            battle_scenes[index + 1] = filename
+    # Get the corresponding file name
+    battlescene_file = battle_scenes.get(random.randint(1, len(battle_scenes)))
+    return battlescene_file

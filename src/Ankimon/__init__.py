@@ -52,7 +52,7 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
     read_csv_file, read_descriptions_csv
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
     addon_config_editor_will_display_json, read_local_file, read_github_file, \
-    compare_files, write_local_file
+    compare_files, write_local_file, random_battle_scene
 
 from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
     Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget, \
@@ -601,18 +601,6 @@ if database_complete:
        # else:
             #return f"{pokemon_name} does not learn any new moves at level {level} or lower."
             return eligible_moves
-
-
-
-def random_battle_scene():
-    battle_scenes = {}
-    for index, filename in enumerate(os.listdir(battlescene_path)):
-        if filename.endswith(".png"):
-            battle_scenes[index + 1] = filename
-    # Get the corresponding file name
-    battlescene_file = battle_scenes.get(random.randint(1, len(battle_scenes)))
-
-    return battlescene_file
 
 if berries_sprites != False:
     def random_berries():
