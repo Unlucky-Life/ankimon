@@ -1,13 +1,13 @@
 import markdown
-
+import json
 from PyQt6.QtGui import QMovie, QIcon
 from PyQt6.QtWidgets import QLabel, QVBoxLayout, QTextEdit, QCheckBox, QPushButton, QMessageBox, QWidget, QScrollArea, QGridLayout
 from aqt.qt import QDialog
 from aqt.utils import showWarning
 from PyQt6.QtCore import Qt
 
-from .resources import icon_path, addon_dir, eff_chart_html_path, table_gen_id_html_path
-from .texts import terms_text
+from .resources import icon_path, addon_dir, eff_chart_html_path, table_gen_id_html_path, mypokemon_path
+from .texts import terms_text, pokedex_html_template
 from .utils import read_local_file, read_github_file, compare_files, write_local_file, read_html_file
 
 
@@ -277,4 +277,58 @@ class IDTableWidget(QWidget):
         self.setLayout(layout)
 
     def show_gen_chart(self):
+        self.show()
+
+class Pokedex_Widget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.read_poke_coll()
+        self.initUI()
+
+    def read_poke_coll(self):
+        with (open(mypokemon_path, "r") as json_file):
+            self.captured_pokemon_data = json.load(json_file)
+
+    def initUI(self):
+        self.setWindowTitle("Pokédex")
+
+        # Create a label and set HTML content
+        label = QLabel()
+        # Extract the IDs of the Pokémon listed in the JSON file
+        self.available_pokedex_ids = {pokemon['id'] for pokemon in self.captured_pokemon_data}
+
+        # Now we generate the HTML rows for each Pokémon in the range 1-898, graying out those not in the JSON file
+        table_rows = [self.generate_table_row(i, i not in self.available_pokedex_ids) for i in range(1, 899)]
+
+        # Combine the HTML template with the generated rows
+        html_content = pokedex_html_template.replace('<!-- Table Rows Will Go Here -->', ''.join(table_rows))
+
+        #html_content = self.read_html_file(f"{pokedex_html_path}")  # Replace with the path to your HTML file
+        label.setText(html_content)  # 'html_table' contains the HTML table string
+        label.setWordWrap(True)
+
+        # Layout
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        self.setLayout(layout)
+
+    # Helper function to generate table rows
+    def generate_table_row(self, pokedex_number, is_gray):
+        name = f"Pokemon #{pokedex_number}" # Placeholder, actual name should be fetched from a database or API
+        image_class = "pokemon-gray" if is_gray else ""
+        return f'''
+        <tr>
+            <td>{pokedex_number}</td>
+            <td>{name}</td>
+            <td><img src="{pokedex_number}.png" alt="{name}" class="pokemon-image {image_class}" /></td>
+        </tr>
+        '''
+
+    def read_html_file(self, file_path):
+        """Reads an HTML file and returns its content as a string."""
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+        
+    def show_pokedex(self):
+        self.read_poke_coll()
         self.show()
