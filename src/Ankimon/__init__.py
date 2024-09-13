@@ -56,7 +56,7 @@ from .utils import check_folders_exist, check_file_exists, test_online_connectiv
     compare_files, write_local_file
 
 from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
-    Version_Dialog, License, Credits, HelpWindow, TableWidget
+    Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -6277,32 +6277,6 @@ class Pokedex_Widget(QWidget):
         
     def show_pokedex(self):
         self.read_poke_coll()
-        self.show()
-
-class IDTableWidget(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle("Pokémon - Generations and ID")
-        # Create a label and set HTML content
-        label = QLabel()
-        html_content = self.read_html_file(f"{table_gen_id_html_path}")  # Replace with the path to your HTML file
-        label.setText(html_content)  # 'html_table' contains the HTML table string
-        label.setWordWrap(True)
-        label.setStyleSheet("background-color: rgb(44,44,44);")
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(label)
-        self.setLayout(layout)
-
-    def read_html_file(self, file_path):
-        """Reads an HTML file and returns its content as a string."""
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-
-    def show_gen_chart(self):
         self.show()
 
 if database_complete:
