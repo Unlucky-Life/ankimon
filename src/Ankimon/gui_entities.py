@@ -6,7 +6,7 @@ from aqt.qt import QDialog
 from aqt.utils import showWarning
 from PyQt6.QtCore import Qt
 
-from .resources import icon_path, addon_dir
+from .resources import icon_path, addon_dir, eff_chart_html_path
 from .texts import terms_text
 from .utils import read_local_file, read_github_file, compare_files, write_local_file
 
@@ -235,3 +235,28 @@ class HelpWindow(QDialog):
         layout.addWidget(self.text_edit)
         self.setWindowIcon(QIcon(str(icon_path)))
         self.setLayout(layout)
+
+class TableWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle("Pokémon Type Effectiveness Table")
+
+        # Create a label and set HTML content
+        label = QLabel()
+        html_content = self.read_html_file(f"{eff_chart_html_path}")  # Replace with the path to your HTML file
+        label.setText(html_content)  # 'html_table' contains the HTML table string
+        label.setWordWrap(True)
+
+        # Layout
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        self.setLayout(layout)
+    def read_html_file(self, file_path):
+        """Reads an HTML file and returns its content as a string."""
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    def show_eff_chart(self):
+        self.show()

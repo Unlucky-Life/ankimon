@@ -56,7 +56,7 @@ from .utils import check_folders_exist, check_file_exists, test_online_connectiv
     compare_files, write_local_file
 
 from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
-    Version_Dialog, License, Credits, HelpWindow
+    Version_Dialog, License, Credits, HelpWindow, TableWidget
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -6224,31 +6224,6 @@ class MyEventFilter(QObject):
 # Erstellen und Installieren des Event Filters
 event_filter = MyEventFilter()
 mw.installEventFilter(event_filter)
-
-class TableWidget(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle("Pokémon Type Effectiveness Table")
-
-        # Create a label and set HTML content
-        label = QLabel()
-        html_content = self.read_html_file(f"{eff_chart_html_path}")  # Replace with the path to your HTML file
-        label.setText(html_content)  # 'html_table' contains the HTML table string
-        label.setWordWrap(True)
-
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(label)
-        self.setLayout(layout)
-    def read_html_file(self, file_path):
-        """Reads an HTML file and returns its content as a string."""
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-    def show_eff_chart(self):
-        self.show()
 
 class Pokedex_Widget(QWidget):
     def __init__(self):
