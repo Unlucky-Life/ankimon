@@ -27,7 +27,7 @@ from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
                     QPixmap, Qt, QVBoxLayout, QWidget, qconnect)
 from aqt.reviewer import Reviewer
 from aqt.utils import *
-from aqt.utils import downArrow, showInfo
+from aqt.utils import downArrow, showInfo, showWarning, tr, tooltip
 
 from PyQt6 import *
 from PyQt6.QtCore import QPoint, QTimer, QThread, QEvent, QObject, QUrl
