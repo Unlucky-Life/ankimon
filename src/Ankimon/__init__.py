@@ -57,7 +57,7 @@ from .utils import check_folders_exist, check_file_exists, test_online_connectiv
 
 from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
     Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget, \
-    Pokedex_Widget
+    Pokedex_Widget, CheckFiles
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -123,29 +123,7 @@ if database_complete:
                 break
         return pokeball
 
-class CheckFiles(QDialog):
-    def __init__(self):
-        super().__init__()
-        check_files_message = "Ankimon Files:"
-        if database_complete != True:
-            check_files_message += " \n Resource Files incomplete. \n  Please go to Ankimon => 'Download Resources' to download the needed files"
-        check_files_message += "\n Once all files have been downloaded: Restart Anki"
-        # Set the window title for the dialog
-        self.setWindowTitle("Ankimon Files Checker")
-
-        # Create a QLabel instance
-        self.label = QLabel(f"{check_files_message}", self)
-
-        # Create a QVBoxLayout instance
-        self.layout = QVBoxLayout()
-
-        # Add the QLabel to the layout
-        self.layout.addWidget(self.label)
-
-        # Set the dialog's layout
-        self.setLayout(self.layout)
-
-dialog = CheckFiles()
+dialog = CheckFiles(database_complete)
 if not database_complete:
     dialog.show()
 

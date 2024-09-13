@@ -327,3 +327,26 @@ class Pokedex_Widget(QWidget):
     def show_pokedex(self):
         self.read_poke_coll()
         self.show()
+
+class CheckFiles(QDialog):
+    # TODO: database_complete must not be in constructor?
+    def __init__(self, database_complete):
+        super().__init__()
+        check_files_message = "Ankimon Files:"
+        if database_complete != True:
+            check_files_message += " \n Resource Files incomplete. \n  Please go to Ankimon => 'Download Resources' to download the needed files"
+        check_files_message += "\n Once all files have been downloaded: Restart Anki"
+        # Set the window title for the dialog
+        self.setWindowTitle("Ankimon Files Checker")
+
+        # Create a QLabel instance
+        self.label = QLabel(f"{check_files_message}", self)
+
+        # Create a QVBoxLayout instance
+        self.layout = QVBoxLayout()
+
+        # Add the QLabel to the layout
+        self.layout.addWidget(self.label)
+
+        # Set the dialog's layout
+        self.setLayout(self.layout)
