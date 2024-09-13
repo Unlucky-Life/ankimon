@@ -55,7 +55,8 @@ from .utils import check_folders_exist, check_file_exists, test_online_connectiv
     addon_config_editor_will_display_json, read_local_file, read_github_file, \
     compare_files, write_local_file
 
-from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, Version_Dialog, License, Credits
+from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
+    Version_Dialog, License, Credits, HelpWindow
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -363,53 +364,11 @@ except Exception as e:
     if ssh != False:
         showInfo(f"Error in try connect to GitHub: {e}")
 
-##HelpGuide
-class HelpWindow(QDialog):
-    def __init__(self):
-        super().__init__()
-        html_content = " "
-        help_local_file_path = addon_dir / "HelpInfos.html"
-        try:
-            if online_connectivity != False:
-                # URL of the file on GitHub
-                help_local_file_path = addon_dir / "HelpInfos.html"
-                help_github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/HelpInfos.html"
-                # Path to the local file
-                local_content = read_local_file(help_local_file_path)
-                # Read content from GitHub
-                github_content, github_html_content = read_github_file(help_github_url)
-                if local_content is not None and compare_files(local_content, github_content):
-                    html_content = github_html_content
-                else: 
-                    # Download new content from GitHub
-                    if github_content is not None:
-                        # Write new content to the local file
-                        write_local_file(help_local_file_path, github_content)
-                        html_content = github_html_content
-            else:
-                help_local_file_path = addon_dir / "HelpInfos.html"
-                local_content = read_local_file(help_local_file_path)
-                html_content = local_content
-        except:
-            showWarning("Failed to retrieve Ankimon HelpGuide from GitHub.")
-            local_content = read_local_file(help_local_file_path)
-            html_content = local_content
-        self.setWindowTitle("Ankimon HelpGuide")
-        self.setGeometry(100, 100, 600, 400)
-
-        layout = QVBoxLayout()
-        self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)
-        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.text_edit.setHtml(html_content)
-        layout.addWidget(self.text_edit)
-        self.setWindowIcon(QIcon(str(icon_path)))
-        self.setLayout(layout)
-
-def open_help_window():
+def open_help_window(online_connectivity):
     try:
-        help_dialog = HelpWindow()
+        # TODO: online_connectivity must be a function?
+        # TODO: HelpWindow constructor must be empty?
+        help_dialog = HelpWindow(online_connectivity)
         help_dialog.exec()
     except:
         showWarning("Error in opening HelpGuide")
@@ -6901,7 +6860,7 @@ test_action13.triggered.connect(license.show_window)
 mw.pokemenu.addAction(test_action13)
 
 help_action = QAction("Open Help Guide", mw)
-help_action.triggered.connect(open_help_window)
+help_action.triggered.connect(lambda :open_help_window(online_connectivity))
 mw.pokemenu.addAction(help_action)
 
 test_action16 = QAction("Report Bug", mw)
