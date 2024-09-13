@@ -56,7 +56,7 @@ from .utils import check_folders_exist, check_file_exists, test_online_connectiv
 
 from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
     Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget, \
-    Pokedex_Widget, CheckFiles
+    Pokedex_Widget, CheckFiles, CheckPokemonData
     
 
 #from .download_pokeapi_db import create_pokeapidb
