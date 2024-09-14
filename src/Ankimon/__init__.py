@@ -37,7 +37,7 @@ from PyQt6.QtWidgets import (QApplication, QDialog, QLabel,
 
 
 from .resources import *
-from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
+from .texts import _bottomHTML_template, button_style, \
                     attack_details_window_template, attack_details_window_template_end, \
                     remember_attack_details_window_template, remember_attack_details_window_template_end, \
                     rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
