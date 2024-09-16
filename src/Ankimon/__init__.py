@@ -19,7 +19,6 @@ import random
 from pathlib import Path
 
 import aqt
-import markdown
 import requests
 from anki.hooks import addHook, wrap
 from aqt import gui_hooks, mw, utils
@@ -27,7 +26,7 @@ from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
                     QPixmap, Qt, QVBoxLayout, QWidget, qconnect)
 from aqt.reviewer import Reviewer
 from aqt.utils import *
-from aqt.utils import downArrow, showInfo
+from aqt.utils import downArrow, showInfo, showWarning, tr, tooltip
 
 from PyQt6 import *
 from PyQt6.QtCore import QPoint, QTimer, QThread, QEvent, QObject, QUrl
@@ -38,7 +37,7 @@ from PyQt6.QtWidgets import (QApplication, QDialog, QLabel,
 
 
 from .resources import *
-from .texts import _bottomHTML_template, button_style, pokedex_html_template, \
+from .texts import _bottomHTML_template, button_style, \
                     attack_details_window_template, attack_details_window_template_end, \
                     remember_attack_details_window_template, remember_attack_details_window_template_end, \
                     rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
@@ -52,9 +51,13 @@ from .business import special_pokemon_names_for_min_level, get_image_as_base64, 
     calc_exp_gain, \
     read_csv_file, read_descriptions_csv
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
-    addon_config_editor_will_display_json, read_local_file
+    addon_config_editor_will_display_json, read_local_file, read_github_file, \
+    compare_files, write_local_file, random_battle_scene, random_berries, \
+    random_item, random_fossil
 
-from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, Version_Dialog, License, Credits
+from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
+    Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget, \
+    Pokedex_Widget, CheckFiles, CheckPokemonData
     
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -120,29 +123,7 @@ if database_complete:
                 break
         return pokeball
 
-class CheckFiles(QDialog):
-    def __init__(self):
-        super().__init__()
-        check_files_message = "Ankimon Files:"
-        if database_complete != True:
-            check_files_message += " \n Resource Files incomplete. \n  Please go to Ankimon => 'Download Resources' to download the needed files"
-        check_files_message += "\n Once all files have been downloaded: Restart Anki"
-        # Set the window title for the dialog
-        self.setWindowTitle("Ankimon Files Checker")
-
-        # Create a QLabel instance
-        self.label = QLabel(f"{check_files_message}", self)
-
-        # Create a QVBoxLayout instance
-        self.layout = QVBoxLayout()
-
-        # Add the QLabel to the layout
-        self.layout.addWidget(self.label)
-
-        # Set the dialog's layout
-        self.setLayout(self.layout)
-
-dialog = CheckFiles()
+dialog = CheckFiles(database_complete)
 if not database_complete:
     dialog.show()
 
@@ -226,103 +207,6 @@ else:
     hp_only_spacer = 0
     wild_hp_spacer = 0
 
-class CheckPokemonData(QDialog):
-    def __init__(self, mainpokemon_path, mypokemon_path, config):
-        super().__init__()
-        self.mainpokemon_path = mainpokemon_path
-        self.mypokemon_path = mypokemon_path
-        self.config = config
-        self.sync_pokemons()
-        message = "Ankimon Pokemon Sync:"
-        message += "There is a difference between the Ankiweb Synced Pokémon data and the local Pokémon data. \n"
-        message += "Please choose to either load the local data and sync to Ankiweb or sync Ankiweb data to your local storage \n"
-        # Set the window title for the dialog
-        self.setWindowTitle("Ankimon Pokemon Sync:")
-
-        # Create a QLabel instance
-        self.label = QLabel(f"{message}", self)
-
-        # Create two QPushButtons for syncing options
-        self.sync_local_button = QPushButton("Load Local Data and Sync to Ankiweb", self)
-        self.sync_ankiweb_button = QPushButton("Sync Ankiweb Data to Local Storage", self)
-        qconnect(self.sync_local_button.clicked, self.sync_data_to_ankiweb)
-        qconnect(self.sync_ankiweb_button.clicked, self.sync_data_to_local)
-        # Create a QVBoxLayout instance
-        self.layout = QVBoxLayout()
-        # Add the QLabel and QPushButtons to the layout
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.sync_local_button)
-        self.layout.addWidget(self.sync_ankiweb_button)
-        # Set the dialog's layout
-        self.setLayout(self.layout)
-
-    def get_pokemon_data(self):
-        with open(str(self.mypokemon_path), 'r', encoding='utf-8') as file:
-            self.pokemon_collection_sync_data = json.load(file)
-        with open(str(self.mainpokemon_path), 'r', encoding='utf-8') as file:
-            self.mainpokemon_sync_data = json.load(file)
-
-    def sync_pokemons(self):
-        self.mainpokemon_web_data = self.config.get('mainpokemon', [])
-        self.pokemon_collection_web_data = self.config.get('pokemon_collection', [])
-        #showInfo("Pokémon data synced.")
-        #showInfo(f"Mainpokemon {mainpokemon}")
-        #showInfo(f"Pokémon Collection {pokemon_collection}")    #function to sync pokemon data to ankiweb and local files
-        
-        self.get_pokemon_data()
-
-        if self.mainpokemon_web_data != self.mainpokemon_sync_data or self.pokemon_collection_web_data != self.pokemon_collection_sync_data:
-            # Show dialog window with two buttons
-            self.show()
-    
-    def sync_data_to_local(self):
-        with open(str(self.mypokemon_path), 'w', encoding='utf-8') as file:
-            json.dump(self.pokemon_collection_web_data, file, ensure_ascii=False, indent=4)
-        with open(str(self.mainpokemon_path), 'w', encoding='utf-8') as file:
-            json.dump(self.mainpokemon_web_data, file, ensure_ascii=False, indent=4)
-        showInfo("Ankiweb Data synced to local.")
-        self.close()
-    
-    def sync_data_to_ankiweb(self):
-        self.config["pokemon_collection"] = self.pokemon_collection_sync_data
-        self.config["mainpokemon"] = self.mainpokemon_sync_data
-        mw.addonManager.writeConfig(__name__, self.config)
-        #config["mainpokemon"] = []
-        #config["pokemon_collection"] = []
-        showInfo("Local Data synced to AnkiWeb.")
-        self.close()
-
-    def sync_on_anki_close(self):
-        tooltip("Syncing PokemonData to AnkiWeb")
-        self.get_pokemon_data()
-        self.config["pokemon_collection"] = self.pokemon_collection_sync_data
-        self.config["mainpokemon"] = self.mainpokemon_sync_data
-        mw.addonManager.writeConfig(__name__, self.config)
-
-    def modify_json_configuration_on_save(self, text: str) -> str:
-        try:
-            # Load the JSON text
-            config = json.loads(text)
-            # Iterate through the configuration and update fields
-            #for key in config:
-                #if key not in ["mainPokemon", "pokemon_collection"]:
-                    #pass
-            self.get_pokemon_data()
-            # Set mainPokemon and pokemon_collection to predefined values
-            config["pokemon_collection"] = self.pokemon_collection_sync_data
-            config["mainpokemon"] = self.mainpokemon_sync_data
-            self.config = config
-            tooltip("Saved Ankimon Configuration, Please Restart Anki")
-
-            # Convert the modified JSON object back to a string
-            modified_text = json.dumps(config, indent=4)
-            return modified_text
-
-        except json.JSONDecodeError:
-            # Handle JSON decoding errors
-            print("Invalid JSON format")
-            return text
-
 check_data = CheckPokemonData(mainpokemon_path, mypokemon_path, config)
 
 gui_hooks.addon_config_editor_will_save_json.append(check_data.modify_json_configuration_on_save)
@@ -335,29 +219,7 @@ gui_hooks.addon_config_editor_will_display_json.append(addon_config_editor_will_
 online_connectivity = test_online_connectivity()
 
 #Connect to GitHub and Check for Notification and HelpGuideChanges
-try:
-    if ssh != False:
-        # Function to check if the content of the two files is the same
-        def compare_files(local_content, github_content):
-            return local_content == github_content
-
-        # Function to write content to a local file
-        def write_local_file(file_path, content):
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.write(content)
-
-        # Function to check if the file exists on GitHub and read its content
-        def read_github_file(url):
-            response = requests.get(url)
-                
-            if response.status_code == 200:
-                # File exists, parse the Markdown content
-                content = response.text
-                html_content = markdown.markdown(content)
-                return content, html_content
-            else:
-                return None, None
-            
+try:           
     if online_connectivity and ssh != False:
         # URL of the file on GitHub
         github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
@@ -384,53 +246,11 @@ except Exception as e:
     if ssh != False:
         showInfo(f"Error in try connect to GitHub: {e}")
 
-##HelpGuide
-class HelpWindow(QDialog):
-    def __init__(self):
-        super().__init__()
-        html_content = " "
-        help_local_file_path = addon_dir / "HelpInfos.html"
-        try:
-            if online_connectivity != False:
-                # URL of the file on GitHub
-                help_local_file_path = addon_dir / "HelpInfos.html"
-                help_github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/HelpInfos.html"
-                # Path to the local file
-                local_content = read_local_file(help_local_file_path)
-                # Read content from GitHub
-                github_content, github_html_content = read_github_file(help_github_url)
-                if local_content is not None and compare_files(local_content, github_content):
-                    html_content = github_html_content
-                else: 
-                    # Download new content from GitHub
-                    if github_content is not None:
-                        # Write new content to the local file
-                        write_local_file(help_local_file_path, github_content)
-                        html_content = github_html_content
-            else:
-                help_local_file_path = addon_dir / "HelpInfos.html"
-                local_content = read_local_file(help_local_file_path)
-                html_content = local_content
-        except:
-            showWarning("Failed to retrieve Ankimon HelpGuide from GitHub.")
-            local_content = read_local_file(help_local_file_path)
-            html_content = local_content
-        self.setWindowTitle("Ankimon HelpGuide")
-        self.setGeometry(100, 100, 600, 400)
-
-        layout = QVBoxLayout()
-        self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)
-        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.text_edit.setHtml(html_content)
-        layout.addWidget(self.text_edit)
-        self.setWindowIcon(QIcon(str(icon_path)))
-        self.setLayout(layout)
-
-def open_help_window():
+def open_help_window(online_connectivity):
     try:
-        help_dialog = HelpWindow()
+        # TODO: online_connectivity must be a function?
+        # TODO: HelpWindow constructor must be empty?
+        help_dialog = HelpWindow(online_connectivity)
         help_dialog.exec()
     except:
         showWarning("Error in opening HelpGuide")
@@ -783,69 +603,6 @@ if database_complete:
             #return f"{pokemon_name} does not learn any new moves at level {level} or lower."
             return eligible_moves
 
-
-
-def random_battle_scene():
-    battle_scenes = {}
-    for index, filename in enumerate(os.listdir(battlescene_path)):
-        if filename.endswith(".png"):
-            battle_scenes[index + 1] = filename
-    # Get the corresponding file name
-    battlescene_file = battle_scenes.get(random.randint(1, len(battle_scenes)))
-
-    return battlescene_file
-
-if berries_sprites != False:
-    def random_berries():
-        berries = {}
-        for index, filename in enumerate(os.listdir(berries_path)):
-            if filename.endswith(".png"):
-                berries[index + 1] = filename
-        # Get the corresponding file name
-        berries_file = berries.get(random.randint(1, len(berries)))
-        return berries_file
-
-if item_sprites != False:
-    def random_item():
-        # Initialize an empty list to store the file names
-        item_names = []
-        # Iterate over each file in the directory
-        for file in os.listdir(items_path):
-            # Check if the file is a .png file
-            if file.endswith(".png"):
-                # Append the file name without the .png extension to the list
-                item_names.append(file[:-4])
-        item_names = [name for name in item_names if not name.endswith("-ball")]
-        item_names = [name for name in item_names if not name.endswith("-repel")]
-        item_names = [name for name in item_names if not name.endswith("-incense")]
-        item_names = [name for name in item_names if not name.endswith("-fang")]
-        item_names = [name for name in item_names if not name.endswith("dust")]
-        item_names = [name for name in item_names if not name.endswith("-piece")]
-        item_names = [name for name in item_names if not name.endswith("-nugget")]
-        item_name = random.choice(item_names)
-        # add item to item list
-        with open(itembag_path, 'r') as json_file:
-            itembag_list = json.load(json_file)
-            itembag_list.append(item_name)
-        with open(itembag_path, 'w') as json_file:
-            json.dump(itembag_list, json_file)
-        return item_name
-
-    def random_fossil():
-        fossil_names = []
-        # Iterate over each file in the directory
-        for file in os.listdir(items_path):
-            # Check if the file is a .png file
-            if file.endswith("-fossil.png"):
-                # Append the file name without the .png extension to the list
-                fossil_names.append(file[:-4])
-        fossil_name = random.choice(fossil_names)
-        with open(itembag_path, 'r') as json_file:
-            itembag_list = json.load(json_file)
-            itembag_list.append(fossil_name)
-        with open(itembag_path, 'w') as json_file:
-            json.dump(itembag_list, json_file, indent=2)
-        return fossil_name
 
 #def copy_directory(dir_addon: str, dir_anki: str = None)
 #       if not dir_anki:
@@ -6287,111 +6044,6 @@ class MyEventFilter(QObject):
 event_filter = MyEventFilter()
 mw.installEventFilter(event_filter)
 
-class TableWidget(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle("Pokémon Type Effectiveness Table")
-
-        # Create a label and set HTML content
-        label = QLabel()
-        html_content = self.read_html_file(f"{eff_chart_html_path}")  # Replace with the path to your HTML file
-        label.setText(html_content)  # 'html_table' contains the HTML table string
-        label.setWordWrap(True)
-
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(label)
-        self.setLayout(layout)
-    def read_html_file(self, file_path):
-        """Reads an HTML file and returns its content as a string."""
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-    def show_eff_chart(self):
-        self.show()
-
-class Pokedex_Widget(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.read_poke_coll()
-        self.initUI()
-
-    def read_poke_coll(self):
-        with (open(mypokemon_path, "r") as json_file):
-            self.captured_pokemon_data = json.load(json_file)
-
-    def initUI(self):
-        self.setWindowTitle("Pokédex")
-
-        # Create a label and set HTML content
-        label = QLabel()
-        # Extract the IDs of the Pokémon listed in the JSON file
-        self.available_pokedex_ids = {pokemon['id'] for pokemon in self.captured_pokemon_data}
-
-        # Now we generate the HTML rows for each Pokémon in the range 1-898, graying out those not in the JSON file
-        table_rows = [self.generate_table_row(i, i not in self.available_pokedex_ids) for i in range(1, 899)]
-
-        # Combine the HTML template with the generated rows
-        html_content = pokedex_html_template.replace('<!-- Table Rows Will Go Here -->', ''.join(table_rows))
-
-        #html_content = self.read_html_file(f"{pokedex_html_path}")  # Replace with the path to your HTML file
-        label.setText(html_content)  # 'html_table' contains the HTML table string
-        label.setWordWrap(True)
-
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(label)
-        self.setLayout(layout)
-
-    # Helper function to generate table rows
-    def generate_table_row(self, pokedex_number, is_gray):
-        name = f"Pokemon #{pokedex_number}" # Placeholder, actual name should be fetched from a database or API
-        image_class = "pokemon-gray" if is_gray else ""
-        return f'''
-        <tr>
-            <td>{pokedex_number}</td>
-            <td>{name}</td>
-            <td><img src="{pokedex_number}.png" alt="{name}" class="pokemon-image {image_class}" /></td>
-        </tr>
-        '''
-
-    def read_html_file(self, file_path):
-        """Reads an HTML file and returns its content as a string."""
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-        
-    def show_pokedex(self):
-        self.read_poke_coll()
-        self.show()
-
-class IDTableWidget(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle("Pokémon - Generations and ID")
-        # Create a label and set HTML content
-        label = QLabel()
-        html_content = self.read_html_file(f"{table_gen_id_html_path}")  # Replace with the path to your HTML file
-        label.setText(html_content)  # 'html_table' contains the HTML table string
-        label.setWordWrap(True)
-        label.setStyleSheet("background-color: rgb(44,44,44);")
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(label)
-        self.setLayout(layout)
-
-    def read_html_file(self, file_path):
-        """Reads an HTML file and returns its content as a string."""
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-
-    def show_gen_chart(self):
-        self.show()
-
 if database_complete:
     if mypokemon_path.is_file() is False:
         starter_window.display_starter_pokemon()
@@ -6922,7 +6574,7 @@ test_action13.triggered.connect(license.show_window)
 mw.pokemenu.addAction(test_action13)
 
 help_action = QAction("Open Help Guide", mw)
-help_action.triggered.connect(open_help_window)
+help_action.triggered.connect(lambda :open_help_window(online_connectivity))
 mw.pokemenu.addAction(help_action)
 
 test_action16 = QAction("Report Bug", mw)
