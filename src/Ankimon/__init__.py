@@ -4961,8 +4961,8 @@ class TestWindow(QWidget):
             painter.drawPixmap(0, 0, pixmap_bckg)
 
             def draw_hp_bar(x, y, h, w, hp, max_hp):
-                pokemon_hp_percent = (hp / max_hp) * 100
-                hp_bar_value = (w * (hp / max_hp))
+                pokemon_hp_percent = int((hp / max_hp) * 100)
+                hp_bar_value = int(w * (hp / max_hp))
                 # Draw the HP bar
                 if pokemon_hp_percent < 25:
                     hp_color = QColor(255, 0, 0)  # Red
@@ -4980,9 +4980,9 @@ class TestWindow(QWidget):
 
             painter.drawPixmap(0, 0, pixmap_ui)
             # Find the Pokemon Images Height and Width
-            wpkmn_width = (new_width / 2)
+            wpkmn_width = (new_width // 2)
             wpkmn_height = new_height
-            mpkmn_width = (new_width2 / 2)
+            mpkmn_width = (new_width2 // 2)
             mpkmn_height = new_height2
             # draw pokemon image to a specific pixel
             painter.drawPixmap((410 - wpkmn_width), (170 - wpkmn_height), pixmap)
@@ -5091,8 +5091,8 @@ class TestWindow(QWidget):
         painter.drawPixmap(0, 0, pixmap_bckg)
 
         def draw_hp_bar(x, y, h, w, hp, max_hp):
-            pokemon_hp_percent = (hp / max_hp) * 100
-            hp_bar_value = (w * (hp / max_hp))
+            pokemon_hp_percent = int((hp / max_hp) * 100)
+            hp_bar_value = int(w * (hp / max_hp))
             # Draw the HP bar
             if pokemon_hp_percent < 25:
                 hp_color = QColor(255, 0, 0)  # Red
@@ -5110,9 +5110,9 @@ class TestWindow(QWidget):
 
         painter.drawPixmap(0, 0, pixmap_ui)
         # Find the Pokemon Images Height and Width
-        wpkmn_width = (new_width / 2)
+        wpkmn_width = (new_width // 2)
         wpkmn_height = new_height
-        mpkmn_width = (new_width2 / 2)
+        mpkmn_width = (new_width2 // 2)
         mpkmn_height = new_height2
         # draw pokemon image to a specific pixel
         painter.drawPixmap((410 - wpkmn_width), (170 - wpkmn_height), pixmap)
