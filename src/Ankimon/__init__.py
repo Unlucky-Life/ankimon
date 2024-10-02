@@ -6323,8 +6323,8 @@ class ItemWindow(QWidget):
         main_screen_geometry = mw.geometry()
         
         # Calculate the position to center the ItemWindow on the main screen
-        x = main_screen_geometry.center().x() - self.width() / 2
-        y = main_screen_geometry.center().y() - self.height() / 2
+        x = main_screen_geometry.center().x() - self.width() // 2
+        y = main_screen_geometry.center().y() - self.height() // 2
         
         # Move the ItemWindow to the calculated position
         self.move(x, y)
@@ -6492,8 +6492,8 @@ class AchievementWindow(QWidget):
         main_screen_geometry = mw.geometry()
         
         # Calculate the position to center the ItemWindow on the main screen
-        x = main_screen_geometry.center().x() - self.width() / 2
-        y = main_screen_geometry.center().y() - self.height() / 2
+        x = main_screen_geometry.center().x() - self.width() // 2
+        y = main_screen_geometry.center().y() - self.height() // 2
         
         # Move the ItemWindow to the calculated position
         self.move(x, y)
