@@ -59,6 +59,10 @@ from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementD
     Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget, \
     Pokedex_Widget, CheckFiles, CheckPokemonData
     
+from pyobj.settings import Settings
+
+settings_obj = Settings
+settings_obj.create_settings_window()
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -920,27 +924,6 @@ def choose_random_pkmn_from_tier():
         return id, pokemon_species
     except:
         showWarning(f" An error occured with generating following Pkmn Info: {id}{pokemon_species} \n Please post this error message over the Report Bug Issue")
-
-def get_pokemon_id_by_tier(tier):
-    id_species_path = None
-    if tier == "Normal":
-        id_species_path = pokemon_species_normal_path
-    elif tier == "Baby":
-        id_species_path = pokemon_species_baby_path
-    elif tier == "Ultra":
-        id_species_path = pokemon_species_ultra_path
-    elif tier == "Legendary":
-        id_species_path = pokemon_species_legendary_path
-    elif tier == "Mythical":
-        id_species_path = pokemon_species_mythical_path
-
-    with open(id_species_path, 'r') as file:
-        id_data = json.load(file)
-
-    pokemon_species = f"{tier}"
-    # Select a random Pokemon ID from those in the tier
-    random_pokemon_id = random.choice(id_data)
-    return random_pokemon_id, pokemon_species
 
 def save_caught_pokemon(nickname):
     # Create a dictionary to store the Pokémon's data
