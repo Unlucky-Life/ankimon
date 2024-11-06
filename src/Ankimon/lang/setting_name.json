@@ -1,0 +1,42 @@
+{
+    "battle.dmg_in_reviewer": "Damage in Reviewer",
+    "battle.automatic_battle": "Automatic Battle",
+    "battle.cards_per_round": "Cards per Round",
+
+    "controls.pokemon_buttons": "Show Pokémon Buttons",
+    "controls.defeat_key": "Key for Defeat",
+    "controls.catch_key": "Key for Catching",
+    "controls.key_for_opening_closing_ankimon": "Key for Opening/Closing Ankimon",
+    
+    "gui.animate_time": "Animate Time",
+    "gui.gif_in_collection": "Show GIFs in Collection",
+    "gui.styling_in_reviewer": "Styling in Reviewer",
+    "gui.hp_bar_config": "HP Bar Configuration",
+    "gui.pop_up_dialog_message_on_defeat": "Pop-Up on Defeat",
+    "gui.review_hp_bar_thickness": "HP Bar Thickness",
+    "gui.reviewer_image_gif": "Reviewer Image as GIF",
+    "gui.reviewer_text_message_box": "Show Text Message Box in Reviewer",
+    "gui.reviewer_text_message_box_time": "Message Box Display Time",
+    "gui.show_mainpkmn_in_reviewer": "Show Main Pokémon in Reviewer",
+    "gui.view_main_front": "View Main Pokémon Front",
+    "gui.xp_bar_config": "XP Bar Configuration",
+    "gui.xp_bar_location": "XP Bar Location",
+    
+    "audio.sound_effects": "Enable Sound Effects",
+    "audio.sounds": "Enable Sounds",
+    "audio.battle_sounds": "Enable Battle Sounds",
+
+    "misc.gen1": "Generation 1",
+    "misc.gen2": "Generation 2",
+    "misc.gen3": "Generation 3",
+    "misc.gen4": "Generation 4",
+    "misc.gen5": "Generation 5",
+    "misc.gen6": "Generation 6",
+    "misc.gen7": "Generation 7",
+    "misc.gen8": "Generation 8",
+    "misc.gen9": "Generation 9",
+    "misc.remove_level_cap": "Remove Level Cap",
+    "misc.language": "Language",
+    "misc.ssh": "SSH Access",
+    "misc.YouShallNotPass_Ankimon_News": "Receive Ankimon News"
+}
