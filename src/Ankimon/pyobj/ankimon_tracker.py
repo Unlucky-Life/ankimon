@@ -81,8 +81,3 @@ class AnkimonTracker:
         window.setWindowTitle("Ankimon Tracker Stats")
         window.show()
         app.exec()
-        if __name__ == "__main__":
-            tracker = AnkimonTracker()
-            tracker.current_mode = "egg"  # Example of setting the mode
-            tracker.start_timer()
-            tracker.show_stats_window()
