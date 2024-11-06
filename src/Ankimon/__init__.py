@@ -59,10 +59,18 @@ from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementD
     Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget, \
     Pokedex_Widget, CheckFiles, CheckPokemonData
     
-from pyobj.settings import Settings
+from .pyobj.settings import Settings
+from .pyobj.settings_window import SettingsWindow
 
-settings_obj = Settings
-settings_obj.create_settings_window()
+# Create the Settings object
+settings_obj = Settings()
+
+# Pass the correct attributes to SettingsWindow
+settings_window = SettingsWindow(
+    config=settings_obj.config,                 # Use settings_obj.config instead of settings_obj.settings.config
+    set_config_callback=settings_obj.set,
+    save_config_callback=settings_obj.save_config
+)
 
 #from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
@@ -150,66 +158,8 @@ if system_name == "Windows" or system_name == "Linux":
 elif system_name == "Darwin":
     # Open file explorer at the specified path in macOS
     system = "mac"
-pop_up_dialog_message_on_defeat = config["pop_up_dialog_message_on_defeat"]
-reviewer_text_message_box = config["reviewer_text_message_box"]
-reviewer_text_message_box_time = config["reviewer_text_message_box_time"] #time in seconds for text message
-reviewer_text_message_box_time = reviewer_text_message_box_time * 1000 #times 1000 for s => ms
-cards_per_round = config["cards_per_round"]
-reviewer_image_gif = config["reviewer_image_gif"]
-sounds = config["sounds"]
-battle_sounds = config["battle_sounds"]
-language = config["language"]
-ankimon_key = config["key_for_opening_closing_ankimon"]
-show_mainpkmn_in_reviewer = config["show_mainpkmn_in_reviewer"] #0 is off, 1 normal, 2 battle mode
-xp_bar_config = config["xp_bar_config"]
-review_hp_bar_thickness = config["review_hp_bar_thickness"] #2 = 8px, 3# 12px, 4# 16px, 5# 20px
-hp_bar_thickness = review_hp_bar_thickness * 4
-hp_bar_config = config["hp_bar_config"] #2 = 8px, 3# 12px, 4# 16px, 5# 20px
-xp_bar_location = config["xp_bar_location"] #1 top, 2 = bottom
-ssh = config["ssh"] #for eduroam users - false ; default: true
-dmg_in_reviewer = config["dmg_in_reviewer"] #default: false; true = mainpokemon is getting damaged in reviewer for false answers
-animate_time = config["animate_time"] #default: true; false = animate for 0.8 seconds
-view_main_front = config["view_main_front"] #default: true => -1; false = 1
-gif_in_collection = config["gif_in_collection"] #default: true => -1; false = 1
-sound_effects = config["sound_effects"] #default: false; true = sound_effects on
-styling_in_reviewer = config["styling_in_reviewer"] #default: true; false = no styling in reviewer
-no_more_news = config["YouShallNotPass_Ankimon_News"] #default: false; true = no more news
-automatic_battle = config["automatic_battle"] #default: 0; 1 = catch_pokemon; 2 = defeat_pokemon
-defeat_shortcut = config["defeat_key"] #default: 5; ; Else if not 5 => controll + Key for capture
-catch_shortcut = config["catch_key"] #default: 6; Else if not 6 => controll + Key for capture
-reviewer_buttons = config["pokemon_buttons"] #default: true; false = no pokemon buttons in reviewer
-remove_levelcap = config["misc.remove_level_cap"] #default: false; true = no more news
 
-
-if sound_effects is True:
-    from . import playsound
-
-if view_main_front is True and reviewer_image_gif is True:
-    view_main_front = -1
-else:
-    view_main_front = 1
-
-if animate_time is True:
-    animate_time = 0.8
-else:
-    animate_time = 0
-
-if xp_bar_location == 1:
-    xp_bar_location = "top"
-    xp_bar_spacer = 0
-elif xp_bar_location == 2:
-    xp_bar_location = "bottom"
-    xp_bar_spacer = 20
-
-if xp_bar_config is False:
-    xp_bar_spacer = 0
-
-if hp_bar_config != True:
-    hp_only_spacer = 15
-    wild_hp_spacer = 65
-else:
-    hp_only_spacer = 0
-    wild_hp_spacer = 0
+from .config_var import *
 
 check_data = CheckPokemonData(mainpokemon_path, mypokemon_path, config)
 
@@ -314,7 +264,7 @@ def play_sound():
 
 gen_config = []
 for i in range(1,10):
-    gen_config.append(config[f"gen{i}"])
+    gen_config.append(config[f"misc.gen{i}"])
 
 def check_id_ok(id_num):
     if isinstance(id_num, int):
@@ -924,6 +874,27 @@ def choose_random_pkmn_from_tier():
         return id, pokemon_species
     except:
         showWarning(f" An error occured with generating following Pkmn Info: {id}{pokemon_species} \n Please post this error message over the Report Bug Issue")
+
+def get_pokemon_id_by_tier(tier):
+    id_species_path = None
+    if tier == "Normal":
+        id_species_path = pokemon_species_normal_path
+    elif tier == "Baby":
+        id_species_path = pokemon_species_baby_path
+    elif tier == "Ultra":
+        id_species_path = pokemon_species_ultra_path
+    elif tier == "Legendary":
+        id_species_path = pokemon_species_legendary_path
+    elif tier == "Mythical":
+        id_species_path = pokemon_species_mythical_path
+
+    with open(id_species_path, 'r') as file:
+        id_data = json.load(file)
+
+    pokemon_species = f"{tier}"
+    # Select a random Pokemon ID from those in the tier
+    random_pokemon_id = random.choice(id_data)
+    return random_pokemon_id, pokemon_species
 
 def save_caught_pokemon(nickname):
     # Create a dictionary to store the Pokémon's data
@@ -6672,3 +6643,9 @@ if reviewer_buttons is True:
     Reviewer._bottomHTML = _bottomHTML  # Assuming you have access to self in this context
     # Replace the original link handler function with the modified one
     Reviewer._linkHandler = linkHandler_wrap
+
+
+config_action = QAction("Settings", mw)
+config_action.triggered.connect(settings_window.show_window)
+# Show the Settings window
+mw.pokemenu.addAction(config_action)
