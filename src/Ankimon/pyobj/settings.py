@@ -2,11 +2,14 @@ import json
 import os
 from aqt import mw
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
-from PyQt6.QtWidgets import QRadioButton, QHBoxLayout
+from PyQt6.QtWidgets import QRadioButton, QHBoxLayout, QMainWindow, QScrollArea
 
 class Settings:
     def __init__(self):
         self.config = self.load_config()
+
+    def get_description(self, key):
+        return self.descriptions.get(key, "No description available.")
 
     def load_config(self):
         config = mw.addonManager.getConfig(__name__) or {}
@@ -60,50 +63,4 @@ class Settings:
 
     def set(self, key, value):
         self.config[key] = value
-        self.save()
         self.save_config(self.config)
-
-    def create_settings_window(self):
-        app = QApplication([])
-        window = QWidget()
-        layout = QVBoxLayout()
-
-        for key, value in self.config.items():
-            if isinstance(value, bool):
-                label = QLabel(key)
-                true_radio = QRadioButton("True")
-                false_radio = QRadioButton("False")
-                if value:
-                    true_radio.setChecked(True)
-                else:
-                    false_radio.setChecked(True)
-                
-                true_radio.toggled.connect(lambda checked, k=key: self.set(k, checked))
-                false_radio.toggled.connect(lambda checked, k=key: self.set(k, not checked))
-                
-                layout.addWidget(label)
-                h_layout = QHBoxLayout()
-                h_layout.addWidget(true_radio)
-                h_layout.addWidget(false_radio)
-                layout.addLayout(h_layout)
-            elif isinstance(value, int):
-                label = QLabel(key)
-                line_edit = QLineEdit(str(value))
-                layout.addWidget(label)
-                layout.addWidget(line_edit)
-                line_edit.editingFinished.connect(lambda k=key, le=line_edit: self.set(k, int(le.text())))
-            elif isinstance(value, str):
-                label = QLabel(key)
-                line_edit = QLineEdit(value)
-                layout.addWidget(label)
-                layout.addWidget(line_edit)
-                line_edit.editingFinished.connect(lambda k=key, le=line_edit: self.set(k, le.text()))
-
-        save_button = QPushButton("Save")
-        save_button.clicked.connect(self.save_config(self.config))
-        layout.addWidget(save_button)
-
-        window.setLayout(layout)
-        window.setWindowTitle("Settings")
-        window.show()
-        app.exec()
