@@ -68,16 +68,54 @@ class AnkimonTracker:
     def reset_timer(self):
         self.time_elapsed = 0
 
+
+class AnkimonTrackerGUI:
+    def __init__(self, tracker):
+        """
+        Initializes the AnkimonTrackerGUI object, which handles the graphical display of tracker stats.
+        
+        Parameters:
+            tracker (AnkimonTracker): An instance of the AnkimonTracker to fetch and display stats.
+        """
+        self.tracker = tracker
+        self.app = None  # Initialize the QApplication only when needed
+        self.window = None
+        self.layout = None
+        self.stats_labels = {}
+
+    def create_gui(self):
+        """Creates and sets up the GUI layout for the tracker stats."""
+        if not self.app:
+            self.app = QApplication([])
+
+        self.window = QWidget()
+        self.layout = QVBoxLayout()
+
+        # Create a label for each stat
+        stats = self.tracker.get_stats()
+        for key in stats:
+            label = QLabel(f"{key}: {stats[key]}")
+            self.stats_labels[key] = label  # Store the label for future updates
+            self.layout.addWidget(label)
+
+        self.window.setLayout(self.layout)
+        self.window.setWindowTitle("Ankimon Tracker Stats")
+        self.window.show()
+
+    def update_stats(self):
+        """Updates the displayed stats in the GUI."""
+        stats = self.tracker.get_stats()
+        for key, label in self.stats_labels.items():
+            label.setText(f"{key}: {stats[key]}")
+
+    def start_real_time_updates(self):
+        """Starts the real-time updates for stats using a timer."""
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_stats)
+        self.timer.start(1000)  # Update stats every second
+
     def show_stats_window(self):
-        app = QApplication([])
-        window = QWidget()
-        layout = QVBoxLayout()
-
-        stats = self.get_stats()
-        for key, value in stats.items():
-            layout.addWidget(QLabel(f"{key}: {value}"))
-
-        window.setLayout(layout)
-        window.setWindowTitle("Ankimon Tracker Stats")
-        window.show()
-        app.exec()
+        """Sets up and starts the application window."""
+        self.create_gui()
+        self.start_real_time_updates()
+        self.app.exec()
