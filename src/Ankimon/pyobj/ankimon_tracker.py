@@ -1,83 +1,196 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel
 from PyQt6.QtCore import QTimer
-
+from .pokemon_obj import PokemonObject
+from datetime import datetime, timedelta
 
 class AnkimonTracker:
     def __init__(self):
-        """
-        Initializes the AnkimonTracker object with default values for tracking reviews and card responses.
-        
-        Attributes:
-            total_reviews (int): The total number of reviews.
-            good_count (int): The count of 'good' responses.
-            again_count (int): The count of 'again' responses.
-            hard_count (int): The count of 'hard' responses.
-            easy_count (int): The count of 'easy' responses.
-            current_mode (str): The current mode of the tracker, default is "idle".
-            timer (QTimer): A QTimer object to handle timing events.
-            time_elapsed (int): The time elapsed since the timer started.
-        
-        Modes:
-            - "egg"
-            - "battle"
-            - "leveling"
-        """
+        # Existing stats
         self.total_reviews = 0
         self.good_count = 0
         self.again_count = 0
         self.hard_count = 0
         self.easy_count = 0
         self.current_mode = "idle"
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_timer)
-        self.time_elapsed = 0
+        
+        # Session and card timers
+        self.session_timer = QTimer()
+        self.session_timer.timeout.connect(self.update_session_timer)
+        self.card_timer = QTimer()
+        self.card_timer.timeout.connect(self.update_card_timer)
+        
+        # Time tracking
+        self.session_time_elapsed = 0
+        self.card_time_elapsed = 0
+        self.session_time = 0
+        self.card_counter = -1
+        
+        # Tracking additional stats
+        self.card_ratings_count = {"Again": 0, "Hard": 0, "Good": 0, "Easy": 0}
+        self.multiplier = 1
+        self.streak = 0  #Streak for follow up right cards
+        self.streak_days = []  # List to track [date, streak]
+        self.check_streak()
+        self.main_pokemon = None
+        self.enemy_pokemon = None
+        self.pokemon_stats = {}
+
+        # Start the session timer when the object is initialized
+        self.start_session_timer()
+
+    def set_main_pokemon(self, pokemon):
+        """Set the main Pokémon being used."""
+        if isinstance(pokemon, PokemonObject):
+            self.main_pokemon = pokemon
+    
+    def set_enemy_pokemon(self, pokemon):
+        """Set the enemy Pokémon being fought against."""
+        if isinstance(pokemon, PokemonObject):
+            self.enemy_pokemon = pokemon
+
+    def check_streak(self):
+        """Check and update streak_days based on today's date."""
+        today = datetime.today().date()
+
+        if not self.streak_days:
+            # Initialize streak if it doesn't exist
+            self.streak_days = [[today, 1]]
+            return
+
+        # Retrieve the last recorded date and streak count
+        last_date, current_streak = self.streak_days[0]
+
+        if last_date == today:
+            # No need to update if today is already recorded
+            return
+
+        # Calculate the difference in days between today and the last recorded date
+        days_difference = (today - last_date).days
+
+        if days_difference == 1:
+            # If it's exactly 1 day ago, increase the streak
+            self.streak_days[0] = [today, current_streak + 1]
+        elif days_difference > 1:
+            # If it's more than 1 day, reset the streak
+            self.streak_days[0] = [today, 1]
+
+    def get_main_pokemon_stats(self):
+        """Retrieve the stats of the main Pokémon."""
+        if self.main_pokemon:
+            return self.main_pokemon.get_stats()
+        return None
+
+    def get_enemy_pokemon_stats(self):
+        """Retrieve the stats of the enemy Pokémon."""
+        if self.enemy_pokemon:
+            return self.enemy_pokemon.get_stats()
+        return None
+
+    def add_pokemon(self, pokemon):
+        """Add a PokemonObject to the tracker."""
+        if isinstance(pokemon, PokemonObject):
+            self.pokemon_stats[pokemon.id] = pokemon.get_stats()
+
+    def update_pokemon_stats(self, pokemon):
+        """Update stats of a given PokemonObject in the tracker."""
+        if pokemon.id in self.pokemon_stats:
+            self.pokemon_stats[pokemon.id] = pokemon.get_stats()
+
+    def get_pokemon_stats(self, pokemon_id):
+        """Retrieve stats of a specific Pokémon by its ID."""
+        return self.pokemon_stats.get(pokemon_id)
 
     def review(self, answer):
-        self.total_reviews += 1
-        if answer == "good":
-            self.good_count += 1
-        elif answer == "again":
+        """Track review statistics based on the answer."""
+        if answer == "again":
             self.again_count += 1
-        elif answer == "hard":
-            self.hard_count += 1
-        elif answer == "easy":
-            self.easy_count += 1
+            self.streak = 0  # Reset streak if "again"
+        elif answer in ["good", "hard", "easy"]:
+            # Increment respective count and add to streak for valid answers
+            count = getattr(self, f"{answer}_count")  # Get the current count
+            count += 1  # Increment the count
+            setattr(self, f"{answer}_count", count)  # Set the updated count back to the attribute
+            self.streak += 1  # Increment streak
         else:
             raise ValueError("Invalid answer type")
 
+        self.total_reviews += 1
+        # Increase the number of cards reviewed and update session time
+        self.card_counter += 1
+        self.card_ratings_count[answer.capitalize()] += 1
+
+        # Stop the card timer after answering and calculate multiplier
+        self.reset_card_timer()
+
+        # After 2 cards - set multiplier
+        if self.card_counter == 2:
+            self.calc_multiply_card_rating()
+
+    def update_streak(self, new_day):
+        """Update the streak for daily reviews (each position represents a day)."""
+        if not self.streak or self.streak[-1] != new_day:
+            self.streak.append(new_day)  # Add a new day to the streak array
+
     def get_stats(self):
+        """Get all the tracked statistics."""
         return {
             "total_reviews": self.total_reviews,
             "good_count": self.good_count,
             "again_count": self.again_count,
             "hard_count": self.hard_count,
             "easy_count": self.easy_count,
+            "card_counter": self.card_counter,
+            "card_ratings_count": self.card_ratings_count,
+            "card_time_elapsed": self.card_time_elapsed,
+            "session_time": self.session_time_elapsed,  # Include session time here
+            "multiplier": self.multiplier,
             "current_mode": self.current_mode,
-            "time_elapsed": self.time_elapsed
+            "streak": self.streak,
+            "streak_days": self.streak_days,
+            "main_pokemon": self.get_main_pokemon_stats(),
+            "enemy_pokemon": self.get_enemy_pokemon_stats(),
         }
 
-    def update_timer(self):
-        self.time_elapsed += 1
+    def start_card_timer(self):
+        """Start the card answer timer."""
+        self.card_time_elapsed = 0  # Reset for each new card
+        self.card_timer.start(1000)  # Update every second
 
-    def start_timer(self):
-        self.timer.start(1000)  # Timer updates every second
+    def stop_card_timer(self):
+        """Stop the card answer timer."""
+        self.card_timer.stop()
 
-    def stop_timer(self):
-        self.timer.stop()
+    def update_card_timer(self):
+        """Update the card timer for each second spent on a card."""
+        self.card_time_elapsed += 1
 
-    def reset_timer(self):
-        self.time_elapsed = 0
+    def start_session_timer(self):
+        """Start the session timer."""
+        self.session_time_elapsed = 0  # Reset session timer on new session
+        self.session_timer.start(1000)  # Session timer updates every second
 
-    def show_stats_window(self):
-        app = QApplication([])
-        window = QWidget()
-        layout = QVBoxLayout()
+    def stop_session_timer(self):
+        """Stop the session timer."""
+        self.session_timer.stop()
 
-        stats = self.get_stats()
-        for key, value in stats.items():
-            layout.addWidget(QLabel(f"{key}: {value}"))
+    def update_session_timer(self):
+        """Increment the total session time each second."""
+        self.session_time_elapsed += 1
 
-        window.setLayout(layout)
-        window.setWindowTitle("Ankimon Tracker Stats")
-        window.show()
-        app.exec()
+    def calc_multiply_card_rating(self):
+        """Calculate the multiplier based on card rating counts."""
+        max_points = 20
+        multiply_sum = (self.card_ratings_count['Easy'] * 20 +
+                        self.card_ratings_count['Hard'] * 5 +
+                        self.card_ratings_count['Good'] * 10)
+        
+        self.multiplier = multiply_sum / max_points
+        # Reset card ratings count for next round
+        self.card_ratings_count = {"Again": 0, "Hard": 0, "Good": 0, "Easy": 0}
+        self.card_counter = 0
+
+    def reset_timers(self):
+        """Reset both the session and card timers."""
+        self.session_time_elapsed = 0
+
+    def reset_card_timer(self):
+        self.card_time_elapsed = 0

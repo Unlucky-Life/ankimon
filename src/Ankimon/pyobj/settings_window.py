@@ -66,6 +66,10 @@ class SettingsWindow(QMainWindow):
             if isinstance(value, bool):
                 label = QLabel(friendly_name)
                 description_label = QLabel(self.descriptions.get(key, "No description available."))
+                
+                # Enable word wrap and set maximum width for the description label
+                description_label.setWordWrap(True)
+                description_label.setMaximumWidth(350)  # Adjust width as needed
 
                 # Create radio buttons and unique button group for each setting
                 true_radio = QRadioButton("True")
@@ -94,6 +98,11 @@ class SettingsWindow(QMainWindow):
             elif isinstance(value, int) or isinstance(value, str):
                 label = QLabel(friendly_name)
                 description_label = QLabel(self.descriptions.get(key, "No description available."))
+
+                # Enable word wrap and set maximum width for the description label
+                description_label.setWordWrap(True)
+                description_label.setMaximumWidth(350)  # Adjust width as needed
+
                 line_edit = QLineEdit(str(value))
                 scroll_area_layout.addWidget(label)
                 scroll_area_layout.addWidget(description_label)
