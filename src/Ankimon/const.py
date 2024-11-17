@@ -35,3 +35,10 @@ status_colors_html = {
     "fainted": {"background": "#000000", "outline": "#000000", "text_color": "#FFFFFF", "name": "Fainted"},
     "fighting": {"background": "#C03028", "outline": "#7D1F1A", "name": "Fighting"},  # Example colors for Fighting
 }
+
+# Get the profile folder
+from aqt import mw
+from pathlib import Path
+profilename = mw.pm.name
+#profilefolder = Path(mw.pm.profileFolder())
+#mediafolder = Path(mw.col.media.dir())

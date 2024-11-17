@@ -25,9 +25,9 @@ from aqt import gui_hooks, mw, utils
 from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
                     QPixmap, Qt, QVBoxLayout, QWidget, qconnect)
 from aqt.reviewer import Reviewer
-from aqt.utils import *
 from aqt.utils import downArrow, showInfo, showWarning, tr, tooltip
-
+from aqt.utils import *
+from aqt.qt import *
 from PyQt6 import *
 from PyQt6.QtCore import QPoint, QTimer, QThread, QEvent, QObject, QUrl
 from PyQt6.QtGui import QIcon, QColor, QPalette, QDesktopServices, QPen, QFontDatabase
@@ -44,7 +44,7 @@ from .texts import _bottomHTML_template, button_style, \
                     thankyou_message_text, dont_show_this_button_text
 
 from .const import gen_ids, status_colors_html, status_colors_label
-from .business import special_pokemon_names_for_min_level, get_image_as_base64, \
+from .business import get_image_as_base64, \
     split_string_by_length, split_japanese_string_by_length, capitalize_each_word, \
     resize_pixmap_img, effectiveness_text, type_colors, \
     calc_experience, get_multiplier_stats, get_multiplier_acc_eva, bP_none_moves, \
@@ -55,13 +55,60 @@ from .utils import check_folders_exist, check_file_exists, test_online_connectiv
     compare_files, write_local_file, random_battle_scene, random_berries, \
     random_item, random_fossil
 
+try:
+    from .functions.pokedex_functions import search_pokedex, special_pokemon_names_for_min_level, search_pokedex_by_name_for_id, \
+        search_pokedex_by_id, get_mainpokemon_evo, search_pokeapi_db, search_pokeapi_db_by_id, get_pokemon_descriptions, \
+        get_pokemon_diff_lang_name
+except ImportError:
+    showWarning("Error in importing pokedex_functions")
+
 from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
     Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget, \
     Pokedex_Widget, CheckFiles, CheckPokemonData
-    
+
+from .pyobj.ankimon_tracker import AnkimonTracker
 from .pyobj.settings import Settings
 from .pyobj.settings_window import SettingsWindow
+from .pyobj.data_handler import DataHandler
+from .pyobj.data_handler_window import DataHandlerWindow
+from .pyobj.ankimon_tracker import AnkimonTracker
+from .pyobj.ankimon_tracker_window import AnkimonTrackerWindow
+from .pyobj.pokemon_obj import PokemonObject
+from .pyobj.InfoLogger import ShowInfoLogger
+from .pyobj.trainer_card import TrainerCard
+from .pyobj.trainer_card_window import TrainerCardGUI
 
+# Usage
+logger = ShowInfoLogger()
+
+# Log an example message
+#logger.log_and_showinfo('info', "Ankimon Startup.")
+
+# Initialize Pokémon objects
+main_pokemon = PokemonObject(name="Pikachu", pokemon_species="Pikachu", shiny=False, id=1, level=5, ability="Static", typ="Electric", 
+                             stats={"hp": 20, "attack": 30, "defense": 15}, attacks=["Thunderbolt", "Quick Attack"], base_experience=112, 
+                             growth_rate="Medium", hp=20, max_hp=20, ev={"hp": 0, "attack": 1}, iv={"hp": 15, "attack": 20}, gender="Male", 
+                             battle_status="Fighting", xp=0, position=(0, 0))
+
+enemy_pokemon = PokemonObject(name="Charmander", pokemon_species="Charmander", shiny=True, id=2, level=5, ability="Blaze", typ="Fire", 
+                              stats={"hp": 18, "attack": 35, "defense": 12}, attacks=["Ember", "Scratch"], base_experience=62, 
+                              growth_rate="Medium", hp=18, max_hp=18, ev={"hp": 0, "attack": 2}, iv={"hp": 10, "attack": 25}, gender="Male", 
+                              battle_status="Fighting", xp=0, position=(5, 5))
+
+
+ankimon_tracker_obj = AnkimonTracker()
+# Set Pokémon in the tracker
+ankimon_tracker_obj.set_main_pokemon(main_pokemon)
+ankimon_tracker_obj.set_enemy_pokemon(enemy_pokemon)
+
+ankimon_tracker_window = AnkimonTrackerWindow(
+    tracker = ankimon_tracker_obj
+)
+
+data_handler_obj = DataHandler()
+data_handler_window = DataHandlerWindow(
+    data_handler = data_handler_obj
+)
 # Create the Settings object
 settings_obj = Settings()
 
@@ -83,15 +130,8 @@ with open(items_list_path, 'r') as file:
 with open(sound_list_path, 'r') as json_file:
     sound_list = json.load(json_file)
 
-# Get the profile folder
-profilename = mw.pm.name
-#profilefolder = Path(mw.pm.profileFolder())
-#mediafolder = Path(mw.col.media.dir())
-
 mainpkmn = 0
 mainpokemon_hp = 100
-#test mainpokemon
-#battlescene_file = "pkmnbattlescene.png"
 pokemon_encounter = 0
 
 # check for sprites, data
@@ -149,7 +189,6 @@ if mainpokemon_path.is_file():
 
 window = None
 gender = None
-card_counter = -1
 item_receive_value = random.randint(30, 120)
 system_name = platform.system()
 
@@ -165,7 +204,25 @@ check_data = CheckPokemonData(mainpokemon_path, mypokemon_path, config)
 
 gui_hooks.addon_config_editor_will_save_json.append(check_data.modify_json_configuration_on_save)
 gui_hooks.sync_did_finish.append(check_data.sync_on_anki_close)
-    
+
+#If reviewer showed question; start card_timer for answering card
+def on_show_question(Card):
+    """
+    This function is called when a question is shown.
+    You can access and manipulate the card object here.
+    """
+    ankimon_tracker_obj.start_card_timer()  # This line should have 4 spaces of indentation
+
+def on_show_answer(Card):
+    """
+    This function is called when a question is shown.
+    You can access and manipulate the card object here.
+    """
+    ankimon_tracker_obj.stop_card_timer()  # This line should have 4 spaces of indentation
+
+gui_hooks.reviewer_did_show_question.append(on_show_question)
+gui_hooks.reviewer_did_show_answer.append(on_show_answer)
+
 #On Save on Config, accept new config and add pokemon collection and mainpokemon to it
 gui_hooks.addon_config_editor_will_save_json.append(check_data.modify_json_configuration_on_save)
 gui_hooks.addon_config_editor_will_display_json.append(addon_config_editor_will_display_json)
@@ -198,7 +255,7 @@ try:
                 showWarning("Failed to retrieve Ankimon content from GitHub.")
 except Exception as e:
     if ssh != False:
-        showInfo(f"Error in try connect to GitHub: {e}")
+        logger.log_and_showinfo("info",f"Error in try connect to GitHub: {e}")
 
 def open_help_window(online_connectivity):
     try:
@@ -252,9 +309,7 @@ def play_sound():
     global sounds
     if sounds is True:
         global id
-        #id = search_pokedex(name.lower(), "id")
         file_name = f"{id}.ogg"
-        #file_name = f"{name.lower()}.mp3"
         audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
         if audio_path.is_file():
             audio_path = Path(audio_path)
@@ -304,24 +359,23 @@ def answerCard_before(filter, reviewer, card):
 
 aqt.gui_hooks.reviewer_will_answer_card.append(answerCard_before)
 # Globale Variable für die Zählung der Bewertungen
-card_ratings_count = {"Again": 0, "Hard": 0, "Good": 0, "Easy": 0}
 
 def answerCard_after(rev, card, ease):
     maxEase = utils.answBtnAmt
     aw = aqt.mw.app.activeWindow() or aqt.mw
     # Aktualisieren Sie die Zählung basierend auf der Bewertung
-    global card_ratings_count
     if ease == 1:
-        card_ratings_count["Again"] += 1
+        ankimon_tracker_obj.review("again")
     elif ease == maxEase - 2:
-        card_ratings_count["Hard"] += 1
+        ankimon_tracker_obj.review("hard")
     elif ease == maxEase - 1:
-        card_ratings_count["Good"] += 1
+        ankimon_tracker_obj.review("good")
     elif ease == maxEase:
-        card_ratings_count["Easy"] += 1
+        ankimon_tracker_obj.review("easy")
     else:
         # default behavior for unforeseen cases
         tooltip("Error in ColorConfirmation: Couldn't interpret ease")
+    ankimon_tracker_obj.reset_card_timer()
 
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
 
@@ -630,6 +684,7 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, heigh
         lab.show()
         lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))    
         QTimer.singleShot(period, lambda: lab.hide())
+        logger.log_and_showinfo("game", msg)
 
 pokemon_species = None
 # Your random Pokémon generation function using the PokeAPI
@@ -734,7 +789,7 @@ if database_complete:
                 try:
                     hp_stat = int(stats['hp'])
                 except Exception as e:
-                    showInfo(f"Error occured: {e}")
+                    logger.log_and_showinfo("info" ,f"Error occured: {e}")
                 hp = calculate_hp(hp_stat, level, ev, iv)
                 max_hp = hp
                 global ev_yield
@@ -743,7 +798,7 @@ if database_complete:
             else:
                 return generate_random_pokemon()  # Return the result of the recursive call
         except FileNotFoundError:
-            showInfo("Error", "Can't open the JSON File.")
+            logger.log_and_showinfo("info","Error - Can't open the JSON File.")
             # Set the layout for the dialog
 
 def kill_pokemon():
@@ -856,7 +911,8 @@ def get_pokemon_by_category(category_name):
     return random_pokemon_name_from_tier #return random pokemon name from that category
 
 def choose_random_pkmn_from_tier():
-    global cards_per_round, card_counter
+    global cards_per_round
+    card_counter = ankimon_tracker_obj.card_counter
     possible_tiers = []
     try:
         if card_counter < (40*cards_per_round):
@@ -984,14 +1040,14 @@ def find_details_move(move_name):
                 move = moves_data.get(move_name.lower())
                 return move
             except:
-                showInfo(f"Can't find the attack {move_name} in the database.")
+                logger.log_and_showinfo("info",f"Can't find the attack {move_name} in the database.")
                 move = moves_data.get("tackle")
                 return move
     except FileNotFoundError:
-        showInfo("Moves Data File Missing!\nPlease Download Moves Data")
+        logger.log_and_showinfo("info","Moves Data File Missing!\nPlease Download Moves Data")
         return None
     except json.JSONDecodeError as e:
-        showInfo(f"Error decoding JSON: {e}")
+        logger.log_and_showinfo("info",f"Error decoding JSON: {e}")
         return None
     except Exception as e:
         showWarning(f"There is an issue in find_details_move{e}")
@@ -1025,7 +1081,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         except:
             pass
         if pop_up_dialog_message_on_defeat is True:
-            showInfo(f"{msg}")
+            logger.log_and_showinfo("info",f"{msg}")
         mainpokemon_xp = int(mainpokemon_xp) - int(experience)
         name = f"{mainpokemon_name}"
         # Update mainpokemon_evolution and handle evolution logic
@@ -1036,7 +1092,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                 if min_level == mainpokemon_level:
                     msg = ""
                     msg += f"{mainpokemon_name} is about to evolve to {pokemon} at level {min_level}"
-                    showInfo(f"{msg}")
+                    logger.log_and_showinfo("info",f"{msg}")
                     color = "#6A4DAC"
                     try:
                         tooltipWithColour(msg, color)
@@ -1058,7 +1114,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                                     color = "#6A4DAC"
                                     tooltipWithColour(msg, color)
                                     if pop_up_dialog_message_on_defeat is True:
-                                        showInfo(f"{msg}")
+                                        logger.log_and_showinfo("info",f"{msg}")
                                 else:
                                     dialog = AttackDialog(attacks, new_attack)
                                     if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -1073,13 +1129,13 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                                         # If the attack is found, replace it with 'new_attack'
                                         if index_to_replace is not None:
                                             attacks[index_to_replace] = new_attack
-                                            showInfo(
+                                            logger.log_and_showinfo("info",
                                                 f"Replaced '{selected_attack}' with '{new_attack}'")
                                         else:
-                                            showInfo(f"'{selected_attack}' not found in the list")
+                                            logger.log_and_showinfo("info",f"'{selected_attack}' not found in the list")
                                     else:
                                         # Handle the case where the user cancels the dialog
-                                        showInfo(f"{new_attack} will be discarded.")
+                                        logger.log_and_showinfo("info",f"{new_attack} will be discarded.")
                             mainpkmndata["attacks"] = attacks
                             break
         else:
@@ -1088,7 +1144,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                     attacks = mainpkmndata["attacks"]
                     new_attacks = get_levelup_move_for_pokemon(mainpokemon_name.lower(), int(mainpokemon_level))
                     if new_attacks:
-                        showInfo(f"Your {mainpokemon_name.capitalize()} can now learn a new attack !")
+                        logger.log_and_showinfo("info",f"Your {mainpokemon_name.capitalize()} can now learn a new attack !")
                     for new_attack in new_attacks:
                         if len(attacks) < 4:
                             attacks.append(new_attack)
@@ -1106,13 +1162,13 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                                 # If the attack is found, replace it with 'new_attack'
                                 if index_to_replace is not None:
                                     attacks[index_to_replace] = new_attack
-                                    showInfo(
+                                    logger.log_and_showinfo("info",
                                         f"Replaced '{selected_attack}' with '{new_attack}'")
                                 else:
-                                    showInfo(f"'{selected_attack}' not found in the list")
+                                    logger.log_and_showinfo("info",f"'{selected_attack}' not found in the list")
                             else:
                                 # Handle the case where the user cancels the dialog
-                                showInfo("No attack selected")
+                                logger.log_and_showinfo("info","No attack selected")
                     mainpkmndata["attacks"] = attacks
                     break
     else:
@@ -1124,7 +1180,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         except:
             pass
         if pop_up_dialog_message_on_defeat is True:
-            showInfo(f"{msg}")
+            logger.log_and_showinfo("info",f"{msg}")
     # Load existing Pokémon data if it exists
 
     for mainpkmndata in main_pokemon_data:
@@ -1212,13 +1268,13 @@ def evolve_pokemon(pkmn_name):
                                         # If the attack is found, replace it with 'new_attack'
                                         if index_to_replace is not None:
                                             attacks[index_to_replace] = new_attack
-                                            showInfo(
+                                            logger.log_and_showinfo("info",
                                                 f"Replaced '{selected_attack}' with '{new_attack}'")
                                         else:
-                                            showInfo(f"'{selected_attack}' not found in the list")
+                                            logger.log_and_showinfo("info",f"'{selected_attack}' not found in the list")
                                     else:
                                         # Handle the case where the user cancels the dialog
-                                        showInfo("No attack selected")
+                                        logger.log_and_showinfo("info","No attack selected")
                             pokemon["attacks"] = attacks
                             if search_pokedex(evoName, "evos"):
                                 pokemon["evos"].append(search_pokedex(evoName.lower(), "evos"))
@@ -1274,7 +1330,7 @@ def evolve_pokemon(pkmn_name):
                                 with open(str(mainpokemon_path), "w") as output_file:
                                         pokemon = [pokemon]
                                         json.dump(pokemon, output_file, indent=2)
-                            showInfo(f"Your {pkmn_name.capitalize()} has evolved to {evoName.capitalize()}! \n You can now close this Window.")
+                            logger.log_and_showinfo("info",f"Your {pkmn_name.capitalize()} has evolved to {evoName.capitalize()}! \n You can now close this Window.")
     except Exception as e:
         showWarning(f"{e}")
     prevo_name = pkmn_name
@@ -1311,13 +1367,13 @@ def cancel_evolution(pkmn_name):
                                 # If the attack is found, replace it with 'new_attack'
                                 if index_to_replace is not None:
                                     attacks[index_to_replace] = new_attack
-                                    showInfo(
+                                    logger.log_and_showinfo("info",
                                         f"Replaced '{selected_attack}' with '{new_attack}'")
                                 else:
-                                    showInfo(f"'{selected_attack}' not found in the list")
+                                    logger.log_and_showinfo("info",f"'{selected_attack}' not found in the list")
                             else:
                                 # Handle the case where the user cancels the dialog
-                                showInfo("No attack selected")
+                                logger.log_and_showinfo("info","No attack selected")
                     break
             for mainpkmndata in main_pokemon_data:
                 mainpkmndata["stats"]["xp"] = int(mainpokemon_xp)
@@ -1383,7 +1439,7 @@ def catch_pokemon(nickname):
         general_card_count_for_battle = 0
         msg = f"You caught {name}!"
         if pop_up_dialog_message_on_defeat is True:
-            showInfo(f"{msg}") # Display a message when the Pokémon is caught
+            logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
         color = "#6A4DAC" #pokemon leveling info color for tooltip
         try:
             tooltipWithColour(msg, color)
@@ -1392,7 +1448,7 @@ def catch_pokemon(nickname):
         new_pokemon()  # Show a new random Pokémon
     else:
         if pop_up_dialog_message_on_defeat is True:
-            showInfo("You have already caught the pokemon. Please close this window!") # Display a message when the Pokémon is caught
+            logger.log_and_showinfo("info","You have already caught the pokemon. Please close this window!") # Display a message when the Pokémon is caught
 
 def get_random_starter():
     category = "Starter"
@@ -1483,94 +1539,6 @@ def calculate_hp(base_stat_hp, level, ev, iv):
     #hp = int(((iv + 2 * (base_stat_hp + ev) + 100) * level) / 100 + 10)
     hp = int((((((base_stat_hp + iv_value) * 2 ) + ev_value) * level) / 100) + level + 10)
     return hp
-
-def get_mainpokemon_evo(pokemon_name):
-    with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
-            pokedex_data = json.load(json_file)
-            if pokemon_name not in pokedex_data:
-                return []
-            pokemon_info = pokedex_data[pokemon_name]
-            evolutions = pokemon_info.get("evos", [])
-            return evolutions
-
-def search_pokedex(pokemon_name,variable):
-    pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
-    with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
-            pokedex_data = json.load(json_file)
-            if pokemon_name in pokedex_data:
-                pokemon_info = pokedex_data[pokemon_name]
-                var = pokemon_info.get(variable, None)
-                return var
-            else:
-                return []
-
-def search_pokedex_by_name_for_id(pokemon_name, variable):
-    pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
-    with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
-            pokedex_data = json.load(json_file)
-            if pokemon_name in pokedex_data:
-                pokemon_info = pokedex_data[pokemon_name]
-                var = pokemon_info.get("num", None)
-                return var
-            else:
-                return None
-
-def search_pokedex_by_id(pokemon_id):
-    with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
-            pokedex_data = json.load(json_file) 
-            for entry_name, attributes in pokedex_data.items():
-                if attributes['num'] == pokemon_id:
-                    return entry_name
-    return 'Pokémon not found'
-
-def get_pokemon_diff_lang_name(pokemon_id):
-    global language
-    with open(pokenames_lang_path, mode='r', encoding='utf-8') as file:
-        reader = csv.reader(file)
-        next(reader)  # Skip the header row if there is one
-        for row in reader:
-            # Assuming the CSV structure is: pokemon_species_id,local_language_id,name,genus
-            species_id, lang_id, name, genus = row
-            if int(species_id) == pokemon_id and int(lang_id) == language:
-                return name
-    return "No Translation in this language"  # Return None if no match is found
-
-def get_pokemon_descriptions(species_id):
-    global language
-    descriptions = []  # Initialize an empty list to store matching descriptions
-    with open(pokedesc_lang_path, mode='r', encoding='utf-8') as csv_file:
-        csv_reader = csv.DictReader(csv_file)
-        for row in csv_reader:
-            if int(row['species_id']) == species_id and int(row['language_id']) == language:
-                # Replace control characters for readability, if necessary
-                flavor_text = row['flavor_text'].replace('\x0c', ' ')
-                descriptions.append(flavor_text)  # Add the matching description to the list
-    if descriptions:
-        if len(descriptions) > 1:
-            return random.choice(descriptions)
-        else:
-            return descriptions
-    else:
-        ["Description not found."]
-
-def search_pokeapi_db(pkmn_name,variable):
-    with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
-            pokedex_data = json.load(json_file)
-            for pokemon_data in pokedex_data:
-                name = pokemon_data["name"]
-                if pokemon_data["name"] == pkmn_name:
-                    var = pokemon_data.get(variable, None)
-                    return var
-
-
-def search_pokeapi_db_by_id(pkmn_id,variable):
-    with open(str(pokeapi_db_path), "r", encoding="utf-8") as json_file:
-            pokedex_data = json.load(json_file)
-            for pokemon_data in pokedex_data:
-                if pokemon_data["id"] == pkmn_id:
-                    var = pokemon_data.get(variable, None)
-                    return var
-
             
 def mainpokemon_data():
     global mainpkmn
@@ -1654,19 +1622,6 @@ def get_effectiveness(move_type):
     # If the combination is not found, return None or a default value
     return None
 
-
-def calc_multiply_card_rating():
-    global card_ratings_count
-    max_points = cards_per_round * 10
-    multiply_sum = 0
-    multiply_sum += (card_ratings_count['Easy'] * 20)
-    multiply_sum += (card_ratings_count['Hard'] * 5)
-    multiply_sum += (card_ratings_count['Good'] * 10)
-    multiply_sum += (card_ratings_count['Again'] * 0)
-    card_ratings_count = {"Again": 0, "Hard": 0, "Good": 0, "Easy": 0}
-    multiplier = multiply_sum / max_points
-    return multiplier
-
 reviewed_cards_count = 0
 general_card_count_for_battle = 0
 cry_counter = 0
@@ -1675,7 +1630,7 @@ myseconds = 0
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
-        global reviewed_cards_count, card_ratings_count, card_counter, general_card_count_for_battle, cry_counter, battle_sounds
+        global reviewed_cards_count, card_ratings_count, general_card_count_for_battle, cry_counter, battle_sounds
         global hp, stats, type, battle_status, name, battle_stats, enemy_attacks, level
         global pokemon_encounter, mainpokemon_hp, seconds, myseconds, animate_time
         global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats, mainpokemon_ev, mainpokemon_iv
@@ -1684,7 +1639,7 @@ def on_review_card(*args):
         global achievements
         # Increment the counter when a card is reviewed
         reviewed_cards_count += 1
-        card_counter += 1
+        card_counter = ankimon_tracker_obj.card_counter
         cry_counter += 1
         dmg = 0
         seconds = 0
@@ -1724,7 +1679,7 @@ def on_review_card(*args):
             attack_counter = 0
             slp_counter = 0
             pokemon_encounter += 1
-            multiplier = calc_multiply_card_rating()
+            multiplier = ankimon_tracker_obj.multiplier
             msg = ""
             msg += f"{multiplier}x Multiplier"
             #failed card = enemy attack
@@ -2271,7 +2226,7 @@ class PokemonCollectionDialog(QDialog):
                             gender_symbol = ""
 
                         if pokemon_nickname is None:
-                            capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id)).capitalize()} {gender_symbol}"
+                            capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id), settings_obj.get('misc.language')).capitalize()} {gender_symbol}"
                         else:
                             capitalized_name = f"{pokemon_nickname.capitalize()} {gender_symbol}"
                         lvl = (f" Level: {pokemon_level}")
@@ -2444,7 +2399,7 @@ class PokemonCollectionDialog(QDialog):
                                     gender_symbol = ""
 
                                 if pokemon_nickname is None:
-                                    capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id)).capitalize()} {gender_symbol}"
+                                    capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id), settings_obj.get('misc.language')).capitalize()} {gender_symbol}"
                                 else:
                                     capitalized_name = f"{pokemon_nickname.capitalize()} {gender_symbol}"
                                 lvl = (f" Level: {pokemon_level}")
@@ -2609,7 +2564,7 @@ class PokemonCollectionDialog(QDialog):
                         elif pokemon_gender == "F":
                             gender_symbol = "♀"
 
-                        capitalized_name = f"{pokemon_nickname.capitalize() if pokemon_nickname else get_pokemon_diff_lang_name(int(pokemon_id)).capitalize()} {gender_symbol}"
+                        capitalized_name = f"{pokemon_nickname.capitalize() if pokemon_nickname else get_pokemon_diff_lang_name(int(pokemon_id), settings_obj.get('misc.language')).capitalize()} {gender_symbol}"
                         lvl = f" Level: {pokemon_level}"
                         type_txt = "Type: " + " ".join(type.capitalize() for type in pokemon_type)
                         ability_txt = f" Ability: {pokemon_ability.capitalize()}"
@@ -2718,17 +2673,17 @@ def rename_pkmn(nickname, pkmn_name, position):
                                         # Save the modified data to the output JSON file
                                 with open(str(mypokemon_path), "w") as output_file:
                                     json.dump(mypokemondata, output_file, indent=2)
-                                showInfo(f"Your {pkmn_name.capitalize()} has been renamed to {nickname}!")
+                                logger.log_and_showinfo("info",f"Your {pkmn_name.capitalize()} has been renamed to {nickname}!")
                                 pokecollection_win.refresh_pokemon_collection()
     except Exception as e:
         showWarning(f"An error occured: {e}")
 
 def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position):
-    global language, gif_in_collection
+    global gif_in_collection
     # Create the dialog
     try:
-        lang_name = get_pokemon_diff_lang_name(int(id)).capitalize()
-        lang_desc = get_pokemon_descriptions(int(id))
+        lang_name = get_pokemon_diff_lang_name(int(id), settings_obj.get('misc.language')).capitalize()
+        lang_desc = get_pokemon_descriptions(int(id), settings_obj.get('misc.language'))
         description = lang_desc
         wpkmn_details = QDialog(mw)
         if nickname is None:
@@ -2997,7 +2952,7 @@ def attack_details_window(attacks):
             try:
                 move = find_details_move(attack)
             except:
-                showInfo(f"Can't find the attack {attack} in the database.")
+                logger.log_and_showinfo("info",f"Can't find the attack {attack} in the database.")
                 move = find_details_move("tackle")
         html_content += f"""
         <tr>
@@ -3099,7 +3054,7 @@ def remember_attack(id, attacks, new_attack):
                 if len(attacks) < 4:
                         attacks.append(new_attack)
                         msg += f"\n Your {mainpkmndata['name'].capitalize()} has learned {new_attack} !"
-                        showInfo(f"{msg}")
+                        logger.log_and_showinfo("info",f"{msg}")
                 else:
                         dialog = AttackDialog(attacks, new_attack)
                         if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -3114,10 +3069,10 @@ def remember_attack(id, attacks, new_attack):
                             # If the attack is found, replace it with 'new_attack'
                             if index_to_replace is not None:
                                 attacks[index_to_replace] = new_attack
-                                showInfo(f"Replaced '{selected_attack}' with '{new_attack}'")
+                                logger.log_and_showinfo("info",f"Replaced '{selected_attack}' with '{new_attack}'")
                             else:
                                 # Handle the case where the user cancels the dialog
-                                showInfo(f"{new_attack} will be discarded.")
+                                logger.log_and_showinfo("info",f"{new_attack} will be discarded.")
             mainpkmndata["attacks"] = attacks
             mypkmndata = mainpkmndata
             mainpkmndata = [mainpkmndata]
@@ -3137,7 +3092,7 @@ def remember_attack(id, attacks, new_attack):
             with open(str(mypokemon_path), "w") as output_file:
                 json.dump(mypokemondata, output_file, indent=2)
         else:
-            showInfo("Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
+            logger.log_and_showinfo("info","Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
     
 
 def type_icon_path(type):
@@ -3191,7 +3146,7 @@ def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks,
     with open(str(mainpokemon_path), "w") as json_file:
         json.dump(main_pokemon_data, json_file, indent=2)
 
-    showInfo(f"{capitalized_name} has been chosen as your main Pokemon !")
+    logger.log_and_showinfo("info",f"{capitalized_name} has been chosen as your main Pokemon !")
     new_pokemon() #new pokemon if you change your pokemon
     mainpokemon_data()
     if pkmn_window is True:
@@ -3355,13 +3310,13 @@ def find_move_by_num(move_num):
                 return move  # Return the move details if found
 
         # If the move wasn't found, return a message indicating so
-        return showInfo(f"No move found with number: {move_num}")
+        return logger.log_and_showinfo("info",f"No move found with number: {move_num}")
 
     except FileNotFoundError:
-        return showInfo("The moves file was not found. Please check the file path.")
+        return logger.log_and_showinfo("info","The moves file was not found. Please check the file path.")
 
     except json.JSONDecodeError as e:
-        return showInfo(f"Error decoding JSON: {e}")
+        return logger.log_and_showinfo("info",f"Error decoding JSON: {e}")
 
 
 def find_pokemon_by_id(pokemon_id):
@@ -3376,13 +3331,13 @@ def find_pokemon_by_id(pokemon_id):
                 return details  # Return the details if the Pokemon is found
 
         # If the Pokemon wasn't found, return a message indicating so
-        showInfo(f"No Pokemon found with ID: {pokemon_id}")
+        logger.log_and_showinfo("info",f"No Pokemon found with ID: {pokemon_id}")
 
     except FileNotFoundError:
-        showInfo("The pokedex file was not found. Please check the file path.")
+        logger.log_and_showinfo("info","The pokedex file was not found. Please check the file path.")
 
     except json.JSONDecodeError as e:
-        showInfo(f"Error decoding JSON: {e}")
+        logger.log_and_showinfo("info",f"Error decoding JSON: {e}")
 
 def trade_pokemon(old_pokemon_name, pokemon_trade, position):
     try:
@@ -3401,16 +3356,16 @@ def trade_pokemon(old_pokemon_name, pokemon_trade, position):
         pokemon_list[position] = pokemon_trade  # Replace with new Pokemon data
         break
     else:
-        showInfo(f"Pokemon named '{old_pokemon_name}' not found.")
+        logger.log_and_showinfo("info",f"Pokemon named '{old_pokemon_name}' not found.")
         return
 
     # Write the updated data back to the file
     try:
         with open(mypokemon_path, 'w') as file:
             json.dump(pokemon_list, file, indent=2)
-        showInfo(f"{old_pokemon_name} has been traded successfully!")
+        logger.log_and_showinfo("info",f"{old_pokemon_name} has been traded successfully!")
     except Exception as e:
-        showInfo(f"An error occurred while writing to the file: {e}")
+        logger.log_and_showinfo("info",f"An error occurred while writing to the file: {e}")
 
 def PokemonTradeIn(number_code, old_pokemon_name, position):
     if len(number_code) > 15:
@@ -3483,7 +3438,7 @@ def PokemonTradeIn(number_code, old_pokemon_name, position):
         #with open(mypokemon_path, 'w') as file:
         #    json.dump(pokemon_list, file, indent=2)
         trade_pokemon(f"{old_pokemon_name}", pokemon_trade, position)
-        showInfo(f"You have sucessfully traded your {old_pokemon_name} for {name} ")
+        logger.log_and_showinfo("info",f"You have sucessfully traded your {old_pokemon_name} for {name} ")
     else:
         showWarning("Please enter a valid Code !")
 
@@ -3496,7 +3451,7 @@ def PokemonFree(position, name):
                                  QMessageBox.StandardButton.No)
 
     if reply == QMessageBox.StandardButton.No:
-        showInfo("Release cancelled.")
+        logger.log_and_showinfo("info","Release cancelled.")
         return
 
     # Load the data from the file
@@ -3520,7 +3475,7 @@ def PokemonFree(position, name):
         # Write the updated data back to the file
         with open(mypokemon_path, 'w') as file:
             json.dump(pokemon_list, file, indent=2)
-        showInfo(f"{name.capitalize()} has been let free.")
+        logger.log_and_showinfo("info",f"{name.capitalize()} has been let free.")
         pokecollection_win.refresh_pokemon_collection()
     else:
         showWarning("You can't free your Main Pokemon!")
@@ -4427,7 +4382,7 @@ def choose_pokemon(starter_name):
     with open(str(mypokemon_path), "w") as json_file:
         json.dump(caught_pokemon_data, json_file, indent=2)
 
-    showInfo(f"{name.capitalize()} has been chosen as Starter Pokemon !")
+    logger.log_and_showinfo("info",f"{name.capitalize()} has been chosen as Starter Pokemon !")
 
     starter_window.display_chosen_starter_pokemon(starter_name)
 
@@ -4578,9 +4533,9 @@ def save_error_code(error_code):
         error_fix_msg += (f"\n Please use Gen {str(generation_number)[0]} or lower")
 
     except Exception as e:
-        showInfo(f"An error occurred: {e}")
+        logger.log_and_showinfo("info",f"An error occurred: {e}")
 
-    showInfo(f"{error_fix_msg}")
+    logger.log_and_showinfo("info",f"{error_fix_msg}")
 
 def export_all_pkmn_showdown():
     # Create a main window
@@ -4671,7 +4626,7 @@ def export_all_pkmn_showdown():
 
         export_window.exec()
     except Exception as e:
-        showInfo(f"An error occurred: {e}")
+        logger.log_and_showinfo("info",f"An error occurred: {e}")
 
 def flex_pokemon_collection():
     # Create a main window
@@ -4755,7 +4710,7 @@ def flex_pokemon_collection():
 
         export_window.exec()
     except Exception as e:
-        showInfo(f"An error occurred: {e}")
+        logger.log_and_showinfo("info",f"An error occurred: {e}")
 
 def open_browser_window():
     # Open the Pokémon Showdown Team Builder in the default web browser
@@ -4855,7 +4810,7 @@ class TestWindow(QWidget):
         caught = 0
         id = int(search_pokedex(name.lower(), "num"))
         # Capitalize the first letter of the Pokémon's name
-        lang_name = get_pokemon_diff_lang_name(int(id))
+        lang_name = get_pokemon_diff_lang_name(int(id), settings_obj.get('misc.language'))
         name = name.capitalize()
         # calculate wild pokemon max hp
         max_hp = calculate_hp(stats["hp"], level, ev, iv)
@@ -4968,7 +4923,7 @@ class TestWindow(QWidget):
             # custom font
             custom_font = load_custom_font(int(26))
             msg_font = load_custom_font(int(32))
-            mainpokemon_lang_name = get_pokemon_diff_lang_name(int(mainpokemon_id))
+            mainpokemon_lang_name = get_pokemon_diff_lang_name(int(mainpokemon_id), settings_obj.get('misc.language'))
             # Draw the text on top of the image
             # Adjust the font size as needed
             painter.setFont(custom_font)
@@ -5092,9 +5047,9 @@ class TestWindow(QWidget):
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(31, 31, 39))  # Text color
-        lang_name = get_pokemon_diff_lang_name(int(id))
+        lang_name = get_pokemon_diff_lang_name(int(id), settings_obj.get('misc.language'))
         painter.drawText(48, 67, lang_name)
-        mainpokemon_lang_name = get_pokemon_diff_lang_name(int(mainpokemon_id))
+        mainpokemon_lang_name = get_pokemon_diff_lang_name(int(mainpokemon_id), settings_obj.get('misc.language'))
         painter.drawText(326, 200, mainpokemon_lang_name)
         painter.drawText(208, 67, lvl)
         painter.drawText(490, 199, mainlvl)
@@ -5240,7 +5195,7 @@ class TestWindow(QWidget):
     def pokemon_display_dead_pokemon(self):
         global pokemon_hp, name, id, level, type, caught_pokemon, caught
         # Create the dialog
-        lang_name = get_pokemon_diff_lang_name(int(id))
+        lang_name = get_pokemon_diff_lang_name(int(id), settings_obj.get('misc.language'))
         window_title = (f"Would you want let the  wild {lang_name} free or catch the wild {lang_name} ?")
         # Display the Pokémon image
         pkmnimage_file = f"{int(search_pokedex(name.lower(),'num'))}.png"
@@ -5449,7 +5404,7 @@ def rate_this_addon():
             # Save the updated data back to the file
             with open(rate_path, 'w') as file:
                 json.dump(rate_data, file, indent=4)
-            showInfo(dont_show_this_button_text)
+            logger.log_and_showinfo("info",dont_show_this_button_text)
 
         def rate_this_button():
             rate_window.close()
@@ -5595,7 +5550,7 @@ class StarterWindow(QWidget):
         self.setMaximumHeight(340)
         self.show()
         self.starter = True
-        showInfo("You have chosen your Starter Pokemon ! \n You can now close this window ! \n Please restart your Anki to restart your Pokemon Journey!")
+        logger.log_and_showinfo("info","You have chosen your Starter Pokemon ! \n You can now close this window ! \n Please restart your Anki to restart your Pokemon Journey!")
         global achievments
         check = check_for_badge(achievements,7)
         if check is False:
@@ -5613,7 +5568,7 @@ class StarterWindow(QWidget):
         self.setMaximumHeight(340)
         self.show()
         self.starter = True
-        showInfo("You have received your Fossil Pokemon ! \n You can now close this window !")
+        logger.log_and_showinfo("info","You have received your Fossil Pokemon ! \n You can now close this window !")
         global achievments
         check = check_for_badge(achievements,19)
         if check is False:
@@ -5892,7 +5847,7 @@ class EvoWindow(QWidget):
                 pokemon_evo = pokemon_evos[0]
                 pokemon_evo_id = int((search_pokedex(pokemon_evo.lower(), "num")))
         except (IndexError, ValueError, TypeError) as e:
-            showInfo(f"Error finding evolution details: {e}")
+            logger.log_and_showinfo("info",f"Error finding evolution details: {e}")
         window_title = (f"{pkmn_name.capitalize()} is evolving to {pokemon_evo.capitalize()} ?")
         # Display the Pokémon image
         pkmnimage_path = frontdefault / f"{pkmn_id}.png"
@@ -6234,7 +6189,7 @@ class ItemWindow(QWidget):
             mainpokemon_hp = mainpkmn_max_hp
         self.delete_item(item_name)
         play_effect_sound("HpHeal")
-        showInfo(f"{pkmn_name} was healed for {heal_points}")
+        logger.log_and_showinfo("info",f"{pkmn_name} was healed for {heal_points}")
 
     def Check_Evo_Item(self, pkmn_name, item_name):
         try:
@@ -6245,10 +6200,10 @@ class ItemWindow(QWidget):
             evoItem = str(evoItem).lower()
             if evoItem == item_name:  # Corrected this line to assign the item_name to evoItem
                 # Perform your action when the item matches the Pokémon's evolution item
-                showInfo("Pokemon Evolution is fitting !")
+                logger.log_and_showinfo("info","Pokemon Evolution is fitting !")
                 evo_window.display_pokemon_evo(pkmn_name)
             else:
-                showInfo("This Pokemon does not need this item.")
+                logger.log_and_showinfo("info","This Pokemon does not need this item.")
         except Exception as e:
             showWarning(f"{e}")
     
@@ -6287,7 +6242,7 @@ class ItemWindow(QWidget):
 
     def more_info_button_act(self, item_name):
         description = get_id_and_description_by_item_name(item_name)
-        showInfo(f"{description}")
+        logger.log_and_showinfo("info",f"{description}")
     
 
 
@@ -6466,82 +6421,60 @@ achievement_bag = AchievementWindow()
 version_dialog = Version_Dialog()
 
 #buttonlayout
+from .menu_buttons import create_menu_actions
+
+# Create a sample trainer card to test
+trainer_card = TrainerCard(
+    trainer_name="Ash Ketchum",
+    badge_count=8,
+    favorite_pokemon="Pikachu",
+    trainer_id="00123",
+    level=5,
+    xp=450,
+    team="Pikachu (Level 25), Charizard (Level 50), Bulbasaur (Level 15)",
+    image_path=f"{trainer_sprites_path}" + "/" + "ash-sinnoh.png",
+    highest_level=100,
+    league = 'Indigo',
+    cash = "157"
+)
+
+# Create the TrainerCard GUI and show it inside Anki's main window
+trainer_card_window = TrainerCardGUI(trainer_card, parent=mw)
+trainer_card_window.setWindowTitle("Trainer Card GUI")
+
+# Initialize the menu
 mw.pokemenu = QMenu('&Ankimon', mw)
-# and add it to the tools menu
 mw.form.menubar.addMenu(mw.pokemenu)
 
-if database_complete:
-    pokecol_action = QAction("Show Pokemon Collection", mw)
-    # set it to call testFunction when it's clicked
-    mw.pokemenu.addAction(pokecol_action)
-    qconnect(pokecol_action.triggered, pokecollection_win.show)
-    # Make new PokeAnki menu under tools
-
-    test_action10 = QAction("Open Ankimon Window", mw)
-    #test_action10.triggered.connect(test_window.open_dynamic_window)
-    mw.pokemenu.addAction(test_action10)
-    qconnect(test_action10.triggered, test_window.open_dynamic_window)
-
-    test_action15 = QAction("Itembag", mw)
-    test_action15.triggered.connect(item_window.show_window)
-    mw.pokemenu.addAction(test_action15)
-
-    achievement_bag_action = QAction("Achievements", mw)
-    achievement_bag_action.triggered.connect(achievement_bag.show_window)
-    mw.pokemenu.addAction(achievement_bag_action)
-
-    test_action8 = QAction("Open Pokemon Showdown Teambuilder", mw)
-    qconnect(test_action8.triggered, open_team_builder)
-    mw.pokemenu.addAction(test_action8)
-
-    test_action6 = QAction("Export Main Pokemon to PkmnShowdown", mw)
-    qconnect(test_action6.triggered, export_to_pkmn_showdown)
-    mw.pokemenu.addAction(test_action6)
-
-    test_action7 = QAction("Export All Pokemon to PkmnShowdown", mw)
-    qconnect(test_action7.triggered, export_all_pkmn_showdown)
-    mw.pokemenu.addAction(test_action7)
-
-    flex_pokecoll_action = QAction("Export All Pokemon to PokePast for flexing", mw)
-    qconnect(flex_pokecoll_action.triggered, flex_pokemon_collection)
-    mw.pokemenu.addAction(flex_pokecoll_action)
-    
-
-test_action11 = QAction("Check Effectiveness Chart", mw)
-test_action11.triggered.connect(eff_chart.show_eff_chart)
-mw.pokemenu.addAction(test_action11)
-
-test_action12 = QAction("Check Generations and Pokemon Chart", mw)
-test_action12.triggered.connect(gen_id_chart.show_gen_chart)
-mw.pokemenu.addAction(test_action12)
-
-test_action3 = QAction("Download Resources", mw)
-qconnect(test_action3.triggered, show_agreement_and_download_database)
-mw.pokemenu.addAction(test_action3)
-
-test_action14 = QAction("Credits", mw)
-test_action14.triggered.connect(credits.show_window)
-mw.pokemenu.addAction(test_action14)
-
-test_action13 = QAction("About and License", mw)
-test_action13.triggered.connect(license.show_window)
-mw.pokemenu.addAction(test_action13)
-
-help_action = QAction("Open Help Guide", mw)
-help_action.triggered.connect(lambda :open_help_window(online_connectivity))
-mw.pokemenu.addAction(help_action)
-
-test_action16 = QAction("Report Bug", mw)
-test_action16.triggered.connect(report_bug)
-mw.pokemenu.addAction(test_action16)
-
-rate_action = QAction("Rate This", mw)
-rate_action.triggered.connect(rate_addon_url)
-mw.pokemenu.addAction(rate_action)
-
-version_action = QAction("Version", mw)
-version_action.triggered.connect(version_dialog.open)
-mw.pokemenu.addAction(version_action)
+# Create menu actions
+# Create menu actions
+actions = create_menu_actions(
+    database_complete,
+    online_connectivity,
+    pokecollection_win,
+    item_window,
+    test_window,
+    achievement_bag,
+    open_team_builder,
+    export_to_pkmn_showdown,
+    export_all_pkmn_showdown,
+    flex_pokemon_collection,
+    eff_chart,
+    gen_id_chart,
+    show_agreement_and_download_database,
+    credits,
+    license,
+    open_help_window,
+    report_bug,
+    rate_addon_url,
+    version_dialog,
+    trainer_card,
+    ankimon_tracker_window,
+    logger,
+    trainer_card_window,
+    data_handler_window,
+    settings_window
+)
 
     #https://goo.gl/uhAxsg
     #https://www.reddit.com/r/PokemonROMhacks/comments/9xgl7j/pokemon_sound_effects_collection_over_3200_sfx/
@@ -6643,9 +6576,3 @@ if reviewer_buttons is True:
     Reviewer._bottomHTML = _bottomHTML  # Assuming you have access to self in this context
     # Replace the original link handler function with the modified one
     Reviewer._linkHandler = linkHandler_wrap
-
-
-config_action = QAction("Settings", mw)
-config_action.triggered.connect(settings_window.show_window)
-# Show the Settings window
-mw.pokemenu.addAction(config_action)
