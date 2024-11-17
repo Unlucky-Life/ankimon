@@ -59,6 +59,9 @@ try:
     from .functions.pokedex_functions import search_pokedex, special_pokemon_names_for_min_level, search_pokedex_by_name_for_id, \
         search_pokedex_by_id, get_mainpokemon_evo, search_pokeapi_db, search_pokeapi_db_by_id, get_pokemon_descriptions, \
         get_pokemon_diff_lang_name
+    from .functions.badges_functions import *
+    from .functions.battle_functions import *
+    from .functions.pokemon_functions import *
 except ImportError:
     showWarning("Error in importing pokedex_functions")
 
@@ -82,15 +85,34 @@ from .pyobj.trainer_card_window import TrainerCardGUI
 logger = ShowInfoLogger()
 
 # Log an example message
-#logger.log_and_showinfo('info', "Ankimon Startup.")
+logger.log_and_showinfo('info', "Ankimon Startup.")
 
 # Initialize Pokémon objects
-main_pokemon = PokemonObject(name="Pikachu", pokemon_species="Pikachu", shiny=False, id=1, level=5, ability="Static", typ="Electric", 
-                             stats={"hp": 20, "attack": 30, "defense": 15}, attacks=["Thunderbolt", "Quick Attack"], base_experience=112, 
-                             growth_rate="Medium", hp=20, max_hp=20, ev={"hp": 0, "attack": 1}, iv={"hp": 15, "attack": 20}, gender="Male", 
-                             battle_status="Fighting", xp=0, position=(0, 0))
+# Initialize default values for the main Pokémon in a more compact form
+default_pokemon_data = {
+    "name": "Pikachu", "gender": "M", "level": 5, "id": 1, "ability": "Static", 
+    "type": ["Electric"], "stats": {"hp": 20, "atk": 30, "def": 15, "spa": 50, "spd": 40, "spe": 60, "xp": 0}, 
+    "ev": {"hp": 0, "atk": 1, "def": 0, "spa": 0, "spd": 0, "spe": 0}, "iv": {"hp": 15, "atk": 20, "def": 10, "spa": 10, "spd": 10, "spe": 10},
+    "attacks": ["Thunderbolt", "Quick Attack"], "base_experience": 112, "current_hp": 20, "growth_rate": "Medium", "evos": ["Pikachu"]
+}
+# Check if the main Pokémon file exists and is valid
+if mainpokemon_path.is_file():
+    with open(mainpokemon_path, "r") as json_file:
+        try:
+            main_pokemon_data = json.load(json_file)
+            mainpokemon_empty = not main_pokemon_data
+            # Extract first Pokémon data if available
+            main_pokemon = PokemonObject(**main_pokemon_data[0]) if main_pokemon_data else PokemonObject(**default_pokemon_data)
+        except json.JSONDecodeError:
+            mainpokemon_empty = True
+else:
+    mainpokemon_empty = True
 
-enemy_pokemon = PokemonObject(name="Charmander", pokemon_species="Charmander", shiny=True, id=2, level=5, ability="Blaze", typ="Fire", 
+# Initialize with default data if file is empty or invalid
+if mainpokemon_empty:
+    main_pokemon = PokemonObject(**default_pokemon_data)
+
+enemy_pokemon = PokemonObject(name="Charmander", shiny=True, id=2, level=5, ability="Blaze", type="Fire", 
                               stats={"hp": 18, "attack": 35, "defense": 12}, attacks=["Ember", "Scratch"], base_experience=62, 
                               growth_rate="Medium", hp=18, max_hp=18, ev={"hp": 0, "attack": 2}, iv={"hp": 10, "attack": 25}, gender="Male", 
                               battle_status="Fighting", xp=0, position=(5, 5))
@@ -357,7 +379,6 @@ def answerCard_before(filter, reviewer, card):
 	utils.answBtnAmt = reviewer.mw.col.sched.answerButtons(card)
 	return filter
 
-aqt.gui_hooks.reviewer_will_answer_card.append(answerCard_before)
 # Globale Variable für die Zählung der Bewertungen
 
 def answerCard_after(rev, card, ease):
@@ -377,6 +398,8 @@ def answerCard_after(rev, card, ease):
         tooltip("Error in ColorConfirmation: Couldn't interpret ease")
     ankimon_tracker_obj.reset_card_timer()
 
+
+aqt.gui_hooks.reviewer_will_answer_card.append(answerCard_before)
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
 
 
@@ -508,41 +531,6 @@ if database_complete:
 
         return attacks
 
-def pick_random_gender(pokemon_name):
-    """
-    Randomly pick a gender for a given Pokémon based on its gender ratios.
-
-    Args:
-        pokemon_name (str): The name of the Pokémon.
-        pokedex_data (dict): Pokémon data loaded from the pokedex JSON file.
-
-    Returns:
-        str: "M" for male, "F" for female, or "Genderless" for genderless Pokémon.
-    """
-    with open(pokedex_path, 'r', encoding="utf-8") as file:
-        pokedex_data = json.load(file)
-    pokemon_name = pokemon_name.lower()  # Normalize Pokémon name to lowercase
-    pokemon = pokedex_data.get(pokemon_name)
-    if not pokemon:
-        genders = ["M", "F"]
-        gender = random.choice(genders)
-        return gender
-
-    gender_ratio = pokemon.get("genderRatio")
-    if gender_ratio:
-        random_number = random.random()  # Generate a random number between 0 and 1
-        return "M" if random_number < gender_ratio["M"] else "F"
-
-    genders = pokemon.get("gender")
-    if genders:
-        return genders
-
-    genders = ["M", "F"]
-    #genders = ["M", "♀"]
-    gender = random.choice(genders)
-    return gender
-    # Randomly choose between "M" and "F"
-
 if database_complete:
     def get_levelup_move_for_pokemon(pokemon_name, level):
         """
@@ -601,28 +589,7 @@ if database_complete:
                 move for move, highest_level in moves_at_level_and_lower.items()
                 if highest_level == level
             ]
-            #if eligible_moves:
-                # Randomly select and return a move
-               #random_attack = random.choice(eligible_moves)
-               # return f"{random_attack} at level: {level}"
-           # else:
-                #return "No moves to be found."
-       # else:
-            #return f"{pokemon_name} does not learn any new moves at level {level} or lower."
             return eligible_moves
-
-
-#def copy_directory(dir_addon: str, dir_anki: str = None)
-#       if not dir_anki:
-        #dir_anki = dir_addon
-    #fromdir = addon_dir / dir_addon
-    #todir = mediafolder / dir_anki
-    #if not fromdir.is_dir():
-        #return
-    #if not todir.is_dir():
-        #shutil.copytree(str(fromdir), str(todir))
-    #else:
-        #distutils.dir_util.copy_tree(str(fromdir), str(todir))
 
 caught_pokemon = {} #pokemon not caught
 
@@ -1502,43 +1469,6 @@ def new_pokemon():
     reviewer = Container()
     reviewer.web = mw.reviewer.web
     update_life_bar(reviewer, 0, 0)
-
-def calc_atk_dmg(level, critical, power, stat_atk, wild_stat_def, main_type, move_type, wild_type, critRatio):
-        if power is None:
-            # You can choose a default power or handle it according to your requirements
-            power = 0
-        if critRatio == 1:
-            crit_chance = 0.0417
-        elif critRatio == 2:
-            crit_chance = 0.125
-        elif critRatio == 3:
-            crit_chance = 0.5
-        elif critRatio > 3:
-            crit_chance = 1
-        random_number = random.random()  # Generate a random number between 0 and 1
-        if random_number > crit_chance:
-            critical = critical * 1
-        else:
-            critical += 2
-        # damage = (((2 * level * critical)+2)/ 5) * power * stat_atk / wild_stat_def)+2)/ 50 * stab * random
-        # if move_typ is the same as the main pkmn type => damage * 1.5; else damage * 1.0
-        # STAB calculation
-        stab = 1.5 if move_type == main_type else 1.0
-        eff = get_effectiveness(move_type)
-        # random luck
-        random_number = random.randint(217, 255)
-        random_factor = random_number / 255
-        damage = (((((2 * level * critical) + 2) / 5) * power * stat_atk / wild_stat_def) + 2) / 50 * stab * eff * random_factor
-        # if main pkmn type = move type => damage * 1,5
-        # if wild pokemon type x main pokemon type => 0.5 not very eff.; 1.0 eff.; 2 very eff.
-        return damage
-
-def calculate_hp(base_stat_hp, level, ev, iv):
-    ev_value = ev["hp"] / 4
-    iv_value = iv["hp"]
-    #hp = int(((iv + 2 * (base_stat_hp + ev) + 100) * level) / 100 + 10)
-    hp = int((((((base_stat_hp + iv_value) * 2 ) + ev_value) * level) / 100) + level + 10)
-    return hp
             
 def mainpokemon_data():
     global mainpkmn
