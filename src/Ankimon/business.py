@@ -52,22 +52,6 @@ def calc_experience(base_experience, enemy_level):
     exp = base_experience * enemy_level / 7
     return exp
 
-def effectiveness_text(effect_value):
-    if effect_value == 0:
-        effective_txt = "has missed."
-    elif effect_value <= 0.5:
-        effective_txt = "was not very effective."
-    elif effect_value <= 1:
-        effective_txt = "was effective."
-    elif effect_value <= 1.5:
-        effective_txt = "was very effective !"
-    elif effect_value <= 2:
-        effective_txt = "was super effective !"
-    else:
-        effective_txt = "was effective."
-        #return None
-    return effective_txt
-
 def get_multiplier_stats(stage):
     # Define the mapping of stage to factor
     stage_to_factor = {

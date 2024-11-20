@@ -4,14 +4,16 @@ from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdi
 from PyQt6.QtWidgets import QRadioButton, QHBoxLayout, QMainWindow, QScrollArea, QButtonGroup
 from PyQt6.QtWidgets import QMessageBox
 from aqt.utils import showWarning, showInfo
+from aqt import mw
 
 class SettingsWindow(QMainWindow):
-    def __init__(self, config, set_config_callback, save_config_callback):
+    def __init__(self, config, set_config_callback, save_config_callback, load_config_callback):
         super().__init__()
         self.config = config
         self.original_config = config.copy()  # Store the original config to detect changes
         self.set_config_callback = set_config_callback
         self.save_config_callback = save_config_callback
+        self.load_config = load_config_callback
         self.setWindowTitle("Settings")
 
         # Load settings descriptions and friendly names
@@ -21,6 +23,7 @@ class SettingsWindow(QMainWindow):
         self.setup_ui()
 
     def show_window(self):
+        self.config = self.load_config()
         self.show()
 
     def load_descriptions(self):
@@ -59,8 +62,13 @@ class SettingsWindow(QMainWindow):
         # Track label-based settings
         self.label_settings = {}
 
+        keys_to_skip = {"debug_mode", "deprecated_setting", "trainer.cash", "trainer.xp"}
+
         # Handle different setting types
         for key, value in self.config.items():
+            if key in keys_to_skip:
+                continue
+
             friendly_name = self.friendly_names.get(key, key)  # Friendly name if available
 
             if isinstance(value, bool):
@@ -133,7 +141,7 @@ class SettingsWindow(QMainWindow):
         changed_settings = {
             key: self.config[key]
             for key in self.config
-            if key not in ['mypokemon', 'mainpokemon'] and self.config[key] != self.original_config.get(key)
+            if key not in ['mypokemon', 'mainpokemon', 'trainer.cash'] and self.config[key] != self.original_config.get(key)
         }
 
         # Display only the changed settings

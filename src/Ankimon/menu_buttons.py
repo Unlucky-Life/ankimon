@@ -30,7 +30,8 @@ def create_menu_actions(
     logger,
     trainer_card_window,
     data_handler_window,
-    settings_window
+    settings_window,
+    shop_manager
 ):
     actions = []
 
@@ -146,3 +147,8 @@ def create_menu_actions(
     ankimon_trainer_card_action.setShortcut(QKeySequence("Ctrl+Shift+Q"))
     ankimon_trainer_card_action.triggered.connect(trainer_card_window.toggle_window)
     mw.pokemenu.addAction(ankimon_trainer_card_action)
+
+    # Add AnkimonShop Action to toggle the shop
+    shop_manager_action = QAction("Item Shop", mw)
+    shop_manager_action.triggered.connect(shop_manager.toggle_window)
+    mw.pokemenu.addAction(shop_manager_action)
