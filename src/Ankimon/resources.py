@@ -47,6 +47,7 @@ items_list_path = addon_dir / "addon_files" / "items.json"
 rate_path = addon_dir / "user_files" / "rate_this.json"
 csv_file_items = addon_dir / "user_files" / "data_files" / "item_names.csv"
 csv_file_descriptions = addon_dir / "user_files" / "data_files" / "item_flavor_text.csv"
+csv_file_items_cost = addon_dir / "user_files" / "data_files" / "items.csv"
 
 #effect sounds paths
 hurt_normal_sound_path = addon_dir / "addon_sprites" / "sounds" / "HurtNormal.mp3"

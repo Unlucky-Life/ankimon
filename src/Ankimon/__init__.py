@@ -35,7 +35,6 @@ from PyQt6.QtWidgets import (QApplication, QDialog, QLabel,
                              QPushButton, QVBoxLayout, QWidget, QMessageBox, QCheckBox, QTextEdit, QHBoxLayout, QComboBox, QLineEdit, QScrollArea, 
                              QFrame, QMenu, QLayout, QProgressBar)
 
-
 from .resources import *
 from .texts import _bottomHTML_template, button_style, \
                     attack_details_window_template, attack_details_window_template_end, \
@@ -46,14 +45,14 @@ from .texts import _bottomHTML_template, button_style, \
 from .const import gen_ids, status_colors_html, status_colors_label
 from .business import get_image_as_base64, \
     split_string_by_length, split_japanese_string_by_length, capitalize_each_word, \
-    resize_pixmap_img, effectiveness_text, type_colors, \
+    resize_pixmap_img, type_colors, \
     calc_experience, get_multiplier_stats, get_multiplier_acc_eva, bP_none_moves, \
     calc_exp_gain, \
     read_csv_file, read_descriptions_csv
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
     addon_config_editor_will_display_json, read_local_file, read_github_file, \
     compare_files, write_local_file, random_battle_scene, random_berries, \
-    random_item, random_fossil
+    random_item, random_fossil, count_items_and_rewrite
 
 try:
     from .functions.pokedex_functions import search_pokedex, special_pokemon_names_for_min_level, search_pokedex_by_name_for_id, \
@@ -62,6 +61,8 @@ try:
     from .functions.badges_functions import *
     from .functions.battle_functions import *
     from .functions.pokemon_functions import *
+    from .functions.create_gui_functions import *
+    from .functions.create_css_for_reviewer import create_css_for_reviewer
 except ImportError:
     showWarning("Error in importing pokedex_functions")
 
@@ -80,12 +81,28 @@ from .pyobj.pokemon_obj import PokemonObject
 from .pyobj.InfoLogger import ShowInfoLogger
 from .pyobj.trainer_card import TrainerCard
 from .pyobj.trainer_card_window import TrainerCardGUI
+from .pyobj.ankimon_shop import PokemonShopManager
 
-# Usage
+# start loggerobject for Ankimon
 logger = ShowInfoLogger()
 
-# Log an example message
-logger.log_and_showinfo('info', "Ankimon Startup.")
+data_handler_obj = DataHandler()
+data_handler_window = DataHandlerWindow(
+    data_handler = data_handler_obj
+)
+# Create the Settings object
+settings_obj = Settings()
+
+# Pass the correct attributes to SettingsWindow
+settings_window = SettingsWindow(
+    config=settings_obj.config,                 # Use settings_obj.config instead of settings_obj.settings.config
+    set_config_callback=settings_obj.set,
+    save_config_callback=settings_obj.save_config,
+    load_config_callback=settings_obj.load_config
+)
+
+# Log an startup message
+logger.log_and_showinfo('game', "Ankimon Startup.")
 
 # Initialize Pokémon objects
 # Initialize default values for the main Pokémon in a more compact form
@@ -114,7 +131,7 @@ if mainpokemon_empty:
 
 enemy_pokemon = PokemonObject(name="Charmander", shiny=True, id=2, level=5, ability="Blaze", type="Fire", 
                               stats={"hp": 18, "attack": 35, "defense": 12}, attacks=["Ember", "Scratch"], base_experience=62, 
-                              growth_rate="Medium", hp=18, max_hp=18, ev={"hp": 0, "attack": 2}, iv={"hp": 10, "attack": 25}, gender="Male", 
+                              growth_rate="Medium", hp=18, ev={"hp": 0, "attack": 2}, iv={"hp": 10, "attack": 25}, gender="Male", 
                               battle_status="Fighting", xp=0, position=(5, 5))
 
 
@@ -123,22 +140,16 @@ ankimon_tracker_obj = AnkimonTracker()
 ankimon_tracker_obj.set_main_pokemon(main_pokemon)
 ankimon_tracker_obj.set_enemy_pokemon(enemy_pokemon)
 
+# Initialize the Pokémon Shop Manager
+shop_manager = PokemonShopManager(
+    logger=logger,
+    settings_obj=settings_obj,
+    set_callback=settings_obj.set,
+    get_callback=settings_obj.get
+)
+
 ankimon_tracker_window = AnkimonTrackerWindow(
     tracker = ankimon_tracker_obj
-)
-
-data_handler_obj = DataHandler()
-data_handler_window = DataHandlerWindow(
-    data_handler = data_handler_obj
-)
-# Create the Settings object
-settings_obj = Settings()
-
-# Pass the correct attributes to SettingsWindow
-settings_window = SettingsWindow(
-    config=settings_obj.config,                 # Use settings_obj.config instead of settings_obj.settings.config
-    set_config_callback=settings_obj.set,
-    save_config_callback=settings_obj.save_config
 )
 
 #from .download_pokeapi_db import create_pokeapidb
@@ -153,7 +164,6 @@ with open(sound_list_path, 'r') as json_file:
     sound_list = json.load(json_file)
 
 mainpkmn = 0
-mainpokemon_hp = 100
 pokemon_encounter = 0
 
 # check for sprites, data
@@ -222,7 +232,7 @@ elif system_name == "Darwin":
 
 from .config_var import *
 
-check_data = CheckPokemonData(mainpokemon_path, mypokemon_path, config)
+check_data = CheckPokemonData(mainpokemon_path, mypokemon_path, settings_obj, logger)
 
 gui_hooks.addon_config_editor_will_save_json.append(check_data.modify_json_configuration_on_save)
 gui_hooks.sync_did_finish.append(check_data.sync_on_anki_close)
@@ -593,7 +603,7 @@ if database_complete:
 
 caught_pokemon = {} #pokemon not caught
 
-def check_min_generate_level(pkmn_name):
+def check_min_generate_level(name):
     evoType = search_pokedex(name.lower(), "evoType")
     evoLevel = search_pokedex(name.lower(), "evoLevel")
     if evoLevel is not None:
@@ -659,12 +669,9 @@ if database_complete:
     def generate_random_pokemon():
         # Fetch random Pokémon data from Generation
         # Load the JSON file with Pokémon data
-        global pokemon_encounter
-        global hp, gender, name, enemy_attacks
-        global mainpokemon_level
         global pokemon_species
         global cards_per_round
-        pokemon_encounter = 0
+        ankimon_tracker_obj.pokemon_encounter = 0
         pokemon_species = None
         #generation_file = ("pokeapi_db.json")
         try:
@@ -672,7 +679,7 @@ if database_complete:
             #test_ids = [719]
             #id = random.choice(test_ids)
             name = search_pokedex_by_id(id)
-
+            gender = "N"
             if name is list:
                 name = name[0]
             try:
@@ -680,21 +687,21 @@ if database_complete:
             except:
                 generate_random_pokemon()
             var_level = 3
-            if mainpokemon_level or mainpokemon_level != None:
+            if main_pokemon.level or main_pokemon.level != None:
                 try:
-                    level = random.randint((mainpokemon_level - (random.randint(0, var_level))), (mainpokemon_level + (random.randint(0, var_level))))  # Random level between 1 and 100
-                    if mainpokemon_level == 100:
+                    level = random.randint((main_pokemon.level - (random.randint(0, var_level))), (main_pokemon.level + (random.randint(0, var_level))))  # Random level between 1 and 100
+                    if main_pokemon.level == 100:
                         level = 100
                     if level < 0:
                         level = 1
                 except Exception as e:
                     showWarning(f"Error in generate random pokemon{e}")
-                    mainpokemon_level = 5
+                    main_pokemon.level = 5
                     level = 5
             else:
                 level = 5
                 min_level = 0
-            if min_level is None or not min_level or mainpokemon_level is None or not mainpokemon_level:
+            if min_level is None or not min_level or main_pokemon.level is None or not main_pokemon.level:
                 level = 5
                 min_level = 0
             if min_level < level:
@@ -733,8 +740,7 @@ if database_complete:
                     enemy_attacks = random.sample(enemy_attacks_list, 4)
                 base_experience = search_pokeapi_db_by_id(id, "base_experience")
                 growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
-                if gender is None:
-                    gender = pick_random_gender(name)
+                gender = pick_random_gender(name)
                 iv = {
                     "hp": random.randint(1, 32),
                     "atk": random.randint(1, 32),
@@ -759,9 +765,8 @@ if database_complete:
                     logger.log_and_showinfo("info" ,f"Error occured: {e}")
                 hp = calculate_hp(hp_stat, level, ev, iv)
                 max_hp = hp
-                global ev_yield
                 ev_yield = search_pokeapi_db_by_id(id, "effort_values")
-                return name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats
+                return name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats
             else:
                 return generate_random_pokemon()  # Return the result of the recursive call
         except FileNotFoundError:
@@ -769,23 +774,18 @@ if database_complete:
             # Set the layout for the dialog
 
 def kill_pokemon():
-    global level, hp, name, image_url, mainpokemon_xp, mainpokemon_base_experience, mainpokemon_name, mainpokemon_level, mainpokemon_growth_rate, mainpokemon_hp, ev_yield
-    global pkmn_window
-    name = name.capitalize()
-    exp = int(calc_experience(mainpokemon_base_experience, level))
-    mainpokemon_level = save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp)
-    global general_card_count_for_battle
-    general_card_count_for_battle = 0
-    if pkmn_window is True:
+    global level, hp, image_url, mainpokemon_growth_rate, ev_yield
+    exp = int(calc_experience(main_pokemon.base_experience, enemy_pokemon.level))
+    main_pokemon.level = save_main_pokemon_progress(mainpokemon_path, main_pokemon.level, main_pokemon.name, main_pokemon.base_experience, mainpokemon_growth_rate, exp)
+    ankimon_tracker_obj.general_card_count_for_battle = 0
+    if test_window.pkmn_window is True:
         new_pokemon()  # Show a new random Pokémon
 
-caught = 0
-
 def display_dead_pokemon():
-    global pokemon_hp, name, id, level, caught_pokemon, caught
+    global pokemon_hp, id, level, caught_pokemon
     # Create the dialog
     w_dead_pokemon = QDialog(mw)
-    w_dead_pokemon.setWindowTitle(f"Would you want to kill or catch the wild {name} ?")
+    w_dead_pokemon.setWindowTitle(f"Would you want to kill or catch the wild {enemy_pokemon.name} ?")
     # Create a layout for the dialog
     layout2 = QVBoxLayout()
     # Display the Pokémon image
@@ -808,7 +808,7 @@ def display_dead_pokemon():
     painter2 = QPainter(pkmnpixmap)
 
     # Capitalize the first letter of the Pokémon's name
-    capitalized_name = name.capitalize()
+    capitalized_name = enemy_pokemon.name.capitalize()
     # Create level text
     lvl = (f" Level: {level}")
 
@@ -951,7 +951,7 @@ def save_caught_pokemon(nickname):
                 achievements = receive_badge(10,achievements)
                 test_window.display_badge(10)
 
-    stats = search_pokedex(name.lower(),"baseStats")
+    stats = search_pokedex(enemy_pokemon.name.lower(),"baseStats")
     stats["xp"] = 0
     ev = {
       "hp": 0,
@@ -961,15 +961,15 @@ def save_caught_pokemon(nickname):
       "spd": 0,
       "spe": 0
     }
-    evos = search_pokedex(name, "evos")
+    evos = search_pokedex(enemy_pokemon.name, "evos")
     if evos is None:
         evos = ""
     caught_pokemon = {
-        "name": name.capitalize(),
+        "name": enemy_pokemon.name.capitalize(),
         "nickname": nickname,
         "level": level,
         "gender": gender,
-        "id": search_pokedex(name.lower(),'num'),
+        "id": search_pokedex(enemy_pokemon.name.lower(),'num'),
         "ability": ability,
         "type": type,
         "stats": stats,
@@ -1359,25 +1359,6 @@ def cancel_evolution(pkmn_name):
     with open(str(mainpokemon_path), "w") as json_file:
         json.dump(mainpkmndata, json_file, indent=2)
 
-    # Find the specified Pokémon's data in mainpokemondata
-    #selected_pokemon_data = None
-    #for pokemon_data in mainpkmndata:
-        #if pokemon_data["name"] == mainpokemon_name:
-            #selected_pokemon_data = pokemon_data
-
-    #if selected_pokemon_data is not None:
-        # Modify the selected Pokémon's data
-        #selected_pokemon_data["stats"]["xp"] = mainpokemon_xp
-        #selected_pokemon_data["level"] = mainpokemon_level  # Replace with the actual level
-        #selected_pokemon_data["current_hp"] = mainpokemon_current_hp  # save current hp
-        #selected_pokemon_data["attacks"] = attacks
-        #selected_pokemon_data["ev"]["hp"] += ev_yield["hp"]
-        #selected_pokemon_data["ev"]["atk"] += ev_yield["attack"]
-        #selected_pokemon_data["ev"]["def"] += ev_yield["defense"]
-        #selected_pokemon_data["ev"]["spa"] += ev_yield["special-attack"]
-        #selected_pokemon_data["ev"]["spd"] += ev_yield["special-defense"]
-        #selected_pokemon_data["ev"]["spe"] += ev_yield["speed"]
-
         # Load data from the output JSON file
     with open(str(mypokemon_path), "r") as output_file:
         mypokemondata = json.load(output_file)
@@ -1393,18 +1374,16 @@ def cancel_evolution(pkmn_name):
 
 
 def catch_pokemon(nickname):
-    global pokemon_hp, name, ability, enemy_attacks, type, stats, base_experience, level, growth_rate, gender, id, iv, pop_up_dialog_message_on_defeat
-    global caught
-    caught += 1
-    if caught == 1:
-        name = name.capitalize()
+    global pokemon_hp, ability, enemy_attacks, type, stats, base_experience, level, growth_rate, gender, id, iv, pop_up_dialog_message_on_defeat
+    ankimon_tracker_obj.caught += 1
+    if ankimon_tracker_obj.caught == 1:
+        enemy_pokemon.name = enemy_pokemon.name.capitalize()
         if nickname is None or not nickname:  # Wenn None oder leer
             save_caught_pokemon(nickname)
         else:
-            save_caught_pokemon(name)
-        global general_card_count_for_battle
-        general_card_count_for_battle = 0
-        msg = f"You caught {name}!"
+            save_caught_pokemon(enemy_pokemon.name)
+        ankimon_tracker_obj.general_card_count_for_battle = 0
+        msg = f"You caught {enemy_pokemon.name}!"
         if pop_up_dialog_message_on_defeat is True:
             logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
         color = "#6A4DAC" #pokemon leveling info color for tooltip
@@ -1448,17 +1427,28 @@ def get_random_starter():
         showWarning(f"Error in get_random_starter: {e}")
         return None, None, None
 
-
-def calculate_max_hp_wildpokemon():
-    global stats, level, ev, iv
-    wild_pk_max_hp = calculate_hp(stats["hp"], level, ev, iv)
-    return wild_pk_max_hp
-
 def new_pokemon():
-    global name, id, level, hp, max_hp, ability, type, enemy_attacks, attacks, base_experience, stats, battlescene_file, ev, iv, gender, battle_status
+    global id, level, ability, type, enemy_attacks, attacks, base_experience, stats, battlescene_file, ev, iv, gender, battle_status
     # new pokemon
     gender = None
-    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
+    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
+    pokemon_data = {
+        'name': name,
+        'id': id,
+        'level': level,
+        'ability': ability,
+        'type': type,
+        'stats': stats,
+        'attacks': enemy_attacks,
+        'base_experience': base_experience,
+        'growth_rate': growth_rate,
+        'ev': ev,
+        'iv': iv,
+        'gender': gender,
+        'battle_status': battle_status,
+        'battle_stats': battle_stats
+    }
+    enemy_pokemon.update_stats(**pokemon_data)
     battlescene_file = random_battle_scene()
     max_hp = calculate_hp(stats["hp"], level, ev, iv)
     #reset mainpokemon hp
@@ -1518,54 +1508,57 @@ if database_complete:
     except Exception:
         starter = False
         mainpokemon_level = 5
-    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, hp, max_hp, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
+    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats = generate_random_pokemon()
+    pokemon_data = {
+        'name': name,
+        'id': id,
+        'level': level,
+        'ability': ability,
+        'type': type,
+        'stats': stats,
+        'attacks': enemy_attacks,
+        'base_experience': base_experience,
+        'growth_rate': growth_rate,
+        'ev': ev,
+        'iv': iv,
+        'gender': gender,
+        'battle_status': battle_status,
+        'battle_stats': battle_stats
+    }
+    enemy_pokemon.update_stats(**pokemon_data)
     battlescene_file = random_battle_scene()
 
-def get_effectiveness(move_type):
-    global mainpokemon_type, type
-    move_type = move_type.capitalize()
-    attacking_types = []
-    attacking_types.append(move_type)
-    defending_types = type
-    attacking_types = [attacking_type.capitalize() for attacking_type in attacking_types]
-    defending_types = [defending_type.capitalize() for defending_type in defending_types]
-    with open(effectiveness_chart_file_path, 'r', encoding='utf-8') as json_file:
-        data = json.load(json_file)
-        # Find the effectiveness values for each attacking type
-        effectiveness_values = []
-        for attacking_type in attacking_types:
-            if attacking_type in data:
-                # Find the effectiveness values for each defending type
-                eff_values = [data[attacking_type][defending_type] for defending_type in defending_types]
-                effectiveness_values.extend(eff_values)  # Use extend to add values to the list
-        if effectiveness_values:
-            if len(effectiveness_values) > 1:
-                # Multiply all values in the list
-                eff_value = 1
-                for value in effectiveness_values:
-                    eff_value *= value
-                effective_txt = effectiveness_text(eff_value)
-                return eff_value
-            else:
-                effective_txt = effectiveness_text(effectiveness_values[0])
-                return effectiveness_values[0]
-    # If the combination is not found, return None or a default value
-    return None
-
 reviewed_cards_count = 0
-general_card_count_for_battle = 0
 cry_counter = 0
 seconds = 0
 myseconds = 0
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
-        global reviewed_cards_count, card_ratings_count, general_card_count_for_battle, cry_counter, battle_sounds
-        global hp, stats, type, battle_status, name, battle_stats, enemy_attacks, level
+        type = enemy_pokemon.type
+        stats = enemy_pokemon.stats
+        enemy_attacks = enemy_pokemon.attacks
+        base_experience = enemy_pokemon.base_experience
+        battle_status = enemy_pokemon.battle_status
+        battle_stats = enemy_pokemon._battle_stats
+        growth_rate = enemy_pokemon.growth_rate
+        ev = enemy_pokemon.ev
+        iv = enemy_pokemon.iv
+        multiplier = ankimon_tracker_obj.multiplier
+        mainpokemon_xp = main_pokemon.xp
+        mainpokemon_current_hp = main_pokemon.current_hp
+        mainpokemon_attacks = main_pokemon.attacks
+        mainpokemon_level = main_pokemon.level
+        mainpokemon_stats = main_pokemon.stats
+        mainpokemon_type = main_pokemon.type
+        mainpokemon_name = main_pokemon.name
+        mainpokemon_battle_stats = main_pokemon._battle_stats
+        mainpokemon_ev = main_pokemon.ev
+        mainpokemon_iv = main_pokemon.iv
+
+        global reviewed_cards_count, card_ratings_count, cry_counter, battle_sounds
         global pokemon_encounter, mainpokemon_hp, seconds, myseconds, animate_time
-        global mainpokemon_xp, mainpokemon_current_hp, mainpokemon_attacks, mainpokemon_level, mainpokemon_stats, mainpokemon_type, mainpokemon_name, mainpokemon_battle_stats, mainpokemon_ev, mainpokemon_iv
         global attack_counter
-        global pkmn_window
         global achievements
         # Increment the counter when a card is reviewed
         reviewed_cards_count += 1
@@ -1574,8 +1567,8 @@ def on_review_card(*args):
         dmg = 0
         seconds = 0
         myseconds = 0
-        general_card_count_for_battle += 1
-        if battle_sounds == True and general_card_count_for_battle == 1:
+        ankimon_tracker_obj.general_card_count_for_battle += 1
+        if battle_sounds == True and ankimon_tracker_obj.general_card_count_for_battle == 1:
             play_sound()
         #test achievment system
         if card_counter == 100:
@@ -1613,7 +1606,7 @@ def on_review_card(*args):
             msg = ""
             msg += f"{multiplier}x Multiplier"
             #failed card = enemy attack
-            if pokemon_encounter > 0 and hp > 0 and dmg_in_reviewer is True and multiplier < 1:
+            if pokemon_encounter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:
                 msg += " \n "
                 try:
                     max_attempts = 3  # Set the maximum number of attempts
@@ -1623,7 +1616,7 @@ def on_review_card(*args):
                         
                         if enemy_move is not None:
                             break  # Exit the loop if a valid enemy_move is found
-                    msg += f"{name.capitalize()} chose {rand_enemy_atk.capitalize()} !"
+                    msg += f"{enemy_pokemon.name.capitalize()} chose {rand_enemy_atk.capitalize()} !"
                     e_move_category = enemy_move.get("category")
                     e_move_acc = enemy_move.get("accuracy")
                     if e_move_acc is True:
@@ -1635,7 +1628,7 @@ def on_review_card(*args):
                     else:
                         if e_move_category == "Status":
                             color = "#F7DC6F"
-                            msg = effect_status_moves(rand_enemy_atk, stats, mainpokemon_stats, msg, mainpokemon_name , name)
+                            msg = effect_status_moves(rand_enemy_atk, stats, mainpokemon_stats, msg, mainpokemon_name , enemy_pokemon.name)
                         elif e_move_category == "Physical" or e_move_category == "Special":
                             critRatio = enemy_move.get("critRatio", 1)
                             if e_move_category == "Physical":
@@ -1654,7 +1647,7 @@ def on_review_card(*args):
                                 elif e_move_category == "Physical":
                                     def_stat = mainpokemon_stats["def"]
                                     atk_stat = stats["atk"]
-                                enemy_dmg = int(calc_atk_dmg(level,(multiplier * 2),enemy_move["basePower"], atk_stat, def_stat, type, enemy_move["type"],mainpokemon_type, critRatio))
+                                enemy_dmg = int(calc_atk_dmg(enemy_pokemon.level ,(multiplier * 2),enemy_move["basePower"], atk_stat, def_stat, enemy_pokemon.type, enemy_move["type"],mainpokemon_type, critRatio))
                                 if enemy_dmg == 0:
                                     enemy_dmg = 1
                                 mainpokemon_hp -= enemy_dmg
@@ -1672,7 +1665,7 @@ def on_review_card(*args):
                     e_move_category = enemy_move.get("category")
                     if e_move_category == "Status":
                             color = "#F7DC6F"
-                            msg = effect_status_moves(rand_enemy_atk, stats, mainpokemon_stats, msg, mainpokemon_name , name)
+                            msg = effect_status_moves(rand_enemy_atk, stats, mainpokemon_stats, msg, mainpokemon_name , enemy_pokemon.name)
                     elif e_move_category == "Physical" or e_move_category == "Special":
                         if e_move_category == "Special":
                             def_stat = mainpokemon_stats["spd"]
@@ -1680,7 +1673,7 @@ def on_review_card(*args):
                         elif e_move_category == "Physical":
                             def_stat = mainpokemon_stats["def"]
                             atk_stat = stats["atk"]                        
-                        enemy_dmg = int(calc_atk_dmg(level,(multiplier * 2),random.randint(60, 100), atk_stat, def_stat, type, "Normal", mainpokemon_type, critRatio))
+                        enemy_dmg = int(calc_atk_dmg(enemy_pokemon.level,(multiplier * 2),random.randint(60, 100), atk_stat, def_stat, enemy_pokemon.type, "Normal", mainpokemon_type, critRatio))
                         if enemy_dmg == 0:
                             enemy_dmg = 1
                         mainpokemon_hp -= enemy_dmg
@@ -1692,8 +1685,8 @@ def on_review_card(*args):
                         myseconds = 0
                     msg += f" {enemy_dmg} dmg is dealt to {mainpokemon_name.capitalize()}."
     
-            # If 10 or more cards have been reviewed, show the random Pokémon
-            if pokemon_encounter > 0 and hp > 0:
+            # if enemy pokemon hp < 0 - attack enemy pokemon
+            if pokemon_encounter > 0 and enemy_pokemon.hp > 0:
                 dmg = 0
                 random_attack = random.choice(mainpokemon_attacks)
                 msg += f"\n {mainpokemon_name} has chosen {random_attack.capitalize()} !"
@@ -1701,7 +1694,7 @@ def on_review_card(*args):
                 category = move.get("category")
                 acc = move.get("accuracy")
                 if battle_status != "fighting":
-                    msg, acc, battle_status, stats = status_effect(battle_status, name, move, hp, slp_counter, battle_stats, msg, acc)
+                    msg, acc, battle_status, stats = status_effect(enemy_pokemon, move, slp_counter, msg, acc)
                 if acc is True:
                     acc = 100
                 if acc != 0:
@@ -1710,10 +1703,10 @@ def on_review_card(*args):
                     calc_acc = 0
                 if battle_status == "slp":
                     calc_acc = 0
-                    msg += f"{name.capitalize()} is deep asleep."
+                    msg += f"{enemy_pokemon.name.capitalize()} is deep asleep."
                     #slp_counter -= 1
                 elif battle_status == "par":
-                    msg += f"\n {name.capitalize()} is paralyzed."
+                    msg += f"\n {enemy_pokemon.name.capitalize()} is paralyzed."
                     missing_chance = 1 / 4
                     random_number = random.random()
                     if random_number < missing_chance:
@@ -1723,7 +1716,7 @@ def on_review_card(*args):
                 else:
                     if category == "Status":
                         color = "#F7DC6F"
-                        msg = effect_status_moves(random_attack, mainpokemon_stats, stats, msg, name, mainpokemon_name)
+                        msg = effect_status_moves(random_attack, mainpokemon_stats, stats, msg, enemy_pokemon.name, mainpokemon_name)
                     elif category == "Physical" or category == "Special":
                         try:
                             critRatio = move.get("critRatio", 1)
@@ -1733,7 +1726,7 @@ def on_review_card(*args):
                                 color = "#D2B4DE"
                             if move["basePower"] == 0:
                                 dmg = bP_none_moves(move)
-                                hp -= dmg
+                                enemy_pokemon.hp -= dmg
                                 if dmg == 0:
                                     msg += "\n Move has missed !"
                                     #dmg = 1
@@ -1744,11 +1737,12 @@ def on_review_card(*args):
                                 elif category == "Physical":
                                     def_stat = stats["def"]
                                     atk_stat = mainpokemon_stats["atk"]
-                                dmg = int(calc_atk_dmg(mainpokemon_level, multiplier,move["basePower"], atk_stat, def_stat, mainpokemon_type, move["type"],type, critRatio))
+                                dmg = int(calc_atk_dmg(mainpokemon_level, multiplier,move["basePower"], atk_stat, def_stat, mainpokemon_type, move["type"],enemy_pokemon.type, critRatio))
                                 if dmg == 0:
                                     dmg = 1
-                                hp -= dmg
-                                msg += f" {dmg} dmg is dealt to {name.capitalize()}."
+                                enemy_pokemon.hp -= dmg
+                                showInfo(f"Damage: {dmg} current hp {enemy_pokemon.hp}")
+                                msg += f" {dmg} dmg is dealt to {enemy_pokemon.name.capitalize()}."
                                 move_stat = move.get("status", None)
                                 secondary = move.get("secondary", None)
                                 if secondary is not None:
@@ -1766,11 +1760,11 @@ def on_review_card(*args):
                             elif category == "Physical":
                                 def_stat = stats["def"]
                                 atk_stat = mainpokemon_stats["atk"]
-                            dmg = int(calc_atk_dmg(mainpokemon_level, multiplier,random.randint(60, 100), atk_stat, def_stat, mainpokemon_type, "Normal",type, critRatio))
-                            hp -= dmg
-                        if hp < 0:
-                            hp = 0
-                            msg += f" {name.capitalize()} has fainted"
+                            dmg = int(calc_atk_dmg(mainpokemon_level, multiplier,random.randint(60, 100), atk_stat, def_stat, mainpokemon_type, "Normal",enemy_pokemon.type, critRatio))
+                            enemy_pokemon.hp -= dmg
+                        if enemy_pokemon.hp < 0:
+                            enemy_pokemon.hp = 0
+                            msg += f" {enemy_pokemon.name.capitalize()} has fainted"
                     tooltipWithColour(msg, color)
                     if dmg > 0:
                         seconds = animate_time
@@ -1783,76 +1777,50 @@ def on_review_card(*args):
                     else:
                         seconds = 0
             else:
-                if pkmn_window is True:
+                if test_window.pkmn_window is True:
                     test_window.display_pokemon_death()
                 else:
                     if automatic_battle != 0:
                         if automatic_battle == 1:
                             catch_pokemon("")
-                            general_card_count_for_battle = 0
+                            ankimon_tracker_obj.general_card_count_for_battle = 0
                         elif automatic_battle == 2:
                             kill_pokemon()
                             new_pokemon()
-                            general_card_count_for_battle = 0
-            if pkmn_window is True:
-                if hp > 0:
+                            ankimon_tracker_obj.general_card_count_for_battle = 0
+            if test_window.pkmn_window is True:
+                if enemy_pokemon.hp > 0:
                     test_window.display_first_encounter()
-                elif hp < 1:
-                    hp = 0
+                elif enemy_pokemon.hp < 1:
+                    enemy_pokemon.hp = 0
                     test_window.display_pokemon_death()
-                    general_card_count_for_battle = 0
-            elif pkmn_window is False:
-                if hp < 1:
-                    hp = 0
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+            elif test_window.pkmn_window is False:
+                if enemy_pokemon.hp < 1:
+                    enemy_pokemon.hp = 0
                     if automatic_battle != 0:
                         if automatic_battle == 1:
                             catch_pokemon("")
-                            general_card_count_for_battle = 0
+                            ankimon_tracker_obj.general_card_count_for_battle = 0
                         elif automatic_battle == 2:
                             kill_pokemon()
                             new_pokemon()
-                            general_card_count_for_battle = 0
+                            ankimon_tracker_obj.general_card_count_for_battle = 0
             # Reset the counter
             reviewed_cards_count = 0
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()
         if mainpokemon_hp < 1:
-            msg = f"Your {mainpokemon_name} has been defeated and the wild {name} has fled!"
+            msg = f"Your {mainpokemon_name} has been defeated and the wild {enemy_pokemon.name} has fled!"
             play_effect_sound("Fainted")
             new_pokemon()
             mainpokemon_data()
             color = "#E12939"
             tooltipWithColour(msg, color)
     except Exception as e:
-        showWarning(f"An error occured in reviewer: {e}")
+        showWarning(f"An error occurred in reviewer: {type(e).__name__}: {str(e)}")
 
-
-def create_status_label(status_name):
-
-    # Get the colors for the given status name
-    colors = status_colors_label.get(status_name.lower())
-
-    # If the status name is valid, create and style the QLabel
-    if colors:
-        label = QLabel(status_name.capitalize())
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label.setStyleSheet(
-            f"background-color: {colors['background']};"
-            f"border: 2px solid {colors['outline']};"
-            f"border-radius: 5px;"
-            f"padding: 5px 10px;"
-            f"font-weight: bold;"
-            f"color: {colors.get('text_color', '#000000')};"
-        )
-    else:
-        label = QLabel("Unknown Status")
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label.setStyleSheet(
-            "padding: 5px 10px;"
-        )
-
-    return label
 def create_status_html(status_name):
     global show_mainpkmn_in_reviewer, hp_bar_thickness, xp_bar_spacer
 
@@ -1988,54 +1956,8 @@ def move_with_status(move, move_stat, status):
     if battle_status == "slp":
         slp_counter = random.randint(1, 3)
 
-def status_effect(stat, name, move, hp, slp_counter, stats, msg, acc):
-    # Extend the existing dictionary with the "Fighting" status
-    if stat == "par":
-        stats["spe"] = stats["spe"] * 0.5
-        msg += f" {name.capitalize()}'s speed is reduced."
-        missing_chance = 1/4
-        random_number = random.random()
-        if random_number < missing_chance:
-            msg += (f"{name} is paralyzed! It can't move!")
-            acc = 0
-    elif stat == "brn":
-        dmg = 1/16 * calculate_max_hp_wildpokemon()
-        hp -= dmg
-        msg += (f"Wild {name} was hurt by burning!")
-    elif stat == "psn":
-        max_hp = calculate_max_hp_wildpokemon()
-        dmg = 1 / 8 * max_hp
-        hp -= dmg
-        msg += (f"The wild {name} was hurt by its poisoning!")
-    elif stat == "tox":
-        max_hp = calculate_max_hp_wildpokemon()
-        dmg = ((random.randint(1,3)) / 16 * max_hp)
-        hp -= dmg
-        msg += (f"The wild {name} is badly poisoned and was hurt by is poisoning!")
-        stat = "psn"
-    elif stat == "frz":
-        free_chance = 20 / 100
-        if move["type"] == "fire" and move["target"] != "self":
-            free_chance = 1
-        random_number = random.random()
-        if random_number < free_chance:
-            msg += (f"Wild {name} is frozen solid!")
-            acc = 0
-        else:
-            stat = None
-            msg += (f"Wild {name} is no longer frozen!")
-    elif stat == "slp":
-            if slp_counter > 1:
-                slp_counter -= 1
-                msg += (f"Wild {name} is asleep!")
-            else:
-                stat = None
-                msg += (f"Wild {name} is no longer asleep!")
-    return msg, acc, stat, battle_stats
-
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
-
 
 class PokemonCollectionDialog(QDialog):
     def __init__(self, parent=None):
@@ -3079,7 +3001,7 @@ def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks,
     logger.log_and_showinfo("info",f"{capitalized_name} has been chosen as your main Pokemon !")
     new_pokemon() #new pokemon if you change your pokemon
     mainpokemon_data()
-    if pkmn_window is True:
+    if test_window.pkmn_window is True:
         test_window.display_first_encounter()
 	
 def PokemonDetailsStats(detail_stats, growth_rate, level):
@@ -3761,7 +3683,6 @@ if database_complete and mainpokemon_empty is False:
         global life_bar_injected, hp, name, level, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_xp
         global mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_hp, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_growth_rate
         global hp_bar_thickness, xp_bar_config, xp_bar_location, hp_bar_config, xp_bar_spacer, hp_only_spacer, wild_hp_spacer, seconds, myseconds, view_main_front, styling_in_reviewer
-
         experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
         if reviewer_image_gif == False:
             pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
@@ -3780,330 +3701,18 @@ if database_complete and mainpokemon_empty is False:
                     gif_type = "back_default_gif"
                 main_pkmn_imagefile_path = os.path.join((user_path_sprites / f"{gif_type}"), main_pkmn_imagefile)
         if show_mainpkmn_in_reviewer > 0:
-            mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
-            mainpkmn_hp_percent = int((mainpokemon_hp / mainpkmn_max_hp) * 50)
-            max_hp = calculate_max_hp_wildpokemon()
-            pokemon_hp_percent = int((hp / max_hp) * 50)
+            mainpkmn_max_hp = main_pokemon.calculate_max_hp()
+            mainpkmn_hp_percent = int((main_pokemon.hp /mainpkmn_max_hp) * 50)
+            max_hp = enemy_pokemon.calculate_max_hp()
+            pokemon_hp_percent = int((enemy_pokemon.hp / max_hp) * 50)
         else:    
-            max_hp = calculate_max_hp_wildpokemon()
-            pokemon_hp_percent = int((hp / max_hp) * 100)
+            max_hp = enemy_pokemon.calculate_max_hp()
+            pokemon_hp_percent = int((enemy_pokemon.hp / max_hp) * 100)
         is_reviewer = mw.state == "review"
         # Inject CSS and the life bar only if not injected before and in the reviewer
-        pokeball = check_pokecoll_in_list(search_pokedex(name.lower(), "num"))
+        pokeball = check_pokecoll_in_list(search_pokedex(enemy_pokemon.name.lower(), "num"))
         if not life_bar_injected and is_reviewer:
-            css = """
-            """
-            if show_mainpkmn_in_reviewer == 0:
-                css += f"""
-                #life-bar {{
-                width: {pokemon_hp_percent}%; /* Replace with the actual percentage */
-                height: {hp_bar_thickness}px;
-                background: linear-gradient(to right, 
-                                            rgba(114, 230, 96, 0.7), /* Green with transparency */
-                                            rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
-                                            rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
-                                            rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
-                position: fixed;
-                bottom: {10 + xp_bar_spacer}px;
-                left: 0px;
-                z-index: 9999;
-                border-radius: 5px; /* Shorthand for all corners rounded */
-                box-shadow: 0 0 10px rgba(0, 255, 0, 0.8), /* Green glow effect */
-                            0 0 30px rgba(54, 54, 56, 1);  /* Dark glow effect */
-                }}
-                #hp-display {{
-                position: fixed;
-                bottom: {40 + xp_bar_spacer}px;
-                right: 10px;
-                z-index: 9999;
-                color: white;
-                font-size: 16px;
-                font-weight: bold; /* Make the text bold */
-                background-color: rgb(54,54,56,0.7); 
-                text-align: right;
-                }}
-                #name-display {{
-                position: fixed;
-                bottom: {40 + xp_bar_spacer}px;
-                left: 10px;
-                z-index: 9999;
-                color: white;
-                font-size: 16px;
-                background-color: rgb(54,54,56, 0.7);
-                text-align: left;
-                }}
-                #PokeImage {{
-                    position: fixed;
-                    bottom: {30 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
-                    left: 3px;
-                    z-index: 9999;
-                    width: 100px; /* Adjust as needed */
-                    height: 100px; /* Adjust as needed */
-                    background-size: cover; /* Cover the div area with the image */
-                }}
-                """
-                css += f"""
-                    #PokeIcon {{
-                    position: fixed;
-                    bottom: {85 + xp_bar_spacer}px; /* Adjust as needed */
-                    left: 90px;
-                    z-index: 9999;
-                    width: 25px; /* Adjust as needed */
-                    height: 25px; /* Adjust as needed */
-                    }}
-                    """
-            elif show_mainpkmn_in_reviewer == 2:
-                css += f"""
-                #life-bar {{
-                width: {pokemon_hp_percent}%; /* Replace with the actual percentage */
-                height: {hp_bar_thickness}px;
-                background: linear-gradient(to right, 
-                                            rgba(114, 230, 96, 0.7), /* Green with transparency */
-                                            rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
-                                            rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
-                                            rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
-                position: fixed;
-                bottom: {130 + xp_bar_spacer}px;
-                right: 0px;
-                z-index: 9999;
-                border-radius: 5px; /* Shorthand for all corners rounded */
-                box-shadow: 0 0 10px rgba(0, 255, 0, 0.8), /* Green glow effect */
-                            0 0 30px rgba(54, 54, 56, 1);  /* Dark glow effect */
-                }}
-                #mylife-bar {{
-                width: {mainpkmn_hp_percent}%; /* Replace with the actual percentage */
-                height: {hp_bar_thickness}px;
-                background: linear-gradient(to right, 
-                                            rgba(114, 230, 96, 0.7), /* Green with transparency */
-                                            rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
-                                            rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
-                                            rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
-                position: fixed;
-                bottom: {25 + xp_bar_spacer}px;
-                left: 0px;
-                z-index: 9999;
-                border-radius: 5px; /* Shorthand for all corners rounded */
-                box-shadow: 0 0 10px rgba(0, 255, 0, 0.8), /* Green glow effect */
-                            0 0 30px rgba(54, 54, 56, 1);  /* Dark glow effect */
-                }}
-                #myhp-display {{
-                position: fixed;
-                bottom: {25 + xp_bar_spacer + hp_bar_thickness}px;
-                right: {40 + hp_only_spacer}%;
-                z-index: 9999;
-                color: white;
-                font-size: 16px;
-                font-weight: bold; /* Make the text bold */
-                background-color: rgb(54,54,56,0.7); 
-                text-align: right;
-                }}
-                #myname-display {{
-                position: fixed;
-                bottom: {25 + xp_bar_spacer + hp_bar_thickness}px;
-                left: 10px;
-                z-index: 9999;
-                color: white;
-                font-size: 16px;
-                background-color: rgb(54,54,56, 0.7);
-                text-align: left;
-                }}
-                #MyPokeImage {{
-                    position: fixed;
-                    bottom: {50 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
-                    left: 15px;
-                    z-index: 9999;
-                    background-size: contain;
-                    background-repeat: no-repeat;
-                    background-position: bottom;
-                    transform: scaleX({view_main_front});
-                }}
-                #hp-display {{
-                position: fixed;
-                bottom: {160 - wild_hp_spacer + xp_bar_spacer}px;
-                left: {50 + hp_only_spacer}%;
-                z-index: 9999;
-                color: white;
-                font-size: 16px;
-                font-weight: bold; /* Make the text bold */
-                background-color: rgb(54,54,56,0.7); 
-                text-align: right;
-                }}
-                #name-display {{
-                position: fixed;
-                bottom: {20 + xp_bar_spacer}px;
-                right: 10px;
-                z-index: 9999;
-                color: white;
-                font-size: 16px;
-                background-color: rgb(54,54,56, 0.7);
-                text-align: right;
-                }}
-                #PokeImage {{
-                    position: fixed;
-                    bottom: {30 + xp_bar_spacer}px; /* Adjust as needed */
-                    right: 3px;
-                    z-index: 9999;
-                    width: 100px; /* Adjust as needed */
-                    height: 100px; /* Adjust as needed */
-                    background-size: cover; /* Cover the div area with the image */
-                }}"""
-                css += f"""
-                    #PokeIcon {{
-                        position: fixed;
-                        bottom: {8 + xp_bar_spacer}px; /* Adjust as needed */
-                        right: 20%;
-                        z-index: 9999;
-                        width: 25px; /* Adjust as needed */
-                        height: 25px; /* Adjust as needed */
-                        background-size: cover; /* Cover the div area with the image */
-                    }}
-                    """
-            elif show_mainpkmn_in_reviewer == 1:
-                css += f"""
-                #life-bar {{
-                width: {pokemon_hp_percent}%; /* Replace with the actual percentage */
-                height: {hp_bar_thickness}px;
-                background: linear-gradient(to right, 
-                                            rgba(114, 230, 96, 0.7), /* Green with transparency */
-                                            rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
-                                            rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
-                                            rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
-                position: fixed;
-                bottom: {10 + xp_bar_spacer}px;
-                right: 0px;
-                z-index: 9999;
-                border-radius: 5px; /* Shorthand for all corners rounded */
-                box-shadow: 0 0 10px rgba(0, 255, 0, 0.8), /* Green glow effect */
-                            0 0 30px rgba(54, 54, 56, 1);  /* Dark glow effect */
-                }}
-                #mylife-bar {{
-                width: {mainpkmn_hp_percent}%; /* Replace with the actual percentage */
-                height: {hp_bar_thickness}px;
-                background: linear-gradient(to right, 
-                                            rgba(114, 230, 96, 0.7), /* Green with transparency */
-                                            rgba(114, 230, 96, 0.7) 100%, /* Continue green to the percentage point */
-                                            rgba(54, 54, 56, 0.7) 100%, /* Transition to dark background */
-                                            rgba(54, 54, 56, 0.7)); /* Dark background with transparency */
-                position: fixed;
-                bottom: {10 + xp_bar_spacer}px;
-                left: 0px;
-                z-index: 9999;
-                border-radius: 5px; /* Shorthand for all corners rounded */
-                box-shadow: 0 0 10px rgba(0, 255, 0, 0.8), /* Green glow effect */
-                            0 0 30px rgba(54, 54, 56, 1);  /* Dark glow effect */
-                }}
-                #myhp-display {{
-                position: fixed;
-                bottom: {15 + xp_bar_spacer + hp_bar_thickness}px;
-                right: {55}%;
-                z-index: 9999;
-                color: white;
-                font-size: 16px;
-                font-weight: bold; /* Make the text bold */
-                background-color: rgb(54,54,56,0.7); 
-                text-align: right;
-                }}
-                #myname-display {{
-                position: fixed;
-                bottom: {15 + xp_bar_spacer + hp_bar_thickness}px;
-                left: 10px;
-                z-index: 9999;
-                color: white;
-                font-size: 16px;
-                background-color: rgb(54,54,56, 0.7);
-                text-align: left;
-                }}
-                #MyPokeImage {{
-                    position: fixed;
-                    bottom: {50 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
-                    left: 3px;
-                    z-index: 9999;
-                    background-size: contain;
-                    background-repeat: no-repeat;
-                    background-position: bottom;
-                    transform: scaleX({view_main_front});
-                }}
-                #hp-display {{
-                position: fixed;
-                bottom: {15 + xp_bar_spacer + hp_bar_thickness}px;
-                left: {55}%;
-                z-index: 9999;
-                color: white;
-                font-size: 16px;
-                font-weight: bold; /* Make the text bold */
-                background-color: rgb(54,54,56,0.7); 
-                text-align: right;
-                }}
-                #name-display {{
-                position: fixed;
-                bottom: {15 + xp_bar_spacer + hp_bar_thickness}px;
-                right: 10px;
-                z-index: 9999;
-                color: white;
-                font-size: 16px;
-                background-color: rgb(54,54,56, 0.7);
-                text-align: right;
-                }}
-                #PokeImage {{
-                    position: fixed;
-                    bottom: {30 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
-                    right: 3px;
-                    z-index: 9999;
-                    width: 100px; /* Adjust as needed */
-                    height: 100px; /* Adjust as needed */
-                    background-size: cover; /* Cover the div area with the image */
-                }}"""
-                css += f"""
-                    #PokeIcon {{
-                        position: fixed;
-                        bottom: {8 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
-                        right: 20%;
-                        z-index: 9999;
-                        width: 25px; /* Adjust as needed */
-                        height: 25px; /* Adjust as needed */
-                        background-size: cover; /* Cover the div area with the image */
-                    }}
-                    """
-
-            if xp_bar_config is True:
-                css += f"""
-                #xp-bar {{
-                width: {int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)}%; /* Replace with the actual percentage */
-                height: 10px;
-                background: linear-gradient(to right, 
-                                            rgba(0, 191, 255, 0.7), /* Light Blue with transparency */
-                                            rgba(0, 191, 255, 0.7) 100%, /* Continue light blue to the percentage point */
-                                            rgba(25, 25, 112, 0.7) 100%, /* Transition to dark blue background */
-                                            rgba(25, 25, 112, 0.7)); /* Dark blue background with transparency */
-                position: fixed;
-                {xp_bar_location}: 0px;
-                left: 0px;
-                z-index: 9999;
-                border-radius: 5px; /* Shorthand for all corners rounded */
-                box-shadow: 0 0 10px rgba(0, 191, 255, 0.8), /* Light blue glow effect */
-                            0 0 30px rgba(25, 25, 112, 1);  /* Dark blue glow effect */
-                }}
-                #next_lvl_text {{
-                position: fixed;
-                {xp_bar_location}: 13px;
-                right: 15px;
-                z-index: 9999;
-                color: white;
-                font-size: 10px;
-                background-color: rgb(54,54,56, 0.7);
-                text-align: right;
-                }}
-                #xp_text {{
-                position: fixed;
-                {xp_bar_location}: 13px;
-                left: 15px;
-                z-index: 9999;
-                color: white;
-                font-size: 10px;
-                background-color: rgb(54,54,56, 0.7);
-                text-align: right;
-                }}
-                """
+            css = create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_bar_thickness, xp_bar_spacer, view_main_front, mainpkmn_hp_percent, hp_only_spacer, wild_hp_spacer, xp_bar_config, main_pokemon, experience_for_next_lvl, xp_bar_location)
             css += inject_life_bar_css_1
             css += inject_life_bar_css_2
             # background-image: url('{pokemon_image_file}'); Change to your image path */
@@ -4119,21 +3728,21 @@ if database_complete and mainpokemon_empty is False:
                     web_content.body += '<div id="next_lvl_text">Next Level</div>'
                     web_content.body += '<div id="xp_text">XP</div>'
                 # Inject a div element for the text display
-                web_content.body += f'<div id="name-display">{name.capitalize()} LvL: {level}</div>'
+                web_content.body += f'<div id="name-display">{enemy_pokemon.name.capitalize()} LvL: {enemy_pokemon.level}</div>'
                 if hp > 0:
                     web_content.body += f'{create_status_html(f"{battle_status}")}'
                 else:
                     web_content.body += f'{create_status_html("fainted")}'
 
-                web_content.body += f'<div id="hp-display">HP: {hp}/{max_hp}</div>'
+                web_content.body += f'<div id="hp-display">HP: {enemy_pokemon.hp}/{enemy_pokemon.max_hp}</div>'
                 # Inject a div element at the end of the body for the life bar
                 image_base64 = get_image_as_base64(pokemon_image_file)
                 web_content.body += f'<div id="PokeImage"><img src="data:image/png;base64,{image_base64}" alt="PokeImage style="animation: shake 0s ease;"></div>'
                 if show_mainpkmn_in_reviewer > 0:
                     image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
                     web_content.body += f'<div id="MyPokeImage"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage" style="animation: shake 0s ease;"></div>'
-                    web_content.body += f'<div id="myname-display">{mainpokemon_name.capitalize()} LvL: {mainpokemon_level}</div>'
-                    web_content.body += f'<div id="myhp-display">HP: {mainpokemon_hp}/{mainpkmn_max_hp}</div>'
+                    web_content.body += f'<div id="myname-display">{main_pokemon.name.capitalize()} LvL: {main_pokemon.level}</div>'
+                    web_content.body += f'<div id="myhp-display">HP: {main_pokemon.hp}/{mainpkmn_max_hp}</div>'
                     # Inject a div element at the end of the body for the life bar
                     if hp_bar_config is True:
                         web_content.body += '<div id="mylife-bar"></div>'
@@ -4148,17 +3757,17 @@ if database_complete and mainpokemon_empty is False:
         return web_content
 
     def update_life_bar(reviewer, card, ease):
-        global hp, name, id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
+        global id, battle_status, show_mainpkmn_in_reviewer, mainpokemon_hp, mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, mainpokemon_iv, mainpokemon_xp, xp_bar_config
         global mainpokemon_level, empty_icon_path, seconds, myseconds, view_main_front, pokeball, styling_in_reviewer
-        pokeball = check_pokecoll_in_list(search_pokedex(name.lower(), "num"))
+        pokeball = check_pokecoll_in_list(search_pokedex(enemy_pokemon.name.lower(), "num"))
         if reviewer_image_gif == False:
-            pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.png' #use for png files
+            pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.png' #use for png files
             pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
             if show_mainpkmn_in_reviewer > 0:
                 main_pkmn_imagefile = f'{mainpokemon_id}.png' #use for png files
                 main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
         else:
-            pokemon_imagefile = f'{search_pokedex(name.lower(), "num")}.gif'
+            pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.gif'
             pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
             if show_mainpkmn_in_reviewer > 0:
                 main_pkmn_imagefile = f'{mainpokemon_id}.gif'
@@ -4168,21 +3777,21 @@ if database_complete and mainpokemon_empty is False:
                     gif_type = "back_default_gif"
                 main_pkmn_imagefile_path = os.path.join((user_path_sprites / f"{gif_type}"), main_pkmn_imagefile)
         if show_mainpkmn_in_reviewer > 0:
-            mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
+            mainpkmn_max_hp = main_pokemon.calculate_max_hp()
             mainpkmn_hp_percent = int((mainpokemon_hp / mainpkmn_max_hp) * 50)
-            max_hp = calculate_max_hp_wildpokemon()
-            pokemon_hp_percent = int((hp / max_hp) * 50)
+            max_hp = enemy_pokemon.calculate_max_hp()
+            pokemon_hp_percent = int((enemy_pokemon.hp / max_hp) * 50)
             image_base64_mainpkmn = get_image_as_base64(main_pkmn_imagefile_path)
         else:    
-            max_hp = calculate_max_hp_wildpokemon()
-            pokemon_hp_percent = int((hp / max_hp) * 100)
+            max_hp = enemy_pokemon.calculate_max_hp()
+            pokemon_hp_percent = int((enemy_pokemon.hp / max_hp) * 100)
         image_base64 = get_image_as_base64(pokemon_image_file)
         # Determine the color based on the percentage
-        if hp < int(0.25 * max_hp):
+        if enemy_pokemon.hp < int(0.25 * max_hp):
             hp_color = "rgba(255, 0, 0, 0.7)"  # Red
-        elif hp < int(0.5 * max_hp):
+        elif enemy_pokemon.hp < int(0.5 * max_hp):
             hp_color = "rgba(255, 140, 0, 0.7)"  # Dark Orange
-        elif hp < int(0.75 * max_hp):
+        elif enemy_pokemon.hp < int(0.75 * max_hp):
             hp_color = "rgba(255, 255, 0, 0.7)"  # Yellow
         else:
             hp_color = "rgba(114, 230, 96, 0.7)"  # Green
@@ -4200,9 +3809,9 @@ if database_complete and mainpokemon_empty is False:
         #hex_color = hp_color.lstrip('#')
         #rgb_values = tuple(int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
         status_html = ""
-        if hp < 1:
+        if enemy_pokemon.hp < 1:
             status_html = create_status_html('fainted')
-        elif hp > 0:
+        elif enemy_pokemon.hp > 0:
             status_html = create_status_html(f"{battle_status}")
         if styling_in_reviewer is True:
             # Refresh the reviewer content to apply the updated life bar
@@ -4213,8 +3822,8 @@ if database_complete and mainpokemon_empty is False:
                 experience_for_next_lvl = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
                 xp_bar_percent = int((mainpokemon_xp / int(experience_for_next_lvl)) * 100)
                 reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
-            name_display_text = f"{name.capitalize()} LvL: {level}"
-            hp_display_text = f"HP: {hp}/{max_hp}"
+            name_display_text = f"{enemy_pokemon.name.capitalize()} LvL: {enemy_pokemon.level}"
+            hp_display_text = f"HP: {enemy_pokemon.hp}/{max_hp}"
             reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
             reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
             new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage" style="animation: shake {seconds}s ease;">'
@@ -4242,7 +3851,7 @@ if database_complete and mainpokemon_empty is False:
     gui_hooks.webview_will_set_content.append(inject_life_bar)
     gui_hooks.reviewer_did_answer_card.append(update_life_bar)
 
-def choose_pokemon(starter_name):
+def choose_pokemon(starter_name): 
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
     name = search_pokedex(starter_name, "name")
@@ -4668,11 +4277,12 @@ def rate_addon_url():
         #main_window.death_window()
 test = 1
 video = False
-pkmn_window = False #if fighting window open
 first_start = False
+
 class TestWindow(QWidget):
     def __init__(self):
         super().__init__()
+        self.pkmn_window = False #if fighting window open
         self.init_ui()
         #self.update()
     def init_ui(self):
@@ -4702,16 +4312,14 @@ class TestWindow(QWidget):
     def open_dynamic_window(self):
         # Create and show the dynamic window
         try:
-            global pkmn_window
-            if pkmn_window == False:
+            if self.pkmn_window == False:
                 self.display_first_encounter()
-                pkmn_window = True
+                self.pkmn_window = True
             self.show()
         except Exception as e:
             showWarning(f"Following Error occured when opening window: {e}")
 
     def display_first_start_up(self):
-        global first_start, pkmn_window
         if first_start == False:
             # Get the geometry of the main screen
             main_screen_geometry = mw.geometry()
@@ -4722,26 +4330,24 @@ class TestWindow(QWidget):
             self.move(x,y)
             self.show()
             first_start = True
-        global pkmn_window
-        pkmn_window = True
+        self.pkmn_window = True
 
     def pokemon_display_first_encounter(self):
         # Main window layout
         layout = QVBoxLayout()
         global pokemon_encounter
-        global hp, name, id, stats, level, max_hp, base_experience, ev, iv, gender
+        global hp, id, stats, level, max_hp, base_experience, ev, iv, gender
         global caught_pokemon, message_box_text
-        global caught
         global mainpkmn
         global mainpokemon_id, mainpokemon_name, mainpokemon_level, mainpokemon_ability, mainpokemon_type, mainpokemon_xp, mainpokemon_stats, mainpokemon_attacks, mainpokemon_base_experience, mainpokemon_ev, mainpokemon_iv, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate
         global battlescene_file
         global attack_counter, merged_pixmap, window
         attack_counter = 0
-        caught = 0
-        id = int(search_pokedex(name.lower(), "num"))
+        ankimon_tracker_obj.caught = 0
+        id = int(search_pokedex(enemy_pokemon.name.lower(), "num"))
         # Capitalize the first letter of the Pokémon's name
         lang_name = get_pokemon_diff_lang_name(int(id), settings_obj.get('misc.language'))
-        name = name.capitalize()
+        name = enemy_pokemon.name.capitalize()
         # calculate wild pokemon max hp
         max_hp = calculate_hp(stats["hp"], level, ev, iv)
         mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
@@ -5123,12 +4729,12 @@ class TestWindow(QWidget):
             showWarning(f"An error occured in badges window {e}")
 
     def pokemon_display_dead_pokemon(self):
-        global pokemon_hp, name, id, level, type, caught_pokemon, caught
+        global pokemon_hp, id, level, type, caught_pokemon
         # Create the dialog
         lang_name = get_pokemon_diff_lang_name(int(id), settings_obj.get('misc.language'))
         window_title = (f"Would you want let the  wild {lang_name} free or catch the wild {lang_name} ?")
         # Display the Pokémon image
-        pkmnimage_file = f"{int(search_pokedex(name.lower(),'num'))}.png"
+        pkmnimage_file = f"{int(search_pokedex(enemy_pokemon.name.lower(),'num'))}.png"
         pkmnimage_path = frontdefault / pkmnimage_file
         pkmnimage_label = QLabel()
         pkmnpixmap = QPixmap()
@@ -5283,8 +4889,7 @@ class TestWindow(QWidget):
                 widget.deleteLater()
 
     def closeEvent(self,event):
-        global pkmn_window
-        pkmn_window = False
+        self.pkmn_window = False
 
 # Create an instance of the MainWindow
 test_window = TestWindow()
@@ -5763,7 +5368,7 @@ class EvoWindow(QWidget):
         self.show()
 
     def pokemon_display_evo_pokemon(self, pkmn_name):
-        global pokemon_hp, name, id, level, caught_pokemon, caught
+        global pokemon_hp, id, level, caught_pokemon
         global mainpokemon_name, mainpokemon_id
         layout_pokemon = QHBoxLayout()
         # Update mainpokemon_evolution and handle evolution logic
@@ -5900,6 +5505,8 @@ license = License()
 
 credits = Credits()
 
+count_items_and_rewrite(itembag_path)
+
 class ItemWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -5932,17 +5539,12 @@ class ItemWindow(QWidget):
             "armor-fossil": 410,
             "cover-fossil": 564,
             "plume-fossil": 566
-            }
-        
-        self.evolution_items = {
-
         }
         
-        self.tm_hm_list = {
+        self.evolution_items = {}
+        self.tm_hm_list = {}
 
-        }
-
-        self.setWindowIcon(QIcon(str(icon_path))) # Add a Pokeball icon
+        self.setWindowIcon(QIcon(str(icon_path)))  # Add a Pokeball icon
         self.setWindowTitle("Itembag")
         self.layout = QVBoxLayout()  # Main layout is now a QVBoxLayout
 
@@ -5950,7 +5552,6 @@ class ItemWindow(QWidget):
         self.search_edit = QLineEdit()
         self.search_edit.setPlaceholderText("Search Items...")
         self.search_edit.returnPressed.connect(self.filter_items)
-        #self.search_edit.textChanged.connect(self.filter_pokemon)
         self.search_button = QPushButton("Search")
         self.search_button.clicked.connect(self.filter_items)
 
@@ -5998,8 +5599,8 @@ class ItemWindow(QWidget):
             empty_label = QLabel("You don't own any items yet.")
             self.contentLayout.addWidget(empty_label, 1, 1)
         else:
-            for item_name in self.itembag_list:
-                item_widget = self.ItemLabel(item_name)
+            for item in self.itembag_list:
+                item_widget = self.ItemLabel(item["item"], item["quantity"])
                 self.contentLayout.addWidget(item_widget, row, col)
                 col += 1
                 if col >= max_items_per_row:
@@ -6023,32 +5624,32 @@ class ItemWindow(QWidget):
             self.contentLayout.addWidget(empty_label, 1, 1)
         else:
             # Filter items based on category index
-            if category_index == 1:  # Heal items
-                filtered_items = [item_name for item_name in self.itembag_list if item_name in self.fossil_pokemon and search_text in item_name.lower()]
-            elif category_index == 2:  # Heal items
-                filtered_items = [item_name for item_name in self.itembag_list if item_name in self.tm_hm_list and search_text in item_name.lower()]
-            elif category_index == 3:
-                filtered_items = [item_name for item_name in self.itembag_list if item_name in self.hp_heal_items and search_text in item_name.lower()]
-            elif category_index == 4:
-                filtered_items = [item_name for item_name in self.itembag_list if item_name in self.evolution_items and search_text in item_name.lower()]
+            if category_index == 1:  # Fossils
+                filtered_items = [item for item in self.itembag_list if item["item"] in self.fossil_pokemon and search_text in item["item"].lower()]
+            elif category_index == 2:  # TMs and HMs
+                filtered_items = [item for item in self.itembag_list if item["item"] in self.tm_hm_list and search_text in item["item"].lower()]
+            elif category_index == 3:  # Heal items
+                filtered_items = [item for item in self.itembag_list if item["item"] in self.hp_heal_items and search_text in item["item"].lower()]
+            elif category_index == 4:  # Evolution items
+                filtered_items = [item for item in self.itembag_list if item["item"] in self.evolution_items and search_text in item["item"].lower()]
             else:
-                filtered_items = [item_name for item_name in self.itembag_list if search_text in item_name.lower()]
+                filtered_items = [item for item in self.itembag_list if search_text in item["item"].lower()]
 
-            for item_name in filtered_items:
-                item_widget = self.ItemLabel(item_name)
+            for item in filtered_items:
+                item_widget = self.ItemLabel(item["item"], item["quantity"])
                 self.contentLayout.addWidget(item_widget, row, col)
                 col += 1
                 if col >= max_items_per_row:
                     row += 1
                     col = 0
 
-    def ItemLabel(self, item_name):
+    def ItemLabel(self, item_name, quantity):
         item_file_path = items_path / f"{item_name}.png"
-        item_frame = QVBoxLayout() #itemframe
+        item_frame = QVBoxLayout()  # itemframe
         info_item_button = QPushButton("More Info")
         info_item_button.clicked.connect(lambda: self.more_info_button_act(item_name))
-        item_name_for_label = item_name.replace("-", " ")   # Remove hyphens from item_name
-        item_name_label = QLabel(f"{item_name_for_label.capitalize()}") #itemname
+        item_name_for_label = item_name.replace("-", " ")  # Remove hyphens from item_name
+        item_name_label = QLabel(f"{item_name_for_label.capitalize()} x{quantity}")  # Display quantity
         item_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         item_picture_pixmap = QPixmap(str(item_file_path))
         item_picture_label = QLabel()
@@ -6056,8 +5657,9 @@ class ItemWindow(QWidget):
         item_picture_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         item_frame.addWidget(item_picture_label)
         item_frame.addWidget(item_name_label)
+
         item_name = item_name.lower()
-        if item_name in self.hp_heal_items :
+        if item_name in self.hp_heal_items:
             use_item_button = QPushButton("Heal Mainpokemon")
             global mainpokemon_name
             hp_heal = self.hp_heal_items[item_name]
@@ -6096,11 +5698,19 @@ class ItemWindow(QWidget):
         save_outside_pokemon(fossil_poke_name, fossil_id)
         self.delete_item(item_name)
 
-
     def delete_item(self, item_name):
         self.read_item_file()
-        if item_name in self.itembag_list:
-            self.itembag_list.remove(item_name)
+        
+        for item in self.itembag_list:
+            # Check if the item exists and if the name matches
+            if item['item'] == item_name:
+                # Decrease the quantity by 1
+                item['quantity'] -= 1
+                
+                # If quantity reaches 0, remove the item from the list
+                if item['quantity'] == 0:
+                    self.itembag_list.remove(item)
+        
         self.write_item_file()
         self.renewWidgets()
 
@@ -6403,7 +6013,8 @@ actions = create_menu_actions(
     logger,
     trainer_card_window,
     data_handler_window,
-    settings_window
+    settings_window,
+    shop_manager
 )
 
     #https://goo.gl/uhAxsg

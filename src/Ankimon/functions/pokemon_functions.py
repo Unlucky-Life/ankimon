@@ -36,3 +36,7 @@ def pick_random_gender(pokemon_name):
     gender = random.choice(genders)
     return gender
     # Randomly choose between "M" and "F"
+
+def calculate_max_hp_wildpokemon(enemy_pokemon):
+    wild_pk_max_hp = enemy_pokemon.calculate_max_hp()
+    return wild_pk_max_hp
