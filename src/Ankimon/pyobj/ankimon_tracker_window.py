@@ -113,7 +113,7 @@ class AnkimonTrackerWindow:
                 # Update the label for this stat unconditionally
                 if key.startswith("main_pokemon_") or key.startswith("enemy_pokemon_"):
                     # For Pokémon stats, split on "_" and capitalize the last part
-                    stat_name = key.split("_")[-1].capitalize()
+                    stat_name = key.split("_", 2)[-1].capitalize()
                     self.stats_labels[key].setText(f"{stat_name}: {current_value}")
                 else:
                     # For other stats, use the key as is
@@ -122,7 +122,7 @@ class AnkimonTrackerWindow:
                 # If label doesn't exist, create and add it to stats_labels
                 if key.startswith("main_pokemon_") or key.startswith("enemy_pokemon_"):
                     # For Pokémon stats, split on "_" and capitalize the last part
-                    stat_name = key.split("_")[-1].capitalize()
+                    stat_name = key.split("_", 2)[-1].capitalize()
                     label = QLabel(f"{stat_name}: {current_value}")
                 else:
                     # For other stats, use the key as is

@@ -353,11 +353,12 @@ class CheckFiles(QDialog):
         self.setLayout(self.layout)
 
 class CheckPokemonData(QDialog):
-    def __init__(self, mainpokemon_path, mypokemon_path, config):
+    def __init__(self, mainpokemon_path, mypokemon_path, settings_obj, logger):
         super().__init__()
         self.mainpokemon_path = mainpokemon_path
         self.mypokemon_path = mypokemon_path
-        self.config = config
+        self.config = settings_obj
+        self.logger = logger
         self.sync_pokemons()
         message = "Ankimon Pokemon Sync:"
         message += "There is a difference between the Ankiweb Synced Pokémon data and the local Pokémon data. \n"
@@ -389,8 +390,13 @@ class CheckPokemonData(QDialog):
             self.mainpokemon_sync_data = json.load(file)
 
     def sync_pokemons(self):
-        self.mainpokemon_web_data = self.config.get('mainpokemon', [])
-        self.pokemon_collection_web_data = self.config.get('pokemon_collection', [])
+        try:
+            self.mainpokemon_web_data = self.config.get('mainpokemon', [])
+            self.pokemon_collection_web_data = self.config.get('pokemon_collection', [])
+        except Exception as e:
+            showWarning("Failed to retrieve Pokémon data from AnkiWeb.")
+            self.mainpokemon_web_data = []
+            self.pokemon_collection_web_data = []
         #showInfo("Pokémon data synced.")
         #showInfo(f"Mainpokemon {mainpokemon}")
         #showInfo(f"Pokémon Collection {pokemon_collection}")    #function to sync pokemon data to ankiweb and local files
@@ -410,20 +416,16 @@ class CheckPokemonData(QDialog):
         self.close()
     
     def sync_data_to_ankiweb(self):
-        self.config["pokemon_collection"] = self.pokemon_collection_sync_data
-        self.config["mainpokemon"] = self.mainpokemon_sync_data
-        mw.addonManager.writeConfig(__name__, self.config)
-        #config["mainpokemon"] = []
-        #config["pokemon_collection"] = []
+        self.config.set("pokemon_collection", self.pokemon_collection_sync_data)
+        self.config.set("mainpokemon", self.mainpokemon_sync_data)
         showInfo("Local Data synced to AnkiWeb.")
         self.close()
 
     def sync_on_anki_close(self):
         tooltip("Syncing PokemonData to AnkiWeb")
         self.get_pokemon_data()
-        self.config["pokemon_collection"] = self.pokemon_collection_sync_data
-        self.config["mainpokemon"] = self.mainpokemon_sync_data
-        mw.addonManager.writeConfig(__name__, self.config)
+        self.config.set("pokemon_collection", self.pokemon_collection_sync_data)
+        self.config.set("mainpokemon", self.mainpokemon_sync_data)
 
     def modify_json_configuration_on_save(self, text: str) -> str:
         try:
@@ -435,9 +437,8 @@ class CheckPokemonData(QDialog):
                     #pass
             self.get_pokemon_data()
             # Set mainPokemon and pokemon_collection to predefined values
-            config["pokemon_collection"] = self.pokemon_collection_sync_data
-            config["mainpokemon"] = self.mainpokemon_sync_data
-            self.config = config
+            self.config.set("pokemon_collection", self.pokemon_collection_sync_data)
+            self.config.set("mainpokemon", self.mainpokemon_sync_data)
             tooltip("Saved Ankimon Configuration, Please Restart Anki")
 
             # Convert the modified JSON object back to a string

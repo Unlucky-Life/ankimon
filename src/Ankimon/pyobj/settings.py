@@ -1,6 +1,7 @@
 import json
 import os
 from aqt import mw
+from aqt.utils import showInfo
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from PyQt6.QtWidgets import QRadioButton, QHBoxLayout, QMainWindow, QScrollArea
 
@@ -50,7 +51,9 @@ class Settings:
                 "misc.remove_level_cap": False,
                 "misc.language": 9,
                 "misc.ssh": True,
-                "misc.YouShallNotPass_Ankimon_News": False
+                "misc.YouShallNotPass_Ankimon_News": False,
+                "trainer.name": "Ash",
+                "trainer.cash": 0,
             }
             self.save_config(config)
         return config
@@ -64,3 +67,4 @@ class Settings:
     def set(self, key, value):
         self.config[key] = value
         self.save_config(self.config)
+        self.load_config()
