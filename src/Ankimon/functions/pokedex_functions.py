@@ -1,4 +1,5 @@
-from ..resources import pokedex_path, pokedesc_lang_path, pokeapi_db_path, pokenames_lang_path
+from ..resources import pokedex_path, pokedesc_lang_path, pokeapi_db_path, pokenames_lang_path, mypokemon_path
+from aqt.utils import showWarning
 import json
 import random
 import csv
@@ -141,3 +142,15 @@ def get_pokemon_diff_lang_name(pokemon_id, language):
             if int(species_id) == pokemon_id and int(lang_id) == language:
                 return name
     return "No Translation in this language"  # Return None if no match is found
+
+def extract_ids_from_file():
+    try:
+        filename = mypokemon_path
+        with open(filename, 'r') as file:
+            data = json.load(file)
+            ids = [character['id'] for character in data]
+            owned_pokemon_ids = ids
+            return owned_pokemon_ids
+    except Exception as e:
+        showWarning(f"Error: {e} with function extract_ids_from_file")
+        return []

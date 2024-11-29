@@ -92,7 +92,7 @@ class TrainerCardGUI(QDialog):
         self.team_pokemon_label = create_info_label("Team:", self.trainer_card.team)
         self.highest_level_label = create_info_label("Highest Level:", self.trainer_card.highest_level)
         self.league_label = create_info_label("League:", self.trainer_card.league)
-        
+        self.next_lvl_label = create_info_label(f"XP Needed for Level Up:", f"{self.trainer_card.xp_for_next_level()} XP")
         # Add widgets to main layout
         main_layout.addWidget(left_widget)
         main_layout.addWidget(right_widget)
