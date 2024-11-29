@@ -31,7 +31,8 @@ def create_menu_actions(
     trainer_card_window,
     data_handler_window,
     settings_window,
-    shop_manager
+    shop_manager,
+    pokedex_window
 ):
     actions = []
 
@@ -74,6 +75,10 @@ def create_menu_actions(
         flex_pokecoll_action = QAction("Export All Pokemon to PokePast for flexing", mw)
         qconnect(flex_pokecoll_action.triggered, flex_pokemon_collection)
         mw.pokemenu.addAction(flex_pokecoll_action)
+
+        pokedex_action = QAction("Open Pokedex", mw)
+        qconnect(pokedex_action.triggered, pokedex_window.show)
+        mw.pokemenu.addAction(pokedex_action)
 
     # Effectiveness chart
     test_action11 = QAction("Check Effectiveness Chart", mw)

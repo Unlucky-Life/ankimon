@@ -1,7 +1,14 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GNU General Public License, Version 3, 29 June 2007</title>
+</head>
+<body>
 Pokemon is the intellectual property of Nintendo/Creatures Inc./GAME FREAK inc.
 The below license only applies to the code portions
-
-                    GNU GENERAL PUBLIC LICENSE
+    
+    <pre>                    GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -647,3 +654,6 @@ copy of the Program in return for a fee.
     for details check out "About and License".
     This is free software, and you are welcome to redistribute it
     under certain conditions;
+</pre>
+</body>
+</html>
