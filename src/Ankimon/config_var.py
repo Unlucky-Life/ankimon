@@ -10,7 +10,6 @@ reviewer_image_gif = config["gui.reviewer_image_gif"]
 show_mainpkmn_in_reviewer = config["gui.show_mainpkmn_in_reviewer"] #0 is off, 1 normal, 2 battle mode
 xp_bar_config = config["gui.xp_bar_config"]
 review_hp_bar_thickness = config["gui.review_hp_bar_thickness"] #2 = 8px, 3# 12px, 4# 16px, 5# 20px
-hp_bar_thickness = review_hp_bar_thickness * 4
 hp_bar_config = config["gui.hp_bar_config"] #2 = 8px, 3# 12px, 4# 16px, 5# 20px
 xp_bar_location = config["gui.xp_bar_location"] #1 top, 2 = bottom
 animate_time = config["gui.animate_time"] #default: true; false = animate for 0.8 seconds

@@ -2,7 +2,7 @@ import json
 class PokemonObject:
     def __init__(self, name="Ditto", shiny=False, id=1, level=3, ability=["None"], type=["Normal"], current_hp=15, stats=None, attacks=None, base_experience=0, 
                  growth_rate=None, hp=None, ev=None, iv=None, gender=None, battle_status="Fighting", xp=0, 
-                 position=0, nickname=None, moves=None, evos=None):
+                 position=0, nickname=None, moves=None, evos=None, tier = "Normal"):
         self.name = name
         self.nickname = nickname or "" # Allow nickname to be set in the constructor
         self.shiny = shiny
@@ -25,6 +25,7 @@ class PokemonObject:
         self.position = position
         self.evos = evos or []
         self._battle_stats = {}  # Private attribute for battle stats
+        self.tier = tier or "Normal"
         
         # Store battle stats for easy access
         self._update_battle_stats()

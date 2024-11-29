@@ -1,6 +1,7 @@
 from PyQt6.QtCore import QTimer
 from .pokemon_obj import PokemonObject
 from datetime import datetime, timedelta
+from ..functions.pokedex_functions import extract_ids_from_file
 
 class AnkimonTracker:
     def __init__(self):
@@ -17,6 +18,7 @@ class AnkimonTracker:
         self.session_timer.timeout.connect(self.update_session_timer)
         self.card_timer = QTimer()
         self.card_timer.timeout.connect(self.update_card_timer)
+        self.cards_battle_round = 0
         
         # Time tracking
         self.session_time_elapsed = 0
@@ -33,6 +35,10 @@ class AnkimonTracker:
         self.main_pokemon = None
         self.enemy_pokemon = None
         self.pokemon_stats = {}
+
+        #Check if Pokemon is already caught
+        self.owned_pokemon_ids = extract_ids_from_file()
+        self.pokemon_in_collection = False
 
         self.pokemon_encouter = 0 #mode for pokemon encounter
         self.general_card_count_for_battle = 0 #count for general card count for battle
@@ -198,3 +204,19 @@ class AnkimonTracker:
 
     def reset_card_timer(self):
         self.card_time_elapsed = 0
+
+    def check_pokecoll_in_list(self):
+        owned_pokemon_ids = self.owned_pokemon_ids
+        id = self.enemy_pokemon.id
+        self.pokemon_in_collection = False
+        for num in owned_pokemon_ids:
+            if num == id:
+                self.pokemon_in_collection = True
+    
+    def get_ids_in_collection(self):
+        try:
+            owned_pokemon_ids = []
+            owned_pokemon_ids = extract_ids_from_file()
+            self.owned_pokemon_ids = owned_pokemon_ids
+        except:
+            showWarning("Error: from AnkimonTracker with function extract_ids_from_file")
