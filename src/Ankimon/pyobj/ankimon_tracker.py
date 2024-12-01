@@ -2,6 +2,8 @@ from PyQt6.QtCore import QTimer
 from .pokemon_obj import PokemonObject
 from datetime import datetime, timedelta
 from ..functions.pokedex_functions import extract_ids_from_file
+from ..utils import random_battle_scene
+import random
 
 class AnkimonTracker:
     def __init__(self):
@@ -35,6 +37,17 @@ class AnkimonTracker:
         self.main_pokemon = None
         self.enemy_pokemon = None
         self.pokemon_stats = {}
+
+        #Item Receive Value
+        self.item_receive_value = random.randint(3, 120)
+
+        #Track Pokemon Battle Cards
+        self.cry_counter = 0
+        self.attack_counter = 0
+        self.slp_counter = 0
+
+        #battlescene
+        self.randomize_battle_scene()
 
         #Check if Pokemon is already caught
         self.owned_pokemon_ids = extract_ids_from_file()
@@ -220,3 +233,9 @@ class AnkimonTracker:
             self.owned_pokemon_ids = owned_pokemon_ids
         except:
             showWarning("Error: from AnkimonTracker with function extract_ids_from_file")
+    
+    def get_badges(self):
+        pass
+
+    def randomize_battle_scene(self):
+        self.battlescene_file = random_battle_scene()
