@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QRadioButton, QHBoxLayout, QMainWindow, QScrollArea
 class Settings:
     def __init__(self):
         self.config = self.load_config()
+        self.compute_gui_config()
 
     def get_description(self, key):
         return self.descriptions.get(key, "No description available.")

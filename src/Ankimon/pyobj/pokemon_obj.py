@@ -2,7 +2,7 @@ import json
 class PokemonObject:
     def __init__(self, name="Ditto", shiny=False, id=1, level=3, ability=["None"], type=["Normal"], current_hp=15, stats=None, attacks=None, base_experience=0, 
                  growth_rate=None, hp=None, ev=None, iv=None, gender=None, battle_status="Fighting", xp=0, 
-                 position=0, nickname=None, moves=None, evos=None, tier = "Normal"):
+                 position=0, nickname=None, moves=None, evos=None, tier = "Normal", ev_yield = {"hp": 1, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}):
         self.name = name
         self.nickname = nickname or "" # Allow nickname to be set in the constructor
         self.shiny = shiny
@@ -17,6 +17,7 @@ class PokemonObject:
         self.current_hp = current_hp or 15  # Ensure 'current_hp' is accepted here
         self.ev = ev or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}  # Default to empty dict if None
         self.iv = iv or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}  # Default to empty dict if None
+        self.ev_yield = ev_yield 
         self.hp = int((((((stats["hp"] + iv["hp"]) * 2 ) + (ev["hp"] / 4)) * level) / 100) + level + 10)
         self.max_hp = self.hp
         self.gender = gender
@@ -29,6 +30,10 @@ class PokemonObject:
         
         # Store battle stats for easy access
         self._update_battle_stats()
+    
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)
 
     def get_stats(self):
         """Return the stats of the Pokémon."""
