@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Egg</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    #egg {
+      width: 150px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #clickCount {
+      margin-top: 20px;
+      font-size: 1.5em;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <img id="egg" src="https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/egg.png?raw=true" alt="Egg Image" />
+  <div id="clickCount">Clicks: 0</div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const egg = document.getElementById('egg');
+      const clickCountDisplay = document.getElementById('clickCount');
+      let clickCount = parseInt(localStorage.getItem('clickCount') || '0', 10);
+
+      // Update click count display
+      clickCountDisplay.textContent = `Clicks: ${clickCount}`;
+
+      egg.addEventListener('click', () => {
+        // Check if the egg is already a gif
+        if (egg.src.includes('bouncing.gif')) return;
+
+        // Change image source to the gif and add bounce animation
+        egg.src = 'https://64.media.tumblr.com/18a645e8cae6526b567b17919ea65d54/tumblr_n4mlhyk5wT1qa0qrko1_500.gif';
+
+        // Increment and update the click count
+        clickCount += 1;
+        localStorage.setItem('clickCount', clickCount);
+        clickCountDisplay.textContent = `Clicks: ${clickCount}`;
+
+        // Switch back to the static egg image after the GIF has played
+        egg.addEventListener('load', () => {
+          setTimeout(() => {
+            egg.src = 'https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/egg.png?raw=true'; // Replace with your static image URL
+          }, 1000); // Adjust the timeout to match the GIF duration
+        }, { once: true });
+      });
+    });
+  </script>
+</body>
+</html>

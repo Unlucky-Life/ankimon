@@ -9,14 +9,15 @@ EXPONENTIAL_FACTOR = 1.5  # Scaling factor for exponential XP curve
 # Tier-based XP rewards (can be extended)
 POKEMON_TIERS = {
     "normal": 10,
-    "baby": 30,
-    "ultra": 75,
-    "legendary": 500,
-    "mythical": 1000,
+    "baby": 16,
+    "ultra": 30,
+    "legendary": 120,
+    "mythical": 160,
 }
 
 class TrainerCard:
-    def __init__(self, trainer_name, badge_count, favorite_pokemon, trainer_id, logger, level=1, xp=0, achievements=None, team="", image_path=trainer_sprites_path, highest_level=0, league="unranked", cash="0"):
+    def __init__(self, logger, trainer_name, badge_count, favorite_pokemon, trainer_id, level=1, xp=0, achievements=None, team="", image_path=trainer_sprites_path, highest_level=0, league="unranked", cash="0"):
+        self.logger = logger
         self.trainer_name = trainer_name      # Name of the trainer
         self.badge_count = badge_count        # Number of badges the trainer has earned
         self.favorite_pokemon = favorite_pokemon  # Trainer's favorite Pokémon
@@ -69,11 +70,13 @@ class TrainerCard:
 
     def on_level_up(self):
         """Triggered when leveling up."""
-        logger.log_and_showinfo("game", f"🎉 Congratulations! You reached Level {self.level}!")
+        self.logger.log_and_showinfo("game", f"🎉 Congratulations! You reached Level {self.level}!")
 
-    def gain_xp(self, tier):
+    def gain_xp(self, tier, allow_to_choose_move=False):
         """Add XP based on defeated Pokémon's tier."""
         xp_gained = POKEMON_TIERS.get(tier.lower(), 0)
+        if allow_to_choose_move is True:
+            xp_gained = xp_gained * 0.5
         self.xp += xp_gained
         print(f"Gained {xp_gained} XP from defeating a {tier} Pokémon!")
         self.check_level_up()

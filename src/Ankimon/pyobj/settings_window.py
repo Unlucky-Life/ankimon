@@ -26,6 +26,10 @@ class SettingsWindow(QMainWindow):
         self.config = self.load_config()
         self.show()
 
+    def update_config(self, key, value):
+        self.config[key] = value  # Directly update self.config
+        self.set_config_callback(key, value)
+
     def load_descriptions(self):
         # Load descriptions from a JSON file one level above the root of the add-on directory
         descriptions_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lang', 'setting_description.json')
@@ -116,7 +120,7 @@ class SettingsWindow(QMainWindow):
                 scroll_area_layout.addWidget(description_label)
                 scroll_area_layout.addWidget(line_edit)
 
-                line_edit.editingFinished.connect(lambda k=key, le=line_edit: self.set_config_callback(k, le.text()))
+                line_edit.editingFinished.connect(lambda k=key, le=line_edit: self.update_config(k, le.text()))
 
                 # Store label-based setting
                 self.label_settings[friendly_name] = value
@@ -131,18 +135,21 @@ class SettingsWindow(QMainWindow):
 
     def handle_radio_selection(self, checked, key, value):
         if checked:
+            self.config[key] = value  # Directly update self.config
             self.set_config_callback(key, value)
 
     def on_save(self):
-        # Call the save configuration callback
-        self.save_config_callback(self.config)
-
         # Check for changes, excluding 'mypokemon' and 'mainpokemon'
         changed_settings = {
             key: self.config[key]
             for key in self.config
             if key not in ['mypokemon', 'mainpokemon', 'trainer.cash'] and self.config[key] != self.original_config.get(key)
         }
+
+        #showInfo(f"{changed_settings}")
+
+        # Call the save configuration callback
+        self.save_config_callback(self.config)
 
         # Display only the changed settings
         if changed_settings:
