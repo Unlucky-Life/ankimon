@@ -20,3 +20,10 @@ def rate_addon_url():
 
     # Open the Team Builder in the default web browser
     QDesktopServices.openUrl(QUrl(rating_url))
+
+def report_bug():
+    # Specify the URL of the Pokémon Showdown Team Builder
+    bug_url = "https://github.com/Unlucky-Life/ankimon/issues"
+
+    # Open the Team Builder in the default web browser
+    QDesktopServices.openUrl(QUrl(bug_url))

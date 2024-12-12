@@ -16,13 +16,14 @@ POKEMON_TIERS = {
 }
 
 class TrainerCard:
-    def __init__(self, logger, trainer_name, badge_count, favorite_pokemon, trainer_id, level=1, xp=0, achievements=None, team="", image_path=trainer_sprites_path, highest_level=0, league="unranked", cash="0"):
+    def __init__(self, logger, settings_obj, trainer_name, badge_count, favorite_pokemon, trainer_id, level=1, xp=0, achievements=None, team="", image_path=trainer_sprites_path, highest_level=0, league="unranked"):
         self.logger = logger
+        self.settings_obj = settings_obj,
         self.trainer_name = trainer_name      # Name of the trainer
         self.badge_count = badge_count        # Number of badges the trainer has earned
         self.favorite_pokemon = favorite_pokemon  # Trainer's favorite Pokémon
         self.trainer_id = trainer_id          # Unique ID for the trainer
-        self.level = level                    # Trainer's level
+        self.level = int(settings_obj.get("trainer.level", 1))                    # Trainer's level
         self.xp = xp                          # Experience points
         self.achievements = achievements if achievements else []  # List of achievements (if any)
         self.team = team                      # Team as a simple string
@@ -30,7 +31,7 @@ class TrainerCard:
         self.image_path = image_path
         self.league = league
         self.highest_level = highest_level
-        self.cash = cash
+        self.cash = int(settings_obj.get("trainer.cash", 0))
 
     def get_highest_level_pokemon(self):
         """Method to find the highest level Pokémon (from the team string)"""

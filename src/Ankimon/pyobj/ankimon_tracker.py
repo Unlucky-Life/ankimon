@@ -1,12 +1,18 @@
 from PyQt6.QtCore import QTimer
 from .pokemon_obj import PokemonObject
 from datetime import datetime, timedelta
+from aqt.utils import showWarning
 from ..functions.pokedex_functions import extract_ids_from_file
 from ..utils import random_battle_scene
 import random
 
 class AnkimonTracker:
-    def __init__(self):
+    def __init__(self, trainer_card, settings_obj):
+
+        # Object bindings
+        self.trainer_card = trainer_card
+        self.settings = settings_obj
+
         # Existing stats
         self.total_reviews = 0
         self.good_count = 0
@@ -140,6 +146,8 @@ class AnkimonTracker:
         # Increase the number of cards reviewed and update session time
         self.card_counter += 1
         self.card_ratings_count[answer.capitalize()] += 1
+        
+        self.check_achievements(self.total_reviews)
 
         # Stop the card timer after answering and calculate multiplier
         self.reset_card_timer()
@@ -147,6 +155,11 @@ class AnkimonTracker:
         # After 2 cards - set multiplier
         if self.card_counter == 2:
             self.calc_multiply_card_rating()
+
+    def check_achievements(self, total_reviews):
+        if total_reviews == 10:
+            self.settings.set("trainer.cash", self.settings.get("trainer.cash") + 200)
+            self.trainer_card.cash += 200
 
     def update_streak(self, new_day):
         """Update the streak for daily reviews (each position represents a day)."""

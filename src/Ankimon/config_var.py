@@ -1,4 +1,5 @@
 from aqt import mw
+import platform
 
 config = mw.addonManager.getConfig(__name__)
 
@@ -34,6 +35,18 @@ reviewer_buttons = config["controls.pokemon_buttons"] #default: true; false = no
 sound_effects = config["audio.sound_effects"] #default: false; true = sound_effects on
 sounds = config["audio.sounds"]
 battle_sounds = config["audio.battle_sounds"]
+
+
+# Get the system name (e.g., 'Windows', 'Linux', 'Darwin')
+system_name = platform.system()
+
+# Determine system category
+if system_name == "Windows" or system_name == "Linux":
+    # Assign 'win_lin' for Windows or Linux
+    system = "win_lin"
+elif system_name == "Darwin":
+    # Assign 'mac' for macOS
+    system = "mac"
 
 if sound_effects is True:
     from . import playsound
