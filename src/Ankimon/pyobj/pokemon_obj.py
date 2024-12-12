@@ -1,15 +1,19 @@
+import uuid
 import json
+from ..resources import pkmnimgfolder
+import os
+
 class PokemonObject:
     def __init__(self, name="Ditto", shiny=False, id=1, level=3, ability=["None"], type=["Normal"], current_hp=15, stats=None, attacks=None, base_experience=0, 
                  growth_rate=None, hp=None, ev=None, iv=None, gender=None, battle_status="Fighting", xp=0, 
-                 position=0, nickname=None, moves=None, evos=None, tier = "Normal", ev_yield = {"hp": 1, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}):
+                 position=0, nickname=None, moves=None, evos=None, tier = "Normal", ev_yield = {"hp": 1, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}, **kwargs):
         self.name = name
         self.nickname = nickname or "" # Allow nickname to be set in the constructor
-        self.shiny = shiny
+        self.shiny = shiny or False  # Default to False if None
         self.id = id
-        self.level = level
-        self.ability = ability
-        self.type = type
+        self.level = level or 3  # Default to 3 if None
+        self.ability = ability or ["None"]  # Default to ["None"] if None
+        self.type = type or ["Normal"]
         self.stats = stats or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}  # Default to empty dict if None
         self.attacks = attacks or []  # Default to empty list if None
         self.base_experience = base_experience
@@ -17,17 +21,20 @@ class PokemonObject:
         self.current_hp = current_hp or 15  # Ensure 'current_hp' is accepted here
         self.ev = ev or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}  # Default to empty dict if None
         self.iv = iv or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}  # Default to empty dict if None
-        self.ev_yield = ev_yield 
+        self.ev_yield = ev_yield or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}
         self.hp = int((((((stats["hp"] + iv["hp"]) * 2 ) + (ev["hp"] / 4)) * level) / 100) + level + 10)
         self.max_hp = self.hp
         self.gender = gender
         self.battle_status = battle_status
-        self.xp = xp
+        self.xp = xp or 0
         self.position = position
         self.evos = evos or []
         self._battle_stats = {}  # Private attribute for battle stats
         self.tier = tier or "Normal"
         
+        #individual_id = str(uuid.uuid4())
+        self.individual_id = kwargs.get('individual_id', str(uuid.uuid4()))
+
         # Store battle stats for easy access
         self._update_battle_stats()
     
@@ -66,6 +73,31 @@ class PokemonObject:
         #hp = int(((iv + 2 * (base_stat_hp + ev) + 100) * level) / 100 + 10)
         hp = int((((((self.stats["hp"] + iv_value) * 2 ) + ev_value) * self.level) / 100) + self.level + 10)
         return hp
+    
+    def get_sprite_path(self, side, sprite_type):
+        """Return the path to the sprite of the Pokémon."""
+        base_path = f"{side}_default_gif" if sprite_type == "gif" else f"{side}_default"
+        
+        shiny_path = "shiny/" if self.shiny else ""
+        gender_path = "female/" if self.gender == "F" else ""
+        
+        path = f"{pkmnimgfolder}/{base_path}/{shiny_path}{gender_path}{self.id}.{sprite_type}"
+        default_path = f"{pkmnimgfolder}/front_default/substitute.png"
+        
+        # Check if the file exists at the given path
+        if os.path.exists(path):
+            return path
+        else:
+            if self.gender == "F":
+                gender_path = ""
+                path = f"{pkmnimgfolder}/{base_path}/{shiny_path}{gender_path}{self.id}.{sprite_type}"
+                return path
+            elif self.shiny == "True":
+                shiny_path = ""
+                path = f"{pkmnimgfolder}/{base_path}/{shiny_path}{gender_path}{self.id}.{sprite_type}"
+                return path
+            else:
+                return default_path
 
 class PokemonEncoder(json.JSONEncoder):
     def default(self, obj):

@@ -29,11 +29,11 @@ class PokemonShopManager:
             # Close the window if it is visible
             self.window.close()
         else:
-            if not self.window:
-                # Create the shop window if not already created
+            # Always recreate the window if it's closed
+            if not self.window or not self.window.isVisible():
                 self.create_gui()
 
-            # Show the window without starting a new event loop
+            # Show the window
             self.window.show()
 
     
