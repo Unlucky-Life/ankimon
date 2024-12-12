@@ -20,6 +20,7 @@ from pathlib import Path
 
 import aqt
 import requests
+import uuid
 from anki.hooks import addHook, wrap
 from aqt import gui_hooks, mw, utils
 from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
@@ -65,12 +66,13 @@ try:
     from .functions.create_css_for_reviewer import create_css_for_reviewer
     from .functions.reviewer_iframe import create_iframe_html, create_head_code
     from .functions.url_functions import *
+    from .functions.gui_functions import type_icon_path, move_category_path
 except ImportError:
     showWarning("Error in importing pokedex_functions")
 
 from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
     Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget, \
-    Pokedex_Widget, CheckFiles, CheckPokemonData
+    Pokedex_Widget, CheckFiles
 
 from .pyobj.ankimon_tracker import AnkimonTracker
 from .pyobj.settings import Settings
@@ -85,6 +87,7 @@ from .pyobj.trainer_card import TrainerCard
 from .pyobj.trainer_card_window import TrainerCardGUI
 from .pyobj.ankimon_shop import PokemonShopManager
 from .pokedex.pokedex_obj import Pokedex
+from .pyobj.sync_pokemon_data import CheckPokemonData
 
 from .classes.choose_move_dialog import MoveSelectionDialog
 
@@ -115,17 +118,16 @@ logger.log_and_showinfo('game', "Ankimon Startup.")
 # Create a sample trainer card to test
 trainer_card = TrainerCard(
     logger = logger,
+    settings_obj = settings_obj,
     trainer_name="Ash Ketchum",
     badge_count=8,
     favorite_pokemon="Pikachu",
-    trainer_id="00123",
-    level=1,
+    trainer_id = ''.join(filter(str.isdigit, str(uuid.uuid4()).replace('-', ''))),
     xp=0,
     team="Pikachu (Level 25), Charizard (Level 50), Bulbasaur (Level 15)",
     image_path=f"{trainer_sprites_path}" + "/" + "ash-sinnoh.png",
     highest_level=100,
     league = 'Indigo',
-    cash = "157"
 )
 
 default_pokemon_data = {
@@ -134,6 +136,7 @@ default_pokemon_data = {
     "ev": {"hp": 0, "atk": 1, "def": 0, "spa": 0, "spd": 0, "spe": 0}, "iv": {"hp": 15, "atk": 20, "def": 10, "spa": 10, "spd": 10, "spe": 10},
     "attacks": ["Thunderbolt", "Quick Attack"], "base_experience": 112, "current_hp": 20, "growth_rate": "Medium", "evos": ["Pikachu"]
 }
+
 # Check if the main Pokémon file exists and is valid
 if mainpokemon_path.is_file():
     with open(mainpokemon_path, "r") as json_file:
@@ -151,13 +154,53 @@ else:
 if mainpokemon_empty:
     main_pokemon = PokemonObject(**default_pokemon_data)
 
-enemy_pokemon = PokemonObject(name="Charmander", shiny=True, id=2, level=5, ability="Blaze", type="Fire", 
-                              stats={"hp": 18, "attack": 35, "defense": 12}, attacks=["Ember", "Scratch"], base_experience=62, 
-                              growth_rate="Medium", hp=18, ev={"hp": 0, "attack": 2}, iv={"hp": 10, "attack": 25}, gender="Male", 
-                              battle_status="Fighting", xp=0, position=(5, 5))
+enemy_pokemon = PokemonObject(
+    name="Rattata",             # Name of the Pokémon
+    shiny=False,                # Shiny status (False for normal appearance)
+    id=19,                      # ID number
+    level=5,                    # Level
+    ability="Run Away",         # Ability specific to Rattata
+    type="Normal",              # Type (Normal type for Rattata)
+    stats = {                     # Base stats for Rattata
+      "hp": 39,
+      "atk": 52,
+      "def": 43,
+      "spa": 60,
+      "spd": 50,
+      "spe": 65,
+      "xp": 101
+    },
+    attacks=["Quick Attack", "Tackle", "Tail Whip"], # Typical moves for Rattata
+    base_experience=58,          # Base experience points
+    growth_rate="Medium",        # Growth rate
+    hp=30,                       # Hit points (HP)
+    ev={
+      "hp": 3,
+      "atk": 5,
+      "def": 4,
+      "spa": 1,
+      "spd": 2,
+      "spe": 3
+    },  # EVs (Effort Values) for stats
+    iv={
+      "hp": 27,
+      "atk": 24,
+      "def": 3,
+      "spa": 24,
+      "spd": 16,
+      "spe": 21
+    }, # IVs (Individual Values) for stats
+    gender="M",                   # Gender
+    battle_status="Fighting",    # Status during battle
+    xp=0,                         # XP (experience points)
+    position=(5, 5)              # Position in battle
+)
 
 
-ankimon_tracker_obj = AnkimonTracker()
+ankimon_tracker_obj = AnkimonTracker(
+    trainer_card=trainer_card,
+    settings_obj=settings_obj,
+)
 # Set Pokémon in the tracker
 ankimon_tracker_obj.set_main_pokemon(main_pokemon)
 ankimon_tracker_obj.set_enemy_pokemon(enemy_pokemon)
@@ -249,17 +292,10 @@ if mainpokemon_path.is_file():
 
 window = None
 gender = None
-system_name = platform.system()
-
-if system_name == "Windows" or system_name == "Linux":
-    system = "win_lin"
-elif system_name == "Darwin":
-    # Open file explorer at the specified path in macOS
-    system = "mac"
 
 from .config_var import *
 
-check_data = CheckPokemonData(mainpokemon_path, mypokemon_path, settings_obj, logger)
+check_data = CheckPokemonData(settings_obj, logger)
 
 #If reviewer showed question; start card_timer for answering card
 def on_show_question(Card):
@@ -695,6 +731,7 @@ if database_complete:
             #id = random.choice(test_ids)
             name = search_pokedex_by_id(id)
             gender = "N"
+            shiny = shiny_chance()
             if name is list:
                 name = name[0]
             try:
@@ -775,7 +812,7 @@ if database_complete:
                 battle_stats = stats
                 battle_status = "fighting"
                 ev_yield = search_pokeapi_db_by_id(id, "effort_values")
-                return name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield
+                return name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny
             else:
                 return generate_random_pokemon()  # Return the result of the recursive call
         except FileNotFoundError:
@@ -1029,36 +1066,7 @@ def save_caught_pokemon(nickname):
                 achievements = receive_badge(10,achievements)
                 test_window.display_badge(10)
 
-    stats = search_pokedex(enemy_pokemon.name.lower(),"baseStats")
-    stats["xp"] = 0
-    ev = {
-      "hp": 0,
-      "atk": 0,
-      "def": 0,
-      "spa": 0,
-      "spd": 0,
-      "spe": 0
-    }
-    evos = search_pokedex(enemy_pokemon.name, "evos")
-    if evos is None:
-        evos = ""
-    caught_pokemon = {
-        "name": enemy_pokemon.name.capitalize(),
-        "nickname": nickname,
-        "level": level,
-        "gender": gender,
-        "id": search_pokedex(enemy_pokemon.name.lower(),'num'),
-        "ability": ability,
-        "type": type,
-        "stats": stats,
-        "ev": ev,
-        "iv": iv,
-        "attacks": enemy_attacks,
-        "base_experience": base_experience,
-        "current_hp": calculate_hp(int(stats["hp"]),level, ev, iv),
-        "growth_rate": growth_rate,
-        "evos": evos
-    }
+    caught_pokemon = create_caught_pokemon(enemy_pokemon, nickname)
     # Load existing Pokémon data if it exists
     if mypokemon_path.is_file():
         with open(mypokemon_path, "r") as json_file:
@@ -1497,7 +1505,7 @@ def get_random_starter():
 def new_pokemon():
     # new pokemon
     gender = None
-    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield = generate_random_pokemon()
+    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon()
     pokemon_data = {
         'name': name,
         'id': id,
@@ -1514,7 +1522,8 @@ def new_pokemon():
         'battle_status': battle_status,
         'battle_stats': battle_stats,
         'tier': tier,
-        'ev_yield': ev_yield
+        'ev_yield': ev_yield,
+        'shiny': shiny
     }
     enemy_pokemon.update_stats(**pokemon_data)
     ankimon_tracker_obj.randomize_battle_scene()
@@ -1576,7 +1585,7 @@ if database_complete:
     except Exception:
         starter = False
         mainpokemon_level = 5
-    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield = generate_random_pokemon()
+    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon()
     pokemon_data = {
         'name': name,
         'id': id,
@@ -1593,9 +1602,14 @@ if database_complete:
         'battle_status': battle_status,
         'battle_stats': battle_stats,
         'tier': tier,
-        'ev_yield': ev_yield
+        'ev_yield': ev_yield,
+        'shiny': shiny
     }
     enemy_pokemon.update_stats(**pokemon_data)
+    max_hp = enemy_pokemon.calculate_max_hp()
+    enemy_pokemon.current_hp = max_hp
+    enemy_pokemon.hp = max_hp
+    enemy_pokemon.max_hp = max_hp
     ankimon_tracker_obj.randomize_battle_scene()
 
 cry_counter = 0
@@ -1666,7 +1680,7 @@ def on_review_card(*args):
                 test_window.display_badge(6)
         if cards_battle_round >= settings_obj.get("battle.cards_per_round", 2):
             ankimon_tracker_obj.cards_battle_round = 0
-            attack_counter = 0
+            ankimon_tracker_obj.attack_counter = 0
             slp_counter = 0
             ankimon_tracker_obj.pokemon_encouter += 1
             pokemon_encounter = ankimon_tracker_obj.pokemon_encouter
@@ -2603,7 +2617,7 @@ def rename_pkmn(nickname, pkmn_name, position):
         showWarning(f"An error occured: {e}")
 
 def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position):
-    global gif_in_collection
+    gif_in_collection = settings_obj.get('gui.gif_in_collection', False)
     # Create the dialog
     try:
         lang_name = get_pokemon_diff_lang_name(int(id), settings_obj.get('misc.language')).capitalize()
@@ -2962,8 +2976,11 @@ def remember_attack_details_window(id, attack_set, all_attacks):
     window.exec()
 
 def remember_attack(id, attacks, new_attack):
+    if new_attack in attacks:
+        logger.log_and_showinfo("warning","Your pokemon already knows this move!")
+        return
     if not mainpokemon_path.is_file():
-        showWarning("Missing Mainpokemon Data !")
+        logger.log_and_showinfo("warning","Missing Mainpokemon Data !")
         return
     with open(mainpokemon_path, "r") as json_file:
         main_pokemon_data = json.load(json_file)
@@ -3016,31 +3033,10 @@ def remember_attack(id, attacks, new_attack):
                 json.dump(mypokemondata, output_file, indent=2)
         else:
             logger.log_and_showinfo("info","Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
-    
-
-def type_icon_path(type):
-    png_file = f"{type}.png"
-    icon_path = addon_dir / "addon_sprites" / "Types"
-    icon_png_file_path = icon_path / png_file
-    return icon_png_file_path
-
-def move_category_path(category):
-    png_file = f"{category}_move.png"
-    category_path = addon_dir / "addon_sprites" / png_file
-    return category_path
 
 def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
     # Capitalize the first letter of the Pokémon's name
     capitalized_name = name.capitalize()
-    stats_list = [
-        detail_stats["hp"],
-        detail_stats["atk"],
-        detail_stats["def"],
-        detail_stats["spa"],
-        detail_stats["spd"],
-        detail_stats["spe"],
-        detail_stats["xp"]
-    ]
     # Create a dictionary to store the Pokémon's data
     main_pokemon_data = []
     main_pokemon_data = [
@@ -3073,7 +3069,6 @@ def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks,
         test_window.display_first_encounter()
 	
 def PokemonDetailsStats(detail_stats, growth_rate, level):
-    
     CompleteTable_layout = QVBoxLayout()
     experience = int(find_experience_for_level(growth_rate, level, settings_obj.get("remove_levelcap", False)))
     # Stat colors
@@ -3137,23 +3132,6 @@ def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
             break
 
     if not found:
-        pokemon_trade = []
-        pokemon_trade = [
-            {
-                "name": name,
-                "level": level,
-                "gender": gender,
-                "ability": ability,
-                "type": type,
-                "stats": stats,
-                "ev": ev,
-                "iv": iv,
-                "attacks": attacks,
-                "base_experience": base_experience,
-                "current_hp": 30,
-                "growth_rate": growth_rate
-            }
-        ]
         # Create a main window
         window = QDialog()
         window.setWindowTitle(f"Trade Pokemon {name}")
@@ -3202,7 +3180,6 @@ def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
         window.setLayout(layout)
 
         # Copy text to clipboard in Anki
-        #mw.app.clipboard().setText(pokemon_info)
         mw.app.clipboard().setText(f"{info}")
 
         # Write the Id, EV, IV and Attacks ID into numbers, seperated by ,
@@ -3693,23 +3670,30 @@ if database_complete and mainpokemon_empty is False:
         hp_bar_thickness = settings_obj.get("battle.hp_bar_thickness", 2) * 4
         experience_for_next_lvl = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("remove_levelcap", False)))
         if reviewer_image_gif == False:
-            pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.png' #use for png files
-            pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
+            #remove if it works
+            #pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.png' #use for png files
+            #pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
+            pokemon_image_file = enemy_pokemon.get_sprite_path("front", "png")
             if show_mainpkmn_in_reviewer > 0:
-                main_pkmn_imagefile = f'{main_pokemon.id}.png' #use for png files
-                main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
+                #remove if it works
+                #main_pkmn_imagefile = f'{main_pokemon.id}.png' #use for png files
+                #main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
+                main_pkmn_imagefile_path = main_pokemon.get_sprite_path("back", "png")
         else:
-            pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.gif'
-            pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
+            #pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.gif'
+            #pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
+            pokemon_image_file = enemy_pokemon.get_sprite_path("front", "gif")
             if show_mainpkmn_in_reviewer > 0:
-                main_pkmn_imagefile = f'{main_pokemon.id}.gif'
+                #main_pkmn_imagefile = f'{main_pokemon.id}.gif'
                 if view_main_front == -1:
-                    gif_type = "front_default_gif" 
+                #    gif_type = "front_default_gif" 
+                    side = "front"
                 else:
-                    gif_type = "back_default_gif"
-                main_pkmn_imagefile_path = os.path.join((user_path_sprites / f"{gif_type}"), main_pkmn_imagefile)
+                #    gif_type = "back_default_gif"
+                    side = "back"
+                #main_pkmn_imagefile_path = os.path.join((user_path_sprites / f"{gif_type}"), main_pkmn_imagefile)
+                main_pkmn_imagefile_path = main_pokemon.get_sprite_path(side, "gif")
         if show_mainpkmn_in_reviewer > 0:
-            mainpkmn_max_hp = main_pokemon.calculate_max_hp()
             mainpkmn_hp_percent = int((main_pokemon.hp / main_pokemon.max_hp) * 50)
             pokemon_hp_percent = int((enemy_pokemon.hp / enemy_pokemon.max_hp) * 50)
         else:    
@@ -3768,21 +3752,29 @@ if database_complete and mainpokemon_empty is False:
         show_mainpkmn_in_reviewer = int(settings_obj.get('gui.show_mainpkmn_in_reviewer', 1))
         ankimon_tracker_obj.check_pokecoll_in_list()
         if reviewer_image_gif == False:
-            pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.png' #use for png files
-            pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
+            #remove if it works
+            #pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.png' #use for png files
+            #pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
+            pokemon_image_file = enemy_pokemon.get_sprite_path("front", "png")
             if show_mainpkmn_in_reviewer > 0:
-                main_pkmn_imagefile = f'{main_pokemon.id}.png' #use for png files
-                main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
+                #remove if it works
+                #main_pkmn_imagefile = f'{main_pokemon.id}.png' #use for png files
+                #main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
+                main_pkmn_imagefile_path = main_pokemon.get_sprite_path("back", "png")
         else:
-            pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.gif'
-            pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
+            #pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.gif'
+            #pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
+            pokemon_image_file = enemy_pokemon.get_sprite_path("front", "gif")
             if show_mainpkmn_in_reviewer > 0:
-                main_pkmn_imagefile = f'{main_pokemon.id}.gif'
+                #main_pkmn_imagefile = f'{main_pokemon.id}.gif'
                 if view_main_front == -1:
-                    gif_type = "front_default_gif" 
+                #    gif_type = "front_default_gif" 
+                    side = "front"
                 else:
-                    gif_type = "back_default_gif"
-                main_pkmn_imagefile_path = os.path.join((user_path_sprites / f"{gif_type}"), main_pkmn_imagefile)
+                #    gif_type = "back_default_gif"
+                    side = "back"
+                #main_pkmn_imagefile_path = os.path.join((user_path_sprites / f"{gif_type}"), main_pkmn_imagefile)
+                main_pkmn_imagefile_path = main_pokemon.get_sprite_path(side, "gif")
         if show_mainpkmn_in_reviewer > 0:
             mainpkmn_hp_percent = int((main_pokemon.hp / main_pokemon.max_hp) * 50)
             pokemon_hp_percent = int((enemy_pokemon.hp / enemy_pokemon.max_hp) * 50)
@@ -5928,13 +5920,6 @@ class AchievementWindow(QWidget):
         self.move(x, y)
         
         self.show()
-
-def report_bug():
-    # Specify the URL of the Pokémon Showdown Team Builder
-    bug_url = "https://github.com/Unlucky-Life/ankimon/issues"
-
-    # Open the Team Builder in the default web browser
-    QDesktopServices.openUrl(QUrl(bug_url))
 
 achievement_bag = AchievementWindow()
 
