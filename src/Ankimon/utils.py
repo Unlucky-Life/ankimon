@@ -144,7 +144,7 @@ def daily_item_list():
     for file in os.listdir(items_path):
         if file.endswith(".png"):
             item_name = file[:-4]
-            if not item_name.endswith("dust") and not item_name.endswith("-piece") and not item_name.endswith("-nugget"):
+            if not item_name.endswith("dust") and not item_name.endswith("-piece") and not item_name.endswith("-nugget") and get_item_price(item_name) is not 0:
                 item_names.append({
                     "name": item_name,
                     "description": f"Item: {item_name}",
