@@ -55,6 +55,17 @@ class ShowInfoLogger:
             msg_box.setText(message)
             msg_box.setIcon(QMessageBox.Icon.Information)
             msg_box.exec()
+    
+    def log(self, level, message):
+        # Log the message
+        if level == 'info':
+            self.logger.info(message)
+        elif level == 'warning':
+            self.logger.warning(message)
+        elif level == 'error':
+            self.logger.error(message)
+        elif level == 'game':
+            self.game_log(message)  # Use the game-specific logging
 
     def game_log(self, message):
         # Log a game-specific message with the GAME- prefix

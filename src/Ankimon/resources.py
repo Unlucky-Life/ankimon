@@ -63,3 +63,6 @@ pokemon_species_legendary_path = addon_dir / "user_files" / "pkmn_data" / "legen
 pokemon_species_ultra_path = addon_dir / "user_files" / "pkmn_data" / "ultra.json"
 pokemon_species_mythical_path = addon_dir / "user_files" / "pkmn_data" / "mythical.json"
 pokemon_species_baby_path = addon_dir / "user_files" / "pkmn_data" / "baby.json"
+
+#move ui paths
+icon_path = addon_dir / "addon_sprites" / "Types"

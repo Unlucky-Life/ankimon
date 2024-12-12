@@ -102,3 +102,50 @@ def find_experience_for_level(group_growth_rate, level, remove_levelcap):
         elif group_growth_rate == "slow":
             experience = (5 * (level ** 3)) // 4
         return experience
+    
+
+import random
+
+def shiny_chance():
+    # Shiny Pokémon probability (1 in 4096 chance)
+    SHINY_PROBABILITY = 4096
+    shiny = random.randint(1, SHINY_PROBABILITY) == 1
+    return shiny
+
+import uuid
+import json
+from datetime import datetime
+
+def create_caught_pokemon(enemy_pokemon, nickname):
+    enemy_pokemon.stats["xp"] = 0
+    ev = {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0
+    }
+    caught_pokemon = {
+        "name": enemy_pokemon.name.capitalize(),
+        "nickname": nickname,
+        "level": enemy_pokemon.level,
+        "gender": enemy_pokemon.gender,
+        "id": enemy_pokemon.id,
+        "ability": enemy_pokemon.ability,
+        "type": enemy_pokemon.type,
+        "stats": enemy_pokemon.stats,
+        "ev": enemy_pokemon.ev,
+        "iv": enemy_pokemon.iv,
+        "attacks": enemy_pokemon.attacks,
+        "base_experience": enemy_pokemon.base_experience,
+        "current_hp": enemy_pokemon.calculate_max_hp(),
+        "growth_rate": enemy_pokemon.growth_rate,
+        "friendship": 0,
+        "pokemon_defeated": 0,
+        "everstone": False,
+        "shiny": enemy_pokemon.shiny,
+        "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "individual_id": str(uuid.uuid4())
+    }
+    return caught_pokemon
