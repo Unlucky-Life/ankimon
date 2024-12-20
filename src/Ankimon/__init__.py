@@ -56,9 +56,7 @@ from .utils import check_folders_exist, check_file_exists, test_online_connectiv
     random_item, random_fossil, count_items_and_rewrite
 
 try:
-    from .functions.pokedex_functions import search_pokedex, special_pokemon_names_for_min_level, search_pokedex_by_name_for_id, \
-        search_pokedex_by_id, get_mainpokemon_evo, search_pokeapi_db, search_pokeapi_db_by_id, get_pokemon_descriptions, \
-        get_pokemon_diff_lang_name, extract_ids_from_file
+    from .functions.pokedex_functions import *
     from .functions.badges_functions import *
     from .functions.battle_functions import *
     from .functions.pokemon_functions import *
@@ -67,8 +65,9 @@ try:
     from .functions.reviewer_iframe import create_iframe_html, create_head_code
     from .functions.url_functions import *
     from .functions.gui_functions import type_icon_path, move_category_path
-except ImportError:
-    showWarning("Error in importing pokedex_functions")
+    from .gui_classes.pokemon_details import *
+except ImportError as e:
+    showWarning(f"Error in importing functions library {e}")
 
 from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
     Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget, \
@@ -88,6 +87,8 @@ from .pyobj.trainer_card_window import TrainerCardGUI
 from .pyobj.ankimon_shop import PokemonShopManager
 from .pokedex.pokedex_obj import Pokedex
 from .pyobj.sync_pokemon_data import CheckPokemonData
+from .pyobj.collection_dialog import PokemonCollectionDialog
+from .pyobj.attack_dialog import AttackDialog
 
 from .classes.choose_move_dialog import MoveSelectionDialog
 
@@ -146,14 +147,33 @@ if mainpokemon_path.is_file():
             # Extract first Pokémon data if available
             main_pokemon = PokemonObject(**main_pokemon_data[0]) if main_pokemon_data else PokemonObject(**default_pokemon_data)
         except json.JSONDecodeError:
-            mainpokemon_empty = True
+            main_pokemon = PokemonObject(**default_pokemon_data)
 else:
     mainpokemon_empty = True
+    # Initialize with default data if file is empty or invalid
+    if mainpokemon_empty:
+        main_pokemon = PokemonObject(**default_pokemon_data)
 
-# Initialize with default data if file is empty or invalid
-if mainpokemon_empty:
-    main_pokemon = PokemonObject(**default_pokemon_data)
-
+def update_main_pokemon(main_pokemon, mainpokemon_path = mainpokemon_path):
+    # Check if the main Pokémon file exists and is valid
+    if mainpokemon_path.is_file():
+        with open(mainpokemon_path, "r") as json_file:
+            try:
+                main_pokemon_data = json.load(json_file)
+                # Use default values if the file is empty or invalid
+                main_pokemon.update_stats(**main_pokemon_data[0])
+                max_hp = main_pokemon.calculate_max_hp()
+                main_pokemon.max_hp=max_hp
+                main_pokemon.current_hp=main_pokemon_data[0].get("current_hp", max_hp)
+                main_pokemon.hp=main_pokemon_data[0].get("current_hp", max_hp)
+            except json.JSONDecodeError:
+                main_pokemon.update_stats(**default_pokemon_data)
+    else:
+        # Initialize with default data if file is empty or invalid
+        if mainpokemon_empty:
+            for key, value in default_pokemon_data.items():
+                main_pokemon.update_stats(key, value)
+        
 enemy_pokemon = PokemonObject(
     name="Rattata",             # Name of the Pokémon
     shiny=False,                # Shiny status (False for normal appearance)
@@ -230,8 +250,7 @@ with open(items_list_path, 'r') as file:
 with open(sound_list_path, 'r') as json_file:
     sound_list = json.load(json_file)
 
-pokemon_encounter = 0
-
+ankimon_tracker_obj.pokemon_encouter = 0
 
 """
 get web exports ready for special reviewer look
@@ -444,7 +463,7 @@ def answerCard_before(filter, reviewer, card):
 # Globale Variable für die Zählung der Bewertungen
 
 def answerCard_after(rev, card, ease):
-    maxEase = utils.answBtnAmt
+    maxEase = rev.mw.col.sched.answerButtons(card)
     aw = aqt.mw.app.activeWindow() or aqt.mw
     # Aktualisieren Sie die Zählung basierend auf der Bewertung
     if ease == 1:
@@ -528,67 +547,6 @@ if database_complete:
             # Pick up to 4 random moves and append them to the attacks list
             for move, highest_level in moves_and_levels_list[:4]:
                 #attacks.append(f"{move} at level: {highest_level}")
-                attacks.append(f"{move}")
-
-        return attacks
-    
-    def get_all_pokemon_moves(pk_name, level):
-        """
-        Args:
-            json_file_name (str): The name of the JSON file containing Pokémon learnset data.
-            pokemon_name (str): The name of the Pokémon.
-            level (int): The level at which to check for moves.
-
-        Returns:
-            list: A list of up to 4 random moves and their highest levels.
-        """
-        # Load the JSON file
-        with open(learnset_path, 'r') as file:
-            learnsets = json.load(file)
-
-        # Normalize the Pokémon name to lowercase for consistency
-        pk_name = pk_name.lower()
-
-        # Retrieve the learnset for the specified Pokémon
-        pokemon_learnset = learnsets.get(pk_name, {})
-
-        # Create a dictionary to store moves and their corresponding highest levels
-        moves_at_level_and_lower = {}
-
-        # Loop through the learnset dictionary
-        for move, levels in pokemon_learnset.get('learnset', {}).items():
-            highest_level = float('-inf')  # Initialize with negative infinity
-            eligible_moves = []  # Store moves eligible for inclusion
-
-            for move_level in levels:
-                # Check if the move_level string contains 'L'
-                if 'L' in move_level:
-                    # Extract the level from the move_level string
-                    move_level_int = int(move_level.split('L')[1])
-
-                    # Check if the move can be learned at the specified level or lower
-                    if move_level_int <= level:
-                        # Update the highest_level if a higher level is found
-                        highest_level = max(highest_level, move_level_int)
-                        eligible_moves.append(move)
-
-            # Check if the eligible moves can be learned at a higher level
-            if highest_level != float('-inf'):
-                can_learn_at_higher_level = any(
-                    int(move_level.split('L')[1]) > highest_level
-                    for move_level in levels
-                    if 'L' in move_level
-                )
-                if not can_learn_at_higher_level:
-                    moves_at_level_and_lower[move] = highest_level
-
-        attacks = []
-        if moves_at_level_and_lower:
-            # Convert the dictionary into a list of tuples for random selection
-            moves_and_levels_list = list(moves_at_level_and_lower.items())
-
-            # Pick up to 4 random moves and append them to the attacks list
-            for move, highest_level in moves_and_levels_list:
                 attacks.append(f"{move}")
 
         return attacks
@@ -828,11 +786,6 @@ def kill_pokemon():
         exp = int(calc_experience(main_pokemon.base_experience, enemy_pokemon.level))
     main_pokemon.level = save_main_pokemon_progress(mainpokemon_path, main_pokemon.level, main_pokemon.name, main_pokemon.base_experience, main_pokemon.growth_rate, exp)
     ankimon_tracker_obj.general_card_count_for_battle = 0
-    class Container(object):
-        pass
-    reviewer = Container()
-    reviewer.web = mw.reviewer.web
-    update_life_bar(reviewer, 0, 0)
     if test_window.pkmn_window is True:
         new_pokemon()  # Show a new random Pokémon
 
@@ -918,21 +871,6 @@ def display_dead_pokemon():
     if result == QDialog.Rejected:
         w_dead_pokemon = None  # Reset the global window reference
 
-def get_pokemon_by_category(category_name):
-    # Reload the JSON data from the file
-    # TODO: not declared
-    global all_species_path
-    with open(all_species_path, 'r') as file:
-        pokemon_data = json.load(file)
-    # Convert the input to lowercase to match the values in our JSON data
-    category_name = category_name.lower()
-
-    # Filter the Pokémon data to only include those in the given tier
-    pokemon_in_tier = [pokemon['name'] for pokemon in pokemon_data if pokemon['Tier'].lower() == category_name]
-    random_pokemon_name_from_tier = f"{(random.choice(pokemon_in_tier)).lower()}"
-    random_pokemon_name_from_tier = special_pokemon_names_for_min_level(random_pokemon_name_from_tier)
-    return random_pokemon_name_from_tier #return random pokemon name from that category
-
 def get_base_percentages():
     """
     Return the fixed base percentages for Pokémon groups.
@@ -1012,8 +950,8 @@ def choose_random_pkmn_from_tier():
         tier = get_tier(total_reviews, trainer_level)
         id = get_pokemon_id_by_tier(tier)
         return id, tier
-    except:
-        showWarning(f" An error occured with generating following Pkmn Info: {id}{pokemon_species} \n Please post this error message over the Report Bug Issue")
+    except Exception as e:
+        showWarning(f" An error occured with generating a wild pokemon in choose_random_pkmn_from_tier function: {e} \n Please post this error message over the Report Bug Issue")
 
 def get_pokemon_id_by_tier(tier):
     id_species_path = None
@@ -1081,30 +1019,6 @@ def save_caught_pokemon(nickname):
     with open(str(mypokemon_path), "w") as json_file:
         json.dump(caught_pokemon_data, json_file, indent=2)
 
-def find_details_move(move_name):
-    try:
-        with open(moves_file_path, "r", encoding="utf-8") as json_file:
-            moves_data = json.load(json_file)
-            move = moves_data.get(move_name.lower())  # Use get() to access the move by name
-            if move:
-                return move
-            move_name = move_name.replace(" ", "")
-            try:
-                move = moves_data.get(move_name.lower())
-                return move
-            except:
-                logger.log_and_showinfo("info",f"Can't find the attack {move_name} in the database.")
-                move = moves_data.get("tackle")
-                return move
-    except FileNotFoundError:
-        logger.log_and_showinfo("info","Moves Data File Missing!\nPlease Download Moves Data")
-        return None
-    except json.JSONDecodeError as e:
-        logger.log_and_showinfo("info",f"Error decoding JSON: {e}")
-        return None
-    except Exception as e:
-        showWarning(f"There is an issue in find_details_move{e}")
-
 def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp):
     global mainpokemon_evolution, pop_up_dialog_message_on_defeat
     
@@ -1121,10 +1035,10 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             main_pokemon_data = json.load(json_file)
     else:
         showWarning("Missing Mainpokemon Data !")
-    while int(experience) < int(main_pokemon.xp) and (level_cap is None or mainpokemon_level < level_cap):
-        mainpokemon_level += 1
+    while int(experience) < int(main_pokemon.xp) and (level_cap is None or main_pokemon.level < level_cap):
+        main_pokemon.level += 1
         msg = ""
-        msg += f"Your {mainpokemon_name} is now level {mainpokemon_level} !"
+        msg += f"Your {main_pokemon.name} is now level {main_pokemon.level} !"
         color = "#6A4DAC" #pokemon leveling info color for tooltip
         global achievements
         check = check_for_badge(achievements,5)
@@ -1138,34 +1052,33 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         if pop_up_dialog_message_on_defeat is True:
             logger.log_and_showinfo("info",f"{msg}")
         main_pokemon.xp = int(main_pokemon.xp) - int(experience)
-        name = f"{mainpokemon_name}"
         # Update mainpokemon_evolution and handle evolution logic
-        mainpokemon_evolution = search_pokedex(name.lower(), "evos")
+        mainpokemon_evolution = search_pokedex(f"{main_pokemon.name}".lower(), "evos")
         if mainpokemon_evolution:
             for pokemon in mainpokemon_evolution:
                 min_level = search_pokedex(pokemon.lower(), "evoLevel")
-                if min_level == mainpokemon_level:
+                if min_level == main_pokemon.level:
                     msg = ""
-                    msg += f"{mainpokemon_name} is about to evolve to {pokemon} at level {min_level}"
+                    msg += f"{main_pokemon.name} is about to evolve to {pokemon} at level {min_level}"
                     logger.log_and_showinfo("info",f"{msg}")
                     color = "#6A4DAC"
                     try:
                         tooltipWithColour(msg, color)
                     except:
                         pass
-                    evo_window.display_pokemon_evo(mainpokemon_name.lower())
+                    evo_window.display_pokemon_evo(main_pokemon.name.lower())
                 else:
                     for mainpkmndata in main_pokemon_data:
-                        if mainpkmndata["name"] == mainpokemon_name.capitalize():
+                        if mainpkmndata["name"] == main_pokemon.name.capitalize():
                             attacks = mainpkmndata["attacks"]
-                            new_attacks = get_levelup_move_for_pokemon(mainpokemon_name.lower(),int(mainpokemon_level))
+                            new_attacks = get_levelup_move_for_pokemon(main_pokemon.name.lower(),int(main_pokemon.level))
                             if new_attacks:
                                 msg = ""
-                                msg += f"Your {mainpokemon_name.capitalize()} can learn a new attack !"
+                                msg += f"Your {main_pokemon.name.capitalize()} can learn a new attack !"
                             for new_attack in new_attacks:
                                 if len(attacks) < 4:
                                     attacks.append(new_attack)
-                                    msg += f"\n Your {mainpokemon_name.capitalize()} has learned {new_attack} !"
+                                    msg += f"\n Your {main_pokemon.name.capitalize()} has learned {new_attack} !"
                                     color = "#6A4DAC"
                                     tooltipWithColour(msg, color)
                                     if pop_up_dialog_message_on_defeat is True:
@@ -1195,11 +1108,11 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                             break
         else:
             for mainpkmndata in main_pokemon_data:
-                if mainpkmndata["name"] == mainpokemon_name.capitalize():
+                if mainpkmndata["name"] == main_pokemon.name.capitalize():
                     attacks = mainpkmndata["attacks"]
-                    new_attacks = get_levelup_move_for_pokemon(mainpokemon_name.lower(), int(mainpokemon_level))
+                    new_attacks = get_levelup_move_for_pokemon(main_pokemon.name.lower(), int(main_pokemon.level))
                     if new_attacks:
-                        logger.log_and_showinfo("info",f"Your {mainpokemon_name.capitalize()} can now learn a new attack !")
+                        logger.log_and_showinfo("info",f"Your {main_pokemon.name.capitalize()} can now learn a new attack !")
                     for new_attack in new_attacks:
                         if len(attacks) < 4:
                             attacks.append(new_attack)
@@ -1228,7 +1141,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                     break
     else:
         msg = ""
-        msg += f"Your {mainpokemon_name} has gained {exp} XP.\n {experience} exp is needed for next level \n Your pokemon currently has {main_pokemon.xp}"
+        msg += f"Your {main_pokemon.name} has gained {exp} XP.\n {experience} exp is needed for next level \n Your pokemon currently has {main_pokemon.xp}"
         color = "#6A4DAC" #pokemon leveling info color for tooltip
         try:
             tooltipWithColour(msg, color)
@@ -1240,11 +1153,8 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
 
     for mainpkmndata in main_pokemon_data:
         mainpkmndata["stats"]["xp"] = int(main_pokemon.xp)
-        mainpkmndata["level"] = int(mainpokemon_level)
-        mainpkmndata["current_hp"] = int(mainpokemon_current_hp)
-        #for stat, values in ev_yield.items():
-        #for attribute, value in values.items():
-        #mainpkmndata["ev"][stat][attribute] += int(value)
+        mainpkmndata["level"] = int(main_pokemon.level)
+        mainpkmndata["current_hp"] = int(main_pokemon.current_hp)
         mainpkmndata["ev"]["hp"] += ev_yield["hp"]
         mainpkmndata["ev"]["atk"] += ev_yield["attack"]
         mainpkmndata["ev"]["def"] += ev_yield["defense"]
@@ -1263,14 +1173,15 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
 
         # Find and replace the specified Pokémon's data in mypokemondata
         for index, pokemon_data in enumerate(mypokemondata):
-            if pokemon_data["name"] == mainpokemon_name:
-                mypokemondata[index] = mypkmndata
+            if pokemon_data.get("individual_id") == main_pokemon.individual_id:  # Match by individual_id
+                mypokemondata[index] = mypkmndata  # Replace with new data
                 break
+
         # Save the modified data to the output JSON file
         with open(str(mypokemon_path), "w") as output_file:
             json.dump(mypokemondata, output_file, indent=2)
 
-    return mainpokemon_level
+    return main_pokemon.level
 
 def evolve_pokemon(pkmn_name):
     global achievements
@@ -1452,13 +1363,12 @@ def cancel_evolution(pkmn_name):
 def catch_pokemon(nickname):
     ankimon_tracker_obj.caught += 1
     if ankimon_tracker_obj.caught == 1:
-        enemy_pokemon.name = enemy_pokemon.name.capitalize()
         if nickname is None or not nickname:  # Wenn None oder leer
             save_caught_pokemon(nickname)
         else:
             save_caught_pokemon(enemy_pokemon.name)
         ankimon_tracker_obj.general_card_count_for_battle = 0
-        msg = f"You caught {enemy_pokemon.name}!"
+        msg = f"You caught {enemy_pokemon.name.capitalize()}!"
         if settings_obj.get('pop_up_dialog_message_on_defeat', True) is True:
             logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
         color = "#6A4DAC" #pokemon leveling info color for tooltip
@@ -1574,9 +1484,10 @@ def mainpokemon_data():
                     mainpokemon_base_experience = main_pokemon_data["base_experience"]
                     mainpokemon_growth_rate = main_pokemon_data["growth_rate"]
                     mainpokemon_gender = main_pokemon_data["gender"]
+                    
                     return mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname
-    except:
-            pass
+    except Exception as e:
+            logger.log("error", f"{e} error has come up in the main_pokemon function.")
 #get main pokemon details:
 if database_complete:
     try:
@@ -1618,22 +1529,10 @@ myseconds = 0
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
-        type = enemy_pokemon.type
-        stats = enemy_pokemon.stats
-        enemy_attacks = enemy_pokemon.attacks
-        base_experience = enemy_pokemon.base_experience
         battle_status = enemy_pokemon.battle_status
-        battle_stats = enemy_pokemon._battle_stats
-        growth_rate = enemy_pokemon.growth_rate
-        ev = enemy_pokemon.ev
-        iv = enemy_pokemon.iv
         multiplier = ankimon_tracker_obj.multiplier
-        mainpokemon_attacks = main_pokemon.attacks
-        mainpokemon_level = main_pokemon.level
-        mainpokemon_stats = main_pokemon.stats
         mainpokemon_type = main_pokemon.type
         mainpokemon_name = main_pokemon.name
-        mainpokemon_iv = main_pokemon.iv
 
         global battle_sounds
         global seconds, myseconds, animate_time
@@ -1643,7 +1542,6 @@ def on_review_card(*args):
         ankimon_tracker_obj.cards_battle_round += 1
         ankimon_tracker_obj.cry_counter += 1
         cry_counter = ankimon_tracker_obj.cry_counter
-        cards_battle_round = ankimon_tracker_obj.cards_battle_round
         card_counter = ankimon_tracker_obj.card_counter
         dmg = 0
         seconds = 0
@@ -1678,22 +1576,21 @@ def on_review_card(*args):
             if check is False:
                 receive_badge(6,achievements)
                 test_window.display_badge(6)
-        if cards_battle_round >= settings_obj.get("battle.cards_per_round", 2):
+        if ankimon_tracker_obj.cards_battle_round >= settings_obj.get("battle.cards_per_round", 2):
             ankimon_tracker_obj.cards_battle_round = 0
             ankimon_tracker_obj.attack_counter = 0
             slp_counter = 0
             ankimon_tracker_obj.pokemon_encouter += 1
-            pokemon_encounter = ankimon_tracker_obj.pokemon_encouter
             multiplier = ankimon_tracker_obj.multiplier
             msg = ""
             msg += f"{multiplier}x Multiplier"
             #failed card = enemy attack
-            if pokemon_encounter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:
+            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:
                 msg += " \n "
                 try:
                     max_attempts = 3  # Set the maximum number of attempts
                     for _ in range(max_attempts):
-                        rand_enemy_atk = random.choice(enemy_attacks)
+                        rand_enemy_atk = random.choice(enemy_pokemon.attacks)
                         enemy_move = find_details_move(rand_enemy_atk)
                         
                         if enemy_move is not None:
@@ -1710,7 +1607,7 @@ def on_review_card(*args):
                     else:
                         if e_move_category == "Status":
                             color = "#F7DC6F"
-                            msg = effect_status_moves(rand_enemy_atk, stats, mainpokemon_stats, msg, mainpokemon_name , enemy_pokemon.name)
+                            msg = effect_status_moves(rand_enemy_atk, enemy_pokemon.stats, main_pokemon.stats, msg, main_pokemon.name , enemy_pokemon.name)
                         elif e_move_category == "Physical" or e_move_category == "Special":
                             critRatio = enemy_move.get("critRatio", 1)
                             if e_move_category == "Physical":
@@ -1724,11 +1621,11 @@ def on_review_card(*args):
                                     msg += "\n Move has missed !"
                             else:
                                 if e_move_category == "Special":
-                                    def_stat = mainpokemon_stats["spd"]
-                                    atk_stat = stats["spa"]
+                                    def_stat = main_pokemon.stats["spd"]
+                                    atk_stat = enemy_pokemon.stats["spa"]
                                 elif e_move_category == "Physical":
-                                    def_stat = mainpokemon_stats["def"]
-                                    atk_stat = stats["atk"]
+                                    def_stat = main_pokemon.stats["def"]
+                                    atk_stat = enemy_pokemon.stats["atk"]
                                 enemy_dmg = int(calc_atk_dmg(enemy_pokemon.level ,(multiplier * 2),enemy_move["basePower"], atk_stat, def_stat, enemy_pokemon.type, enemy_move["type"],mainpokemon_type, critRatio))
                                 if enemy_dmg == 0:
                                     enemy_dmg = 1
@@ -1739,22 +1636,22 @@ def on_review_card(*args):
                                         play_effect_sound("HurtNormal")
                                 else:
                                     myseconds = 0
-                                msg += f" {enemy_dmg} dmg is dealt to {mainpokemon_name.capitalize()}."
+                                msg += f" {enemy_dmg} dmg is dealt to {main_pokemon.name.capitalize()}."
                 except:
                     enemy_dmg = 0
-                    rand_enemy_atk = random.choice(enemy_attacks)
+                    rand_enemy_atk = random.choice(enemy_pokemon.attacks)
                     enemy_move = find_details_move(rand_enemy_atk)
                     e_move_category = enemy_move.get("category")
                     if e_move_category == "Status":
                             color = "#F7DC6F"
-                            msg = effect_status_moves(rand_enemy_atk, stats, mainpokemon_stats, msg, mainpokemon_name , enemy_pokemon.name)
+                            msg = effect_status_moves(rand_enemy_atk, enemy_pokemon.stats, main_pokemon.stats, msg, main_pokemon.name , enemy_pokemon.name)
                     elif e_move_category == "Physical" or e_move_category == "Special":
                         if e_move_category == "Special":
-                            def_stat = mainpokemon_stats["spd"]
-                            atk_stat = stats["spa"]
+                            def_stat = main_pokemon.stats["spd"]
+                            atk_stat = enemy_pokemon.stats["spa"]
                         elif e_move_category == "Physical":
-                            def_stat = mainpokemon_stats["def"]
-                            atk_stat = stats["atk"]                        
+                            def_stat = main_pokemon.stats["def"]
+                            atk_stat = enemy_pokemon.stats["atk"]                        
                         enemy_dmg = int(calc_atk_dmg(enemy_pokemon.level,(multiplier * 2),random.randint(60, 100), atk_stat, def_stat, enemy_pokemon.type, "Normal", mainpokemon_type, critRatio))
                         if enemy_dmg == 0:
                             enemy_dmg = 1
@@ -1765,23 +1662,23 @@ def on_review_card(*args):
                             play_effect_sound("HurtNormal")
                     else:
                         myseconds = 0
-                    msg += f" {enemy_dmg} dmg is dealt to {mainpokemon_name.capitalize()}."
+                    msg += f" {enemy_dmg} dmg is dealt to {main_pokemon.name.capitalize()}."
     
             # if enemy pokemon hp < 0 - attack enemy pokemon
-            if pokemon_encounter > 0 and enemy_pokemon.hp > 0:
+            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0:
                 dmg = 0
                 if settings_obj.get("controls.allow_to_choose_moves", False) == True:
-                    random_attack = random.choice(mainpokemon_attacks)
+                    random_attack = random.choice(main_pokemon.attacks)
                 else:
-                    dialog = MoveSelectionDialog(mainpokemon_attacks)
+                    dialog = MoveSelectionDialog(main_pokemon.attacks)
                     if dialog.exec() == QDialog.DialogCode.Accepted:
                         random_attack = dialog.selected_move
-                msg += f"\n {mainpokemon_name} has chosen {random_attack.capitalize()} !"
+                msg += f"\n {main_pokemon.name} has chosen {random_attack.capitalize()} !"
                 move = find_details_move(random_attack)
                 category = move.get("category")
                 acc = move.get("accuracy")
                 if battle_status != "fighting":
-                    msg, acc, battle_status, stats = status_effect(enemy_pokemon, move, slp_counter, msg, acc)
+                    msg, acc, battle_status, enemy_pokemon.stats = status_effect(enemy_pokemon, move, slp_counter, msg, acc)
                 if acc is True:
                     acc = 100
                 if acc != 0:
@@ -1803,7 +1700,7 @@ def on_review_card(*args):
                 else:
                     if category == "Status":
                         color = "#F7DC6F"
-                        msg = effect_status_moves(random_attack, mainpokemon_stats, stats, msg, enemy_pokemon.name, mainpokemon_name)
+                        msg = effect_status_moves(random_attack, main_pokemon.stats, enemy_pokemon.stats, msg, enemy_pokemon.name, main_pokemon.name)
                     elif category == "Physical" or category == "Special":
                         try:
                             critRatio = move.get("critRatio", 1)
@@ -1819,12 +1716,12 @@ def on_review_card(*args):
                                     #dmg = 1
                             else:
                                 if category == "Special":
-                                    def_stat = stats["spd"]
-                                    atk_stat = mainpokemon_stats["spa"]
+                                    def_stat = enemy_pokemon.stats["spd"]
+                                    atk_stat = main_pokemon.stats["spa"]
                                 elif category == "Physical":
-                                    def_stat = stats["def"]
-                                    atk_stat = mainpokemon_stats["atk"]
-                                dmg = int(calc_atk_dmg(mainpokemon_level, multiplier,move["basePower"], atk_stat, def_stat, mainpokemon_type, move["type"],enemy_pokemon.type, critRatio))
+                                    def_stat = enemy_pokemon.stats["def"]
+                                    atk_stat = main_pokemon.stats["atk"]
+                                dmg = int(calc_atk_dmg(main_pokemon.level, multiplier, move["basePower"], atk_stat, def_stat, main_pokemon.type, move["type"],enemy_pokemon.type, critRatio))
                                 if dmg == 0:
                                     dmg = 1
                                 enemy_pokemon.hp -= dmg
@@ -1841,12 +1738,12 @@ def on_review_card(*args):
                                     msg += " \n Move has missed !"
                         except:
                             if category == "Special":
-                                def_stat = stats["spd"]
-                                atk_stat = mainpokemon_stats["spa"]
+                                def_stat = enemy_pokemon.stats["spd"]
+                                atk_stat = main_pokemon.stats["spa"]
                             elif category == "Physical":
-                                def_stat = stats["def"]
-                                atk_stat = mainpokemon_stats["atk"]
-                            dmg = int(calc_atk_dmg(mainpokemon_level, multiplier,random.randint(60, 100), atk_stat, def_stat, mainpokemon_type, "Normal",enemy_pokemon.type, critRatio))
+                                def_stat = enemy_pokemon.stats["def"]
+                                atk_stat = main_pokemon.stats["atk"]
+                            dmg = int(calc_atk_dmg(main_pokemon.level, multiplier,random.randint(60, 100), atk_stat, def_stat, main_pokemon.type, "Normal",enemy_pokemon.type, critRatio))
                             enemy_pokemon.hp -= dmg
                         if enemy_pokemon.hp < 0:
                             enemy_pokemon.hp = 0
@@ -1892,19 +1789,18 @@ def on_review_card(*args):
                             kill_pokemon()
                             new_pokemon()
                             ankimon_tracker_obj.general_card_count_for_battle = 0
-
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()
         if main_pokemon.hp < 1:
-            msg = f"Your {mainpokemon_name} has been defeated and the wild {enemy_pokemon.name} has fled!"
+            msg = f"Your {main_pokemon.name} has been defeated and the wild {enemy_pokemon.name} has fled!"
             play_effect_sound("Fainted")
             new_pokemon()
-            mainpokemon_data()
+            #mainpokemon_data()
             color = "#E12939"
             tooltipWithColour(msg, color)
     except Exception as e:
-        showWarning(f"An error occurred in reviewer: {type(e).__name__}: {str(e)}")
+        showWarning(f"An error occurred in reviewer: {str(e)}")
 
 def create_status_html(status_name):
     xp_bar_spacer = settings_obj.xp_bar_spacer
@@ -2011,7 +1907,7 @@ def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpoke
         for boost, stage in boosts.items():
             stat = get_multiplier_stats(stage)
             mainpokemon_stats[boost] = mainpokemon_stats.get(boost, 0) * stat
-            msg += f" {mainpokemon_name.capitalize()}'s "
+            msg += f" {main_pokemon.name.capitalize()}'s "
             if stage < 0:
                 msg += f"{boost.capitalize()} is decreased."
             elif stage > 0:
@@ -2045,1378 +1941,29 @@ def move_with_status(move, move_stat, status):
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
 
-class PokemonCollectionDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Captured Pokemon")
-        self.setMinimumWidth(750)
-        self.setMinimumHeight(400)
-        self.layout = QVBoxLayout(self)
-
-        #add Widget to sort by ID
-        self.sort_checkbox = QCheckBox("Sort by ID")
-        self.sort_checkbox.stateChanged.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
-
-        # Search Filter
-        self.search_edit = QLineEdit()
-        self.search_edit.setPlaceholderText("Search Pokémon (by nickname, name)")
-        #self.search_edit.textChanged.connect(self.filter_pokemon)
-        self.search_button = QPushButton("Search")
-        self.search_button.clicked.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
-
-        # Add dropdown menu for generation filtering
-        self.generation_combo = QComboBox()
-        self.generation_combo.addItem("All")
-        self.generation_combo.addItems(["Generation 1", "Generation 2", "Generation 3", "Generation 4", "Generation 5", "Generation 6", "Generation 7", "Generation 8"])
-        self.generation_combo.currentIndexChanged.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
-
-        # Add dropdown menu for generation filtering
-        self.type_combo = QComboBox()
-        self.type_combo.addItem("All")
-        self.type_combo.addItems(["Normal", "Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"])
-        self.type_combo.currentIndexChanged.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
-
-        # Add widgets to layout
-        filter_layout = QHBoxLayout()
-        filter_layout.addWidget(self.search_edit)
-        filter_layout.addWidget(self.search_button)
-        filter_layout.addWidget(self.generation_combo)
-        filter_layout.addWidget(self.type_combo)
-        filter_layout.addWidget(self.sort_checkbox)
-        self.layout.addLayout(filter_layout)
-
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
-
-        self.container = QWidget()
-        self.scroll_layout = QGridLayout(self.container)
-        self.setup_ui()
-
-    def showEvent(self, event):
-        # Call refresh_pokemon_collection when the dialog is shown
-        self.refresh_pokemon_collection()
-    
-    def refresh_pokemon_collection(self):
-        # Clear previous contents
-        for i in reversed(range(self.scroll_layout.count())):
-            widget = self.scroll_layout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
-        if self.sort_checkbox.isChecked():
-            self.sort_pokemon()
-        else:
-            self.setup_ui()
-
-    def setup_ui(self):
-
-        try:
-            with open(mypokemon_path, "r") as json_file:
-                captured_pokemon_data = json.load(json_file)
-                if captured_pokemon_data:
-                    row, column = 0, 0
-                    for position, pokemon in enumerate(captured_pokemon_data):
-                        pokemon_container = QWidget()
-                        image_label = QLabel()
-                        pixmap = QPixmap()
-                        pokemon_id = pokemon['id']
-                        pokemon_name = pokemon['name']
-                        pokemon_nickname = None
-                        if pokemon.get('nickname') and pokemon.get('nickname') is not None:
-                            pokemon_nickname = pokemon['nickname']
-                        pokemon_gender = pokemon['gender']
-                        pokemon_level = pokemon['level']
-                        pokemon_ability = pokemon['ability']
-                        pokemon_type = pokemon['type']
-                        pokemon_stats = pokemon['stats']
-                        pokemon_hp = pokemon_stats["hp"],
-                        pokemon_attacks = pokemon['attacks']
-                        pokemon_base_experience = pokemon['base_experience']
-                        pokemon_growth_rate = pokemon['growth_rate']
-                        pokemon_ev = pokemon['ev']
-                        pokemon_iv = pokemon['iv']
-                        pokemon_description = search_pokeapi_db_by_id(pokemon_id, "description")
-                        pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
-                        if gif_in_collection is True:
-                            pkmn_image_path = str(user_path_sprites / "front_default_gif" / f"{pokemon_id}.gif")
-                            splash_label = MovieSplashLabel(pkmn_image_path)
-                        pixmap.load(pkmn_image_path)
-
-                        # Calculate the new dimensions to maintain the aspect ratio
-                        max_width = 300
-                        max_height = 230
-                        original_width = pixmap.width()
-                        original_height = pixmap.height()
-
-                        if original_width > max_width:
-                            new_width = max_width
-                            new_height = (original_height * max_width) // original_width
-                            pixmap = pixmap.scaled(new_width, new_height)
-
-                        painter = QPainter(pixmap)
-
-                        if pokemon_gender == "M":
-                            gender_symbol = "♂"
-                        elif pokemon_gender == "F":
-                            gender_symbol = "♀"
-                        elif pokemon_gender == "N":
-                            gender_symbol = ""
-                        else:
-                            gender_symbol = ""
-
-                        if pokemon_nickname is None:
-                            capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id), settings_obj.get('misc.language')).capitalize()} {gender_symbol}"
-                        else:
-                            capitalized_name = f"{pokemon_nickname.capitalize()} {gender_symbol}"
-                        lvl = (f" Level: {pokemon_level}")
-                        type_txt = "Type: "
-                        for type in pokemon_type:
-                            type_txt += f" {type.capitalize()}"
-                        ability_txt = (f" Ability: {pokemon_ability.capitalize()}")
-
-                        font = QFont()
-                        font.setPointSize(12)
-                        painter.setFont(font)
-                        fontpkmnspec = QFont()
-                        fontpkmnspec.setPointSize(8)
-                        painter.end()
-
-                        name_label = QLabel(capitalized_name)
-                        name_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                        name_label.setFont(font)
-
-                        level_label = QLabel(lvl)
-                        level_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                        level_label.setFont(fontpkmnspec)
-
-                        type_label = QLabel(type_txt)
-                        type_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                        type_label.setFont(fontpkmnspec)
-
-                        ability_label = QLabel(ability_txt)
-                        ability_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                        ability_label.setFont(fontpkmnspec)
-
-                        image_label.setPixmap(pixmap)
-
-                        pokemon_button = QPushButton("Show me Details")
-                        pokemon_button.setIconSize(pixmap.size())
-                        if len(pokemon_type) > 1:
-                            pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0], pokemon_type[1]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname, position=position: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position))
-                        else:
-                            pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname, position=position: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position))
-
-                        choose_pokemon_button = QPushButton("Pick as main Pokemon")
-                        choose_pokemon_button.setIconSize(pixmap.size())
-                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
-
-                        container_layout = QVBoxLayout()
-                        container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
-                        if gif_in_collection is True:
-                            container_layout.addWidget(splash_label)
-                            splash_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        else:
-                            container_layout.addWidget(image_label)
-                            image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        container_layout.addWidget(name_label)
-                        container_layout.addWidget(level_label)
-                        container_layout.addWidget(type_label)
-                        container_layout.addWidget(ability_label)
-                        container_layout.addWidget(pokemon_button)
-                        container_layout.addWidget(choose_pokemon_button)
-                        type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        level_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        ability_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-                        pokemon_container.setLayout(container_layout)
-                        self.scroll_layout.addWidget(pokemon_container, row, column)
-                        column += 1
-                        if column >= 3:
-                            column = 0
-                            row += 1
-
-                    self.container.setLayout(self.scroll_layout)
-                    self.scroll_area.setWidget(self.container)
-                    self.layout.addWidget(self.scroll_area)
-                    self.setLayout(self.layout)
-                else:
-                    self.layout.addWidget(QLabel("You haven't captured any Pokémon yet."))
-        except FileNotFoundError:
-            self.layout.addWidget(QLabel(f"Can't open the Saving File. {mypokemon_path}"))
-
-    def filter_pokemon(self):
-        if not self.sort_checkbox.isChecked():
-            type_index = self.type_combo.currentIndex()
-            type_text = self.type_combo.currentText()
-            search_text = self.search_edit.text().lower()
-            generation_index = self.generation_combo.currentIndex()
-            # Clear previous contents
-            for i in reversed(range(self.scroll_layout.count())):
-                widget = self.scroll_layout.itemAt(i).widget()
-                if widget is not None:
-                    widget.deleteLater()
-            try:
-                with open(mypokemon_path, "r") as json_file:
-                    captured_pokemon_data = json.load(json_file)
-                    if captured_pokemon_data:
-                        row, column = 0, 0
-                        for position, pokemon in enumerate(captured_pokemon_data):
-                            pokemon_id = pokemon['id']
-                            pokemon_name = pokemon['name'].lower()
-                            pokemon_nickname = pokemon.get("nickname", None)
-                            pokemon_type = pokemon.get("type", " ")
-                            # Check if the Pokémon matches the search text and generation filter
-                            if (
-                                search_text.lower() in pokemon_name.lower() or 
-                                (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower())
-                            ) and \
-                            0 <= generation_index <= 8 and \
-                            (
-                                generation_index == 0 or
-                                (1 <= pokemon_id <= 151 and generation_index == 1) or
-                                (152 <= pokemon_id <= 251 and generation_index == 2) or
-                                (252 <= pokemon_id <= 386 and generation_index == 3) or
-                                (387 <= pokemon_id <= 493 and generation_index == 4) or
-                                (494 <= pokemon_id <= 649 and generation_index == 5) or
-                                (650 <= pokemon_id <= 721 and generation_index == 6) or
-                                (722 <= pokemon_id <= 809 and generation_index == 7) or
-                                (810 <= pokemon_id <= 898 and generation_index == 8)
-                            ) and \
-                            (
-                                type_index == 0 or type_text in pokemon_type
-                            ):
-
-                                # Display the Pokémon
-                                pokemon_container = QWidget()
-                                image_label = QLabel()
-                                pixmap = QPixmap()
-                                pokemon_id = pokemon['id']
-                                pokemon_name = pokemon['name']
-                                if not pokemon.get('nickname') or pokemon.get('nickname') is None:
-                                    pokemon_nickname = None
-                                else:
-                                    pokemon_nickname = pokemon['nickname']
-                                pokemon_gender = pokemon['gender']
-                                pokemon_level = pokemon['level']
-                                pokemon_ability = pokemon['ability']
-                                pokemon_stats = pokemon['stats']
-                                pokemon_hp = pokemon_stats["hp"],
-                                pokemon_attacks = pokemon['attacks']
-                                pokemon_base_experience = pokemon['base_experience']
-                                pokemon_growth_rate = pokemon['growth_rate']
-                                pokemon_ev = pokemon['ev']
-                                pokemon_iv = pokemon['iv']
-                                pokemon_description = search_pokeapi_db_by_id(pokemon_id, "description")
-                                if gif_in_collection is True:
-                                    pkmn_image_path = str(user_path_sprites / "front_default_gif" / f"{pokemon_id}.gif")
-                                    splash_label = MovieSplashLabel(pkmn_image_path)
-                                else:
-                                    pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
-                                pixmap.load(pkmn_image_path)
-
-                                # Calculate the new dimensions to maintain the aspect ratio
-                                max_width = 300
-                                max_height = 230
-                                original_width = pixmap.width()
-                                original_height = pixmap.height()
-
-                                if original_width > max_width:
-                                    new_width = max_width
-                                    new_height = (original_height * max_width) // original_width
-                                    pixmap = pixmap.scaled(new_width, new_height)
-
-                                painter = QPainter(pixmap)
-
-                                if pokemon_gender == "M":
-                                    gender_symbol = "♂"
-                                elif pokemon_gender == "F":
-                                    gender_symbol = "♀"
-                                elif pokemon_gender == "N":
-                                    gender_symbol = ""
-                                else:
-                                    gender_symbol = ""
-
-                                if pokemon_nickname is None:
-                                    capitalized_name = f"{get_pokemon_diff_lang_name(int(pokemon_id), settings_obj.get('misc.language')).capitalize()} {gender_symbol}"
-                                else:
-                                    capitalized_name = f"{pokemon_nickname.capitalize()} {gender_symbol}"
-                                lvl = (f" Level: {pokemon_level}")
-                                type_txt = "Type: "
-                                for type in pokemon_type:
-                                    type_txt += f" {type.capitalize()}"
-                                ability_txt = (f" Ability: {pokemon_ability.capitalize()}")
-
-                                font = QFont()
-                                font.setPointSize(12)
-                                painter.setFont(font)
-                                fontpkmnspec = QFont()
-                                fontpkmnspec.setPointSize(8)
-                                painter.end()
-
-                                name_label = QLabel(capitalized_name)
-                                name_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                                name_label.setFont(font)
-
-                                level_label = QLabel(lvl)
-                                level_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                                level_label.setFont(fontpkmnspec)
-
-                                type_label = QLabel(type_txt)
-                                type_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                                type_label.setFont(fontpkmnspec)
-
-                                ability_label = QLabel(ability_txt)
-                                ability_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                                ability_label.setFont(fontpkmnspec)
-
-                                image_label.setPixmap(pixmap)
-
-                                pokemon_button = QPushButton("Show me Details")
-                                pokemon_button.setIconSize(pixmap.size())
-                                if len(pokemon_type) > 1:
-                                    pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0], pokemon_type[1]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname, position=position: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position))
-                                else:
-                                    pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname, position=position: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position))
-
-                                choose_pokemon_button = QPushButton("Pick as main Pokemon")
-                                choose_pokemon_button.setIconSize(pixmap.size())
-                                choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=mainpokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
-
-                                container_layout = QVBoxLayout()
-                                container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
-                                if gif_in_collection is True:
-                                    container_layout.addWidget(splash_label)
-                                    splash_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                                else:
-                                    container_layout.addWidget(image_label)
-                                    image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                                container_layout.addWidget(name_label)
-                                container_layout.addWidget(level_label)
-                                container_layout.addWidget(type_label)
-                                container_layout.addWidget(ability_label)
-                                container_layout.addWidget(pokemon_button)
-                                container_layout.addWidget(choose_pokemon_button)
-                                type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                                name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                                level_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                                ability_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-                                pokemon_container.setLayout(container_layout)
-                                self.scroll_layout.addWidget(pokemon_container, row, column)
-                                column += 1
-                                if column >= 3:
-                                    column = 0
-                                    row += 1
-                        self.container.setLayout(self.scroll_layout)
-                        self.scroll_area.setWidget(self.container)
-                        self.layout.addWidget(self.scroll_area)
-                        self.setLayout(self.layout)                        
-                    else:
-                        self.layout.addWidget(QLabel("You haven't captured any Pokémon yet."))
-            except FileNotFoundError:
-                self.layout.addWidget(QLabel(f"Can't open the Saving File. {mypokemon_path}"))
-        else:
-            self.sort_pokemon()
-    
-    def sort_pokemon(self):
-        search_text = self.search_edit.text().lower()
-        generation_index = self.generation_combo.currentIndex()
-        type_index = self.type_combo.currentIndex()
-        type_text = self.type_combo.currentText()
-        for i in reversed(range(self.scroll_layout.count())):
-            widget = self.scroll_layout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
-        try:
-            with open(mypokemon_path, "r") as json_file:
-                captured_pokemon_data = json.load(json_file)
-                pokemon_widgets = []
-
-                for position, pokemon in enumerate(captured_pokemon_data):
-                    pokemon_id = pokemon['id']
-                    pokemon_name = pokemon['name'].lower()
-                    pokemon_nickname = pokemon.get("nickname", None)
-                    pokemon_type = pokemon.get("type", " ")
-                    # Check if the Pokémon matches the search text and generation filter
-                    if (
-                        search_text.lower() in pokemon_name.lower() or 
-                        (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower())
-                    ) and \
-                    0 <= generation_index <= 8 and \
-                    (
-                        generation_index == 0 or
-                        (1 <= pokemon_id <= 151 and generation_index == 1) or
-                        (152 <= pokemon_id <= 251 and generation_index == 2) or
-                        (252 <= pokemon_id <= 386 and generation_index == 3) or
-                        (387 <= pokemon_id <= 493 and generation_index == 4) or
-                        (494 <= pokemon_id <= 649 and generation_index == 5) or
-                        (650 <= pokemon_id <= 721 and generation_index == 6) or
-                        (722 <= pokemon_id <= 809 and generation_index == 7) or
-                        (810 <= pokemon_id <= 898 and generation_index == 8)
-                    ) and \
-                    (
-                        type_index == 0 or type_text in pokemon_type
-                    ):
-
-                        # Create the Pokémon widget
-                        pokemon_container = QWidget()
-                        image_label = QLabel()
-                        pixmap = QPixmap()
-                        pokemon_name = pokemon['name']
-                        pokemon_nickname = pokemon.get('nickname')
-                        pokemon_gender = pokemon['gender']
-                        pokemon_level = pokemon['level']
-                        pokemon_ability = pokemon['ability']
-                        pokemon_stats = pokemon['stats']
-                        pokemon_hp = pokemon_stats["hp"]
-                        pokemon_attacks = pokemon['attacks']
-                        pokemon_base_experience = pokemon['base_experience']
-                        pokemon_growth_rate = pokemon['growth_rate']
-                        pokemon_ev = pokemon['ev']
-                        pokemon_iv = pokemon['iv']
-                        pokemon_description = search_pokeapi_db_by_id(pokemon_id, "description")
-
-                        if gif_in_collection:
-                            pkmn_image_path = str(user_path_sprites / "front_default_gif" / f"{pokemon_id}.gif")
-                            splash_label = MovieSplashLabel(pkmn_image_path)
-                        else:
-                            pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
-                        pixmap.load(pkmn_image_path)
-
-                        # Calculate the new dimensions to maintain the aspect ratio
-                        max_width = 300
-                        max_height = 230
-                        original_width = pixmap.width()
-                        original_height = pixmap.height()
-
-                        if original_width > max_width:
-                            new_width = max_width
-                            new_height = (original_height * max_width) // original_width
-                            pixmap = pixmap.scaled(new_width, new_height)
-
-                        painter = QPainter(pixmap)
-
-                        gender_symbol = ""
-                        if pokemon_gender == "M":
-                            gender_symbol = "♂"
-                        elif pokemon_gender == "F":
-                            gender_symbol = "♀"
-
-                        capitalized_name = f"{pokemon_nickname.capitalize() if pokemon_nickname else get_pokemon_diff_lang_name(int(pokemon_id), settings_obj.get('misc.language')).capitalize()} {gender_symbol}"
-                        lvl = f" Level: {pokemon_level}"
-                        type_txt = "Type: " + " ".join(type.capitalize() for type in pokemon_type)
-                        ability_txt = f" Ability: {pokemon_ability.capitalize()}"
-
-                        font = QFont()
-                        font.setPointSize(12)
-                        painter.setFont(font)
-                        fontpkmnspec = QFont()
-                        fontpkmnspec.setPointSize(8)
-                        painter.end()
-
-                        name_label = QLabel(capitalized_name)
-                        name_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                        name_label.setFont(font)
-
-                        level_label = QLabel(lvl)
-                        level_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                        level_label.setFont(fontpkmnspec)
-
-                        type_label = QLabel(type_txt)
-                        type_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                        type_label.setFont(fontpkmnspec)
-
-                        ability_label = QLabel(ability_txt)
-                        ability_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                        ability_label.setFont(fontpkmnspec)
-
-                        image_label.setPixmap(pixmap)
-
-                        pokemon_button = QPushButton("Show me Details")
-                        pokemon_button.setIconSize(pixmap.size())
-                        if len(pokemon_type) > 1:
-                            pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0], pokemon_type[1]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname, position=position: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position))
-                        else:
-                            pokemon_button.clicked.connect(lambda state, name=pokemon_name, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=[pokemon_type[0]], detail_stats=pokemon_stats, attacks=pokemon_attacks, base_experience=pokemon_base_experience, growth_rate=pokemon_growth_rate, description=pokemon_description, gender=pokemon_gender, nickname=pokemon_nickname, position=position: PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position))
-
-                        choose_pokemon_button = QPushButton("Pick as main Pokemon")
-                        choose_pokemon_button.setIconSize(pixmap.size())
-                        choose_pokemon_button.clicked.connect(lambda state, name=pokemon_name, nickname=pokemon_nickname, level=pokemon_level, id=pokemon_id, ability=pokemon_ability, type=pokemon_type, detail_stats=pokemon_stats, attacks=pokemon_attacks, hp=pokemon_hp, base_experience=mainpokemon_base_experience, growth_rate=pokemon_growth_rate, ev=pokemon_ev, iv=pokemon_iv, gender=pokemon_gender: MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender))
-
-                        container_layout = QVBoxLayout()
-                        container_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
-                        if gif_in_collection is True:
-                            container_layout.addWidget(splash_label)
-                            splash_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        else:
-                            container_layout.addWidget(image_label)
-                            image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        container_layout.addWidget(name_label)
-                        container_layout.addWidget(level_label)
-                        container_layout.addWidget(type_label)
-                        container_layout.addWidget(ability_label)
-                        container_layout.addWidget(pokemon_button)
-                        container_layout.addWidget(choose_pokemon_button)
-                        type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        level_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        ability_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-                        pokemon_container.setLayout(container_layout)
-                        
-                        # Append to the list with its id
-                        pokemon_widgets.append((pokemon_id, pokemon_container))
-                
-                # Sort the widgets by pokemon id
-                pokemon_widgets.sort(key=lambda x: x[0])
-                
-                # Add the sorted widgets to the layout
-                row = 0
-                column = 0
-                for _, widget in pokemon_widgets:
-                    self.scroll_layout.addWidget(widget, row, column)
-                    column += 1
-                    if column >= 3:
-                        column = 0
-                        row += 1
-
-                self.container.setLayout(self.scroll_layout)
-                self.scroll_area.setWidget(self.container)
-                self.layout.addWidget(self.scroll_area)
-                self.setLayout(self.layout)
-        except FileNotFoundError:
-            self.layout.addWidget(QLabel(f"Can't open the Saving File. {mypokemon_path}"))
-
-
-pokecollection_win = PokemonCollectionDialog()
-
-def rename_pkmn(nickname, pkmn_name, position):
-    try:
-        with open(mypokemon_path, "r") as json_file:
-            captured_pokemon_data = json.load(json_file)
-            pokemon = None
-            if captured_pokemon_data:
-                for index, pokemon_data in enumerate(captured_pokemon_data):
-                    if index == position:
-                        pokemon = pokemon_data
-                        if pokemon is not None:
-                            pokemon["nickname"] = nickname
-                            # Load data from the output JSON file
-                            with open(str(mypokemon_path), "r") as output_file:
-                                mypokemondata = json.load(output_file)
-                                # Find and replace the specified Pokémon's data in mypokemondata
-                                for index, pokemon_data in enumerate(mypokemondata):
-                                    mypokemondata[position] = pokemon
-                                    break
-                                        # Save the modified data to the output JSON file
-                                with open(str(mypokemon_path), "w") as output_file:
-                                    json.dump(mypokemondata, output_file, indent=2)
-                                logger.log_and_showinfo("info",f"Your {pkmn_name.capitalize()} has been renamed to {nickname}!")
-                                pokecollection_win.refresh_pokemon_collection()
-    except Exception as e:
-        showWarning(f"An error occured: {e}")
-
-def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, description, gender, nickname, position):
-    gif_in_collection = settings_obj.get('gui.gif_in_collection', False)
-    # Create the dialog
-    try:
-        lang_name = get_pokemon_diff_lang_name(int(id), settings_obj.get('misc.language')).capitalize()
-        lang_desc = get_pokemon_descriptions(int(id), settings_obj.get('misc.language'))
-        description = lang_desc
-        wpkmn_details = QDialog(mw)
-        if nickname is None:
-            wpkmn_details.setWindowTitle(f"Infos to : {lang_name} ")
-        else:
-            wpkmn_details.setWindowTitle(f"Infos to : {nickname} ({lang_name}) ")
-
-        wpkmn_details.setFixedWidth(500)
-        wpkmn_details.setMaximumHeight(400)
-
-        # Create a layout for the dialog
-        layout = QVBoxLayout()
-        typelayout = QHBoxLayout()
-        attackslayout = QVBoxLayout()
-        # Display the Pokémon image
-        pkmnimage_label = QLabel()
-        pkmnpixmap = QPixmap()
-        if gif_in_collection is True:
-            pkmnimage_path = str(user_path_sprites / "front_default_gif" / f"{int(id)}.gif")
-            pkmnimage_label = MovieSplashLabel(pkmnimage_path)
-        else:
-            pkmnimage_path = str(frontdefault / f"{int(id)}.png")
-            pkmnpixmap.load(str(pkmnimage_path))
-            # Calculate the new dimensions to maintain the aspect ratio
-            max_width = 150
-            original_width = pkmnpixmap.width()
-            original_height = pkmnpixmap.height()
-            new_width = max_width
-            new_height = (original_height * max_width) // original_width
-            pkmnpixmap = pkmnpixmap.scaled(new_width, new_height)
-        typeimage_file = f"{type[0]}.png"
-        typeimage_path = addon_dir / "addon_sprites" / "Types" / typeimage_file
-        pkmntype_label = QLabel()
-        pkmntypepixmap = QPixmap()
-        pkmntypepixmap.load(str(typeimage_path))
-        if len(type) > 1:
-            type_image_file2 = f"{type[1]}.png"
-            typeimage_path2 = addon_dir / "addon_sprites" / "Types" / type_image_file2
-            pkmntype_label2 = QLabel()
-            pkmntypepixmap2 = QPixmap()
-            pkmntypepixmap2.load(str(typeimage_path2))
-        
-
-        # Create a painter to add text on top of the image
-        painter2 = QPainter(pkmnpixmap)
-
-        #custom font
-        custom_font = load_custom_font(int(20))
-
-        # Capitalize the first letter of the Pokémon's name
-        if nickname is None:
-            capitalized_name = f"{lang_name.capitalize()}"
-        else:
-            capitalized_name = f"{nickname} ({lang_name.capitalize()})"
-        # Create level text
-        if (
-            language == 11
-            or language == 12
-            or language == 4
-            or language == 3
-            or language == 2
-            or language == 1
-        ):
-            result = list(split_string_by_length(description, 30))
-        else:
-            result = list(split_string_by_length(description, 55))
-        description_formated = '\n'.join(result)
-        description_txt = f"Description: \n {description_formated}"
-        growth_rate_txt = (f"Growth Rate: {growth_rate.capitalize()}")
-        lvl = (f" Level: {level}")
-        ability_txt = (f" Ability: {ability.capitalize()}")
-        type_txt = (f" Type:")
-        stats_list = [
-            detail_stats["hp"],
-            detail_stats["atk"],
-            detail_stats["def"],
-            detail_stats["spa"],
-            detail_stats["spd"],
-            detail_stats["spe"],
-            detail_stats["xp"]
-        ]
-        stats_txt = f"Stats:\n\
-            Hp: {stats_list[0]}\n\
-            Attack: {stats_list[1]}\n\
-            Defense: {stats_list[2]}\n\
-            Special-attack: {stats_list[3]}\n\
-            Special-defense: {stats_list[4]}\n\
-            Speed: {stats_list[5]}\n\
-            XP: {stats_list[6]}"
-        attacks_txt = "Moves:"
-        for attack in attacks:
-            attacks_txt += f"\n{attack.capitalize()}"
-
-        CompleteTable_layout = PokemonDetailsStats(detail_stats, growth_rate, level)
-
-        # Properties of the text of the image
-        # custom font
-        namefont = load_custom_font(int(30))
-        namefont.setUnderline(True)
-        painter2.setFont(namefont)
-        font = load_custom_font(int(20))
-        painter2.end()
-
-        # Convert gender name to symbol - this function is from Foxy-null
-        if gender == "M":
-            gender_symbol = "♂"
-        elif gender == "F":
-            gender_symbol = "♀"
-        elif gender == "N":
-            gender_symbol = ""
-        else:
-            gender_symbol = ""  # None
-
-        # Create a QLabel for the capitalized name
-        name_label = QLabel(f"{capitalized_name} - {gender_symbol}")
-        name_label.setFont(namefont)
-        # Create a QLabel for the level
-        description_label = QLabel(description_txt)
-        level_label = QLabel(lvl)
-        growth_rate_label = QLabel(growth_rate_txt)
-        base_exp_label = QLabel(f"Base XP: {base_experience}")
-        # Align to the center
-        level_label.setFont(font)
-        base_exp_label.setFont(font)
-        type_label= QLabel("Type:")
-        type_label.setFont(font)
-        # Create a QLabel for the level
-        ability_label = QLabel(ability_txt)
-        ability_label.setFont(font)
-        attacks_label = QLabel(attacks_txt)
-        attacks_label.setFont(font)
-        growth_rate_label.setFont(font)
-        if language == 1:
-            description_font = load_custom_font(int(20))
-        else:
-            description_font = load_custom_font(int(15))
-        description_label.setFont(description_font)
-        #stats_label = QLabel(stats_txt)
-
-        # Set the merged image as the pixmap for the QLabel
-        if gif_in_collection is False:
-            pkmnimage_label.setPixmap(pkmnpixmap)
-        # Set the merged image as the pixmap for the QLabel
-        pkmntype_label.setPixmap(pkmntypepixmap)
-        if len(type) > 1:
-            pkmntype_label2.setPixmap(pkmntypepixmap2)
-        #Border
-        #description_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        level_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        base_exp_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        ability_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        growth_rate_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        type_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        level_label.setFixedWidth(230)
-        growth_rate_label.setFixedWidth(230)
-        base_exp_label.setFixedWidth(230)
-        pkmnimage_label.setFixedHeight(100)
-        ability_label.setFixedWidth(230)
-        attacks_label.setFixedWidth(230)
-        first_layout = QHBoxLayout() #Top Image Left and Direkt Info Right
-        TopR_layout_Box = QVBoxLayout() #Top Right Info Direkt Layout
-        TopL_layout_Box = QVBoxLayout() #Top Left Pokemon and Direkt Info Layout
-        typelayout_widget = QWidget()
-        TopL_layout_Box.addWidget(level_label)
-        TopL_layout_Box.addWidget(pkmnimage_label)
-
-        TopFirstLayout = QWidget()
-        TopFirstLayout.setLayout(first_layout)
-        layout.addWidget(name_label)
-        layout.addWidget(TopFirstLayout)
-        layout.addWidget(description_label)
-        #.addWidget(growth_rate_label)
-        #.addWidget(base_exp_label)
-        typelayout.addWidget(type_label)
-        typelayout.addWidget(pkmntype_label)
-        pkmntype_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        pkmntype_label.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        if len(type) > 1:
-            typelayout.addWidget(pkmntype_label2)
-            pkmntype_label2.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-            pkmntype_label2.setAlignment(Qt.AlignmentFlag.AlignLeft)
-            pkmntype_label2.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        typelayout_widget.setLayout(typelayout)
-        typelayout_widget.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        typelayout_widget.setFixedWidth(230)
-        TopL_layout_Box.addWidget(typelayout_widget)
-        TopL_layout_Box.addWidget(ability_label)
-        #attackslayout.addWidget(attacks_label)
-        attacks_details_button = QPushButton("Attack Details") #add Details to Moves
-        qconnect(attacks_details_button.clicked, lambda: attack_details_window(attacks))
-        remember_attacks_details_button = QPushButton("Remember Attacks") #add Details to Moves
-        all_attacks = get_all_pokemon_moves(name, level)
-        qconnect(remember_attacks_details_button.clicked, lambda: remember_attack_details_window(id, attacks, all_attacks))
-        
-        #free_pokemon_button = QPushButton("Release Pokemon") #add Details to Moves unneeded button
-        attacks_label.setFixedHeight(150)
-        TopR_layout_Box.addWidget(attacks_label)
-        TopR_layout_Box.addWidget(attacks_details_button)
-        TopR_layout_Box.addWidget(remember_attacks_details_button)
-        first_layout.addLayout(TopL_layout_Box)
-        first_layout.addLayout(TopR_layout_Box)
-        layout.addLayout(first_layout)
-        attacks_label.setStyleSheet("border: 2px solid white; padding: 5px;")
-        #TopR_layout_Box.setStyleSheet("border: 2px solid white; padding: 5px;")
-        statstablelayout = QWidget()
-        statstablelayout.setLayout(CompleteTable_layout)
-        layout.addWidget(statstablelayout)
-        statstablelayout.setStyleSheet("border: 2px solid white; padding: 5px;")
-        #statstablelayout.setFixedWidth(350)
-        statstablelayout.setFixedHeight(200)
-        free_pokemon_button = QPushButton("Release Pokemon") #add Details to Moves
-        qconnect(free_pokemon_button.clicked, lambda: PokemonFree(position, name))
-        trade_pokemon_button = QPushButton("Trade Pokemon") #add Details to Moves
-        qconnect(trade_pokemon_button.clicked, lambda: PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position))
-        layout.addWidget(trade_pokemon_button)
-        layout.addWidget(free_pokemon_button)
-        rename_button = QPushButton("Rename Pokemon") #add Details to Moves
-        rename_input = QLineEdit()
-        rename_input.setPlaceholderText("Enter a new Nickname for your Pokemon")
-        qconnect(rename_button.clicked, lambda: rename_pkmn(rename_input.text(),name, position))
-        layout.addWidget(rename_input)
-        layout.addWidget(rename_button)
-        #qconnect()
-        #layout.addLayout(CompleteTable_layout)
-
-        #wpkmn_details.setFixedWidth(500)
-        #wpkmn_details.setMaximumHeight(600)
-
-        # align things needed to middle
-        pkmnimage_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        level_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        growth_rate_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        base_exp_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        base_exp_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        pkmntype_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        pkmntype_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        type_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Align to the center
-        ability_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        attacks_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        # Set the layout for the dialog
-        wpkmn_details.setLayout(layout)
-
-        # Show the dialog
-        wpkmn_details.setWindowIcon(QIcon(str(icon_path))) # Add a Pokeball icon
-        # Show the dialog
-        wpkmn_details.exec()
-    except Exception as e:
-        showWarning(f"Error occured in Pokemon Details Button: {e}")
-
-def attack_details_window(attacks):
-    window = QDialog()
-    window.setWindowIcon(QIcon(str(icon_path)))
-    layout = QVBoxLayout()
-    # HTML content
-    html_content = attack_details_window_template
-    # Loop through the list of attacks and add them to the HTML content
-    for attack in attacks:
-        move = find_details_move(attack)
-        if move is None:
-            attack = attack.replace(" ", "")
-            try:
-                move = find_details_move(attack)
-            except:
-                logger.log_and_showinfo("info",f"Can't find the attack {attack} in the database.")
-                move = find_details_move("tackle")
-        html_content += f"""
-        <tr>
-          <td class="move-name">{move['name']}</td>
-          <td><img src="{type_icon_path(move['type'])}" alt="{move['type']}"/></td>
-          <td><img src="{move_category_path(move['category'].lower())}" alt="{move['category']}"/></td>
-          <td class="basePower">{move['basePower']}</td>
-          <td class="no-accuracy">{move['accuracy']}</td>
-          <td>{move['pp']}</td>
-          <td>{move['shortDesc']}</td>
-        </tr>
-        """
-    html_content += attack_details_window_template_end
-
-    # Create a QLabel to display the HTML content
-    label = QLabel(html_content)
-    label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align the label's content to the top
-    label.setScaledContents(True)  # Enable scaling of the pixmap
-
-    layout.addWidget(label)
-    window.setLayout(layout)
-    window.exec()
-
-def remember_attack_details_window(id, attack_set, all_attacks):
-    window = QDialog()
-    window.setWindowIcon(QIcon(str(icon_path)))
-    layout = QHBoxLayout()
-    window.setWindowTitle("Remember Attacks")  # Optional: Set a window title
-    # Outer layout contains everything
-    outer_layout = QVBoxLayout(window)
-
-    # Create a scroll area that will contain our main layout
-    scroll_area = QScrollArea()
-    scroll_area.setWidgetResizable(True)
-
-    # Main widget that contains the content
-    content_widget = QWidget()
-    layout = QHBoxLayout(content_widget)  # The main layout is now set on this widget
-
-    # HTML content
-    html_content = remember_attack_details_window_template
-    # Loop through the list of attacks and add them to the HTML content
-    for attack in all_attacks:
-        move = find_details_move(attack)
-
-        html_content += f"""
-        <tr>
-          <td class="move-name">{move['name']}</td>
-          <td><img src="{type_icon_path(move['type'])}" alt="{move['type']}"/></td>
-          <td><img src="{move_category_path(move['category'].lower())}" alt="{move['category']}"/></td>
-          <td class="basePower">{move['basePower']}</td>
-          <td class="no-accuracy">{move['accuracy']}</td>
-          <td>{move['pp']}</td>
-          <td>{move['shortDesc']}</td>
-        </tr>
-        """
-
-    html_content += remember_attack_details_window_template_end
-
-    # Create a QLabel to display the HTML content
-    label = QLabel(html_content)
-    label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align the label's content to the top
-    label.setScaledContents(True)  # Enable scaling of the pixmap
-    attack_layout = QVBoxLayout()
-    for attack in all_attacks:
-        move = find_details_move(attack)
-        remember_attack_button = QPushButton(f"Remember {attack}") #add Details to Moves
-        remember_attack_button.clicked.connect(lambda checked, a=attack: remember_attack(id, attack_set, a))
-        attack_layout.addWidget(remember_attack_button)
-    attack_layout_widget = QWidget()
-    attack_layout_widget.setLayout(attack_layout)
-    # Add the label and button layout widget to the main layout
-    layout.addWidget(label)
-    layout.addWidget(attack_layout_widget)
-
-    # Set the main widget with content as the scroll area's widget
-    scroll_area.setWidget(content_widget)
-
-    # Add the scroll area to the outer layout
-    outer_layout.addWidget(scroll_area)
-
-    window.setLayout(outer_layout)
-    window.resize(1000, 400)  # Optional: Set a default size for the window
-    window.exec()
-
-def remember_attack(id, attacks, new_attack):
-    if new_attack in attacks:
-        logger.log_and_showinfo("warning","Your pokemon already knows this move!")
-        return
-    if not mainpokemon_path.is_file():
-        logger.log_and_showinfo("warning","Missing Mainpokemon Data !")
-        return
-    with open(mainpokemon_path, "r") as json_file:
-        main_pokemon_data = json.load(json_file)
-    for mainpkmndata in main_pokemon_data:
-        if mainpkmndata["id"] == id:
-            mainpokemon_name = mainpkmndata["name"]
-            attacks = mainpkmndata["attacks"]
-            if new_attack:
-                msg = ""
-                msg += f"Your {mainpkmndata['name'].capitalize()} can learn a new attack !"
-                if len(attacks) < 4:
-                        attacks.append(new_attack)
-                        msg += f"\n Your {mainpkmndata['name'].capitalize()} has learned {new_attack} !"
-                        logger.log_and_showinfo("info",f"{msg}")
-                else:
-                        dialog = AttackDialog(attacks, new_attack)
-                        if dialog.exec() == QDialog.DialogCode.Accepted:
-                            selected_attack = dialog.selected_attack
-                            index_to_replace = None
-                            for index, attack in enumerate(attacks):
-                                if attack == selected_attack:
-                                    index_to_replace = index
-                                    pass
-                                else:
-                                    pass
-                            # If the attack is found, replace it with 'new_attack'
-                            if index_to_replace is not None:
-                                attacks[index_to_replace] = new_attack
-                                logger.log_and_showinfo("info",f"Replaced '{selected_attack}' with '{new_attack}'")
-                            else:
-                                # Handle the case where the user cancels the dialog
-                                logger.log_and_showinfo("info",f"{new_attack} will be discarded.")
-            mainpkmndata["attacks"] = attacks
-            mypkmndata = mainpkmndata
-            mainpkmndata = [mainpkmndata]
-            # Save the caught Pokémon's data to a JSON file
-            with open(str(mainpokemon_path), "w") as json_file:
-                json.dump(mainpkmndata, json_file, indent=2)
-            
-            with open(str(mypokemon_path), "r") as output_file:
-                mypokemondata = json.load(output_file)
-
-            # Find and replace the specified Pokémon's data in mypokemondata
-            for index, pokemon_data in enumerate(mypokemondata):
-                if pokemon_data["name"] == mainpokemon_name:
-                    mypokemondata[index] = mypkmndata
-                    break
-            # Save the modified data to the output JSON file
-            with open(str(mypokemon_path), "w") as output_file:
-                json.dump(mypokemondata, output_file, indent=2)
-        else:
-            logger.log_and_showinfo("info","Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
-
-def MainPokemon(name, nickname, level, id, ability, type, detail_stats, attacks, hp, base_experience, growth_rate, ev, iv, gender):
+def MainPokemon(pokemon_data, main_pokemon = main_pokemon):
     # Capitalize the first letter of the Pokémon's name
-    capitalized_name = name.capitalize()
+    capitalized_name = main_pokemon.name.capitalize()
     # Create a dictionary to store the Pokémon's data
     main_pokemon_data = []
-    main_pokemon_data = [
-        {
-            "name": name,
-            "nickname": nickname,
-            "gender": gender,
-            "level": level,
-            "id": id,
-            "ability": ability,
-            "type": type,
-            "stats": detail_stats,
-            "ev": ev,
-            "iv": iv,
-            "attacks": attacks,
-            "base_experience": base_experience,
-            "current_hp": calculate_hp(detail_stats["hp"],level, ev, iv),
-            "growth_rate": growth_rate
-        }
-    ]
+    main_pokemon_data.append({key: value for key, value in pokemon_data.items()})
 
     # Save the caught Pokémon's data to a JSON file
     with open(str(mainpokemon_path), "w") as json_file:
         json.dump(main_pokemon_data, json_file, indent=2)
 
     logger.log_and_showinfo("info",f"{capitalized_name} has been chosen as your main Pokemon !")
-    new_pokemon() #new pokemon if you change your pokemon
-    mainpokemon_data()
+    #mainpokemon_data()
+    update_main_pokemon(main_pokemon, mainpokemon_path)
+    class Container(object):
+        pass
+    reviewer = Container()
+    reviewer.web = mw.reviewer.web
+    update_life_bar(reviewer, 0, 0)
     if test_window.pkmn_window is True:
         test_window.display_first_encounter()
-	
-def PokemonDetailsStats(detail_stats, growth_rate, level):
-    CompleteTable_layout = QVBoxLayout()
-    experience = int(find_experience_for_level(growth_rate, level, settings_obj.get("remove_levelcap", False)))
-    # Stat colors
-    stat_colors = {
-        "hp": QColor(255, 0, 0),  # Red
-        "atk": QColor(255, 165, 0),  # Orange
-        "def": QColor(255, 255, 0),  # Yellow
-        "spa": QColor(0, 0, 255),  # Blue
-        "spd": QColor(0, 128, 0),  # Green
-        "spe": QColor(255, 192, 203),  # Pink
-        "total": QColor(168, 168, 167),  # Beige
-        "xp": QColor(58,155,220)  # lightblue
-    }
 
-    #custom font
-    custom_font = load_custom_font(int(20))
-
-    # Populate the table and create the stat bars
-    for row, (stat, value) in enumerate(detail_stats.items()):
-        stat_item2 = QLabel(stat.capitalize())
-        max_width_stat_item = 200
-        stat_item2.setFixedWidth(max_width_stat_item)
-        if stat == "xp":
-            xp = value
-            value = int((int(value) / int(experience)) * max_width_stat_item)
-        value_item2 = QLabel(str(value))
-        if stat == "xp":
-            value_item2 = QLabel(str(xp))
-        stat_item2.setFont(custom_font)
-        value_item2.setFont(custom_font)
-        # Create a bar item
-        bar_item2 = QLabel()
-        pixmap2 = createStatBar(stat_colors.get(stat), value)
-        # Convert the QPixmap to an QIcon
-        icon = QIcon(pixmap2)
-        # Set the QIcon as the background for the QLabel
-        bar_item2.setPixmap(icon.pixmap(200, 10))  # Adjust the size as needed
-        layout_row = str(f"{row}" + "row")
-        layout_row = QHBoxLayout()
-        layout_row.addWidget(stat_item2)
-        layout_row.addWidget(value_item2)
-        layout_row.addWidget(bar_item2)
-        stat_item2.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        bar_item2.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        value_item2.setStyleSheet("border: 0px solid #000000; padding: 0px;")
-        stat_item2.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        bar_item2.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        CompleteTable_layout.addLayout(layout_row)
-
-    return CompleteTable_layout
-
-def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
-     # Load the data from the file
-    with open(mainpokemon_path, 'r') as file:
-        pokemon_data = json.load(file)
-    #check if player tries to trade mainpokemon
-    found = False
-    for pokemons in pokemon_data:
-        if pokemons["name"] == name and pokemons["id"] == id and pokemons["level"] == level and pokemons["ability"] == ability and pokemons["iv"] == iv and pokemons["ev"] == ev and pokemons["gender"] == gender and pokemons["attacks"] == attacks:
-            found = True
-            break
-
-    if not found:
-        # Create a main window
-        window = QDialog()
-        window.setWindowTitle(f"Trade Pokemon {name}")
-        # Create an input field for error code
-        trade_code_input = QLineEdit()
-        trade_code_input.setPlaceholderText("Enter Pokemon Code you want to Trade for")
-
-        # Create a button to save the input
-        trade_button = QPushButton("Trade Pokemon")
-        qconnect(trade_button.clicked, lambda: PokemonTradeIn(trade_code_input.text(), name, position))
-        # Information label
-        info = "Pokemon Infos have been Copied to your Clipboard! \nNow simply paste this text into Teambuilder in PokemonShowdown. \nNote: Fight in the [Gen 9] Anything Goes - Battle Mode"
-
-        pokemon_ev = ','.join([f"{value}" for stat, value in ev.items()])
-        pokemon_iv = ','.join([f"{value}" for stat, value in iv.items()])
-        if gender == "M":
-            gender = 0
-        elif gender == "F":
-            gender = 1
-        elif gender == "N":
-            gender = 2
-        else:
-            gender = 3 #None
-
-        attacks_ids = []
-        for attack in attacks:
-            attack = attack.replace(" ", "").lower()
-            move_details = find_details_move(attack)
-            if move_details:
-                attacks_ids.append(str(move_details["num"]))
-
-        attacks_id_string = ','.join(attacks_ids)  # Concatenated with a delimiter
-
-        # Concatenating details to form a single string
-        info = f"{id},{level},{gender},{pokemon_ev},{pokemon_iv},{attacks_id_string}"
-
-        Trade_Info = QLabel(f"{name} Code: {info}")
-
-        # Create a layout and add the labels
-        layout = QVBoxLayout()
-        layout.addWidget(Trade_Info)
-        layout.addWidget(trade_code_input)
-        layout.addWidget(trade_button)
-        layout.addWidget(trade_code_input)
-        # Set the layout for the main window
-        window.setLayout(layout)
-
-        # Copy text to clipboard in Anki
-        mw.app.clipboard().setText(f"{info}")
-
-        # Write the Id, EV, IV and Attacks ID into numbers, seperated by ,
-        # Place in a QLabel and Copy to clipboard
-        # let player place Number in and find additionally needed data from pokedex
-        # at last append to pokemon_list
-        # check remove mainpokemon
-        # remove pokemon from pokemon_list
-
-        # Show the window
-        window.exec()
-    else:
-        showWarning("You cant trade your Main Pokemon ! \n Please pick a different Main Pokemon and then you can trade this one.")
-
-def find_move_by_num(move_num):
-    try:
-        with open(moves_file_path, 'r', encoding='utf-8') as json_file:
-            moves_data = json.load(json_file)
-
-        # Iterate through each move in the data to find the one with the matching 'num'
-        for move in moves_data.values():
-            if move.get('num') == move_num:
-                return move  # Return the move details if found
-
-        # If the move wasn't found, return a message indicating so
-        return logger.log_and_showinfo("info",f"No move found with number: {move_num}")
-
-    except FileNotFoundError:
-        return logger.log_and_showinfo("info","The moves file was not found. Please check the file path.")
-
-    except json.JSONDecodeError as e:
-        return logger.log_and_showinfo("info",f"Error decoding JSON: {e}")
-
-
-def find_pokemon_by_id(pokemon_id):
-    try:
-        # Open and load the pokedex file
-        with open(pokedex_path, 'r', encoding='utf-8') as json_file:
-            pokedex = json.load(json_file)
-
-        # Search for the Pokemon by ID
-        for pokemon_name, details in pokedex.items():
-            if details.get('num') == pokemon_id:
-                return details  # Return the details if the Pokemon is found
-
-        # If the Pokemon wasn't found, return a message indicating so
-        logger.log_and_showinfo("info",f"No Pokemon found with ID: {pokemon_id}")
-
-    except FileNotFoundError:
-        logger.log_and_showinfo("info","The pokedex file was not found. Please check the file path.")
-
-    except json.JSONDecodeError as e:
-        logger.log_and_showinfo("info",f"Error decoding JSON: {e}")
-
-def trade_pokemon(old_pokemon_name, pokemon_trade, position):
-    try:
-        # Load the current list of Pokemon
-        with open(mypokemon_path, 'r') as file:
-            pokemon_list = json.load(file)
-    except FileNotFoundError:
-        print("The Pokemon file was not found. Please check the file path.")
-        return
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
-        return
-
-    # Find and replace the specific Pokemon's information
-    for i, pokemon in enumerate(pokemon_list):
-        pokemon_list[position] = pokemon_trade  # Replace with new Pokemon data
-        break
-    else:
-        logger.log_and_showinfo("info",f"Pokemon named '{old_pokemon_name}' not found.")
-        return
-
-    # Write the updated data back to the file
-    try:
-        with open(mypokemon_path, 'w') as file:
-            json.dump(pokemon_list, file, indent=2)
-        logger.log_and_showinfo("info",f"{old_pokemon_name} has been traded successfully!")
-    except Exception as e:
-        logger.log_and_showinfo("info",f"An error occurred while writing to the file: {e}")
-
-def PokemonTradeIn(number_code, old_pokemon_name, position):
-    if len(number_code) > 15:
-        # Split the string into a list of integers
-        numbers = [int(num) for num in number_code.split(',')]
-
-        # Extracting specific parts of the list
-        pokemon_id = numbers[0]
-        level = numbers[1]
-        gender_id = numbers[2]
-        ev_stats = {'hp': numbers[3], 'atk': numbers[4], 'def': numbers[5], 'spa': numbers[6], 'spd': numbers[7],
-                    'spe': numbers[8]}
-        iv_stats = {'hp': numbers[9], 'atk': numbers[10], 'def': numbers[11], 'spa': numbers[12], 'spd': numbers[13],
-                    'spe': numbers[14]}
-        attack_ids = numbers[15:]
-        attacks = []
-        for attack_id in attack_ids:
-            move = find_move_by_num(int(attack_id))
-            attacks.append(move['name'])
-        details = find_pokemon_by_id(pokemon_id)
-        name = details["name"]
-        type = details["types"]
-        if gender_id == 0:
-            gender = "M"
-        elif gender_id == 1:
-            gender = "F"
-        elif gender_id == 2:
-            gender = "N"
-        else:
-            gender = None #None
-        stats = details["baseStats"]
-        evos = details.get("evos", "None")
-        #type = search_pokedex(name, "types")
-        #stats = search_pokedex(name, "baseStats")
-        with open(str(pokeapi_db_path), "r") as json_file:
-            pokemon_data = json.load(json_file)
-            for pokemon in pokemon_data:
-                if pokemon["id"] == pokemon_id:
-                    growth_rate = pokemon["growth_rate"]
-        # Creating a dictionary to organize the extracted information
-        stats["xp"] = 0
-        pokemon_trade = {
-                "name": name,
-                "gender": gender,
-                "ability": ability,
-                "level": level,
-                "id": pokemon_id,
-                "type": type,
-                "stats": stats,
-                "ev": ev_stats,
-                "iv": iv_stats,
-                "attacks": attacks,
-                "base_experience": base_experience,
-                "current_hp": calculate_hp(stats["hp"], level, ev, iv),
-                "growth_rate": growth_rate,
-                "evos": evos
-        }
-        #showInfo(f"{pokemon_trade}")
-
-        #PokemonFree(old_pokemon_name)
-        #with open(mypokemon_path, 'r') as file:
-        #    pokemon_list = json.load(file)
-
-        #pokemon_list.append(pokemon_trade)
-        #for pokemon in pokemon_list:
-        #    if pokemon["name"] == old_pokemon_name:
-        #        pokemon = pokemon_trade
-
-        # Write the updated data back to the file
-        #with open(mypokemon_path, 'w') as file:
-        #    json.dump(pokemon_list, file, indent=2)
-        trade_pokemon(f"{old_pokemon_name}", pokemon_trade, position)
-        logger.log_and_showinfo("info",f"You have sucessfully traded your {old_pokemon_name} for {name} ")
-    else:
-        showWarning("Please enter a valid Code !")
-
-
-def PokemonFree(position, name):
-    # Confirmation dialog
-    reply = QMessageBox.question(None, "Confirm Release", 
-                                 f"Are you sure you want to release {name}?", 
-                                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, 
-                                 QMessageBox.StandardButton.No)
-
-    if reply == QMessageBox.StandardButton.No:
-        logger.log_and_showinfo("info","Release cancelled.")
-        return
-
-    # Load the data from the file
-    with open(mainpokemon_path, 'r') as file:
-        pokemon_data = json.load(file)
-
-    found = False
-    for pokemons in pokemon_data:
-        if pokemons["name"] == name:
-            found = True
-            break
-
-    if not found:
-        with open(mypokemon_path, 'r') as file:
-            pokemon_list = json.load(file)
-
-        # Find and remove the Pokemon with the given name
-        #pokemon_list = [p for p in pokemon_list if p['name'] != name]
-        pokemon_list.pop(position)
-
-        # Write the updated data back to the file
-        with open(mypokemon_path, 'w') as file:
-            json.dump(pokemon_list, file, indent=2)
-        logger.log_and_showinfo("info",f"{name.capitalize()} has been let free.")
-        pokecollection_win.refresh_pokemon_collection()
-    else:
-        showWarning("You can't free your Main Pokemon!")
-
-def createStatBar(color, value):
-    pixmap = QPixmap(200, 10)
-    #pixmap.fill(Qt.transparent)
-    pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
-    painter = QPainter(pixmap)
-
-    # Draw bar in the background
-    painter.setPen(QColor(Qt.GlobalColor.black))
-    # new change due to pyqt6.6.1
-    painter.setBrush(QColor(0, 0, 0, 200))  # Semi-transparent black
-    painter.drawRect(0, 0, 200, 10)
-
-    # Draw the colored bar based on the value
-    painter.setBrush(color)
-    bar_width = int(value * 1)  # Adjust the width as needed
-    painter.drawRect(0, 0, bar_width, 10)
-
-    return pixmap
-
-def load_custom_font(font_size):
-    global font_path, language
-    if language == 1:
-        font_file = "pkmn_w.ttf"
-        font_file_path = font_path / font_file
-        font_size = (font_size * 1) / 2
-        if font_file_path.exists():
-            font_name = "PKMN Western"
-        else:
-            font_name = "Early GameBoy"
-            font_file = "Early GameBoy.ttf"
-            font_size = (font_size * 5) / 7
-    else:
-        font_name = "Early GameBoy"
-        font_file = "Early GameBoy.ttf"
-        font_size = (font_size * 2) / 5
-
-    # Register the custom font with its file path
-    QFontDatabase.addApplicationFont(str(font_path / font_file))
-    custom_font = QFont(font_name)  # Use the font family name you specified in the font file
-    custom_font.setPointSize(int(font_size))  # Adjust the font size as needed
-
-    return custom_font
+pokecollection_win = PokemonCollectionDialog(logger=logger, settings_obj=settings_obj, mainpokemon_function = MainPokemon, main_pokemon = main_pokemon)
 
 class Downloader(QObject):
     progress_updated = pyqtSignal(int)  # Signal to update progress bar
@@ -3670,28 +2217,16 @@ if database_complete and mainpokemon_empty is False:
         hp_bar_thickness = settings_obj.get("battle.hp_bar_thickness", 2) * 4
         experience_for_next_lvl = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("remove_levelcap", False)))
         if reviewer_image_gif == False:
-            #remove if it works
-            #pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.png' #use for png files
-            #pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
             pokemon_image_file = enemy_pokemon.get_sprite_path("front", "png")
             if show_mainpkmn_in_reviewer > 0:
-                #remove if it works
-                #main_pkmn_imagefile = f'{main_pokemon.id}.png' #use for png files
-                #main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
                 main_pkmn_imagefile_path = main_pokemon.get_sprite_path("back", "png")
         else:
-            #pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.gif'
-            #pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
             pokemon_image_file = enemy_pokemon.get_sprite_path("front", "gif")
             if show_mainpkmn_in_reviewer > 0:
-                #main_pkmn_imagefile = f'{main_pokemon.id}.gif'
                 if view_main_front == -1:
-                #    gif_type = "front_default_gif" 
                     side = "front"
                 else:
-                #    gif_type = "back_default_gif"
                     side = "back"
-                #main_pkmn_imagefile_path = os.path.join((user_path_sprites / f"{gif_type}"), main_pkmn_imagefile)
                 main_pkmn_imagefile_path = main_pokemon.get_sprite_path(side, "gif")
         if show_mainpkmn_in_reviewer > 0:
             mainpkmn_hp_percent = int((main_pokemon.hp / main_pokemon.max_hp) * 50)
@@ -3747,33 +2282,20 @@ if database_complete and mainpokemon_empty is False:
         return web_content
 
     def update_life_bar(reviewer, card, ease):
-        global id, battle_status, mainpokemon_name, mainpokemon_level, mainpokemon_stats, mainpokemon_ev, xp_bar_config
-        global empty_icon_path, seconds, myseconds, view_main_front, styling_in_reviewer
+        global empty_icon_path, seconds, myseconds, view_main_front
         show_mainpkmn_in_reviewer = int(settings_obj.get('gui.show_mainpkmn_in_reviewer', 1))
         ankimon_tracker_obj.check_pokecoll_in_list()
         if reviewer_image_gif == False:
-            #remove if it works
-            #pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.png' #use for png files
-            #pokemon_image_file = os.path.join(frontdefault, pokemon_imagefile) #use for png files
             pokemon_image_file = enemy_pokemon.get_sprite_path("front", "png")
             if show_mainpkmn_in_reviewer > 0:
-                #remove if it works
-                #main_pkmn_imagefile = f'{main_pokemon.id}.png' #use for png files
-                #main_pkmn_imagefile_path = os.path.join(backdefault, main_pkmn_imagefile) #use for png files
                 main_pkmn_imagefile_path = main_pokemon.get_sprite_path("back", "png")
         else:
-            #pokemon_imagefile = f'{search_pokedex(enemy_pokemon.name.lower(), "num")}.gif'
-            #pokemon_image_file = os.path.join((user_path_sprites / "front_default_gif"), pokemon_imagefile)
             pokemon_image_file = enemy_pokemon.get_sprite_path("front", "gif")
             if show_mainpkmn_in_reviewer > 0:
-                #main_pkmn_imagefile = f'{main_pokemon.id}.gif'
                 if view_main_front == -1:
-                #    gif_type = "front_default_gif" 
                     side = "front"
                 else:
-                #    gif_type = "back_default_gif"
                     side = "back"
-                #main_pkmn_imagefile_path = os.path.join((user_path_sprites / f"{gif_type}"), main_pkmn_imagefile)
                 main_pkmn_imagefile_path = main_pokemon.get_sprite_path(side, "gif")
         if show_mainpkmn_in_reviewer > 0:
             mainpkmn_hp_percent = int((main_pokemon.hp / main_pokemon.max_hp) * 50)
@@ -3808,13 +2330,13 @@ if database_complete and mainpokemon_empty is False:
         if enemy_pokemon.hp < 1:
             status_html = create_status_html('fainted')
         elif enemy_pokemon.hp > 0:
-            status_html = create_status_html(f"{battle_status}")
-        if styling_in_reviewer is True:
+            status_html = create_status_html(f"{enemy_pokemon.battle_status}")
+        if settings_obj.get("gui.styling_in_reviewer", True) is True:
             # Refresh the reviewer content to apply the updated life bar
             reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
             reviewer.web.eval('document.getElementById("life-bar").style.background = "linear-gradient(to right, ' + str(hp_color) + ', ' + str(hp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
             reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px ' + hp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')
-            if xp_bar_config is True:
+            if settings_obj.get("xp_bar_config", False) is True:
                 experience_for_next_lvl = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("remove_levelcap", False)))
                 xp_bar_percent = int((main_pokemon.xp / int(experience_for_next_lvl)) * 100)
                 reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
@@ -4310,16 +2832,11 @@ class TestWindow(QWidget):
         layout = QVBoxLayout()
         global message_box_text
         global merged_pixmap, window
-        mainpokemon_level = main_pokemon.level
-        mainpokemon_stats = main_pokemon.stats
-        mainpokemon_ev = main_pokemon.ev
-        mainpokemon_iv = main_pokemon.iv
 
         ankimon_tracker_obj.attack_counter = 0
         ankimon_tracker_obj.caught = 0
         attack_counter = ankimon_tracker_obj.attack_counter
         caught = ankimon_tracker_obj.caught
-        pokemon_encounter = ankimon_tracker_obj.pokemon_encouter
 
         #Enemy Pokemon Variables from Object
         hp = enemy_pokemon.hp
@@ -4334,12 +2851,11 @@ class TestWindow(QWidget):
 
         # Capitalize the first letter of the Pokémon's name
         lang_name = get_pokemon_diff_lang_name(int(id), settings_obj.get('misc.language'))
-        name = enemy_pokemon.name.capitalize()
         # calculate wild pokemon max hp
         message_box_text = (f"A wild {lang_name.capitalize()} appeared !")
-        if pokemon_encounter == 0:
+        if ankimon_tracker_obj.pokemon_encouter == 0:
             bckgimage_path = battlescene_path / ankimon_tracker_obj.battlescene_file
-        elif pokemon_encounter > 0:
+        elif ankimon_tracker_obj.pokemon_encouter > 0:
             bckgimage_path = battlescene_path_without_dialog / ankimon_tracker_obj.battlescene_file
         def window_show():
             ui_path = battle_ui_path
@@ -4436,8 +2952,8 @@ class TestWindow(QWidget):
                 gender_symbol = ""  # None
 
             # custom font
-            custom_font = load_custom_font(int(26))
-            msg_font = load_custom_font(int(32))
+            custom_font = load_custom_font(int(26), int(settings_obj.get("misc.language",11)))
+            msg_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
             # Draw the text on top of the image
             # Adjust the font size as needed
             painter.setFont(custom_font)
@@ -4461,10 +2977,9 @@ class TestWindow(QWidget):
 
     def pokemon_display_battle(self):
         ankimon_tracker_obj.pokemon_encouter += 1
-        pokemon_encounter = ankimon_tracker_obj.pokemon_encouter
-        if pokemon_encounter == 1:
+        if ankimon_tracker_obj.pokemon_encouter == 1:
             bckgimage_path = battlescene_path / ankimon_tracker_obj.battlescene_file
-        elif pokemon_encounter > 1:
+        elif ankimon_tracker_obj.pokemon_encouter > 1:
             bckgimage_path = battlescene_path_without_dialog / ankimon_tracker_obj.battlescene_file
         ui_path = battle_ui_path
         pixmap_ui = QPixmap()
@@ -4549,8 +3064,8 @@ class TestWindow(QWidget):
         painter.drawRect(366, 246, mainpokemon_xp_value, mainxp_bar_width)
 
         # custom font
-        custom_font = load_custom_font(int(28))
-        msg_font = load_custom_font(int(32))
+        custom_font = load_custom_font(int(28), int(settings_obj.get("misc.language",11)))
+        msg_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
 
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -4619,14 +3134,14 @@ class TestWindow(QWidget):
             painter.drawPixmap(200,90,item_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(26))
+        custom_font = load_custom_font(int(26), int(settings_obj.get("misc.language",11)))
         message_box_text = f"You have received a item: {item.capitalize()} !"
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(255,255,255))  # Text color
         painter.drawText(50, 290, message_box_text)
-        custom_font = load_custom_font(int(20))
+        custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language",11)))
         painter.setFont(custom_font)
         #painter.drawText(10, 330, "You can look this up in your item bag.")
         painter.end()
@@ -4639,7 +3154,6 @@ class TestWindow(QWidget):
     def pokemon_display_badge(self, badge_number):
         try:
             global badges
-            pokemon_encounter = ankimon_tracker_obj.pokemon_encounter
             bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
             badge_path = addon_dir / "user_files" / "sprites" / "badges" / f"{badge_number}.png"
 
@@ -4678,7 +3192,7 @@ class TestWindow(QWidget):
             painter.drawPixmap(200,90,item_pixmap)
 
             # custom font
-            custom_font = load_custom_font(int(20))
+            custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language",11)))
             message_box_text = "You have received a badge for:"
             message_box_text2 = f"{badges[str(badge_number)]}!"
             # Draw the text on top of the image
@@ -4687,7 +3201,7 @@ class TestWindow(QWidget):
             painter.setPen(QColor(255,255,255))  # Text color
             painter.drawText(120, 270, message_box_text)
             painter.drawText(140, 290, message_box_text2)
-            custom_font = load_custom_font(int(20))
+            custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language",11)))
             painter.setFont(custom_font)
             #painter.drawText(10, 330, "You can look this up in your item bag.")
             painter.end()
@@ -4844,7 +3358,6 @@ class TestWindow(QWidget):
 
     def keyPressEvent(self, event):
         global test, system, ankimon_key
-        pokemon_encounter = ankimon_tracker_obj.pokemon_encounter
         open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
         if system == "mac":
             if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
@@ -5016,7 +3529,7 @@ class StarterWindow(QWidget):
             if widget:
                 widget.deleteLater()
     def keyPressEvent(self, event):
-        global test, pokemon_encounter
+        global test
         # Close the main window when the spacebar is pressed
         if event.key() == Qt.Key.Key_G:  # Updated to Key_G for PyQt 6
             # First encounter image
@@ -5107,7 +3620,6 @@ class StarterWindow(QWidget):
         return water_starter_button, fire_starter_button, grass_start_button
 
     def pokemon_display_starter(self, water_start, fire_start, grass_start):
-        global pokemon_encounter
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bckg.png"
         water_id = int(search_pokedex(water_start, "num"))
         grass_id = int(search_pokedex(grass_start, "num"))
@@ -5162,14 +3674,14 @@ class StarterWindow(QWidget):
         painter.drawPixmap(311,-3,grass_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(28))
+        custom_font = load_custom_font(int(28), int(settings_obj.get("misc.language",11)))
         message_box_text = "Choose your Starter Pokemon"
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(255,255,255))  # Text color
         painter.drawText(110, 310, message_box_text)
-        custom_font = load_custom_font(int(20))
+        custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language",11)))
         painter.setFont(custom_font)
         painter.drawText(10, 330, "Press G to change Generation")
         painter.end()
@@ -5180,7 +3692,6 @@ class StarterWindow(QWidget):
         return starter_label
 
     def pokemon_display_chosen_starter(self, starter_name):
-        global pokemon_encounter
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         id = int(search_pokedex(starter_name, "num"))
 
@@ -5206,7 +3717,7 @@ class StarterWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(32))
+        custom_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
         message_box_text = f"{(starter_name).capitalize()} was chosen as Starter !"
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -5221,7 +3732,6 @@ class StarterWindow(QWidget):
         return starter_label
     
     def pokemon_display_fossil_pokemon(self, fossil_id, fossil_name):
-        global pokemon_encounter
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         id = fossil_id
 
@@ -5247,7 +3757,7 @@ class StarterWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(32))
+        custom_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
         message_box_text = f"{(fossil_name).capitalize()} was brought to life !"
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -5312,7 +3822,7 @@ class EvoWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(20))
+        custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language",11)))
         message_box_text = f"{(prevo_name).capitalize()} has evolved to {(pkmn_name).capitalize()} !"
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -5633,9 +4143,8 @@ class ItemWindow(QWidget):
         item_name = item_name.lower()
         if item_name in self.hp_heal_items:
             use_item_button = QPushButton("Heal Mainpokemon")
-            global mainpokemon_name
             hp_heal = self.hp_heal_items[item_name]
-            use_item_button.clicked.connect(lambda: self.Check_Heal_Item(mainpokemon_name, hp_heal, item_name))
+            use_item_button.clicked.connect(lambda: self.Check_Heal_Item(main_pokemon.name, hp_heal, item_name))
         elif item_name in self.fossil_pokemon:
             fossil_id = self.fossil_pokemon[item_name]
             fossil_pokemon_name = search_pokedex_by_id(fossil_id)
@@ -5770,38 +4279,6 @@ def get_id_and_description_by_item_name(item_name):
     return description
     
 item_window = ItemWindow()
-
-class AttackDialog(QDialog):
-    def __init__(self, attacks, new_attack):
-        super().__init__()
-        self.attacks = attacks
-        self.new_attack = new_attack
-        self.selected_attack = None
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle(f"Select which Attack to Replace with {self.new_attack}")
-        layout = QVBoxLayout()
-        layout.addWidget(QLabel(f"Select which Attack to Replace with {self.new_attack}"))
-        for attack in self.attacks:
-            button = QPushButton(attack)
-            button.clicked.connect(self.attackSelected)
-            layout.addWidget(button)
-        reject_button = QPushButton("Reject Attack")
-        reject_button.clicked.connect(self.attackNoneSelected)
-        layout.addWidget(reject_button)
-        self.setLayout(layout)
-
-    def attackSelected(self):
-        sender = self.sender()
-        self.selected_attack = sender.text()
-        self.accept()
-
-    def attackNoneSelected(self):
-        sender = self.sender()
-        self.selected_attack = sender.text()
-        self.reject()
-
 
 class AchievementWindow(QWidget):
     def __init__(self):
@@ -6068,3 +4545,19 @@ if reviewer_buttons is True:
     Reviewer._bottomHTML = _bottomHTML  # Assuming you have access to self in this context
     # Replace the original link handler function with the modified one
     Reviewer._linkHandler = linkHandler_wrap
+
+from .functions.discord_function import *  # Import necessary functions for Discord integration
+
+client_id = '1319014423876075541'  # Replace with your actual client ID
+large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
+ankimon_presence = DiscordPresence(client_id, large_image_url)  # Establish connection and get the presence instance
+loop = False
+
+# Hook functions for Anki
+def on_reviewer_initialized(rev, card, ease):
+    ankimon_presence.loop = True
+    ankimon_presence.start()
+
+# Register the hook functions with Anki's GUI hooks
+gui_hooks.reviewer_did_answer_card.append(on_reviewer_initialized)
+gui_hooks.sync_did_finish.append(ankimon_presence.stop)
