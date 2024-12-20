@@ -4,9 +4,10 @@ import json
 import markdown
 import random
 import csv
-from .resources import battlescene_path, berries_path, items_path, itembag_path, csv_file_items_cost, csv_file_descriptions, items_list_path
+from .resources import battlescene_path, berries_path, items_path, itembag_path, csv_file_items_cost, csv_file_descriptions, items_list_path, font_path
 from aqt.utils import showWarning, showInfo
 from collections import Counter
+from PyQt6.QtGui import QFontDatabase, QFont
 
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
@@ -306,3 +307,26 @@ def get_item_description(item_name, language_id):
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
+    
+def load_custom_font(font_size, language):
+    if language == 1:
+        font_file = "pkmn_w.ttf"
+        font_file_path = font_path / font_file
+        font_size = (font_size * 1) / 2
+        if font_file_path.exists():
+            font_name = "PKMN Western"
+        else:
+            font_name = "Early GameBoy"
+            font_file = "Early GameBoy.ttf"
+            font_size = (font_size * 5) / 7
+    else:
+        font_name = "Early GameBoy"
+        font_file = "Early GameBoy.ttf"
+        font_size = (font_size * 2) / 5
+
+    # Register the custom font with its file path
+    QFontDatabase.addApplicationFont(str(font_path / font_file))
+    custom_font = QFont(font_name)  # Use the font family name you specified in the font file
+    custom_font.setPointSize(int(font_size))  # Adjust the font size as needed
+
+    return custom_font
