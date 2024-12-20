@@ -1,0 +1,22 @@
+Privacy Policy for Ankimon
+
+Effective Date: 18.12.2024
+
+Ankimon is committed to protecting your privacy. Below is an outline of our privacy practices:
+
+No Personal Data Collection
+Ankimon does not collect, store, or process any personal information from users.
+
+Time Tracking for Discord Display
+The only data tracked by Ankimon is the time spent using the application. This information is used exclusively to display your activity status on Discord.
+
+No Data Storage
+Ankimon does not save or retain any data locally or on external servers. All time tracking is temporary and limited to the duration of your usage session.
+
+No Third-Party Sharing
+Ankimon does not share any data with third parties, including Discord. The integration only displays your activity status while the application is in use.
+
+Contact
+For questions about this Privacy Policy, you can reach us at: ankimon.unlucky@gmail.com .
+
+By using Ankimon, you agree to this Privacy Policy. This policy will be updated as needed, and any changes will be reflected here.
