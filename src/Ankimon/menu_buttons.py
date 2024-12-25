@@ -5,6 +5,8 @@ from PyQt6.QtGui import QAction, QKeySequence
 from aqt import mw  # The main window object
 from aqt.utils import qconnect
 
+debug = False
+
 def create_menu_actions(
     database_complete,
     online_connectivity,
@@ -32,7 +34,8 @@ def create_menu_actions(
     data_handler_window,
     settings_window,
     shop_manager,
-    pokedex_window
+    pokedex_window,
+    ankimon_key
 ):
     actions = []
 
@@ -45,6 +48,7 @@ def create_menu_actions(
         # Ankimon Window
         test_action10 = QAction("Open Ankimon Window", mw)
         mw.pokemenu.addAction(test_action10)
+        test_action10.setShortcut(QKeySequence(f"{ankimon_key}"))
         qconnect(test_action10.triggered, test_window.open_dynamic_window)
 
         # Itembag
@@ -107,7 +111,7 @@ def create_menu_actions(
 
     # Help Guide
     help_action = QAction("Open Help Guide", mw)
-    help_action.triggered.connect(lambda :open_help_window(online_connectivity))
+    help_action.triggered.connect(lambda: open_help_window(online_connectivity))
     mw.pokemenu.addAction(help_action)
 
     # Report Bug
@@ -130,10 +134,11 @@ def create_menu_actions(
     # Show the Settings window
     mw.pokemenu.addAction(config_action)
 
-    data_window_action = QAction("Data", mw)
-    data_window_action.triggered.connect(data_handler_window.show_window)
-    # Show the Settings window
-    mw.pokemenu.addAction(data_window_action)
+    if debug is True:
+        data_window_action = QAction("Data", mw)
+        data_window_action.triggered.connect(data_handler_window.show_window)
+        # Show the Settings window
+        mw.pokemenu.addAction(data_window_action)
 
     tracker_window_action = QAction("Tracker", mw)
     tracker_window_action.triggered.connect(ankimon_tracker_window.toggle_window)

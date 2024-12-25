@@ -8,7 +8,7 @@
     "controls.pokemon_buttons": true,
     "controls.defeat_key": "5",
     "controls.catch_key": "6",
-    "controls.key_for_opening_closing_ankimon": "N",
+    "controls.key_for_opening_closing_ankimon": "Ctrl+Shift+P",
     "controls.allow_to_choose_moves": false,
 
     "gui.animate_time": true,

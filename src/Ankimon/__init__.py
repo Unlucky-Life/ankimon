@@ -1172,7 +1172,6 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                             attacks = pokemon["attacks"]
                             new_attacks = get_random_moves_for_pokemon(evo_name.lower(), int(pokemon["level"]))
                             for new_attack in new_attacks:
-                                if new_attack not in attacks:
                                     if len(attacks) < 4:
                                         attacks.append(new_attack)
                                     else:
@@ -2742,8 +2741,9 @@ video = False
 first_start = False
 
 class TestWindow(QWidget):
-    def __init__(self):
+    def __init__(self, parent=mw):
         super().__init__()
+        self.setWindowFlag(Qt.WindowType.Tool)
         self.pkmn_window = False #if fighting window open
         self.init_ui()
         #self.update()
@@ -4464,7 +4464,8 @@ actions = create_menu_actions(
     data_handler_window,
     settings_window,
     shop_manager,
-    pokedex_window
+    pokedex_window,
+    settings_obj.get("controls.key_for_opening_closing_ankimon","Ctrl+Shift+P")
 )
 
     #https://goo.gl/uhAxsg
