@@ -1172,6 +1172,7 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                             attacks = pokemon["attacks"]
                             new_attacks = get_random_moves_for_pokemon(evo_name.lower(), int(pokemon["level"]))
                             for new_attack in new_attacks:
+                                if new_attack not in attacks:
                                     if len(attacks) < 4:
                                         attacks.append(new_attack)
                                     else:
