@@ -42,32 +42,32 @@ class DiscordPresence:
                 )
                 time.sleep(5)  # Sleep for 5 seconds before updating again
         except Exception as e:
-            showWarning(f"Error updating Discord Rich Presence: {e}")
+            tooltip(f"Error updating Discord Rich Presence: {e}")
 
     def start(self):
         """
         Start updating the Discord Rich Presence in a separate thread.
         """
-        if self.thread is None or not self.thread.is_alive():
-            self.loop = True  # Ensure the loop flag is reset
-            self.thread = threading.Thread(target=self.update_presence, daemon=True)
-            self.thread.start()
-        else:
-            pass
-            #showWarning("Discord Rich Presence is already running.")
+        try:
+            if not hasattr(self, 'thread') or self.thread is None or not self.thread.is_alive():
+                self.loop = True
+                self.thread = threading.Thread(target=self.update_presence, daemon=True)
+                self.thread.start()
+        except Exception as e:
+            tooltip(f"Error starting Discord Rich Presence: {e}")
 
     def stop(self):
         """
         Stop updating the Discord Rich Presence.
         """
-        self.loop = False
-        if self.thread:
-            self.thread.join()  # Wait for the thread to finish
-            self.thread = None  # Reset the thread attribute
         try:
-            self.RPC.clear()  # Clear the presence on Discord
+            self.loop = False
+            if hasattr(self, 'thread') and self.thread and self.thread.is_alive():
+                self.thread.join() # Wait for the thread to finish
+                self.thread = None  # Reset the thread
+            self.RPC.clear()
         except Exception as e:
-            showWarning(f"Error clearing Discord Rich Presence: {e}")
+            tooltip(f"Error clearing Discord Rich Presence: {e}")
 
     def stop_presence(self):
         """
@@ -80,4 +80,4 @@ class DiscordPresence:
                     large_image=self.large_image_url
                 )
         except Exception as e:
-            showWarning(f"Error updating presence to break state: {e}")
+            tooltip(f"Error updating presence to break state: {e}")
