@@ -1,0 +1,39 @@
+Terms of Service for Ankimon
+
+Effective Date: 18.12.2024
+
+Welcome to Ankimon! By using Ankimon, you agree to the following terms of use:
+
+Purpose of the Application
+Ankimon is designed to enhance your experience with Anki by integrating gamification features. The application is provided "as is" without any warranties or guarantees.
+
+Eligibility
+By using Ankimon, you confirm that you are at least 13 years old or have parental consent to use the application.
+
+Activity Status on Discord
+Ankimon integrates with Discord to display the time you spend using the application. No other data is tracked or shared.
+
+Prohibited Uses
+You agree not to:
+
+Use Ankimon for illegal or unauthorized purposes.
+Reverse engineer or modify the application without permission.
+Exploit Ankimon to harm its functionality or other users.
+Intellectual Property
+All code associated with Ankimon are the intellectual property of the developer(s), while images and data belong to multiple users and Nintendo - Pokemon sprites, images, csv data, etc.
+You may not distribute, or create derivative works based on Ankimon without explicit permission of main developer of Ankimon (Unlucky-Life).
+The Code itself is open-source and can be learned from and reffered to. Ankimon is meant for personal-use-only.
+
+Liability
+Ankimon is provided without any guarantees. The developers are not liable for any damages or losses resulting from the use or inability to use the application.
+
+Updates and Changes
+Ankimon reserves the right to update or modify these Terms of Use at any time. Continued use of the application constitutes acceptance of any changes.
+
+Termination
+Ankimon reserves the right to terminate access to the application for violations of these terms or any other reason deemed necessary by the developers.
+
+Contact
+For questions or concerns about these Terms of Use, please contact us at: ankimon.unlucky@gmail.com .
+
+By using Ankimon, you agree to abide by these Terms of Use. If you do not agree, please discontinue use of the application.
