@@ -192,7 +192,6 @@ class PokemonCollectionDialog(QDialog):
                     splash_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 else:
                     container_layout.addWidget(image_label)
-
                 container_layout.addWidget(name_label)
                 container_layout.addWidget(level_label)
                 container_layout.addWidget(type_label)
