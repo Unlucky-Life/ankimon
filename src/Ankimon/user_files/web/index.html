@@ -1,0 +1,267 @@
+<html>
+
+<head>
+<script type="text/javascript" src="assetts/jquery-2.2.0.min.js"></script>
+<link rel="stylesheet" type="text/css" href="assetts/styles.css">
+<title> Pokemon Battle </title>
+</head>
+
+<body>
+
+<div id="AnkimonContainer">
+<div id="top">
+	<div class="topHalf">
+		<div class="left">
+			<div id="UpperHealthContainer">
+				<div class="rectangleOutter" id="healthTop">
+					<div class="rectangleInner">
+						<ul class="UpperHpContent">
+							<li class="UpperHpList">
+								<span id="nameTop">BLASTOISE
+									<span id="genderf"></span>
+								</span>
+								<span id="level_top">Lv: 99</span>
+							</li>
+							<li class="UpperHpList">
+								<div id="hpBar">
+								<div id="hp"> HP </div>
+									<div id="hpBarInnerTop">
+										<div id="hpSlidertop"></div>
+									</div>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div id="rhombus"></div>
+			</div>
+		</div>
+		<div class="right">
+
+			<div class="ovalOutter" id="theTop">
+				<div class="ovalInner">
+					
+				</div>
+			</div>
+			<div id="topPoke"><img id="topPokemonEffects"></img></div>
+			
+		</div>
+	</div>
+	<div class="topHalf">
+		<div class="left">
+		<div id="bottomPokemon"><img id="bottomPokemonEffects"></img></div>
+			<div class="ovalOutter">
+				<div class="ovalInner">
+
+				</div>
+			</div>
+			
+		</div>
+		<div class="right">
+			<div id="healthContainer">
+				<div class="rectangleOutter" id="healthBottom">
+					<div class="rectangleInner">
+						<ul class="hpContent">
+							<li class="hpList">
+								<span id="nameBottom">CHARIZARD
+									<span id="genderm"></span>
+								</span>
+								<span id="level_bottom">Lv 99</span>
+							</li>
+							<li class="hpList">
+								<div id="hpBar">
+								<div id="hp"> HP </div>
+									<div id="hpBarInnerBottom">
+										<div id="hpSliderbottom"></div>
+									</div>
+								</div>
+							</li>
+							<li class="hpList"><span id="health">360/360</span></li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="triangleBit">
+				</div>
+				<div class="rectangleBit">
+					<div class="exp"> ExP </div>
+					<div class="innerRectangleBit"><div id="XPBAR" class="innerRectangleBitSlider">
+					</div></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="bottom">
+	<div id="bottomBox">
+		<div id="bottomBoxInner">
+			<div id="battleText">
+				<p>What should CHARIZARD do?</p>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+    <script>
+		try {
+        // Function to get URL parameters
+		function getUrlParameter(name) {
+			name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
+			var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+			var results = regex.exec(location.search);
+			return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+		}
+
+		// Retrieve Pokémon image URLs and other parameters from URL
+		var sprites_url = getUrlParameter('spritesUrl');
+		var bottomPokemonSprite = getUrlParameter('bottomPokemonSprite');
+		var topPokemonSprite = getUrlParameter('topPokemonSprite');
+		//var topPokeUrl = `../sprites/back_default_gif/1.gif`;
+		var text = getUrlParameter('text');
+		var levelTop = getUrlParameter('levelTop');
+		var levelBottom = getUrlParameter('levelBottom');
+		var name_Top = getUrlParameter('nameTop');
+		var name_Bottom = getUrlParameter('nameBottom');
+		var genderTop = getUrlParameter('genderTop');
+		var genderBottom = getUrlParameter('genderBottom');
+		var current_health_bottom = getUrlParameter('current_health_bottom');
+		var max_hp_bottom = getUrlParameter('max_hp_bottom');
+		var fontUrl = getUrlParameter('fontUrl'); // Assuming 'fontUrl' is the parameter for font URL
+		var current_health_top = getUrlParameter('current_health_top');
+		var max_hp_top = getUrlParameter('max_hp_top');
+		var main_attack = getUrlParameter('main_attack');
+		var enemy_attack = getUrlParameter('enemy_attack');
+		//var fx_bottom = getUrlParameter('fx_bottom');
+		//var fx_top = getUrlParameter('fx_top');
+
+		// Get elements by ID
+		var bottomPokemon = document.getElementById('bottomPokemon');
+		var topPoke = document.getElementById('topPoke');
+		var battleText = document.getElementById('battleText');
+		var level_bottom = document.getElementById('level_bottom');
+		var level_top = document.getElementById('level_top');
+		var hp_slider_html_bottom = document.getElementById('hpSliderbottom');
+		var hp_slider_html_top = document.getElementById('hpSlidertop');
+		var nameTop = document.getElementById('nameTop');
+		var nameBottom = document.getElementById('nameBottom');
+		var health = document.getElementById('health');
+		var topPokeEffect = document.getElementById('topPokemonEffects');
+		var bottomPokeEffect = document.getElementById('bottomPokemonEffects');
+
+		// Function to determine health bar color based on percentage
+		function getHealthBarColor(percentage) {
+			if (percentage <= 25) {
+				return 'rgba(255, 0, 0, 0.7)';
+			} else if (percentage <= 50) {
+				return 'rgba(255, 255, 0, 0.7)';
+			} else if (percentage <= 75) {
+				return 'rgba(255, 140, 0, 0.7)';
+			} else {
+				return 'rgba(114, 230, 96, 0.7)';
+			}
+		}
+
+		// Function to convert gender variable to symbol
+		function genderToSymbol(gender) {
+			if (gender === 'F') {
+				return '♀';
+			} else if (gender === 'M') {
+				return '♂';
+			} else if (gender === 'N') {
+				return '';
+			}
+		}
+
+		// Update HTML elements with Pokémon battle information
+		level_bottom.innerHTML = 'Lv: ' + levelBottom;
+		level_top.innerHTML = 'Lv: ' + levelTop;
+		nameTop.innerHTML = name_Top + genderToSymbol(genderTop);
+		nameBottom.innerHTML = name_Bottom + genderToSymbol(genderBottom);
+		health.innerHTML = current_health_bottom + '/' + max_hp_bottom;
+
+		// Update health bar width and color
+		var bottomHealthPercentage = (current_health_bottom / max_hp_bottom) * 100;
+		hp_slider_html_bottom.style.width = bottomHealthPercentage + '%';
+		hp_slider_html_bottom.style.backgroundColor = getHealthBarColor(bottomHealthPercentage);
+
+		var topHealthPercentage = (current_health_top / max_hp_top) * 100;
+		hp_slider_html_top.style.width = topHealthPercentage + '%';
+		hp_slider_html_top.style.backgroundColor = getHealthBarColor(topHealthPercentage);
+
+		//Update XP Bar Width
+		//var xppercent = getUrlParameter('xp')
+		var xppercent = 30
+		var xp_bar = document.getElementById('XPBAR');
+		xp_bar.style.width = xppercent + '%';
+
+		// Update battle text
+		battleText.innerHTML = text;
+
+		// Update Pokémon effects
+		//if (fx_bottom == 'None') {
+		//	bottomPokeEffect.style.display = 'none';
+		//}
+		//else {
+		//	bottomPokeEffect.src = general_url + 'fx/' + fx_bottom;
+		//	topPokeEffect.style.display = 'block';
+		//}
+
+		//if (fx_top == 'None') {
+		//	topPokeEffect.style.display = 'none';
+		//}
+		//else {
+		//	topPokeEffect.src = general_url + 'fx/' + fx_top;
+		//	topPokeEffect.style.display = 'block';
+		//}
+
+		// Update Pokémon images and font dynamically
+		bottomPokemon.style.backgroundImage = 'url(' + bottomPokemonSprite + ')';
+		topPoke.style.backgroundImage = 'url(' + topPokemonSprite + ')';
+
+		if (fontUrl) {
+			var styleElement = document.createElement('style');
+			styleElement.innerHTML = "@font-face { font-family: 'pokemon'; src: url('" + fontUrl + "'); }";
+			document.head.appendChild(styleElement);
+		}
+
+		// Handle main_attack and enemy_attack
+		if (main_attack === 'True' || main_attack === true) {
+			if (!bottomPokemon.classList.contains('attack')) {
+				bottomPokemon.classList.add('attack');
+			}
+		} else {
+			if (bottomPokemon.classList.contains('attack')) {
+				bottomPokemon.classList.remove('attack');
+			}
+		}
+
+		if (enemy_attack === 'True' || enemy_attack === true) {
+			if (!topPoke.classList.contains('opattack')) {
+				topPoke.classList.add('opattack');
+			}
+		} else {
+			if (topPoke.classList.contains('opattack')) {
+				topPoke.classList.remove('opattack');
+			}
+		}
+
+		// Toggle opacity on '9' key press
+		document.addEventListener('keydown', function(event) {
+			if (event.key === '9') {
+				var htmlElement = document.documentElement;
+				if (htmlElement.style.opacity === '0') {
+					htmlElement.style.opacity = '1';
+				} else {
+					htmlElement.style.opacity = '0';
+				}
+			}
+		});
+	}
+	catch (error) {
+		console.log(error)
+	}
+
+    </script>
+</body>
