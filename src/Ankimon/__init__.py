@@ -1172,7 +1172,7 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                             attacks = pokemon["attacks"]
                             new_attacks = get_random_moves_for_pokemon(evo_name.lower(), int(pokemon["level"]))
                             for new_attack in new_attacks:
-                                if new_attack not in attacks:
+                                if new_attack not in new_attacks:
                                     if len(attacks) < 4:
                                         attacks.append(new_attack)
                                     else:
@@ -2746,6 +2746,7 @@ class TestWindow(QWidget):
         super().__init__()
         self.setWindowFlag(Qt.WindowType.Tool)
         self.pkmn_window = False #if fighting window open
+        self.first_start = False
         self.init_ui()
         #self.update()
     def init_ui(self):
@@ -2765,7 +2766,7 @@ class TestWindow(QWidget):
         scaled_pixmap = pixmap.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio)
         image_label.setPixmap(scaled_pixmap)
         layout.addWidget(image_label)
-        first_start = True
+        self.first_start = True
         self.setLayout(layout)
         # Set window
         self.setWindowTitle('Ankimon Window')
@@ -2778,12 +2779,16 @@ class TestWindow(QWidget):
             if self.pkmn_window == False:
                 self.display_first_encounter()
                 self.pkmn_window = True
-            self.show()
+            #self.show()
+            if self.isVisible():
+                self.close()  # Testfenster schließen, wenn Shift gedrückt wird
+            else:
+                self.show()
         except Exception as e:
             showWarning(f"Following Error occured when opening window: {e}")
 
     def display_first_start_up(self):
-        if first_start == False:
+        if self.first_start == False:
             # Get the geometry of the main screen
             main_screen_geometry = mw.geometry()
             # Calculate the position to center the ItemWindow on the main screen
@@ -2792,7 +2797,7 @@ class TestWindow(QWidget):
             self.setGeometry(x, y, 256, 256 )
             self.move(x,y)
             self.show()
-            first_start = True
+            self.first_start = True
         self.pkmn_window = True
 
     def pokemon_display_first_encounter(self):
@@ -3915,7 +3920,7 @@ class MyEventFilter(QObject):
             if test_window.isVisible():
                 test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
             else:
-                if first_start == False:
+                if test_window.first_start == False:
                     test_window.display_first_start_up()
                 else:
                     test_window.open_dynamic_window()
