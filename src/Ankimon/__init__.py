@@ -1129,7 +1129,10 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         mainpkmndata["ev"]["spa"] += ev_yield["special-attack"]
         mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
         mainpkmndata["ev"]["spe"] += ev_yield["speed"]
-        mainpkmndata["friendship"] += random.randint(5, 9)
+        main_pokemon.friendship += random.randint(5, 9)
+        if main_pokemon.friendship > 255:
+            main_pokemon.friendship = 255
+        mainpkmndata["friendship"] = main_pokemon.friendship 
         mainpkmndata["pokemon_defeated"] += 1
     mypkmndata = mainpkmndata
     mainpkmndata = [mainpkmndata]
@@ -3908,27 +3911,6 @@ class EvoWindow(QWidget):
 starter_window = StarterWindow()
 
 evo_window = EvoWindow()
-# Erstellen einer Klasse, die von QObject erbt und die eventFilter Methode überschreibt
-class MyEventFilter(QObject):
-    def eventFilter(self, obj, event):
-        if not (obj is mw and event.type() == QEvent.Type.KeyPress):
-            return False # Andere Event-Handler nicht blockieren
-        global system, ankimon_key, hp
-        open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
-        control_modifier = Qt.KeyboardModifier.MetaModifier if system == "mac" else Qt.KeyboardModifier.ControlModifier
-        if event.key() == open_window_key and event.modifiers() == control_modifier:
-            if test_window.isVisible():
-                test_window.close()  # Testfenster schließen, wenn Shift gedrückt wird
-            else:
-                if test_window.first_start == False:
-                    test_window.display_first_start_up()
-                else:
-                    test_window.open_dynamic_window()
-        return False
-
-# Erstellen und Installieren des Event Filters
-event_filter = MyEventFilter()
-mw.installEventFilter(event_filter)
 
 if database_complete:
     if mypokemon_path.is_file() is False:
