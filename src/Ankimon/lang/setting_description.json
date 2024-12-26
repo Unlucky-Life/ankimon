@@ -5,7 +5,7 @@
     "controls.pokemon_buttons": "Enable action buttons for Pokémon commands during reviews.",
     "controls.defeat_key": "Key for defeating Pokémon when its HP is 0. [A-Z]",
     "controls.catch_key": "Key for catching Pokémon when its HP is 0. [A-Z]",
-    "controls.key_for_opening_closing_ankimon": "Key to open/close Ankimon interface with control/command key. [A-Z]",
+    "controls.key_for_opening_closing_ankimon": "Key to open/close Ankimon interface with control/command key. Write the keys like 'Shift+N' you can also add things like Crlt, Shift, and multiple button combinations ",
     "gui.animate_time": "Enable small animation for Pokémon interactions. True shows animation when Pokémon take damage.",
     "gui.gif_in_collection": "Show GIFs instead of sprites in the collection view.",
     "gui.styling_in_reviewer": "Apply custom CSS styles to enhance reviewer visuals.",
