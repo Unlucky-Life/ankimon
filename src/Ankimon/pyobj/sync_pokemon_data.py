@@ -41,12 +41,12 @@ class CheckPokemonData(QDialog):
         # Create two QTextEdit widgets for displaying data side by side
         self.local_text_area = QTextEdit(self)
         self.local_text_area.setReadOnly(True)  # Make it read-only
-        self.local_text_area.setWordWrapMode(QTextOption.NoWrap)  # Use QTextOption::NoWrap
-        
+        #self.local_text_area.setWordWrapMode(QTextOption.NoWrap)  # Use QTextOption::NoWrap
+        self.local_text_area.setWordWrapMode(QTextOption.WrapMode.NoWrap) # Correct usage in PyQt6
         self.web_text_area = QTextEdit(self)
         self.web_text_area.setReadOnly(True)  # Make it read-only
-        self.web_text_area.setWordWrapMode(QTextOption.NoWrap)  # Use QTextOption::NoWrap
-        
+        #self.web_text_area.setWordWrapMode(QTextOption.NoWrap)  # Use QTextOption::NoWrap
+        self.web_text_area.setWordWrapMode(QTextOption.WrapMode.NoWrap) # Correct usage in PyQt6
         # Add the QLabel and QPushButtons to the layout
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.sync_local_button)
