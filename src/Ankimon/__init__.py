@@ -18,6 +18,10 @@ import platform
 import random
 from pathlib import Path
 
+#from .install_dependencies import install_package
+#install_package("PyQt6")
+#from .test import * => added for testing
+
 import aqt
 import requests
 import uuid
@@ -3931,6 +3935,8 @@ credits = Credits()
 
 count_items_and_rewrite(itembag_path)
 
+UserRole = 1000  # Define custom role
+
 class ItemWindow(QWidget):
     def __init__(self, logger):
         super().__init__()
@@ -4124,7 +4130,7 @@ class ItemWindow(QWidget):
         else:
             use_item_button = QPushButton("Evolve Pokemon")
             use_item_button.clicked.connect(
-                lambda: self.Check_Evo_Item(comboBox.itemData(comboBox.currentIndex(), role=Qt.UserRole), comboBox.itemData(comboBox.currentIndex(), role=Qt.UserRole + 1), item_name)
+                lambda: self.Check_Evo_Item(comboBox.itemData(comboBox.currentIndex(), role=UserRole), comboBox.itemData(comboBox.currentIndex(), role=UserRole + 1), item_name)
             )
             comboBox = QComboBox()
             self.PokemonList(comboBox)
@@ -4149,8 +4155,8 @@ class ItemWindow(QWidget):
                             # Add Pokémon name to comboBox
                             comboBox.addItem(pokemon_name)
                             # Store both individual_id and id as separate data using roles
-                            comboBox.setItemData(comboBox.count() - 1, individual_id, role=Qt.UserRole)
-                            comboBox.setItemData(comboBox.count() - 1, id, role=Qt.UserRole + 1)
+                            comboBox.setItemData(comboBox.count() - 1, individual_id, role=UserRole)
+                            comboBox.setItemData(comboBox.count() - 1, id, role=UserRole + 1)
         except Exception as e:
             self.logger.log_and_showinfo("error", f"Error loading Pokémon list: {e}")
             
@@ -4419,10 +4425,6 @@ from .menu_buttons import create_menu_actions
 trainer_card_window = TrainerCardGUI(trainer_card, parent=mw)
 trainer_card_window.setWindowTitle("Trainer Card GUI")
 
-# Initialize the menu
-mw.pokemenu = QMenu('&Ankimon', mw)
-mw.form.menubar.addMenu(mw.pokemenu)
-
 # Create menu actions
 # Create menu actions
 actions = create_menu_actions(
@@ -4453,7 +4455,7 @@ actions = create_menu_actions(
     settings_window,
     shop_manager,
     pokedex_window,
-    settings_obj.get("controls.key_for_opening_closing_ankimon","Ctrl+Shift+P")
+    settings_obj.get("controls.key_for_opening_closing_ankimon","Ctrl+Shift+P"),
 )
 
     #https://goo.gl/uhAxsg
