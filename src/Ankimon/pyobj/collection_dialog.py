@@ -81,6 +81,7 @@ class PokemonCollectionDialog(QDialog):
     def showEvent(self, event):
         # Call refresh_pokemon_collection when the dialog is shown
         self.refresh_pokemon_collection()
+        self.refresh_paginator_layout()
         self.current_page=0
         pokemon_list = self.load_pokemon_data()
         self.setup_ui(pokemon_list)

@@ -7,6 +7,16 @@ from aqt.utils import qconnect
 
 debug = False
 
+# Initialize the menu
+mw.pokemenu = QMenu('&Ankimon', mw)
+game_menu = mw.pokemenu.addMenu("Game")
+profile_menu = mw.pokemenu.addMenu("Profile")
+collection_menu = mw.pokemenu.addMenu("Collection")
+export_menu = mw.pokemenu.addMenu("Export")
+help_menu = mw.pokemenu.addMenu("Help")
+if debug is True:
+    debug_menu = mw.pokemenu.addMenu("Debug")
+
 def create_menu_actions(
     database_complete,
     online_connectivity,
@@ -42,57 +52,57 @@ def create_menu_actions(
     if database_complete:
         # Pokémon collection
         pokecol_action = QAction("Show Pokemon Collection", mw)
-        mw.pokemenu.addAction(pokecol_action)
+        collection_menu.addAction(pokecol_action)
         qconnect(pokecol_action.triggered, pokecollection_win.show)
 
         # Ankimon Window
-        test_action10 = QAction("Open Ankimon Window", mw)
-        mw.pokemenu.addAction(test_action10)
-        test_action10.setShortcut(QKeySequence(f"{ankimon_key}"))
-        qconnect(test_action10.triggered, test_window.open_dynamic_window)
+        ankimon_window_action = QAction("Open Ankimon Window", mw)
+        game_menu.addAction(ankimon_window_action)
+        ankimon_window_action.setShortcut(QKeySequence(f"{ankimon_key}"))
+        qconnect(ankimon_window_action.triggered, test_window.open_dynamic_window)
 
         # Itembag
-        test_action15 = QAction("Itembag", mw)
-        test_action15.triggered.connect(item_window.show_window)
-        mw.pokemenu.addAction(test_action15)
+        itembag_action = QAction("Itembag", mw)
+        itembag_action.triggered.connect(item_window.show_window)
+        collection_menu.addAction(itembag_action)
 
         # Achievements
         achievement_bag_action = QAction("Achievements", mw)
         achievement_bag_action.triggered.connect(achievement_bag.show_window)
-        mw.pokemenu.addAction(achievement_bag_action)
+        profile_menu.addAction(achievement_bag_action)
 
         # Showdown Teambuilder
-        test_action8 = QAction("Open Pokemon Showdown Teambuilder", mw)
-        qconnect(test_action8.triggered, open_team_builder)
-        mw.pokemenu.addAction(test_action8)
+        pokemon_showdown_action = QAction("Open Pokemon Showdown Teambuilder", mw)
+        qconnect(pokemon_showdown_action.triggered, open_team_builder)
+        export_menu.addAction(pokemon_showdown_action)
 
         # Export to Showdown
-        test_action6 = QAction("Export Main Pokemon to PkmnShowdown", mw)
-        qconnect(test_action6.triggered, export_to_pkmn_showdown)
-        mw.pokemenu.addAction(test_action6)
+        export_main_to_showdown = QAction("Export Main Pokemon to PkmnShowdown", mw)
+        qconnect(export_main_to_showdown.triggered, export_to_pkmn_showdown)
+        export_menu.addAction(export_main_to_showdown)
 
-        test_action7 = QAction("Export All Pokemon to PkmnShowdown", mw)
-        qconnect(test_action7.triggered, export_all_pkmn_showdown)
-        mw.pokemenu.addAction(test_action7)
+        export_all_to_showdown = QAction("Export All Pokemon to PkmnShowdown", mw)
+        qconnect(export_all_to_showdown.triggered, export_all_pkmn_showdown)
+        export_menu.addAction(export_all_to_showdown)
 
         # Flexing Collection
         flex_pokecoll_action = QAction("Export All Pokemon to PokePast for flexing", mw)
         qconnect(flex_pokecoll_action.triggered, flex_pokemon_collection)
-        mw.pokemenu.addAction(flex_pokecoll_action)
+        export_menu.addAction(flex_pokecoll_action)
 
         pokedex_action = QAction("Open Pokedex", mw)
         qconnect(pokedex_action.triggered, pokedex_window.show)
-        mw.pokemenu.addAction(pokedex_action)
+        collection_menu.addAction(pokedex_action)
 
     # Effectiveness chart
-    test_action11 = QAction("Check Effectiveness Chart", mw)
-    test_action11.triggered.connect(eff_chart.show_eff_chart)
-    mw.pokemenu.addAction(test_action11)
+    eff_chart_action = QAction("Check Effectiveness Chart", mw)
+    eff_chart_action.triggered.connect(eff_chart.show_eff_chart)
+    help_menu.addAction(eff_chart_action)
 
     # Generations and Pokémon chart
-    test_action12 = QAction("Check Generations and Pokemon Chart", mw)
-    test_action12.triggered.connect(gen_id_chart.show_gen_chart)
-    mw.pokemenu.addAction(test_action12)
+    gen_and_poke_chart_action = QAction("Check Generations and Pokemon Chart", mw)
+    gen_and_poke_chart_action.triggered.connect(gen_id_chart.show_gen_chart)
+    help_menu.addAction(gen_and_poke_chart_action)
 
     # Download Resources
     test_action3 = QAction("Download Resources", mw)
@@ -100,24 +110,24 @@ def create_menu_actions(
     mw.pokemenu.addAction(test_action3)
 
     # Credits
-    test_action14 = QAction("Credits", mw)
-    test_action14.triggered.connect(credits.show_window)
-    mw.pokemenu.addAction(test_action14)
+    credits_action = QAction("Credits", mw)
+    credits_action.triggered.connect(credits.show_window)
+    help_menu.addAction(credits_action)
 
     # About and License
-    test_action13 = QAction("About and License", mw)
-    test_action13.triggered.connect(license.show_window)
-    mw.pokemenu.addAction(test_action13)
+    about_and_license_action = QAction("About and License", mw)
+    about_and_license_action.triggered.connect(license.show_window)
+    help_menu.addAction(about_and_license_action)
 
     # Help Guide
     help_action = QAction("Open Help Guide", mw)
     help_action.triggered.connect(lambda: open_help_window(online_connectivity))
-    mw.pokemenu.addAction(help_action)
+    help_menu.addAction(help_action)
 
     # Report Bug
-    test_action16 = QAction("Report Bug", mw)
-    test_action16.triggered.connect(report_bug)
-    mw.pokemenu.addAction(test_action16)
+    report_bug_action = QAction("Report Bug", mw)
+    report_bug_action.triggered.connect(report_bug)
+    help_menu.addAction(report_bug_action)
 
     # Rate Addon
     rate_action = QAction("Rate This", mw)
@@ -127,7 +137,7 @@ def create_menu_actions(
     # Version
     version_action = QAction("Version", mw)
     version_action.triggered.connect(version_dialog.open)
-    mw.pokemenu.addAction(version_action)
+    help_menu.addAction(version_action)
 
     config_action = QAction("Settings", mw)
     config_action.triggered.connect(settings_window.show_window)
@@ -138,27 +148,29 @@ def create_menu_actions(
         data_window_action = QAction("Data", mw)
         data_window_action.triggered.connect(data_handler_window.show_window)
         # Show the Settings window
-        mw.pokemenu.addAction(data_window_action)
+        debug_menu.addAction(data_window_action)
 
-    tracker_window_action = QAction("Tracker", mw)
-    tracker_window_action.triggered.connect(ankimon_tracker_window.toggle_window)
-    tracker_window_action.setShortcut(QKeySequence("Ctrl+Shift+K"))
-    # Show the Settings window
-    mw.pokemenu.addAction(tracker_window_action)
+        tracker_window_action = QAction("Tracker", mw)
+        tracker_window_action.triggered.connect(ankimon_tracker_window.toggle_window)
+        tracker_window_action.setShortcut(QKeySequence("Ctrl+Shift+K"))
+        # Show the Settings window
+        debug_menu.addAction(tracker_window_action)
 
     # Set up a shortcut (Ctrl+Shift+L) to open the log window
     ankimon_logger_action = QAction("Logger", mw)
     ankimon_logger_action.setShortcut(QKeySequence("Ctrl+Shift+L"))
     ankimon_logger_action.triggered.connect(logger.toggle_log_window)
-    mw.pokemenu.addAction(ankimon_logger_action)
+    game_menu.addAction(ankimon_logger_action)
 
     # Set up a shortcut (Ctrl+L) to open the log window
     ankimon_trainer_card_action = QAction("Trainer Card", mw)
     ankimon_trainer_card_action.setShortcut(QKeySequence("Ctrl+Shift+Q"))
     ankimon_trainer_card_action.triggered.connect(trainer_card_window.toggle_window)
-    mw.pokemenu.addAction(ankimon_trainer_card_action)
+    profile_menu.addAction(ankimon_trainer_card_action)
 
     # Add AnkimonShop Action to toggle the shop
     shop_manager_action = QAction("Item Shop", mw)
     shop_manager_action.triggered.connect(shop_manager.toggle_window)
-    mw.pokemenu.addAction(shop_manager_action)
+    game_menu.addAction(shop_manager_action)
+
+    mw.form.menubar.addMenu(mw.pokemenu)
