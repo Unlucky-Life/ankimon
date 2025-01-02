@@ -125,15 +125,14 @@ logger.log_and_showinfo('game', "Ankimon Startup.")
 trainer_card = TrainerCard(
     logger = logger,
     settings_obj = settings_obj,
-    trainer_name="Ash Ketchum",
+    trainer_name=settings_obj.get("trainer.name", "Ash"),
     badge_count=8,
     favorite_pokemon="Pikachu",
     trainer_id = ''.join(filter(str.isdigit, str(uuid.uuid4()).replace('-', ''))),
     xp=0,
     team="Pikachu (Level 25), Charizard (Level 50), Bulbasaur (Level 15)",
-    image_path=f"{trainer_sprites_path}" + "/" + "ash-sinnoh.png",
     highest_level=100,
-    league = 'Indigo',
+    league = 'Unranked',
 )
 
 default_pokemon_data = {
@@ -4186,10 +4185,6 @@ version_dialog = Version_Dialog()
 #buttonlayout
 from .menu_buttons import create_menu_actions
 
-# Create the TrainerCard GUI and show it inside Anki's main window
-trainer_card_window = TrainerCardGUI(trainer_card, parent=mw)
-trainer_card_window.setWindowTitle("Trainer Card GUI")
-
 # Create menu actions
 # Create menu actions
 actions = create_menu_actions(
@@ -4215,13 +4210,13 @@ actions = create_menu_actions(
     trainer_card,
     ankimon_tracker_window,
     logger,
-    trainer_card_window,
     data_handler_window,
     settings_window,
     shop_manager,
     pokedex_window,
     settings_obj.get("controls.key_for_opening_closing_ankimon","Ctrl+Shift+P"),
-    join_discord_url
+    join_discord_url,
+    settings_obj
 )
 
     #https://goo.gl/uhAxsg

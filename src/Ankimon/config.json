@@ -44,5 +44,7 @@
     "misc.YouShallNotPass_Ankimon_News": false,
 
     "trainer.name": "Ash",
+    "trainer.sprite": "ash",
+    "trainer.id": 0,
     "trainer.cash": 0
 }
