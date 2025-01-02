@@ -27,3 +27,10 @@ def report_bug():
 
     # Open the Team Builder in the default web browser
     QDesktopServices.openUrl(QUrl(bug_url))
+
+def join_discord_url():
+    # Specify the URL of the Pokémon Showdown Team Builder
+    discord_url = "https://discord.gg/hcq53X5mcu"
+
+    # Open the Team Builder in the default web browser
+    QDesktopServices.openUrl(QUrl(discord_url))
