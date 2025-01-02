@@ -50,30 +50,3 @@ elif system_name == "Darwin":
 
 if sound_effects is True:
     from . import playsound
-
-if view_main_front is True and reviewer_image_gif is True:
-    view_main_front = -1
-else:
-    view_main_front = 1
-
-if animate_time is True:
-    animate_time = 0.8
-else:
-    animate_time = 0
-
-if xp_bar_location == 1:
-    xp_bar_location = "top"
-    xp_bar_spacer = 0
-elif xp_bar_location == 2:
-    xp_bar_location = "bottom"
-    xp_bar_spacer = 20
-
-if xp_bar_config is False:
-    xp_bar_spacer = 0
-
-if hp_bar_config != True:
-    hp_only_spacer = 15
-    wild_hp_spacer = 65
-else:
-    hp_only_spacer = 0
-    wild_hp_spacer = 0

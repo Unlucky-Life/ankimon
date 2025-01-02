@@ -93,6 +93,7 @@ from .pokedex.pokedex_obj import Pokedex
 from .pyobj.sync_pokemon_data import CheckPokemonData
 from .pyobj.collection_dialog import PokemonCollectionDialog
 from .pyobj.attack_dialog import AttackDialog
+from .pyobj.reviewer_obj import Reviewer_Manager
 
 from .classes.choose_move_dialog import MoveSelectionDialog
 
@@ -1256,7 +1257,7 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                 pass
             reviewer = Container()
             reviewer.web = mw.reviewer.web
-            update_life_bar(reviewer, 0, 0)
+            reviewer_obj.update_life_bar(reviewer, 0, 0)
             if test_window.pkmn_window is True:
                 test_window.display_first_encounter()
     except Exception as e:
@@ -1422,7 +1423,7 @@ def new_pokemon():
         pass
     reviewer = Container()
     reviewer.web = mw.reviewer.web
-    update_life_bar(reviewer, 0, 0)
+    reviewer_obj.update_life_bar(reviewer, 0, 0)
             
 def mainpokemon_data():
     try:
@@ -1498,8 +1499,14 @@ if database_complete:
     ankimon_tracker_obj.randomize_battle_scene()
 
 cry_counter = 0
-seconds = 0
-myseconds = 0
+
+reviewer_obj = Reviewer_Manager(
+    settings_obj=settings_obj,
+    main_pokemon=main_pokemon,
+    enemy_pokemon=enemy_pokemon,
+    ankimon_tracker=ankimon_tracker_obj,
+)
+
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
@@ -1509,7 +1516,6 @@ def on_review_card(*args):
         mainpokemon_name = main_pokemon.name
 
         global battle_sounds
-        global seconds, myseconds, animate_time
         global achievements
         # Increment the counter when a card is reviewed
         attack_counter = ankimon_tracker_obj.attack_counter
@@ -1518,8 +1524,8 @@ def on_review_card(*args):
         cry_counter = ankimon_tracker_obj.cry_counter
         card_counter = ankimon_tracker_obj.card_counter
         dmg = 0
-        seconds = 0
-        myseconds = 0
+        reviewer_obj.seconds = 0
+        reviewer_obj.myseconds = 0
         ankimon_tracker_obj.general_card_count_for_battle += 1
         if battle_sounds == True and ankimon_tracker_obj.general_card_count_for_battle == 1:
             play_sound()
@@ -1605,11 +1611,11 @@ def on_review_card(*args):
                                     enemy_dmg = 1
                                 main_pokemon.hp -= enemy_dmg
                                 if enemy_dmg > 0:
-                                    myseconds = animate_time
+                                    reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
                                     if multiplier < 1:
                                         play_effect_sound("HurtNormal")
                                 else:
-                                    myseconds = 0
+                                    reviewer_obj.myseconds = 0
                                 msg += f" {enemy_dmg} dmg is dealt to {main_pokemon.name.capitalize()}."
                 except:
                     enemy_dmg = 0
@@ -1631,17 +1637,17 @@ def on_review_card(*args):
                             enemy_dmg = 1
                         main_pokemon.hp -= enemy_dmg
                     if enemy_dmg > 0:
-                        myseconds = animate_time
+                        reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
                         if multiplier < 1:
                             play_effect_sound("HurtNormal")
                     else:
-                        myseconds = 0
+                        reviewer_obj.myseconds = 0
                     msg += f" {enemy_dmg} dmg is dealt to {main_pokemon.name.capitalize()}."
     
             # if enemy pokemon hp < 0 - attack enemy pokemon
             if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0:
                 dmg = 0
-                if settings_obj.get("controls.allow_to_choose_moves", False) == True:
+                if settings_obj.get("controls.allow_to_choose_moves", False) == False:
                     random_attack = random.choice(main_pokemon.attacks)
                 else:
                     dialog = MoveSelectionDialog(main_pokemon.attacks)
@@ -1724,7 +1730,7 @@ def on_review_card(*args):
                             msg += f" {enemy_pokemon.name.capitalize()} has fainted"
                     tooltipWithColour(msg, color)
                     if dmg > 0:
-                        seconds = animate_time
+                        reviewer_obj.seconds = settings_obj.compute_special_variable("animate_time")
                         if multiplier == 1:
                             play_effect_sound("HurtNormal")
                         elif multiplier < 1:
@@ -1732,7 +1738,7 @@ def on_review_card(*args):
                         elif multiplier > 1:
                             play_effect_sound("HurtSuper")
                     else:
-                        seconds = 0
+                        reviewer_obj.seconds = 0
             else:
                 if test_window.pkmn_window is True:
                     test_window.display_pokemon_death()
@@ -1775,82 +1781,6 @@ def on_review_card(*args):
             tooltipWithColour(msg, color)
     except Exception as e:
         showWarning(f"An error occurred in reviewer: {str(e)}")
-
-def create_status_html(status_name):
-    xp_bar_spacer = settings_obj.xp_bar_spacer
-    hp_bar_thickness = settings_obj.get("battle.hp_bar_thickness", 2) * 4	
-    show_mainpkmn_in_reviewer = int(settings_obj.get("battle.show_mainpkmn_in_reviewer", 1))
-    # Get the colors for the given status name
-    colors = status_colors_html.get(status_name.lower())
-
-    # If the status name is valid, create the HTML with inline CSS
-    if colors:
-        if show_mainpkmn_in_reviewer == 2:
-            html = f"""
-            <div id=pokestatus class="Ankimon" style="
-                position: fixed;
-                bottom: {140 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
-                right: 1%;
-                z-index: 9999;
-                background-color: {colors['background']};
-                border: 2px solid {colors['outline']};
-                border-radius: 5px;
-                padding: 5px 10px;
-                font-size: 8px;
-                font-weight: bold;
-                display: inline-block;
-                color: {colors.get('text_color', '#000000')};
-                text-transform: uppercase;
-                text-align: center;
-                margin: 4px;
-            ">{colors['name']}</div>
-            """
-        elif show_mainpkmn_in_reviewer == 1:
-            html = f"""
-            <div id=pokestatus class="Ankimon" style="
-                position: fixed;
-                bottom: {40 + hp_bar_thickness + xp_bar_spacer}px; /* Adjust as needed */
-                right: 15%;
-                z-index: 9999;
-                background-color: {colors['background']};
-                border: 2px solid {colors['outline']};
-                border-radius: 5px;
-                padding: 5px 10px;
-                font-size: 8px;
-                font-weight: bold;
-                display: inline-block;
-                color: {colors.get('text_color', '#000000')};
-                text-transform: uppercase;
-                text-align: center;
-                margin: 4px;
-            ">{colors['name']}</div>
-            """
-        elif show_mainpkmn_in_reviewer == 0:
-            html = f"""
-            <div id=pokestatus class="Ankimon" style="
-                position: fixed;
-                bottom: {40 + hp_bar_thickness}px; /* Adjust as needed */
-                left: 160px;
-                z-index: 9999;
-                background-color: {colors['background']};
-                border: 2px solid {colors['outline']};
-                border-radius: 5px;
-                padding: 5px 10px;
-                font-size: 8px;
-                font-weight: bold;
-                display: inline-block;
-                color: {colors.get('text_color', '#000000')};
-                text-transform: uppercase;
-                text-align: center;
-                margin: 4px;
-            ">{colors['name']}</div>
-            """
-    else:
-        html = "<div>Unknown Status</div>"
-
-    return html
-
-
 
 def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpokemon_name):
     global battle_status
@@ -1933,7 +1863,7 @@ def MainPokemon(pokemon_data, main_pokemon = main_pokemon):
         pass
     reviewer = Container()
     reviewer.web = mw.reviewer.web
-    update_life_bar(reviewer, 0, 0)
+    reviewer_obj.update_life_bar(reviewer, 0, 0)
     if test_window.pkmn_window is True:
         test_window.display_first_encounter()
 
@@ -2172,178 +2102,13 @@ def pokeapi_db_downloader():
 life_bar_injected = False
 
 def animate_pokemon():
-    seconds = 2
+    reviewer_obj.seconds = 2
     reviewer = mw.reviewer
     reviewer.web = mw.reviewer.web
-    reviewer.web.eval(f'document.getElementById("PokeImage").style="animation: shake {seconds}s ease;"')
+    reviewer.web.eval(f'document.getElementById("PokeImage").style="animation: shake {reviewer_obj.seconds}s ease;"')
     if show_mainpkmn_in_reviewer is True:
-        reviewer.web.eval(f'document.getElementById("MyPokeImage").style="animation: shake {myseconds}s ease;"')
+        reviewer.web.eval(f'document.getElementById("MyPokeImage").style="animation: shake {reviewer_obj.myseconds}s ease;"')
    
-if database_complete and mainpokemon_empty is False:
-    def reviewer_reset_life_bar_inject():
-        global life_bar_injected
-        life_bar_injected = False
-    def inject_life_bar(web_content, context):
-        global life_bar_injected, battle_status
-        global xp_bar_config, xp_bar_location, hp_bar_config, hp_only_spacer, wild_hp_spacer, seconds, myseconds, view_main_front, styling_in_reviewer
-        show_mainpkmn_in_reviewer = int(settings_obj.get('gui.show_mainpkmn_in_reviewer', 1))
-        xp_bar_spacer = settings_obj.xp_bar_spacer
-        hp_bar_thickness = settings_obj.get("battle.hp_bar_thickness", 2) * 4
-        experience_for_next_lvl = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("remove_levelcap", False)))
-        if reviewer_image_gif == False:
-            pokemon_image_file = enemy_pokemon.get_sprite_path("front", "png")
-            if show_mainpkmn_in_reviewer > 0:
-                main_pkmn_imagefile_path = main_pokemon.get_sprite_path("back", "png")
-        else:
-            pokemon_image_file = enemy_pokemon.get_sprite_path("front", "gif")
-            if show_mainpkmn_in_reviewer > 0:
-                if view_main_front == -1:
-                    side = "front"
-                else:
-                    side = "back"
-                main_pkmn_imagefile_path = main_pokemon.get_sprite_path(side, "gif")
-        if show_mainpkmn_in_reviewer > 0:
-            mainpkmn_hp_percent = int((main_pokemon.hp / main_pokemon.max_hp) * 50)
-            pokemon_hp_percent = int((enemy_pokemon.hp / enemy_pokemon.max_hp) * 50)
-        else:    
-            pokemon_hp_percent = int((enemy_pokemon.hp / enemy_pokemon.max_hp) * 100)
-        is_reviewer = mw.state == "review"
-        # Inject CSS and the life bar only if not injected before and in the reviewer
-        ankimon_tracker_obj.check_pokecoll_in_list()
-        if not life_bar_injected and is_reviewer:
-            css = create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_bar_thickness, xp_bar_spacer, view_main_front, mainpkmn_hp_percent, hp_only_spacer, wild_hp_spacer, xp_bar_config, main_pokemon, experience_for_next_lvl, xp_bar_location)
-            css += inject_life_bar_css_1
-            css += inject_life_bar_css_2
-            # background-image: url('{pokemon_image_file}'); Change to your image path */
-            if styling_in_reviewer is True:
-                # Inject the CSS into the head of the HTML content
-                web_content.head += f"<style>{css}</style>"
-                # Inject a div element at the end of the body for the life bar
-                #web_content.body += f'<div id="pokebackground">' try adding backgroudns to battle
-                if hp_bar_config is True:
-                    web_content.body += '<div id="life-bar" class="Ankimon"></div>'
-                if xp_bar_config is True:
-                    web_content.body += '<div id="xp-bar" class="Ankimon"></div>'
-                    web_content.body += '<div id="next_lvl_text" class="Ankimon">Next Level</div>'
-                    web_content.body += '<div id="xp_text" class="Ankimon">XP</div>'
-                # Inject a div element for the text display
-                web_content.body += f'<div id="name-display" class="Ankimon">{enemy_pokemon.name.capitalize()} LvL: {enemy_pokemon.level}</div>'
-                if enemy_pokemon.hp > 0:
-                    web_content.body += f'{create_status_html(f"{battle_status}")}'
-                else:
-                    web_content.body += f'{create_status_html("fainted")}'
-
-                web_content.body += f'<div id="hp-display" class="Ankimon">HP: {enemy_pokemon.hp}/{enemy_pokemon.max_hp}</div>'
-                # Inject a div element at the end of the body for the life bar
-                image_base64 = get_image_as_base64(pokemon_image_file)
-                web_content.body += f'<div id="PokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64}" alt="PokeImage style="animation: shake 0s ease;"></div>'
-                if show_mainpkmn_in_reviewer > 0:
-                    image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
-                    web_content.body += f'<div id="MyPokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage" style="animation: shake 0s ease;"></div>'
-                    web_content.body += f'<div id="myname-display" class="Ankimon">{main_pokemon.name.capitalize()} LvL: {main_pokemon.level}</div>'
-                    web_content.body += f'<div id="myhp-display" class="Ankimon">HP: {main_pokemon.hp}/{main_pokemon.max_hp}</div>'
-                    # Inject a div element at the end of the body for the life bar
-                    if hp_bar_config is True:
-                        web_content.body += '<div id="mylife-bar" class="Ankimon"></div>'
-                # Set the flag to True to indicate that the life bar has been injected
-                if ankimon_tracker_obj.pokemon_in_collection == True:
-                    icon_base_64 = get_image_as_base64(icon_path)
-                    web_content.body += f'<div id="PokeIcon" class="Ankimon"><img src="data:image/png;base64,{icon_base_64}" alt="PokeIcon"></div>'
-                else:
-                    web_content.body += '<div id="PokeIcon" class="Ankimon"></div>'
-                web_content.body += '</div>'
-                life_bar_injected = True
-        return web_content
-
-    def update_life_bar(reviewer, card, ease):
-        global empty_icon_path, seconds, myseconds, view_main_front
-        show_mainpkmn_in_reviewer = int(settings_obj.get('gui.show_mainpkmn_in_reviewer', 1))
-        ankimon_tracker_obj.check_pokecoll_in_list()
-        if reviewer_image_gif == False:
-            pokemon_image_file = enemy_pokemon.get_sprite_path("front", "png")
-            if show_mainpkmn_in_reviewer > 0:
-                main_pkmn_imagefile_path = main_pokemon.get_sprite_path("back", "png")
-        else:
-            pokemon_image_file = enemy_pokemon.get_sprite_path("front", "gif")
-            if show_mainpkmn_in_reviewer > 0:
-                if view_main_front == -1:
-                    side = "front"
-                else:
-                    side = "back"
-                main_pkmn_imagefile_path = main_pokemon.get_sprite_path(side, "gif")
-        if show_mainpkmn_in_reviewer > 0:
-            mainpkmn_hp_percent = int((main_pokemon.hp / main_pokemon.max_hp) * 50)
-            pokemon_hp_percent = int((enemy_pokemon.hp / enemy_pokemon.max_hp) * 50)
-            image_base64_mainpkmn = get_image_as_base64(main_pkmn_imagefile_path)
-        else:    
-            pokemon_hp_percent = int((enemy_pokemon.hp / enemy_pokemon.max_hp) * 100)
-        image_base64 = get_image_as_base64(pokemon_image_file)
-        # Determine the color based on the percentage
-        if enemy_pokemon.hp < int(0.25 * enemy_pokemon.max_hp):
-            hp_color = "rgba(255, 0, 0, 0.7)"  # Red
-        elif enemy_pokemon.hp < int(0.5 * enemy_pokemon.max_hp):
-            hp_color = "rgba(255, 140, 0, 0.7)"  # Dark Orange
-        elif enemy_pokemon.hp < int(0.75 * enemy_pokemon.max_hp):
-            hp_color = "rgba(255, 255, 0, 0.7)"  # Yellow
-        else:
-            hp_color = "rgba(114, 230, 96, 0.7)"  # Green
-
-        if show_mainpkmn_in_reviewer > 0:
-            if main_pokemon.hp < int(0.25 * main_pokemon.hp):
-                myhp_color = "rgba(255, 0, 0, 0.7)"  # Red
-            elif main_pokemon.hp < int(0.5 * main_pokemon.hp):
-                myhp_color = "rgba(255, 140, 0, 0.7)"  # Dark Orange
-            elif main_pokemon.hp < int(0.75 * main_pokemon.hp):
-                myhp_color = "rgba(255, 255, 0, 0.7)"  # Yellow
-            else:
-                myhp_color = "rgba(114, 230, 96, 0.7)"  # Green
-        # Extract RGB values from the hex color code
-        #hex_color = hp_color.lstrip('#')
-        #rgb_values = tuple(int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
-        status_html = ""
-        if enemy_pokemon.hp < 1:
-            status_html = create_status_html('fainted')
-        elif enemy_pokemon.hp > 0:
-            status_html = create_status_html(f"{enemy_pokemon.battle_status}")
-        if settings_obj.get("gui.styling_in_reviewer", True) is True:
-            # Refresh the reviewer content to apply the updated life bar
-            reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
-            reviewer.web.eval('document.getElementById("life-bar").style.background = "linear-gradient(to right, ' + str(hp_color) + ', ' + str(hp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
-            reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px ' + hp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')
-            if settings_obj.get("xp_bar_config", False) is True:
-                experience_for_next_lvl = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("remove_levelcap", False)))
-                xp_bar_percent = int((main_pokemon.xp / int(experience_for_next_lvl)) * 100)
-                reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
-            name_display_text = f"{enemy_pokemon.name.capitalize()} LvL: {enemy_pokemon.level}"
-            hp_display_text = f"HP: {enemy_pokemon.hp}/{enemy_pokemon.max_hp}"
-            reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
-            reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
-            new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage" style="animation: shake {seconds}s ease;">'
-            reviewer.web.eval(f'document.getElementById("PokeImage").innerHTML = `{new_html_content}`;')
-            if ankimon_tracker_obj.pokemon_in_collection == True:
-                image_icon_path = get_image_as_base64(icon_path)
-                pokeicon_html = f'<img src="data:image/png;base64,{image_icon_path}" alt="PokeIcon">'
-            else:
-                pokeicon_html = ''
-            reviewer.web.eval(f'document.getElementById("PokeIcon").innerHTML = `{pokeicon_html}`;')
-            reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
-            if show_mainpkmn_in_reviewer > 0:
-                new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage" style="animation: shake {myseconds}s ease;">'
-                main_name_display_text = f"{main_pokemon.name.capitalize()} LvL: {main_pokemon.level}"
-                main_hp_display_text = f"HP: {main_pokemon.hp}/{main_pokemon.max_hp}"
-                reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(mainpkmn_hp_percent) + '%";')
-                reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
-                reviewer.web.eval('document.getElementById("mylife-bar").style.boxShadow = "0 0 10px ' + myhp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')
-                reviewer.web.eval(f'document.getElementById("MyPokeImage").innerHTML = `{new_html_content_mainpkmn}`;')
-                reviewer.web.eval('document.getElementById("myname-display").innerText = "' + main_name_display_text + '";')
-                reviewer.web.eval('document.getElementById("myhp-display").innerText = "' + main_hp_display_text + '";')
-
-    # Register the functions for the hooks
-    if int(settings_obj.get("gui.show_mainpkmn_in_reviewer", 1)) < 3:
-        gui_hooks.reviewer_will_end.append(reviewer_reset_life_bar_inject)
-        gui_hooks.webview_will_set_content.append(inject_life_bar)
-        gui_hooks.reviewer_did_answer_card.append(update_life_bar)
-
 def choose_pokemon(starter_name): 
     # Create a dictionary to store the Pokémon's data
     # add all new values like hp as max_hp, evolution_data, description and growth rate
@@ -4456,6 +4221,7 @@ actions = create_menu_actions(
     shop_manager,
     pokedex_window,
     settings_obj.get("controls.key_for_opening_closing_ankimon","Ctrl+Shift+P"),
+    join_discord_url
 )
 
     #https://goo.gl/uhAxsg

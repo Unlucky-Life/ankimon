@@ -6,7 +6,7 @@ import os
 class PokemonObject:
     def __init__(self, name="Ditto", shiny=False, id=1, level=3, ability=["None"], type=["Normal"], current_hp=15, stats=None, attacks=None, base_experience=0, 
                  growth_rate=None, hp=None, ev=None, iv=None, gender=None, battle_status="Fighting", xp=0, 
-                 position=0, nickname=None, moves=None, evos=None, tier = "Normal", ev_yield = {"hp": 1, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}, **kwargs):
+                 position=0, nickname=None, moves=None, evos=None, tier = "Normal", ev_yield = {"hp": 1, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}, friendship = 0, **kwargs):
         self.name = name
         self.nickname = nickname or "" # Allow nickname to be set in the constructor
         self.shiny = shiny or False  # Default to False if None
@@ -33,8 +33,11 @@ class PokemonObject:
         self.tier = tier or "Normal"
         self.everstone = kwargs.get('everstone', False)
         
-        #individual_id = str(uuid.uuid4())
+        #individual_id for saving pokemon
         self.individual_id = kwargs.get('individual_id', str(uuid.uuid4()))
+
+        #friendship value
+        self.friendship = friendship or 0
 
         # Store battle stats for easy access
         self._update_battle_stats()
