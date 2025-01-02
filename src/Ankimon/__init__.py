@@ -1778,6 +1778,11 @@ def on_review_card(*args):
             #mainpokemon_data()
             color = "#E12939"
             tooltipWithColour(msg, color)
+        class Container(object):
+            pass
+        reviewer = Container()
+        reviewer.web = mw.reviewer.web
+        reviewer_obj.update_life_bar(reviewer, 0, 0)
     except Exception as e:
         showWarning(f"An error occurred in reviewer: {str(e)}")
 
