@@ -1,8 +1,8 @@
-from ..resources import icon_path, addon_dir
+from ..resources import type_icon_path_resources, addon_dir
 
 def type_icon_path(type):
     png_file = f"{type}.png"
-    icon_png_file_path = icon_path / png_file
+    icon_png_file_path = type_icon_path_resources / png_file
     return icon_png_file_path
 
 def move_category_path(category):

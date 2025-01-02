@@ -68,4 +68,4 @@ pokemon_species_mythical_path = addon_dir / "user_files" / "pkmn_data" / "mythic
 pokemon_species_baby_path = addon_dir / "user_files" / "pkmn_data" / "baby.json"
 
 #move ui paths
-icon_path = addon_dir / "addon_sprites" / "Types"
+type_icon_path_resources = addon_dir / "addon_sprites" / "Types"
