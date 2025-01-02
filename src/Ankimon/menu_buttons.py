@@ -5,7 +5,7 @@ from PyQt6.QtGui import QAction, QKeySequence
 from aqt import mw  # The main window object
 from aqt.utils import qconnect
 
-debug = False
+debug = True
 
 # Initialize the menu
 mw.pokemenu = QMenu('&Ankimon', mw)
@@ -45,7 +45,8 @@ def create_menu_actions(
     settings_window,
     shop_manager,
     pokedex_window,
-    ankimon_key
+    ankimon_key,
+    join_discord_url
 ):
     actions = []
 
@@ -103,6 +104,11 @@ def create_menu_actions(
     gen_and_poke_chart_action = QAction("Check Generations and Pokemon Chart", mw)
     gen_and_poke_chart_action.triggered.connect(gen_id_chart.show_gen_chart)
     help_menu.addAction(gen_and_poke_chart_action)
+
+    # Effectiveness chart
+    join_discord_action = QAction("Join Discord Channel", mw)
+    join_discord_action.triggered.connect(join_discord_url)
+    help_menu.addAction(join_discord_action)
 
     # Download Resources
     test_action3 = QAction("Download Resources", mw)
