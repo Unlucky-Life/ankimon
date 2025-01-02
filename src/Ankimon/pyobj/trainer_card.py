@@ -28,7 +28,7 @@ class TrainerCard:
         self.achievements = achievements if achievements else []  # List of achievements (if any)
         self.team = team                      # Team as a simple string
         self.highest_level_pokemon = self.get_highest_level_pokemon()  # Highest level Pokémon
-        self.image_path = image_path
+        self.image_path = f"{trainer_sprites_path}" + "/" + settings_obj.get("trainer.sprite", "ash-sinnoh") + ".png"
         self.league = league
         self.highest_level = highest_level
         self.cash = int(settings_obj.get("trainer.cash", 0))

@@ -31,11 +31,21 @@ class SettingsWindow(QMainWindow):
         self.set_config_callback(key, value)
 
     def load_descriptions(self):
-        # Load descriptions from a JSON file one level above the root of the add-on directory
-        descriptions_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lang', 'setting_description.json')
+        descriptions_file = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            'lang',
+            'setting_description.json'
+        )
         if os.path.exists(descriptions_file):
-            with open(descriptions_file, 'r') as f:
-                return json.load(f)
+            try:
+                with open(descriptions_file, 'r', encoding='utf-8') as f:  # Ensure UTF-8 encoding
+                    return json.load(f)
+            except json.JSONDecodeError as e:
+                showWarning(f"Error decoding JSON file: {e}")
+                return {}
+            except UnicodeDecodeError as e:
+                showWarning(f"Encoding error in descriptions file: {e}")
+                return {}
         showWarning("Descriptions file not found. Using empty descriptions.")
         return {}
         
@@ -66,7 +76,7 @@ class SettingsWindow(QMainWindow):
         # Track label-based settings
         self.label_settings = {}
 
-        keys_to_skip = {"debug_mode", "deprecated_setting", "trainer.cash", "trainer.xp"}
+        keys_to_skip = {"debug_mode", "deprecated_setting", "trainer.cash", "trainer.xp", "trainer.id", "trainer.sprite"}
 
         # Handle different setting types
         for key, value in self.config.items():

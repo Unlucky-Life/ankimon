@@ -45,12 +45,15 @@ def addon_config_editor_will_display_json(text: str) -> str:
     try:
         # Parse the JSON text
         config = json.loads(text)
-        
+        showInfo("This Configuration is old and wont be used anymore. \n Please use the Settings Window in the Ankimon Menu => Settings")
         #dont show all mainpokemon and mypokemon information in config
         if "pokemon_collection" in config:
             del config["pokemon_collection"]
         if "mainpokemon" in config:
             del config["mainpokemon"]
+        if "trainer.cash" in config:
+            del config["trainer.cash"]
+        
         
         # Convert back to JSON string
         modified_text = json.dumps(config, indent=4)
@@ -344,3 +347,24 @@ def load_custom_font(font_size, language):
     custom_font.setPointSize(int(font_size))  # Adjust the font size as needed
 
     return custom_font
+
+import os
+
+def get_all_sprites(directory):
+    """
+    Returns a list of trainer sprite names without the '.png' extension
+    from the specified directory.
+    
+    :param directory: Path to the directory containing trainer sprite images.
+    :return: List of sprite names without '.png'.
+    """
+    try:
+        sprite_names = [
+            os.path.splitext(file)[0]  # Remove the file extension
+            for file in os.listdir(directory)
+            if file.endswith(".png")  # Filter for .png files
+        ]
+        return sprite_names
+    except FileNotFoundError:
+        print(f"Error: The directory '{directory}' does not exist.")
+        return []
