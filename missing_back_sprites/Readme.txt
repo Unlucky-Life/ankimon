@@ -1,4 +1,6 @@
-Credits and Aknowledgements:
+Credits and Aknowledgements for following back-sprites:
+657, 660,661,662,664,666,668,669,670,671,673,676,678,679,680,681,687,689,691,693,695,696,698,699,700,
+705,706,709,711,713,714,715,716,717,718,719,721
 
 These were free to use: 
 https://www.smogon.com/forums/threads/the-gen-4-style-gen-5-and-beyond-backsprite-resource.3687625/
