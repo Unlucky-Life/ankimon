@@ -2,6 +2,8 @@
     "battle.dmg_in_reviewer": "Damage in Reviewer",
     "battle.automatic_battle": "Automatic Battle",
     "battle.cards_per_round": "Cards per Round",
+    "battle.daily_average": "Goal of Daily Average Cards",
+    "battle.card_max_time": "Card Max Time",
 
     "controls.pokemon_buttons": "Show Pokémon Buttons",
     "controls.defeat_key": "Key for Defeat",
@@ -38,5 +40,8 @@
     "misc.remove_level_cap": "Remove Level Cap",
     "misc.language": "Language",
     "misc.ssh": "SSH Access",
-    "misc.YouShallNotPass_Ankimon_News": "Receive Ankimon News"
+    "misc.YouShallNotPass_Ankimon_News": "Receive Ankimon News",
+
+    "trainer.name": "Trainer Name"
+
 }
