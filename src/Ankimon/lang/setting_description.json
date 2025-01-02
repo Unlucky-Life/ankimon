@@ -2,10 +2,14 @@
     "battle.dmg_in_reviewer": "Enable a realistic damage display during reviews. Setting this to true allows wild Pokémon to counterattack when re-engaged.",
     "battle.automatic_battle": "Set automatic battle mode for wild Pokémon interactions. [0: Disabled, 1: Auto-catch if HP is 0, 2: Auto-defeat if HP is 0].",
     "battle.cards_per_round": "Number of cards to review per round until the next battle action.",
+    "battle.daily_average": "Set the amount of Cards you want to review per day.",
+    "battle.card_max_time": "Goal of maximum amount of time needed to answer a card in seconds",
+
     "controls.pokemon_buttons": "Enable action buttons for Pokémon commands during reviews.",
     "controls.defeat_key": "Key for defeating Pokémon when its HP is 0. [A-Z]",
     "controls.catch_key": "Key for catching Pokémon when its HP is 0. [A-Z]",
     "controls.key_for_opening_closing_ankimon": "Key to open/close Ankimon interface with control/command key. Write the keys like 'Shift+N' you can also add things like Crlt, Shift, and multiple button combinations ",
+    "controls.allow_to_choose_moves": "Allows player to manually pick attack moves in battles with Keys 1-4 or fast click.",
     "gui.animate_time": "Enable small animation for Pokémon interactions. True shows animation when Pokémon take damage.",
     "gui.gif_in_collection": "Show GIFs instead of sprites in the collection view.",
     "gui.styling_in_reviewer": "Apply custom CSS styles to enhance reviewer visuals.",
@@ -34,5 +38,6 @@
     "misc.remove_level_cap": "Allow leveling beyond set level cap.",
     "misc.language": "Select language ID for Pokémon names and descriptions. [1: Japanese (Hir & Kata), 2: Japanese (Roomaji), 3: Korean, ... , 13: Portuguese (Brazil)]",
     "misc.ssh": "Enable SSH if encountering connectivity issues (like Eduroam restrictions).",
-    "misc.YouShallNotPass_Ankimon_News": "Prevent news pop-ups on Ankimon startup by setting this to true."
+    "misc.YouShallNotPass_Ankimon_News": "Prevent news pop-ups on Ankimon startup by setting this to true.",
+    "trainer.name": "Set the name of the your trainer character."
 }

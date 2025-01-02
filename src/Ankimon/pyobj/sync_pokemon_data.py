@@ -30,8 +30,8 @@ class CheckPokemonData(QDialog):
         self.label = QLabel(message, self)
 
         # Create two QPushButtons for syncing options
-        self.sync_local_button = QPushButton("Load Local Data and Sync to Ankiweb", self)
-        self.sync_ankiweb_button = QPushButton("Sync Ankiweb Data to Local Storage", self)
+        self.sync_local_button = QPushButton("Export data to ankiweb", self)
+        self.sync_ankiweb_button = QPushButton("Import data from ankiweb", self)
         self.sync_local_button.clicked.connect(self.sync_data_to_ankiweb)
         self.sync_ankiweb_button.clicked.connect(self.sync_data_to_local)
 

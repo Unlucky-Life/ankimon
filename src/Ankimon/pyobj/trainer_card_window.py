@@ -6,12 +6,14 @@ from ..resources import trainer_sprites_path
 import os
 
 class TrainerCardGUI(QDialog):
-    def __init__(self, trainer_card, parent=None):
+    def __init__(self, trainer_card, settings_obj, parent=None):
         super().__init__(parent)
         self.trainer_card = trainer_card
+        self.settings = settings_obj
         self.is_open = False
         self.init_ui()
-        
+        self.show()
+
     def init_ui(self):
         self.setWindowTitle('Trainer Card')
         self.setFixedSize(500, 350)
@@ -34,9 +36,11 @@ class TrainerCardGUI(QDialog):
             }
         """)
         
+        image_path = os.path.join(trainer_sprites_path, self.settings.get("trainer.sprite", "ash") + ".png")
+
         # Load trainer image if it exists
-        if os.path.exists(self.trainer_card.image_path):
-            pixmap = QPixmap(self.trainer_card.image_path)
+        if os.path.exists(image_path):
+            pixmap = QPixmap(image_path)
             self.trainer_image.setPixmap(
                 pixmap.scaled(190, 190, Qt.AspectRatioMode.KeepAspectRatio)
             )
@@ -46,7 +50,7 @@ class TrainerCardGUI(QDialog):
         self.trainer_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Name label
-        name_label = QLabel(self.trainer_card.trainer_name)
+        name_label = QLabel(self.settings.get("trainer.name", "ash"))
         name_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         

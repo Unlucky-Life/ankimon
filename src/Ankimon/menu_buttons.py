@@ -4,7 +4,8 @@ from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui import QAction, QKeySequence
 from aqt import mw  # The main window object
 from aqt.utils import qconnect
-
+from .gui_classes.choose_trainer_sprite import TrainerSpriteDialog
+from .pyobj.trainer_card_window import TrainerCardGUI
 debug = True
 
 # Initialize the menu
@@ -40,13 +41,13 @@ def create_menu_actions(
     trainer_card,
     ankimon_tracker_window,
     logger,
-    trainer_card_window,
     data_handler_window,
     settings_window,
     shop_manager,
     pokedex_window,
     ankimon_key,
-    join_discord_url
+    join_discord_url,
+    settings_obj
 ):
     actions = []
 
@@ -171,12 +172,18 @@ def create_menu_actions(
     # Set up a shortcut (Ctrl+L) to open the log window
     ankimon_trainer_card_action = QAction("Trainer Card", mw)
     ankimon_trainer_card_action.setShortcut(QKeySequence("Ctrl+Shift+Q"))
-    ankimon_trainer_card_action.triggered.connect(trainer_card_window.toggle_window)
+    # Create the TrainerCard GUI and show it inside Anki's main window
+    ankimon_trainer_card_action.triggered.connect(lambda: TrainerCardGUI(trainer_card, settings_obj, parent=mw))
     profile_menu.addAction(ankimon_trainer_card_action)
 
     # Add AnkimonShop Action to toggle the shop
     shop_manager_action = QAction("Item Shop", mw)
     shop_manager_action.triggered.connect(shop_manager.toggle_window)
     game_menu.addAction(shop_manager_action)
+
+    # Choose Trainer Sprite Action
+    choose_trainer_sprite_action = QAction("Choose trainer sprite", mw)
+    choose_trainer_sprite_action.triggered.connect(lambda: TrainerSpriteDialog(settings_obj=settings_obj).exec())
+    game_menu.addAction(choose_trainer_sprite_action)
 
     mw.form.menubar.addMenu(mw.pokemenu)
