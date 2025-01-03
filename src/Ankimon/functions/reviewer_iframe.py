@@ -22,7 +22,7 @@ from .pokemon_functions import find_experience_for_level
 def create_html_code(genderTop, genderBottom, nameTop, nameBottom, levelTop, levelBottom, current_health_bottom, max_hp_bottom, max_hp_top, current_health_top, text, general_url, font_url, bottom_pokemon_sprite, top_pokemon_sprite, display, main_attack, enemy_attack, xp_bar_width = 0):    
     html_code = """<div id="spacer">&nbsp;</div>"""
     html_code += """<div id="AnkimonWindow"></div>"""
-    html_code += f"""<iframe id="myIframe" src='{general_url}index.html?bottomPokemonSprite={bottom_pokemon_sprite}&topPokemonSprite={top_pokemon_sprite}&text={text}&levelTop={levelTop}&levelBottom={levelBottom}&nameTop={nameTop}&nameBottom={nameBottom}&genderTop={genderTop}&genderBottom={genderBottom}&current_health_bottom={current_health_bottom}&max_hp_bottom={max_hp_bottom}&max_hp_top={max_hp_top}&fontUrl={font_url}&current_health_top={current_health_top}&main_attack={main_attack}&enemy_attack={enemy_attack}' width=100% style="display:{display};"></iframe>"""
+    html_code += f"""<iframe id="myIframe" class="Ankimon" src='{general_url}index.html?bottomPokemonSprite={bottom_pokemon_sprite}&topPokemonSprite={top_pokemon_sprite}&text={text}&levelTop={levelTop}&levelBottom={levelBottom}&nameTop={nameTop}&nameBottom={nameBottom}&genderTop={genderTop}&genderBottom={genderBottom}&current_health_bottom={current_health_bottom}&max_hp_bottom={max_hp_bottom}&max_hp_top={max_hp_top}&fontUrl={font_url}&current_health_top={current_health_top}&main_attack={main_attack}&enemy_attack={enemy_attack}' width=100% style="display:{display};"></iframe>"""
     return html_code
 
 def create_iframe_html(main_pokemon, enemy_pokemon, settings_obj, textmsg):
