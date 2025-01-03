@@ -41,6 +41,7 @@
     "misc.language": "Language",
     "misc.ssh": "SSH Access",
     "misc.YouShallNotPass_Ankimon_News": "Receive Ankimon News",
+    "misc.discord_rich_presence": "Discord Rich Presence - Ankimon",
 
     "trainer.name": "Trainer Name"
 

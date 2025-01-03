@@ -3828,31 +3828,50 @@ class ItemWindow(QWidget):
         row, col = 0, 0
         max_items_per_row = 3
 
-        if not self.itembag_list:  # Simplified check
-            empty_label = QLabel("Empty Search")
-            self.contentLayout.addWidget(empty_label, 1, 1)
-        else:
-            # Filter items based on category index
-            if category_index == 1:  # Fossils
-                filtered_items = [item for item in self.itembag_list if item["item"] in self.fossil_pokemon and search_text in item["item"].lower()]
-            elif category_index == 2:  # TMs and HMs
-                filtered_items = [item for item in self.itembag_list if item["item"] in self.tm_hm_list and search_text in item["item"].lower()]
-            elif category_index == 3:  # Heal items
-                filtered_items = [item for item in self.itembag_list if item["item"] in self.hp_heal_items and search_text in item["item"].lower()]
-            elif category_index == 4:  # Evolution items
-                filtered_items = [item for item in self.itembag_list if item["item"] in self.evolution_items and search_text in item["item"].lower()]
-            elif category_index == 5: # Pokeballs
-                filtered_items = [item for item in self.itembag_list if item["item"] in self.pokeball_chances and search_text in item["item"].lower()]
+        try:
+            if not self.itembag_list:  # Simplified check
+                empty_label = QLabel("Empty Search")
+                self.contentLayout.addWidget(empty_label, 1, 1)
             else:
-                filtered_items = [item for item in self.itembag_list if search_text in item["item"].lower()]
+                # Filter items based on category index
+                if category_index == 1:  # Fossils
+                    filtered_items = [
+                        item for item in self.itembag_list 
+                        if isinstance(item, dict) and "item" in item and item["item"] in self.fossil_pokemon and search_text in item["item"].lower()
+                    ]
+                elif category_index == 2:  # TMs and HMs
+                    filtered_items = [
+                        item for item in self.itembag_list 
+                        if isinstance(item, dict) and "item" in item and item["item"] in self.tm_hm_list and search_text in item["item"].lower()
+                    ]
+                elif category_index == 3:  # Heal items
+                    filtered_items = [
+                        item for item in self.itembag_list 
+                        if isinstance(item, dict) and "item" in item and item["item"] in self.hp_heal_items and search_text in item["item"].lower()
+                    ]
+                elif category_index == 4:  # Evolution items
+                    filtered_items = [
+                        item for item in self.itembag_list 
+                        if isinstance(item, dict) and "item" in item and item["item"] in self.evolution_items and search_text in item["item"].lower()
+                    ]
+                elif category_index == 5: # Pokeballs
+                    filtered_items = [
+                        item for item in self.itembag_list 
+                        if isinstance(item, dict) and "item" in item and item["item"] in self.pokeball_chances and search_text in item["item"].lower()
+                    ]
+                else:
+                    filtered_items = [item for item in self.itembag_list if search_text in item["item"].lower()]
+        except Exception as e:
+            filtered_items = []    
+            self.logger.log_and_showinfo("error", f"Error filtering items: {e}")
 
-            for item in filtered_items:
-                item_widget = self.ItemLabel(item["item"], item["quantity"])
-                self.contentLayout.addWidget(item_widget, row, col)
-                col += 1
-                if col >= max_items_per_row:
-                    row += 1
-                    col = 0
+        for item in filtered_items:
+            item_widget = self.ItemLabel(item["item"], item["quantity"])
+            self.contentLayout.addWidget(item_widget, row, col)
+            col += 1
+            if col >= max_items_per_row:
+                row += 1
+                col = 0
 
     def ItemLabel(self, item_name, quantity):
         item_file_path = items_path / f"{item_name}.png"
@@ -4311,18 +4330,20 @@ if reviewer_buttons is True:
     # Replace the original link handler function with the modified one
     Reviewer._linkHandler = linkHandler_wrap
 
-from .functions.discord_function import *  # Import necessary functions for Discord integration
 
-client_id = '1319014423876075541'  # Replace with your actual client ID
-large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
-ankimon_presence = DiscordPresence(client_id, large_image_url)  # Establish connection and get the presence instance
-loop = False
+if settings_obj.get("misc.discord_rich_presence",False) == True:
+    from .functions.discord_function import *  # Import necessary functions for Discord integration
 
-# Hook functions for Anki
-def on_reviewer_initialized(rev, card, ease):
-    ankimon_presence.loop = True
-    ankimon_presence.start()
+    client_id = '1319014423876075541'  # Replace with your actual client ID
+    large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
+    ankimon_presence = DiscordPresence(client_id, large_image_url)  # Establish connection and get the presence instance
+    loop = False
 
-# Register the hook functions with Anki's GUI hooks
-gui_hooks.reviewer_did_answer_card.append(on_reviewer_initialized)
-gui_hooks.sync_did_finish.append(ankimon_presence.stop)
+    # Hook functions for Anki
+    def on_reviewer_initialized(rev, card, ease):
+        ankimon_presence.loop = True
+        ankimon_presence.start()
+
+    # Register the hook functions with Anki's GUI hooks
+    gui_hooks.reviewer_did_answer_card.append(on_reviewer_initialized)
+    gui_hooks.sync_did_finish.append(ankimon_presence.stop)
