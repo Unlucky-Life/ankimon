@@ -42,6 +42,7 @@
     "misc.language": 9,
     "misc.ssh": true,
     "misc.YouShallNotPass_Ankimon_News": false,
+    "misc.discord_rich_presence": false,
 
     "trainer.name": "Ash",
     "trainer.sprite": "ash",
