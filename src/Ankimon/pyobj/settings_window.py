@@ -15,6 +15,7 @@ class SettingsWindow(QMainWindow):
         self.save_config_callback = save_config_callback
         self.load_config = load_config_callback
         self.setWindowTitle("Settings")
+        self.setMaximumWidth(600)
 
         # Load settings descriptions and friendly names
         self.descriptions = self.load_descriptions()
@@ -91,7 +92,8 @@ class SettingsWindow(QMainWindow):
                 
                 # Enable word wrap and set maximum width for the description label
                 description_label.setWordWrap(True)
-                description_label.setMaximumWidth(350)  # Adjust width as needed
+                description_label.setMaximumWidth(self.width() - 50)  # Subtracting a bit for padding
+                description_label.setContentsMargins(5, 5, 5, 0)  # 5 padding around
 
                 # Create radio buttons and unique button group for each setting
                 true_radio = QRadioButton("True")
@@ -123,7 +125,8 @@ class SettingsWindow(QMainWindow):
 
                 # Enable word wrap and set maximum width for the description label
                 description_label.setWordWrap(True)
-                description_label.setMaximumWidth(350)  # Adjust width as needed
+                description_label.setMaximumWidth(self.width() - 50)  # Subtracting a bit for padding
+                description_label.setContentsMargins(5, 5, 5, 0)  # 5 padding around
 
                 line_edit = QLineEdit(str(value))
                 scroll_area_layout.addWidget(label)

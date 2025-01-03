@@ -125,8 +125,8 @@ class Settings:
             return 0.8 if animate_time else 0
 
         elif key == "xp_bar_location":
-            xp_bar_config = self.config.get("gui.xp_bar_config", False)
-            xp_bar_location = self.config.get("gui.xp_bar_location", 0)
+            xp_bar_config = self.config.get("gui.xp_bar_config", True)
+            xp_bar_location = int(self.config.get("gui.xp_bar_location", 2))
 
             if xp_bar_config:
                 if xp_bar_location == 1:
