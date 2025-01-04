@@ -148,7 +148,7 @@ def random_item():
     item_names = [name for name in item_names if not name.endswith("-nugget")]
     item_name = random.choice(item_names)
     # add item to item list
-    with open(itembag_path, 'r') as json_file:
+    with open(itembag_path, "r", encoding="utf-8") as json_file:
         itembag_list = json.load(json_file)
         itembag_list.append(item_name)
     with open(itembag_path, 'w') as json_file:
@@ -172,10 +172,17 @@ def daily_item_list():
 
 # Function to give an item to the player
 def give_item(item_name, logger):
-    with open(itembag_path, 'r') as json_file:
+    with open(itembag_path, "r", encoding="utf-8") as json_file:
         itembag_list = json.load(json_file)
-        itembag_list.append(item_name)
-    with open(itembag_path, 'w') as json_file:
+        # Check if the item exists and update quantity, otherwise append
+        for item in itembag_list:
+            if item.get("item") == item_name:
+                item["quantity"] += 1
+                break
+        else:
+            # Add a new item if not found
+            itembag_list.append({"item": item_name, "quantity": 1})
+    with open(itembag_path, 'w', encoding="utf-8") as json_file:
         json.dump(itembag_list, json_file)
     logger.log_and_showinfo('game', f"Player bought item {item_name.capitalize()}")
 
@@ -249,7 +256,7 @@ def random_fossil():
             # Append the file name without the .png extension to the list
             fossil_names.append(file[:-4])
     fossil_name = random.choice(fossil_names)
-    with open(itembag_path, 'r') as json_file:
+    with open(itembag_path, "r", encoding="utf-8") as json_file:
         itembag_list = json.load(json_file)
         itembag_list.append(fossil_name)
     with open(itembag_path, 'w') as json_file:
@@ -265,7 +272,7 @@ def count_items_and_rewrite(file_path):
     """
     try:
         # Read the existing file
-        with open(file_path, 'r') as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             items = json.load(file)
 
         # Ensure the file contains a list

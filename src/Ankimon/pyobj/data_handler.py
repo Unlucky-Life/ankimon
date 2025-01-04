@@ -33,7 +33,7 @@ class DataHandler:
             attr_name = os.path.splitext(file)[0]      # Use the filename without extension as the attribute name
 
             try:
-                with open(file_path, 'r') as f:
+                with open(file_path, "r", encoding="utf-8") as f:
                     if file.endswith('.json'):
                         setattr(self, attr_name, json.load(f))  # Set the file data as an attribute
                     elif file.endswith('.py'):
