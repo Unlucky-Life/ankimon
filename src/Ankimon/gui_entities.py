@@ -287,7 +287,7 @@ class Pokedex_Widget(QWidget):
         self.initUI()
 
     def read_poke_coll(self):
-        with (open(mypokemon_path, "r") as json_file):
+        with (open(mypokemon_path, "r", encoding="utf-8") as json_file):
             self.captured_pokemon_data = json.load(json_file)
 
     def initUI(self):

@@ -144,7 +144,7 @@ default_pokemon_data = {
 
 # Check if the main Pokémon file exists and is valid
 if mainpokemon_path.is_file():
-    with open(mainpokemon_path, "r") as json_file:
+    with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
         try:
             main_pokemon_data = json.load(json_file)
             mainpokemon_empty = not main_pokemon_data
@@ -162,7 +162,7 @@ else:
 def update_main_pokemon(main_pokemon, mainpokemon_path = mainpokemon_path):
     # Check if the main Pokémon file exists and is valid
     if mainpokemon_path.is_file():
-        with open(mainpokemon_path, "r") as json_file:
+        with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
             try:
                 main_pokemon_data = json.load(json_file)
                 # Use default values if the file is empty or invalid
@@ -249,10 +249,10 @@ config = mw.addonManager.getConfig(__name__)
 #show config .json file
 
 items_list = []
-with open(items_list_path, 'r') as file:
+with open(items_list_path, "r", encoding="utf-8") as file:
     items_list = json.load(file)
 
-with open(sound_list_path, 'r') as json_file:
+with open(sound_list_path, "r", encoding="utf-8") as json_file:
     sound_list = json.load(json_file)
 
 ankimon_tracker_obj.pokemon_encouter = 0
@@ -307,7 +307,7 @@ if not database_complete:
     dialog.show()
 
 if mainpokemon_path.is_file():
-    with open(mainpokemon_path, "r") as json_file:
+    with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
         main_pokemon_data = json.load(json_file)
         if not main_pokemon_data or main_pokemon_data is None:
             mainpokemon_empty = True
@@ -504,7 +504,7 @@ if database_complete:
             list: A list of up to 4 random moves and their highest levels.
         """
         # Load the JSON file
-        with open(learnset_path, 'r') as file:
+        with open(learnset_path, "r", encoding="utf-8") as file:
             learnsets = json.load(file)
 
         # Normalize the Pokémon name to lowercase for consistency
@@ -569,7 +569,7 @@ if database_complete:
             str: A random move and its highest level.
         """
         # Load the JSON file
-        with open(learnset_path, 'r') as file:
+        with open(learnset_path, "r", encoding="utf-8") as file:
             learnsets = json.load(file)
 
         # Normalize the Pokémon name to lowercase for consistency
@@ -971,7 +971,7 @@ def get_pokemon_id_by_tier(tier):
     elif tier == "Mythical":
         id_species_path = pokemon_species_mythical_path
 
-    with open(id_species_path, 'r') as file:
+    with open(id_species_path, "r", encoding="utf-8") as file:
         id_data = json.load(file)
 
     # Select a random Pokemon ID from those in the tier
@@ -1012,7 +1012,7 @@ def save_caught_pokemon(nickname):
     caught_pokemon = create_caught_pokemon(enemy_pokemon, nickname)
     # Load existing Pokémon data if it exists
     if mypokemon_path.is_file():
-        with open(mypokemon_path, "r") as json_file:
+        with open(mypokemon_path, "r", encoding="utf-8") as json_file:
             caught_pokemon_data = json.load(json_file)
     else:
         caught_pokemon_data = []
@@ -1036,7 +1036,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             main_pokemon.xp += exp
             level_cap = 100
     if mainpokemon_path.is_file():
-        with open(mainpokemon_path, "r") as json_file:
+        with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
             main_pokemon_data = json.load(json_file)
     else:
         showWarning("Missing Mainpokemon Data !")
@@ -1145,7 +1145,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         json.dump(mainpkmndata, json_file, indent=2)
 
     # Load data from the output JSON file
-    with open(str(mypokemon_path), "r") as output_file:
+    with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
         mypokemondata = json.load(output_file)
 
         # Find and replace the specified Pokémon's data in mypokemondata
@@ -1163,7 +1163,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
 def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
     global achievements
     try:
-        with open(mypokemon_path, "r") as json_file:
+        with open(mypokemon_path, "r", encoding="utf-8") as json_file:
             captured_pokemon_data = json.load(json_file)
             pokemon = None
             if captured_pokemon_data:
@@ -1223,7 +1223,7 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                                 pokemon["ability"] = random.choice(abilities_list)
                             else:
                                 pokemon["ability"] = "No Ability"
-                            with open(str(mypokemon_path), "r") as output_file:
+                            with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
                                 mypokemondata = json.load(output_file)
                                 # Find and replace the specified Pokémon's data in mypokemondata
                                 for index, pokemon_data in enumerate(mypokemondata):
@@ -1233,7 +1233,7 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                                         # Save the modified data to the output JSON file
                                 with open(str(mypokemon_path), "w") as output_file:
                                     json.dump(mypokemondata, output_file, indent=2)
-                            with open(str(mainpokemon_path), "r") as output_file:
+                            with open(str(mainpokemon_path), "r", encoding="utf-8") as output_file:
                                 mainpokemon_data = json.load(output_file)
                                 # Find and replace the specified Pokémon's data in mypokemondata
                                 for index, pokemon_data in enumerate(mainpokemon_data):
@@ -1271,7 +1271,7 @@ def cancel_evolution(individual_id, prevo_name):
     ev_yield = enemy_pokemon.ev_yield
     # Load existing Pokémon data if it exists
     if mainpokemon_path.is_file():
-        with open(mainpokemon_path, "r") as json_file:
+        with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
             main_pokemon_data = json.load(json_file)
             for pokemon in main_pokemon_data:
                 if pokemon["individual_id"] == individual_id:
@@ -1321,7 +1321,7 @@ def cancel_evolution(individual_id, prevo_name):
         json.dump(mainpkmndata, json_file, indent=2)
 
         # Load data from the output JSON file
-    with open(str(mypokemon_path), "r") as output_file:
+    with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
         mypokemondata = json.load(output_file)
 
         # Find and replace the specified Pokémon's data in mypokemondata
@@ -1359,7 +1359,7 @@ def get_random_starter():
     category = "Starter"
     try:
         # Reload the JSON data from the file
-        with open(str(starters_path), 'r') as file:
+        with open(str(starters_path), "r", encoding="utf-8") as file:
             pokemon_in_tier = json.load(file)
             # Convert the input to lowercase to match the values in our JSON data
             category_name = category.lower()
@@ -2168,7 +2168,7 @@ def choose_pokemon(starter_name):
     }
     # Load existing Pokémon data if it exists
     if mypokemon_path.is_file():
-        with open(mypokemon_path, "r") as json_file:
+        with open(mypokemon_path, "r", encoding="utf-8") as json_file:
             caught_pokemon_data = json.load(json_file)
     else:
         caught_pokemon_data = []
@@ -2243,7 +2243,7 @@ def save_fossil_pokemon(pokemon_id):
     }
     # Load existing Pokémon data if it exists
     if mypokemon_path.is_file():
-        with open(mypokemon_path, "r") as json_file:
+        with open(mypokemon_path, "r", encoding="utf-8") as json_file:
             caught_pokemon_data = json.load(json_file)
     else:
         caught_pokemon_data = []
@@ -2350,7 +2350,7 @@ def export_all_pkmn_showdown():
     # Get all pokemon data
     pokemon_info_complete_text = ""
     try:
-        with (open(mypokemon_path, "r") as json_file):
+        with (open(mypokemon_path, "r", encoding="utf-8") as json_file):
             captured_pokemon_data = json.load(json_file)
 
             # Check if there are any captured Pokémon
@@ -2441,7 +2441,7 @@ def flex_pokemon_collection():
 # Get all pokemon data
     pokemon_info_complete_text = ""
     try:
-        with (open(mypokemon_path, "r") as json_file):
+        with (open(mypokemon_path, "r", encoding="utf-8") as json_file):
             captured_pokemon_data = json.load(json_file)
 
             # Check if there are any captured Pokémon
@@ -3120,7 +3120,7 @@ test_window = TestWindow(main_pokemon, enemy_pokemon, settings_obj)
 def rate_this_addon():
     global rate_this
     # Load rate data
-    with open(rate_path, 'r') as file:
+    with open(rate_path, "r", encoding="utf-8") as file:
         rate_data = json.load(file)
         rate_this = rate_data.get("rate_this", False)
     
@@ -3174,7 +3174,7 @@ def rate_this_addon():
                 json.dump(rate_data, file, indent=4)
                 test_window.rate_display_item("potion")
                 # add item to item list
-                with open(itembag_path, 'r') as json_file:
+                with open(itembag_path, "r", encoding="utf-8") as json_file:
                     itembag_list = json.load(json_file)
                     itembag_list.append("potion")
                 with open(itembag_path, 'w') as json_file:
@@ -3198,19 +3198,19 @@ def rate_this_addon():
 
 
 if database_complete:
-    with open(badgebag_path, 'r') as json_file:
+    with open(badgebag_path, "r", encoding="utf-8") as json_file:
         badge_list = json.load(json_file)
         if len(badge_list) > 2:
             rate_this_addon()
 
 #Badges needed for achievements:
-with open(badges_list_path, 'r') as json_file:
+with open(badges_list_path, "r", encoding="utf-8") as json_file:
     badges = json.load(json_file)
 
 achievements = {str(i): False for i in range(1, 69)}
 
 def check_badges(achievements):
-        with open(badgebag_path, 'r') as json_file:
+        with open(badgebag_path, "r", encoding="utf-8") as json_file:
             badge_list = json.load(json_file)
             for badge_num in badge_list:
                 achievements[str(badge_num)] = True
@@ -3675,7 +3675,7 @@ if database_complete:
     if mypokemon_path.is_file() is False:
         starter_window.display_starter_pokemon()
     else:
-        with open(mypokemon_path, 'r') as file:
+        with open(mypokemon_path, "r", encoding="utf-8") as file:
             pokemon_list = json.load(file)
             if not pokemon_list :
                 starter_window.display_starter_pokemon()
@@ -3693,10 +3693,12 @@ count_items_and_rewrite(itembag_path)
 UserRole = 1000  # Define custom role
 
 class ItemWindow(QWidget):
-    def __init__(self, logger):
+    def __init__(self, logger, main_pokemon, enemy_pokemon):
         super().__init__()
         self.read_item_file()
         self.initUI()
+        self.main_pokemon = main_pokemon
+        self.enemy_pokemon = enemy_pokemon
 
         self.logger=logger
 
@@ -3892,7 +3894,7 @@ class ItemWindow(QWidget):
         if item_name in self.hp_heal_items:
             use_item_button = QPushButton("Heal Mainpokemon")
             hp_heal = self.hp_heal_items[item_name]
-            use_item_button.clicked.connect(lambda: self.Check_Heal_Item(main_pokemon.name, hp_heal, item_name))
+            use_item_button.clicked.connect(lambda: self.Check_Heal_Item(self.main_pokemon.name, hp_heal, item_name))
         elif item_name in self.fossil_pokemon:
             fossil_id = self.fossil_pokemon[item_name]
             fossil_pokemon_name = search_pokedex_by_id(fossil_id)
@@ -3918,7 +3920,7 @@ class ItemWindow(QWidget):
 
     def PokemonList(self, comboBox):
         try:
-            with open(mypokemon_path, "r") as json_file:
+            with open(mypokemon_path, "r", encoding="utf-8") as json_file:
                 captured_pokemon_data = json.load(json_file)
                 if captured_pokemon_data:
                     for pokemon in captured_pokemon_data:
@@ -3941,15 +3943,15 @@ class ItemWindow(QWidget):
     
     def modified_pokeball_chances(self, item_name, catch_chance):
         # Adjust catch chance based on Pokémon type and Poké Ball
-        if item_name == 'net-ball' and ('water' in enemy_pokemon.type or 'bug' in enemy_pokemon.type):
+        if item_name == 'net-ball' and ('water' in self.enemy_pokemon.type or 'bug' in self.enemy_pokemon.type):
             catch_chance += 10  # Additional 10% for Water or Bug-type Pokémon
             self.logger.log("game",f"{item_name} gets a bonus for Water/Bug-type Pokémon!")
         
-        elif item_name == 'iron-ball' and 'steel' in enemy_pokemon.type:
+        elif item_name == 'iron-ball' and 'steel' in self.enemy_pokemon.type:
             catch_chance += 10  # Additional 10% for Steel-type Pokémon
             self.logger.log("game",f"{item_name} gets a bonus for Steel-type Pokémon!")
         
-        elif item_name == 'dive-ball' and 'water' in enemy_pokemon.type:
+        elif item_name == 'dive-ball' and 'water' in self.enemy_pokemon.type:
             catch_chance += 10  # Additional 10% for Water-type Pokémon
             self.logger.log("game",f"{item_name} gets a bonus for Water-type Pokémon!")
 
@@ -3995,13 +3997,11 @@ class ItemWindow(QWidget):
         if check is False:
             receive_badge(20,achievements)
             test_window.display_badge(20)
-        global mainpokemon_hp, mainpokemon_stats, mainpokemon_level, mainpokemon_ev, mainpokemon_iv
-        mainpkmn_max_hp = calculate_hp(mainpokemon_stats["hp"], mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
         if item_name == "fullrestore" or "maxpotion":
-            heal_points = mainpkmn_max_hp
-        mainpokemon_hp += heal_points
-        if mainpokemon_hp > (mainpkmn_max_hp + 1):
-            mainpokemon_hp = mainpkmn_max_hp
+            heal_points = self.main_pokemon.max_hp
+        self.main_pokemon.hp += heal_points
+        if self.main_pokemon.hp > (self.main_pokemon.max_hp):
+            self.main_pokemon.hp = self.main_pokemon.max_hp
         self.delete_item(item_name)
         play_effect_sound("HpHeal")
         self.logger.log_and_showinfo("info",f"{prevo_name} was healed for {heal_points}")
@@ -4025,7 +4025,7 @@ class ItemWindow(QWidget):
 
     def read_item_file(self):
         # Read the list from the JSON file
-        with open(itembag_path, 'r') as json_file:
+        with open(itembag_path, "r", encoding="utf-8") as json_file:
             self.itembag_list = json.load(json_file)
 
     def clear_layout(self, layout):
@@ -4068,7 +4068,11 @@ def get_id_and_description_by_item_name(item_name):
     description = descriptions.get(key, None)
     return description
     
-item_window = ItemWindow(logger=logger)
+item_window = ItemWindow(
+    logger=logger,
+    main_pokemon=main_pokemon,
+    enemy_pokemon=enemy_pokemon
+)
 
 class AchievementWindow(QWidget):
     def __init__(self):
@@ -4161,7 +4165,7 @@ class AchievementWindow(QWidget):
 
     def read_item_file(self):
         # Read the list from the JSON file
-        with open(badgebag_path, 'r') as json_file:
+        with open(badgebag_path, "r", encoding="utf-8") as json_file:
             self.badge_list = json.load(json_file)
 
     def clear_layout(self, layout):

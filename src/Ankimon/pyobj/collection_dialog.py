@@ -89,7 +89,7 @@ class PokemonCollectionDialog(QDialog):
     def load_pokemon_data(self):
         """Reads the mypokemon.json file and loads Pokémon data into self.pokemon_list."""
         try:
-            with open(self.mypokemon_path, 'r') as file:
+            with open(self.mypokemon_path, "r", encoding="utf-8") as file:
                 self.pokemon_list = json.load(file)
                 return self.pokemon_list
         except FileNotFoundError:
@@ -349,13 +349,14 @@ class PokemonCollectionDialog(QDialog):
         generation_index = self.generation_combo.currentIndex()
         type_index = self.type_combo.currentIndex()
         type_text = self.type_combo.currentText()
+        sorted_pokemon_list = sorted(pokemon_list, key=lambda x: x['id'])
         for i in reversed(range(self.scroll_layout.count())):
             widget = self.scroll_layout.itemAt(i).widget()
             if widget is not None:
                 widget.deleteLater()
         try:
-            if pokemon_list:
-                for position, pokemon in enumerate(pokemon_list):
+            if sorted_pokemon_list:
+                for position, pokemon in enumerate(sorted_pokemon_list):
                     pokemon_id = pokemon['id']
                     pokemon_name = pokemon['name'].lower()
                     pokemon_nickname = pokemon.get("nickname", None)
@@ -419,7 +420,7 @@ from ..resources import mainpokemon_path
 
 def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
      # Load the data from the file
-    with open(mainpokemon_path, 'r') as file:
+    with open(mainpokemon_path, "r", encoding="utf-8") as file:
         pokemon_data = json.load(file)
     #check if player tries to trade mainpokemon
     found = False
@@ -550,7 +551,7 @@ from aqt.utils import showWarning
 def trade_pokemon(old_pokemon_name, pokemon_trade, position):
     try:
         # Load the current list of Pokemon
-        with open(mypokemon_path, 'r') as file:
+        with open(mypokemon_path, "r", encoding="utf-8") as file:
             pokemon_list = json.load(file)
     except FileNotFoundError:
         print("The Pokemon file was not found. Please check the file path.")
