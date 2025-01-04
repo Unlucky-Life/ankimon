@@ -457,7 +457,7 @@ def remember_attack(id, attacks, new_attack, logger):
     if not mainpokemon_path.is_file():
         logger.log_and_showinfo("warning","Missing Mainpokemon Data !")
         return
-    with open(mainpokemon_path, "r") as json_file:
+    with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
         main_pokemon_data = json.load(json_file)
     for mainpkmndata in main_pokemon_data:
         if mainpkmndata["id"] == id:
@@ -495,7 +495,7 @@ def remember_attack(id, attacks, new_attack, logger):
             with open(str(mainpokemon_path), "w") as json_file:
                 json.dump(mainpkmndata, json_file, indent=2)
             
-            with open(str(mypokemon_path), "r") as output_file:
+            with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
                 mypokemondata = json.load(output_file)
 
             # Find and replace the specified Pokémon's data in mypokemondata
@@ -517,7 +517,7 @@ from ..resources import mainpokemon_path, mypokemon_path
 def rename_pkmn(nickname, pkmn_name, individual_id, logger, refresh_callback):
     try:
         # Load the captured Pokémon data
-        with open(mypokemon_path, "r") as json_file:
+        with open(mypokemon_path, "r", encoding="utf-8") as json_file:
             captured_pokemon_data = json.load(json_file)
             pokemon = None
 
@@ -531,7 +531,7 @@ def rename_pkmn(nickname, pkmn_name, individual_id, logger, refresh_callback):
                 # Update the nickname
                 pokemon["nickname"] = nickname
                 # Reflect the change in the output JSON file
-                with open(str(mypokemon_path), "r") as output_file:
+                with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
                     mypokemondata = json.load(output_file)
                     # Update the specified Pokémon's data
                     for idx, data in enumerate(mypokemondata):
@@ -564,7 +564,7 @@ def PokemonFree(individual_id, name, logger, refresh_callback):
         return
 
     # Check if the Pokémon is in the main Pokémon file
-    with open(mainpokemon_path, 'r') as file:
+    with open(mainpokemon_path, "r", encoding="utf-8") as file:
         pokemon_data = json.load(file)
 
     for pokemon in pokemon_data:
@@ -574,7 +574,7 @@ def PokemonFree(individual_id, name, logger, refresh_callback):
 
     # Load Pokémon list from 'mypokemon_path' file
     try:
-        with open(mypokemon_path, 'r') as file:
+        with open(mypokemon_path, "r", encoding="utf-8") as file:
             pokemon_list = json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
         logger.log_and_showinfo("info","Error: Could not load Pokémon data.")

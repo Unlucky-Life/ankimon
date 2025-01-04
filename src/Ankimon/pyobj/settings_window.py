@@ -54,7 +54,7 @@ class SettingsWindow(QMainWindow):
         # Load the friendly names from a JSON file one level above the root of the add-on directory
         names_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lang', 'setting_name.json')
         if os.path.exists(names_file):
-            with open(names_file, 'r') as f:
+            with open(names_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         showWarning("Friendly names file not found. Using default names.")
         return {}

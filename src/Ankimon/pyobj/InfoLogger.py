@@ -90,7 +90,7 @@ class ShowInfoLogger:
             text_edit.setReadOnly(True)
             
             # Load and display the log file contents
-            with open(self.log_file, 'r') as f:
+            with open(self.log_file, "r", encoding="utf-8") as f:
                 log_content = f.read()
                 text_edit.setPlainText(log_content)
             
