@@ -30,7 +30,7 @@ class PokemonTrade:
 
     def load_pokemon_data(self):
         try:
-            with open(self.mainpokemon_path, 'r') as file:
+            with open(self.mainpokemon_path, "r", encoding="utf-8") as file:
                 return json.load(file)
         except FileNotFoundError:
             self.logger.log_and_showinfo("warning","Main Pokémon file not found!")
@@ -161,7 +161,7 @@ class PokemonTrade:
         return {0: "M", 1: "F", 2: "N"}.get(gender_id, "N/A")
 
     def get_growth_rate(self, pokemon_id):
-        with open(self.pokeapi_db_path, 'r') as file:
+        with open(self.pokeapi_db_path, "r", encoding="utf-8") as file:
             pokemon_data = json.load(file)
             return next((p["growth_rate"] for p in pokemon_data if p["id"] == pokemon_id), None)
 

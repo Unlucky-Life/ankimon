@@ -146,7 +146,7 @@ def get_pokemon_diff_lang_name(pokemon_id, language):
 def extract_ids_from_file():
     try:
         filename = mypokemon_path
-        with open(filename, 'r') as file:
+        with open(filename, "r", encoding="utf-8") as file:
             data = json.load(file)
             ids = [character['id'] for character in data]
             owned_pokemon_ids = ids
@@ -167,7 +167,7 @@ def get_all_pokemon_moves(pk_name, level):
             list: A list of up to 4 random moves and their highest levels.
         """
         # Load the JSON file
-        with open(learnset_path, 'r') as file:
+        with open(learnset_path, "r", encoding="utf-8") as file:
             learnsets = json.load(file)
 
         # Normalize the Pokémon name to lowercase for consistency
@@ -243,7 +243,7 @@ def find_details_move(move_name):
 
 def get_pokemon_evolution_data_all(pokemon_id, file_path=poke_evo_path):
     # Open the CSV file
-    with open(file_path, mode='r') as file:
+    with open(file_path, mode="r", encoding="utf-8") as file:
         reader = csv.DictReader(file, delimiter='\t')  # Assuming tab-separated values
         for row in reader:
             # Check if the current row's Pokémon ID matches the requested ID
@@ -384,7 +384,7 @@ def pokemon_evolves_from_id(pokemon_id):
     evolves_from_ids = []  # List to hold the ids of Pokémon that evolve into the given ID
     try:
         # Open the CSV file
-        with open(poke_species_path, mode='r') as file:
+        with open(poke_species_path, mode="r", encoding="utf-8") as file:
             reader = csv.DictReader(file)
             for row in reader:
                 # Safely check if 'evolves_from_species_id' exists and is a valid number
@@ -416,7 +416,7 @@ def get_pokemon_evolution_data(pokemon_id):
     
     try:
         # Open the CSV file
-        with open(poke_evo_path, mode='r') as file:
+        with open(poke_evo_path, mode="r", encoding="utf-8") as file:
             reader = csv.DictReader(file)
             
             # Search for the given Pokémon ID in the evolved_species_id column
@@ -451,7 +451,7 @@ def check_key_in_table(column_name, value, file_path):
     
     try:
         # Open the CSV file
-        with open(file_path, mode='r') as file:
+        with open(file_path, mode="r", encoding="utf-8") as file:
             reader = csv.DictReader(file)
             
             # Search for the value in the specified column
@@ -482,7 +482,7 @@ def return_name_for_id(pokemon_id):
     """
     try:
         # Open the CSV file
-        with open(pokemon_csv, mode='r') as file:
+        with open(pokemon_csv, mode="r", encoding="utf-8") as file:
             reader = csv.DictReader(file)  # Read the file as a dictionary
             
             # Search for the value in the "id" column
@@ -511,7 +511,7 @@ def return_id_for_item_name(item_name):
     """
     try:
         # Open the CSV file
-        with open(csv_file_items_cost, mode='r') as file:
+        with open(csv_file_items_cost, mode="r", encoding="utf-8") as file:
             reader = csv.DictReader(file)  # Read the file as a dictionary
             
             # Search for the value in the "identifier" column
