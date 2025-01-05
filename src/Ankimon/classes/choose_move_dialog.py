@@ -2,6 +2,7 @@ import sys
 from PyQt6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
+from ..functions.pokedex_functions import find_details_move
 
 
 class MoveSelectionDialog(QDialog):
@@ -27,7 +28,8 @@ class MoveSelectionDialog(QDialog):
         # Add labels for each move
         self.move_labels = []
         for index, move in enumerate(mainpokemon_attacks):
-            move_label = QLabel(f"{index + 1}. {move}")
+            move_detail = find_details_move(move)
+            move_label = QLabel(f"{index + 1}. {move}({move_detail['basePower']}): {move_detail['desc']}")
             move_label.setFont(QFont("Arial", 12))
             move_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
             move_label.setStyleSheet("border: 1px solid #ccc; border-radius: 0px;")  # Removed padding, reduced border-radius
