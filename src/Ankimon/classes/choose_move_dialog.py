@@ -29,7 +29,8 @@ class MoveSelectionDialog(QDialog):
         self.move_labels = []
         for index, move in enumerate(mainpokemon_attacks):
             move_detail = find_details_move(move)
-            move_label = QLabel(f"{index + 1}. {move}({move_detail['basePower']}): {move_detail['desc']}")
+            move_label = QLabel(f"{index + 1}. {move}({move_detail['basePower']}): {move_detail['shortDesc']}")
+            move_label.setToolTip(f"{move_detail['desc']}")
             move_label.setFont(QFont("Arial", 12))
             move_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
             move_label.setStyleSheet("border: 1px solid #ccc; border-radius: 0px;")  # Removed padding, reduced border-radius
