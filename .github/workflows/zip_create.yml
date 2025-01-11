@@ -30,7 +30,7 @@ jobs:
         zip -r sprites.zip sprites/
 
     - name: Upload ZIP file as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: sprites-zip
         path: sprites.zip  # Path to the generated ZIP file
