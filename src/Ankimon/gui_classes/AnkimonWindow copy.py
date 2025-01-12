@@ -58,8 +58,8 @@ class TestWindow(QWidget):
             # Get the geometry of the main screen
             main_screen_geometry = mw.geometry()
             # Calculate the position to center the ItemWindow on the main screen
-            x = main_screen_geometry.center().x() - self.width() / 2
-            y = main_screen_geometry.center().y() - self.height() / 2
+            x = int(main_screen_geometry.center().x() - self.width() / 2)
+            y = int(main_screen_geometry.center().y() - self.height() / 2)
             self.setGeometry(x, y, 256, 256 )
             self.move(x,y)
             self.show()
@@ -153,7 +153,7 @@ class TestWindow(QWidget):
                 else:
                     hp_color = QColor(110, 218, 163)  # Green
                 painter.setBrush(hp_color)
-                painter.drawRect(x, y, hp_bar_value, h)
+                painter.drawRect(int(x), int(y), int(hp_bar_value), int(h))
 
             draw_hp_bar(118, 76, 8, 116, hp, max_hp)  # enemy pokemon hp_bar
             draw_hp_bar(401, 208, 8, 116, mainpokemon_hp, mainpkmn_max_hp)  # main pokemon hp_bar
@@ -168,13 +168,12 @@ class TestWindow(QWidget):
             painter.drawPixmap((410 - wpkmn_width), (170 - wpkmn_height), pixmap)
             painter.drawPixmap((144 - mpkmn_width), (290 - mpkmn_height), pixmap2)
 
-            experience = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
-            experience = int(experience)
+            experience = int(find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level))
             mainxp_bar_width = 5
             mainpokemon_xp_value = int((mainpokemon_xp / experience) * 148)
             # Paint XP Bar
             painter.setBrush(QColor(58, 155, 220))
-            painter.drawRect(366, 246, mainpokemon_xp_value, mainxp_bar_width)
+            painter.drawRect(int(366), int(246), int(mainpokemon_xp_value), int(mainxp_bar_width))
 
             # create level text
             lvl = (f"{level}")
@@ -283,7 +282,7 @@ class TestWindow(QWidget):
             else:
                 hp_color = QColor(110, 218, 163)  # Green
             painter.setBrush(hp_color)
-            painter.drawRect(x, y, hp_bar_value, h)
+            painter.drawRect(int(x), int(y), int(hp_bar_value), int(h))
 
         draw_hp_bar(118, 76, 8, 116, hp, max_hp)  # enemy pokemon hp_bar
         draw_hp_bar(401, 208, 8, 116, mainpokemon_current_hp, mainpokemon_hp)  # main pokemon hp_bar
@@ -298,13 +297,12 @@ class TestWindow(QWidget):
         painter.drawPixmap((410 - wpkmn_width), (170 - wpkmn_height), pixmap)
         painter.drawPixmap((144 - mpkmn_width), (290 - mpkmn_height), pixmap2)
 
-        experience = find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level)
-        experience = int(experience)
+        experience = int(find_experience_for_level(mainpokemon_growth_rate, mainpokemon_level))
         mainxp_bar_width = 5
         mainpokemon_xp_value = int((mainpokemon_xp / experience) * 148)
         # Paint XP Bar
         painter.setBrush(QColor(58, 155, 220))
-        painter.drawRect(366, 246, mainpokemon_xp_value, mainxp_bar_width)
+        painter.drawRect(366, 246, int(mainpokemon_xp_value), int(mainxp_bar_width))
 
         # create level text
         lvl = (f"{level}")
