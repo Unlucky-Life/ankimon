@@ -116,6 +116,8 @@ settings_window = SettingsWindow(
     load_config_callback=settings_obj.load_config
 )
 
+mw.settings_ankimon = settings_window
+
 # Log an startup message
 logger.log_and_showinfo('game', "Ankimon Startup.")
 
@@ -2836,16 +2838,6 @@ class TestWindow(QWidget):
         self.setMaximumWidth(500)
         self.setMaximumHeight(300)
 
-    def keyPressEvent(self, event):
-        global system, ankimon_key
-        open_window_key = getattr(Qt.Key, 'Key_' + ankimon_key.upper())
-        if system == "mac":
-            if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.MetaModifier:
-                self.close()
-        else:
-            if event.key() == open_window_key and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-                self.close()
-
     def clear_layout(self, layout):
         while layout.count():
             item = layout.takeAt(0)
@@ -2995,7 +2987,10 @@ class StarterWindow(QWidget):
         self.starter = False
 
     def open_dynamic_window(self):
-        self.show()
+        if self.isVisible() is False:
+            self.show()
+        else:
+            self.close()
 
     def clear_layout(self, layout):
         while layout.count():
@@ -4122,19 +4117,26 @@ if settings_obj.get("misc.discord_rich_presence",False) == True:
 
     client_id = '1319014423876075541'  # Replace with your actual client ID
     large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
-    ankimon_presence = DiscordPresence(client_id, large_image_url, ankimon_tracker_obj, logger, settings_obj)  # Establish connection and get the presence instance
+    mw.ankimon_presence = DiscordPresence(client_id, large_image_url, ankimon_tracker_obj, logger, settings_obj)  # Establish connection and get the presence instance
 
     # Hook functions for Anki
     def on_reviewer_initialized(rev, card, ease):
-        if ankimon_presence.loop is False:
-            ankimon_presence.loop = True
-            ankimon_presence.start()
-    
+        if mw.ankimon_presence:
+            if mw.ankimon_presence.loop is False:
+                mw.ankimon_presence.loop = True
+                mw.ankimon_presence.start()
+        else:
+            client_id = '1319014423876075541'  # Replace with your actual client ID
+            large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
+            mw.ankimon_presence = DiscordPresence(client_id, large_image_url, ankimon_tracker_obj, logger, settings_obj)  # Establish connection and get the presence instance
+            mw.ankimon_presence.loop = True
+            mw.ankimon_presence.start()
+            
     def on_reviewer_will_end(*args):
-        ankimon_presence.loop = False
-        ankimon_presence.stop_presence()
+        mw.ankimon_presence.loop = False
+        mw.ankimon_presence.stop_presence()
 
     # Register the hook functions with Anki's GUI hooks
     gui_hooks.reviewer_did_answer_card.append(on_reviewer_initialized)
-    gui_hooks.reviewer_will_end.append(ankimon_presence.stop_presence)
-    gui_hooks.sync_did_finish.append(ankimon_presence.stop)
+    gui_hooks.reviewer_will_end.append(mw.ankimon_presence.stop_presence)
+    gui_hooks.sync_did_finish.append(mw.ankimon_presence.stop)
