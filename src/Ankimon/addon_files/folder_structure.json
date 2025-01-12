@@ -6,10 +6,6 @@
             "name": "addon_files",
             "type": "folder",
             "children": [
-        	{
-            	    "name": "folder_structure.json",
-            	    "type": "file"
-        	},
                 {
                     "name": "ankimote_config.json",
                     "type": "file"
