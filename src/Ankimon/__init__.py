@@ -57,7 +57,7 @@ from .business import get_image_as_base64, \
 from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
     read_local_file, read_github_file, \
     compare_files, write_local_file, random_berries, \
-    random_item, random_fossil, count_items_and_rewrite, filter_item_sprites
+    random_item, random_fossil, count_items_and_rewrite, filter_item_sprites, give_item
 
 try:
     from .functions.pokedex_functions import *
@@ -70,6 +70,7 @@ try:
     from .functions.url_functions import *
     from .functions.gui_functions import type_icon_path, move_category_path
     from .gui_classes.pokemon_details import *
+    from .functions.trainer_functions import xp_share_gain_exp
 except ImportError as e:
     showWarning(f"Error in importing functions library {e}")
 
@@ -121,20 +122,6 @@ logger.log_and_showinfo('game', "Ankimon Startup.")
 # Initialize Pokémon objects
 # Initialize default values for the main Pokémon in a more compact form
 
-# Create a sample trainer card to test
-trainer_card = TrainerCard(
-    logger = logger,
-    settings_obj = settings_obj,
-    trainer_name=settings_obj.get("trainer.name", "Ash"),
-    badge_count=8,
-    favorite_pokemon="Pikachu",
-    trainer_id = ''.join(filter(str.isdigit, str(uuid.uuid4()).replace('-', ''))),
-    xp=0,
-    team="Pikachu (Level 25), Charizard (Level 50), Bulbasaur (Level 15)",
-    highest_level=100,
-    league = 'Unranked',
-)
-
 default_pokemon_data = {
     "name": "Pikachu", "gender": "M", "level": 5, "id": 1, "ability": "Static", 
     "type": ["Electric"], "stats": {"hp": 20, "atk": 30, "def": 15, "spa": 50, "spd": 40, "spe": 60, "xp": 0}, 
@@ -151,6 +138,8 @@ if mainpokemon_path.is_file():
             # Extract first Pokémon data if available
             main_pokemon = PokemonObject(**main_pokemon_data[0]) if main_pokemon_data else PokemonObject(**default_pokemon_data)
             main_pokemon.xp = main_pokemon.stats["xp"]
+            if main_pokemon.current_hp > main_pokemon.max_hp:
+                main_pokemon.current_hp = main_pokemon.max_hp
         except json.JSONDecodeError:
             main_pokemon = PokemonObject(**default_pokemon_data)
 else:
@@ -169,6 +158,8 @@ def update_main_pokemon(main_pokemon, mainpokemon_path = mainpokemon_path):
                 main_pokemon.update_stats(**main_pokemon_data[0])
                 max_hp = main_pokemon.calculate_max_hp()
                 main_pokemon.max_hp=max_hp
+                if main_pokemon_data[0].get("current_hp", max_hp) > max_hp:
+                    main_pokemon_data[0]["current_hp"] = max_hp
                 main_pokemon.current_hp=main_pokemon_data[0].get("current_hp", max_hp)
                 main_pokemon.hp=main_pokemon_data[0].get("current_hp", max_hp)
             except json.JSONDecodeError:
@@ -221,6 +212,18 @@ enemy_pokemon = PokemonObject(
     position=(5, 5)              # Position in battle
 )
 
+# Create a sample trainer card to test
+trainer_card = TrainerCard(
+    logger,
+    main_pokemon,
+    settings_obj,
+    trainer_name=settings_obj.get("trainer.name", "Ash"),
+    badge_count=8,
+    trainer_id = ''.join(filter(str.isdigit, str(uuid.uuid4()).replace('-', ''))),
+    xp=0,
+    team="Pikachu (Level 25), Charizard (Level 50), Bulbasaur (Level 15)",
+    league = 'Unranked',
+)
 
 ankimon_tracker_obj = AnkimonTracker(
     trainer_card=trainer_card,
@@ -292,18 +295,13 @@ front_sprites = check_folders_exist(pkmnimgfolder, "front_default")
 front_default_gif = check_folders_exist(pkmnimgfolder, "front_default_gif")
 item_sprites = check_folders_exist(pkmnimgfolder, "items")
 badges_sprites = check_folders_exist(pkmnimgfolder, "badges")
-berries_sprites = check_folders_exist(addon_dir, "berries")
-learnsets_data = check_file_exists(user_path_data, "learnsets.json")
-poke_api_data = check_file_exists(user_path_data, "pokeapi_db.json")
-pokedex_data = check_file_exists(user_path_data, "pokedex.json")
-moves_data = check_file_exists(user_path_data, "moves.json")
 
 database_complete = all([
-        pokedex_data, learnsets_data, moves_data, back_sprites, front_sprites, front_default_gif, back_default_gif, item_sprites, badges_sprites
+        back_sprites, front_sprites, front_default_gif, back_default_gif, item_sprites, badges_sprites
 ])
 
-dialog = CheckFiles(database_complete)
 if not database_complete:
+    dialog = CheckFiles()
     dialog.show()
 
 if mainpokemon_path.is_file():
@@ -653,8 +651,6 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, heigh
     if aw is None:
         return
     if reviewer_text_message_box != False:
-        # Assuming closeTooltip() and customCloseTooltip() are defined elsewhere
-        closeTooltip()
         x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
         y = aw.mapToGlobal(QPoint(0, aw.height() - 180)).y()
         lab = CustomLabel(aw)
@@ -683,7 +679,6 @@ if database_complete:
     def generate_random_pokemon():
         # Fetch random Pokémon data from Generation
         # Load the JSON file with Pokémon data
-        settings_obj.get("battle.cards_per_round", 2)
         ankimon_tracker_obj.pokemon_encounter = 0
         ankimon_tracker_obj.cards_battle_round = 0
         tier = "Normal"
@@ -789,9 +784,10 @@ def kill_pokemon():
         exp = int(calc_experience(main_pokemon.base_experience, enemy_pokemon.level) * 0.5)
     else:
         exp = int(calc_experience(main_pokemon.base_experience, enemy_pokemon.level))
+    exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp)
     main_pokemon.level = save_main_pokemon_progress(mainpokemon_path, main_pokemon.level, main_pokemon.name, main_pokemon.base_experience, main_pokemon.growth_rate, exp)
     ankimon_tracker_obj.general_card_count_for_battle = 0
-    if test_window.pkmn_window is True:
+    if test_window.isVisible() is True:
         new_pokemon()  # Show a new random Pokémon
 
 def display_dead_pokemon():
@@ -1024,11 +1020,9 @@ def save_caught_pokemon(nickname):
     with open(str(mypokemon_path), "w") as json_file:
         json.dump(caught_pokemon_data, json_file, indent=2)
 
-def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp):
-    global mainpokemon_evolution, pop_up_dialog_message_on_defeat
-    
+def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp):    
     ev_yield = enemy_pokemon.ev_yield
-    experience = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("remove_levelcap", False)))
+    experience = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap", False)))
     if remove_levelcap is True:
         main_pokemon.xp += exp
         level_cap = None
@@ -1040,7 +1034,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             main_pokemon_data = json.load(json_file)
     else:
         showWarning("Missing Mainpokemon Data !")
-    while int(experience) < int(main_pokemon.xp) and (level_cap is None or main_pokemon.level < level_cap):
+    while int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap", False))) < int(main_pokemon.xp) and (level_cap is None or main_pokemon.level < level_cap):
         main_pokemon.level += 1
         msg = ""
         msg += f"Your {main_pokemon.name} is now level {main_pokemon.level} !"
@@ -1054,16 +1048,9 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             tooltipWithColour(msg, color)
         except:
             pass
-        if pop_up_dialog_message_on_defeat is True:
+        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
             logger.log_and_showinfo("info",f"{msg}")
         main_pokemon.xp = int(main_pokemon.xp) - int(experience)
-        # Update mainpokemon_evolution and handle evolution logic
-        #mainpokemon_evolution = search_pokedex(f"{main_pokemon.name}".lower(), "evos")
-        #if mainpokemon_evolution:
-            #for pokemon in mainpokemon_evolution:
-                #min_level = search_pokedex(pokemon.lower(), "evoLevel")
-                #if min_level == main_pokemon.level:
-                    #msg = ""
         evo_id = check_evolution_for_pokemon(main_pokemon.individual_id, main_pokemon.id, main_pokemon.level, evo_window, main_pokemon.everstone)
         if evo_id is not None:
             msg += f"{main_pokemon.name} is about to evolve to {return_name_for_id(evo_id).capitalize()} at level {main_pokemon.level}"
@@ -1087,7 +1074,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                         msg += f"\n Your {main_pokemon.name.capitalize()} has learned {new_attack} !"
                         color = "#6A4DAC"
                         tooltipWithColour(msg, color)
-                        if pop_up_dialog_message_on_defeat is True:
+                        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
                             logger.log_and_showinfo("info",f"{msg}")
                     else:
                         dialog = AttackDialog(attacks, new_attack)
@@ -1119,20 +1106,20 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         tooltipWithColour(msg, color)
     except:
         pass
-    if pop_up_dialog_message_on_defeat is True:
+    if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
         logger.log_and_showinfo("info",f"{msg}")
     # Load existing Pokémon data if it exists
 
     for mainpkmndata in main_pokemon_data:
         mainpkmndata["stats"]["xp"] = int(main_pokemon.xp)
         mainpkmndata["level"] = int(main_pokemon.level)
-        mainpkmndata["current_hp"] = int(main_pokemon.current_hp)
         mainpkmndata["ev"]["hp"] += ev_yield["hp"]
         mainpkmndata["ev"]["atk"] += ev_yield["attack"]
         mainpkmndata["ev"]["def"] += ev_yield["defense"]
         mainpkmndata["ev"]["spa"] += ev_yield["special-attack"]
         mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
         mainpkmndata["ev"]["spe"] += ev_yield["speed"]
+        mainpkmndata["current_hp"] = int(main_pokemon.hp)
         main_pokemon.friendship += random.randint(5, 9)
         if main_pokemon.friendship > 255:
             main_pokemon.friendship = 255
@@ -1257,7 +1244,7 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
             reviewer = Container()
             reviewer.web = mw.reviewer.web
             reviewer_obj.update_life_bar(reviewer, 0, 0)
-            if test_window.pkmn_window is True:
+            if test_window.isVisible() is True:
                 test_window.display_first_encounter()
     except Exception as e:
         showWarning(f"Error occured in updating main_pokemon obj. {e}")
@@ -1306,7 +1293,7 @@ def cancel_evolution(individual_id, prevo_name):
             for mainpkmndata in main_pokemon_data:
                 mainpkmndata["stats"]["xp"] = int(main_pokemon.xp)
                 mainpkmndata["level"] = int(main_pokemon.level)
-                mainpkmndata["current_hp"] = int(main_pokemon.current_hp)
+                mainpkmndata["current_hp"] = int(main_pokemon.hp)
                 mainpkmndata["ev"]["hp"] += ev_yield["hp"]
                 mainpkmndata["ev"]["atk"] += ev_yield["attack"]
                 mainpkmndata["ev"]["def"] += ev_yield["defense"]
@@ -1314,6 +1301,7 @@ def cancel_evolution(individual_id, prevo_name):
                 mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
                 mainpkmndata["ev"]["spe"] += ev_yield["speed"]
                 mainpkmndata["attacks"] = attacks
+                mainpkmndata["everstone"] = False
     mypkmndata = mainpkmndata
     mainpkmndata = [mainpkmndata]
     # Save the caught Pokémon's data to a JSON file
@@ -1343,7 +1331,7 @@ def catch_pokemon(nickname):
             save_caught_pokemon(enemy_pokemon.name)
         ankimon_tracker_obj.general_card_count_for_battle = 0
         msg = f"You caught {enemy_pokemon.name.capitalize()}!"
-        if settings_obj.get('pop_up_dialog_message_on_defeat', True) is True:
+        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
             logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
         color = "#6A4DAC" #pokemon leveling info color for tooltip
         try:
@@ -1352,7 +1340,7 @@ def catch_pokemon(nickname):
             pass
         new_pokemon()  # Show a new random Pokémon
     else:
-        if settings_obj.get('pop_up_dialog_message_on_defeat', True) is True:
+        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
             logger.log_and_showinfo("info","You have already caught the pokemon. Please close this window!") # Display a message when the Pokémon is caught
 
 def get_random_starter():
@@ -1555,12 +1543,12 @@ def on_review_card(*args):
             if check is False:
                 receive_badge(6,achievements)
                 test_window.display_badge(6)
-        if ankimon_tracker_obj.cards_battle_round >= settings_obj.get("battle.cards_per_round", 2):
+        if ankimon_tracker_obj.cards_battle_round >= int(settings_obj.get("battle.cards_per_round", 2)):
             ankimon_tracker_obj.cards_battle_round = 0
             ankimon_tracker_obj.attack_counter = 0
             slp_counter = 0
             ankimon_tracker_obj.pokemon_encouter += 1
-            multiplier = ankimon_tracker_obj.multiplier
+            multiplier = int(ankimon_tracker_obj.multiplier)
             msg = ""
             msg += f"{multiplier}x Multiplier"
             #failed card = enemy attack
@@ -1644,14 +1632,14 @@ def on_review_card(*args):
                     msg += f" {enemy_dmg} dmg is dealt to {main_pokemon.name.capitalize()}."
     
             # if enemy pokemon hp < 0 - attack enemy pokemon
-            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0:
+            if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
                 dmg = 0
-                if settings_obj.get("controls.allow_to_choose_moves", False) == False:
-                    random_attack = random.choice(main_pokemon.attacks)
-                else:
+                random_attack = random.choice(main_pokemon.attacks)
+                if settings_obj.get("controls.allow_to_choose_moves", False) == True:
                     dialog = MoveSelectionDialog(main_pokemon.attacks)
                     if dialog.exec() == QDialog.DialogCode.Accepted:
-                        random_attack = dialog.selected_move
+                        if dialog.selected_move:
+                            random_attack = dialog.selected_move
                 msg += f"\n {main_pokemon.name} has chosen {random_attack.capitalize()} !"
                 move = find_details_move(random_attack)
                 category = move.get("category")
@@ -1727,9 +1715,10 @@ def on_review_card(*args):
                         if enemy_pokemon.hp < 0:
                             enemy_pokemon.hp = 0
                             msg += f" {enemy_pokemon.name.capitalize()} has fainted"
+                            
                     tooltipWithColour(msg, color)
                     if dmg > 0:
-                        reviewer_obj.seconds = settings_obj.compute_special_variable("animate_time")
+                        reviewer_obj.seconds = int(settings_obj.compute_special_variable("animate_time"))
                         if multiplier == 1:
                             play_effect_sound("HurtNormal")
                         elif multiplier < 1:
@@ -1738,36 +1727,21 @@ def on_review_card(*args):
                             play_effect_sound("HurtSuper")
                     else:
                         reviewer_obj.seconds = 0
-            else:
-                if test_window.pkmn_window is True:
-                    test_window.display_pokemon_death()
+            if enemy_pokemon.hp < 1:
+                enemy_pokemon.hp = 0
+                logger.log("info", "in enemy_pokemon death loop")
+                if int(settings_obj.get("battle.automatic_battle",0)) != 0:
+                    if int(settings_obj.get("battle.automatic_battle",1)) == 1:
+                        catch_pokemon("")
+                        ankimon_tracker_obj.general_card_count_for_battle = 0
+                    elif int(settings_obj.get("battle.automatic_battle",2)) == 2:
+                        kill_pokemon()
+                        new_pokemon()
+                        ankimon_tracker_obj.general_card_count_for_battle = 0
                 else:
-                    if automatic_battle != 0:
-                        if automatic_battle == 1:
-                            catch_pokemon("")
-                            ankimon_tracker_obj.general_card_count_for_battle = 0
-                        elif automatic_battle == 2:
-                            kill_pokemon()
-                            new_pokemon()
-                            ankimon_tracker_obj.general_card_count_for_battle = 0
-            if test_window.pkmn_window is True:
-                if enemy_pokemon.hp > 0:
-                    test_window.display_first_encounter()
-                elif enemy_pokemon.hp < 1:
-                    enemy_pokemon.hp = 0
-                    test_window.display_pokemon_death()
-                    ankimon_tracker_obj.general_card_count_for_battle = 0
-            elif test_window.pkmn_window is False:
-                if enemy_pokemon.hp < 1:
-                    enemy_pokemon.hp = 0
-                    if automatic_battle != 0:
-                        if automatic_battle == 1:
-                            catch_pokemon("")
-                            ankimon_tracker_obj.general_card_count_for_battle = 0
-                        elif automatic_battle == 2:
-                            kill_pokemon()
-                            new_pokemon()
-                            ankimon_tracker_obj.general_card_count_for_battle = 0
+                    if test_window.isVisible() is True:
+                        test_window.display_pokemon_death()
+                        ankimon_tracker_obj.general_card_count_for_battle = 0
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()
@@ -1776,6 +1750,7 @@ def on_review_card(*args):
             play_effect_sound("Fainted")
             new_pokemon()
             #mainpokemon_data()
+            main_pokemon.hp = main_pokemon.max_hp
             color = "#E12939"
             tooltipWithColour(msg, color)
         class Container(object):
@@ -1868,240 +1843,10 @@ def MainPokemon(pokemon_data, main_pokemon = main_pokemon):
     reviewer = Container()
     reviewer.web = mw.reviewer.web
     reviewer_obj.update_life_bar(reviewer, 0, 0)
-    if test_window.pkmn_window is True:
+    if test_window.isVisible() is True:
         test_window.display_first_encounter()
 
 pokecollection_win = PokemonCollectionDialog(logger=logger, settings_obj=settings_obj, mainpokemon_function = MainPokemon, main_pokemon = main_pokemon)
-
-class Downloader(QObject):
-    progress_updated = pyqtSignal(int)  # Signal to update progress bar
-    download_complete = pyqtSignal()  # Signal when download is complete
-    downloading_badges_sprites_txt = pyqtSignal()  # Signal when download is complete
-    downloading_sprites_txt = pyqtSignal()  # Signal when download is complete
-    downloading_sounds_txt = pyqtSignal()  # Signal when download is complete
-    downloading_item_sprites_txt = pyqtSignal()  # Signal when download is complete
-    downloading_data_txt = pyqtSignal()  # Signal when download is complete
-    downloading_gif_sprites_txt = pyqtSignal()
-
-    def __init__(self, addon_dir, parent=None):
-        super().__init__(parent)
-        self.addon_dir = Path(addon_dir)
-        self.pokedex = []
-        global sound_list, items_list
-        self.items_destination_to = user_path_sprites / "items"
-        self.badges_destination_to = user_path_sprites / "badges"
-        self.sounds_destination_to = user_path_sprites / "sounds"
-        self.front_dir = os.path.join(user_path_sprites, "front_default")
-        self.back_dir = os.path.join(user_path_sprites, "back_default")
-        self.front_gif_dir = os.path.join(user_path_sprites, "front_default_gif")
-        self.back_gif_dir = os.path.join(user_path_sprites, "back_default_gif")
-        self.user_path_data = user_path_data
-        self.badges_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/"
-        self.item_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dream-world/"
-        self.sounds_base_url = "https://veekun.com/dex/media/pokemon/cries/"
-        #self.sound_names = sound_list
-        self.sound_names = list(range(1, 722))
-        #self.item_names = items_list
-        self.item_name = ["absorb-bulb"]
-        if not os.path.exists(self.items_destination_to):
-            os.makedirs(self.items_destination_to)
-        if not os.path.exists(self.badges_destination_to):
-            os.makedirs(self.badges_destination_to)
-        if not os.path.exists(self.sounds_destination_to):
-            os.makedirs(self.sounds_destination_to)
-        if not os.path.exists(self.front_dir):
-            os.makedirs(self.front_dir)
-        if not os.path.exists(self.back_dir):
-            os.makedirs(self.back_dir)
-        if not os.path.exists(self.user_path_data):
-            os.makedirs(self.user_path_data)
-        if not os.path.exists(self.back_gif_dir):
-            os.makedirs(self.back_gif_dir)
-        if not os.path.exists(self.front_gif_dir):
-            os.makedirs(self.front_gif_dir)       
-
-        self.urls = [
-                "https://play.pokemonshowdown.com/data/learnsets.json",
-                "https://play.pokemonshowdown.com/data/pokedex.json",
-                "https://play.pokemonshowdown.com/data/moves.json",
-                "POKEAPI"
-        ]
-        self.csv_url = [
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/item_names.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_flavor_text.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/move_flavor_text.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon.csv",
-                "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_stats.csv"
-        ]
-
-    def save_to_json(self, pokedex, filename):
-        with open(filename, 'w') as json_file:
-            json.dump(pokedex, json_file, indent=2)
-
-    def get_pokemon_data(self,pokemon_id):
-        url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_id}/'
-        response = requests.get(url)
-
-        if response.status_code == 200:
-            data = response.json()
-            return data
-        else:
-            print(f"Failed to retrieve data for Pokemon with ID {pokemon_id}")
-            return None
-
-    def get_pokemon_species_data(self,pokemon_id):
-        url = f'https://pokeapi.co/api/v2/pokemon-species/{pokemon_id}/'
-        response = requests.get(url)
-
-        if response.status_code == 200:
-            data = response.json()
-            return data
-        else:
-            print(f"Failed to retrieve species data for Pokemon with ID {pokemon_id}")
-            return None
-
-    def fetch_pokemon_data(self,url):
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            return data
-        else:
-            print(f"Failed to fetch data from {url}")
-            return None
-
-    def create_pokedex(self,pokemon_id):
-        pokemon_data = self.get_pokemon_data(pokemon_id)
-        species_data = self.get_pokemon_species_data(pokemon_id)
-        if pokemon_data and species_data:
-            entry = {
-                "name": pokemon_data["name"],
-                "id": pokemon_id,
-                "effort_values": {
-                    stat["stat"]["name"]: stat["effort"] for stat in pokemon_data["stats"]
-                },
-                "base_experience": pokemon_data["base_experience"],
-                "growth_rate": species_data["growth_rate"]["name"]
-            }
-            self.pokedex.append(entry)
-
-    def download_pokemon_data(self):
-        try:
-            num_files = len(self.urls)
-            self.downloading_data_txt.emit()
-            for i, url in enumerate(self.urls, start=1):
-                if url != "POKEAPI":
-                    response = requests.get(url)
-                    if response.status_code == 200:
-                        data = response.json()
-                        file_path = self.user_path_data / f"{url.split('/')[-1]}"
-                        with open(file_path, 'w') as json_file:
-                            json.dump(data, json_file, indent=2)
-                    else:
-                       print(f"Failed to download data from {url}")  # Replace with a signal if needed
-                    progress = int((i / num_files) * 100)
-                    self.progress_updated.emit(progress)
-                else:  # Handle "POKEAPI" case
-                    self.pokedex = []
-                    id = 899  # Assuming you want to fetch data for 898 Pokemon
-                    for pokemon_id in range(1, id):
-                        self.create_pokedex(pokemon_id)
-                        progress = int((pokemon_id / id) * 100)
-                        self.progress_updated.emit(progress)
-                    self.save_to_json(self.pokedex, pokeapi_db_path)
-            num_files = len(self.csv_url)
-            for i, url in enumerate(self.csv_url, start=1):
-                with requests.get(url, stream=True) as r:
-                    file_path = self.addon_dir / "user_files" / "data_files" / f"{url.split('/')[-1]}"
-                    with open(file_path, 'wb') as f:
-                        for chunk in r.iter_content(chunk_size=8192): 
-                            f.write(chunk)
-                progress = int((i / num_files) * 100)
-                self.progress_updated.emit(progress)
-            total_downloaded = 0
-            self.downloading_sounds_txt.emit()
-            num_sound_files = len(self.sound_names)
-            i = 0
-            for sound in self.sound_names:
-                i += 1
-                sound = f"{sound}.ogg"
-                sounds_url = self.sounds_base_url + sound
-                response = requests.get(sounds_url)
-                if response.status_code == 200:
-                    with open(os.path.join(self.sounds_destination_to, sound), 'wb') as file:
-                        file.write(response.content)
-                progress = int((i / num_sound_files) * 100)
-                self.progress_updated.emit(progress)
-            self.downloading_gif_sprites_txt.emit()
-            self.download_complete.emit()
-        except Exception as e:
-            showWarning(f"An error occurred: {e}")  # Replace with a signal if needed
-
-class LoadingDialog(QDialog):
-    def __init__(self, addon_dir, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Downloading Resources")
-        self.label = QLabel("Downloading... \nThis may take several minutes.", self)
-        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.progress = QProgressBar(self)
-        self.progress.setRange(0, 100)
-        layout = QVBoxLayout()
-        layout.addWidget(self.label)
-        layout.addWidget(self.progress)
-        self.setLayout(layout)
-        self.start_download(addon_dir)
-
-    def start_download(self, addon_dir):
-        self.thread = QThread()
-        self.downloader = Downloader(addon_dir)
-        self.downloader.moveToThread(self.thread)
-        self.thread.started.connect(self.downloader.download_pokemon_data)
-        self.downloader.progress_updated.connect(self.progress.setValue)
-        self.downloader.downloading_data_txt.connect(self.downloading_data_txt)
-        self.downloader.downloading_sprites_txt.connect(self.downloading_sprite_txt)
-        self.downloader.downloading_item_sprites_txt.connect(self.downloading_item_sprites_txt)
-        self.downloader.downloading_badges_sprites_txt.connect(self.downloading_badges_sprites_txt)
-        self.downloader.downloading_sounds_txt.connect(self.downloading_sounds_txt)
-        self.downloader.downloading_gif_sprites_txt.connect(self.downloading_gif_sprites_txt)
-        self.downloader.progress_updated.connect(self.progress.setValue)
-        self.downloader.download_complete.connect(self.on_download_complete)
-        self.downloader.download_complete.connect(self.thread.quit)
-        self.downloader.download_complete.connect(self.downloader.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.start()
-
-    def on_download_complete(self):
-        self.label.setText("Download complete! You can now close this window.")
-    
-    def downloading_data_txt(self):
-        self.label.setText("Now Downloading Data Files")
-
-    def downloading_sprite_txt(self):
-        self.label.setText("Now Downloading Sprite Files")
-
-    def downloading_sounds_txt(self):
-        self.label.setText("Now Downloading Sound Files")
-        
-    def downloading_item_sprites_txt(self):
-        self.label.setText("Now Downloading Item Sprites...")
-
-    def downloading_badges_sprites_txt(self):
-        self.label.setText("Now Downloading Badges...")
-        
-    def downloading_gif_sprites_txt(self):
-        self.label.setText("Now Downloading Gif Sprites...")
-
-def show_agreement_and_download_database():
-    # Show the agreement dialog
-    dialog = AgreementDialog()
-    if dialog.exec() == QDialog.DialogCode.Accepted:
-        #pyqt6.6.1 difference
-        # User agreed, proceed with download
-        pokeapi_db_downloader()
-
-def pokeapi_db_downloader():
-    dlg = LoadingDialog(addon_dir)
-    dlg.exec()
 
 life_bar_injected = False
 
@@ -2571,8 +2316,8 @@ class TestWindow(QWidget):
             # Get the geometry of the main screen
             main_screen_geometry = mw.geometry()
             # Calculate the position to center the ItemWindow on the main screen
-            x = main_screen_geometry.center().x() - self.width() / 2
-            y = main_screen_geometry.center().y() - self.height() / 2
+            x = int(main_screen_geometry.center().x() - self.width() / 2)
+            y = int(main_screen_geometry.center().y() - self.height() / 2)
             self.setGeometry(x, y, 256, 256 )
             self.move(x,y)
             self.show()
@@ -2663,12 +2408,12 @@ class TestWindow(QWidget):
         painter.drawPixmap((410 - wpkmn_width), (170 - wpkmn_height), pixmap)
         painter.drawPixmap((144 - mpkmn_width), (290 - mpkmn_height), pixmap2)
 
-        experience = int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, settings_obj.get("remove_levelcap", False)))
+        experience = int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, settings_obj.get("misc.remove_level_cap", False)))
         mainxp_bar_width = 5
         mainpokemon_xp_value = int((self.main_pokemon.xp / experience) * 148)
         # Paint XP Bar
         painter.setBrush(QColor(58, 155, 220))
-        painter.drawRect(366, 246, mainpokemon_xp_value, mainxp_bar_width)
+        painter.drawRect(int(366), int(246), int(mainpokemon_xp_value), int(mainxp_bar_width))
 
         # Convert gender name to symbol - this function is from Foxy-null
         if gender == "M":
@@ -2715,7 +2460,7 @@ class TestWindow(QWidget):
         else:
             hp_color = QColor(110, 218, 163)  # Green
         painter.setBrush(hp_color)
-        painter.drawRect(x, y, hp_bar_value, h)
+        painter.drawRect(int(x), int(y), int(hp_bar_value), int(h))
         return painter
 
     def pokemon_display_battle(self):
@@ -2787,12 +2532,12 @@ class TestWindow(QWidget):
         painter.drawPixmap((410 - wpkmn_width), (170 - wpkmn_height), pixmap)
         painter.drawPixmap((144 - mpkmn_width), (290 - mpkmn_height), pixmap2)
 
-        experience = int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, settings_obj.get("remove_levelcap", False)))
+        experience = int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, settings_obj.get("misc.remove_level_cap", False)))
         mainxp_bar_width = 5
         mainpokemon_xp_value = int((self.main_pokemon.xp / experience) * 148)
         # Paint XP Bar
         painter.setBrush(QColor(58, 155, 220))
-        painter.drawRect(366, 246, mainpokemon_xp_value, mainxp_bar_width)
+        painter.drawRect(int(366), int(246), int(mainpokemon_xp_value), int(mainxp_bar_width))
 
         # custom font
         custom_font = load_custom_font(int(28), int(settings_obj.get("misc.language",11)))
@@ -3042,8 +2787,7 @@ class TestWindow(QWidget):
     def rate_display_item(self, item):
         Receive_Window = QDialog(mw)
         layout = QHBoxLayout()
-        item_name = item
-        item_widget = self.pokemon_display_item(item_name)
+        item_widget = self.pokemon_display_item(item)
         layout.addWidget(item_widget)
         Receive_Window.setStyleSheet("background-color: rgb(44,44,44);")
         Receive_Window.setMaximumWidth(512)
@@ -3054,8 +2798,7 @@ class TestWindow(QWidget):
     def display_item(self):
         Receive_Window = QDialog(mw)
         layout = QHBoxLayout()
-        item_name = random_item()
-        item_widget = self.pokemon_display_item(item_name)
+        item_widget = self.pokemon_display_item(random_item())
         layout.addWidget(item_widget)
         Receive_Window.setStyleSheet("background-color: rgb(44,44,44);")
         Receive_Window.setMaximumWidth(512)
@@ -3174,11 +2917,7 @@ def rate_this_addon():
                 json.dump(rate_data, file, indent=4)
                 test_window.rate_display_item("potion")
                 # add item to item list
-                with open(itembag_path, "r", encoding="utf-8") as json_file:
-                    itembag_list = json.load(json_file)
-                    itembag_list.append("potion")
-                with open(itembag_path, 'w') as json_file:
-                    json.dump(itembag_list, json_file)
+                give_item("potion")
         rate_button.clicked.connect(rate_this_button)
         layout.addWidget(rate_button)
 
@@ -4044,8 +3783,8 @@ class ItemWindow(QWidget):
         main_screen_geometry = mw.geometry()
         
         # Calculate the position to center the ItemWindow on the main screen
-        x = main_screen_geometry.center().x() - self.width() // 2
-        y = main_screen_geometry.center().y() - self.height() // 2
+        x = int(main_screen_geometry.center().x() - self.width() // 2)
+        y = int(main_screen_geometry.center().y() - self.height() // 2)
         
         # Move the ItemWindow to the calculated position
         self.move(x, y)
@@ -4184,8 +3923,8 @@ class AchievementWindow(QWidget):
         main_screen_geometry = mw.geometry()
         
         # Calculate the position to center the ItemWindow on the main screen
-        x = main_screen_geometry.center().x() - self.width() // 2
-        y = main_screen_geometry.center().y() - self.height() // 2
+        x = int(main_screen_geometry.center().x() - self.width() // 2)
+        y = int(main_screen_geometry.center().y() - self.height() // 2)
         
         # Move the ItemWindow to the calculated position
         self.move(x, y)
@@ -4214,7 +3953,6 @@ actions = create_menu_actions(
     flex_pokemon_collection,
     eff_chart,
     gen_id_chart,
-    show_agreement_and_download_database,
     credits,
     license,
     open_help_window,
@@ -4334,20 +4072,26 @@ if reviewer_buttons is True:
     # Replace the original link handler function with the modified one
     Reviewer._linkHandler = linkHandler_wrap
 
+mw.logger = logger
 
 if settings_obj.get("misc.discord_rich_presence",False) == True:
     from .functions.discord_function import *  # Import necessary functions for Discord integration
 
     client_id = '1319014423876075541'  # Replace with your actual client ID
     large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
-    ankimon_presence = DiscordPresence(client_id, large_image_url)  # Establish connection and get the presence instance
-    loop = False
+    ankimon_presence = DiscordPresence(client_id, large_image_url, ankimon_tracker_obj, logger, settings_obj)  # Establish connection and get the presence instance
 
     # Hook functions for Anki
     def on_reviewer_initialized(rev, card, ease):
-        ankimon_presence.loop = True
-        ankimon_presence.start()
+        if ankimon_presence.loop is False:
+            ankimon_presence.loop = True
+            ankimon_presence.start()
+    
+    def on_reviewer_will_end(*args):
+        ankimon_presence.loop = False
+        ankimon_presence.stop_presence()
 
     # Register the hook functions with Anki's GUI hooks
     gui_hooks.reviewer_did_answer_card.append(on_reviewer_initialized)
+    gui_hooks.reviewer_will_end.append(ankimon_presence.stop_presence)
     gui_hooks.sync_did_finish.append(ankimon_presence.stop)

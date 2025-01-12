@@ -42,7 +42,7 @@ def calculate_max_hp_wildpokemon(enemy_pokemon):
     wild_pk_max_hp = enemy_pokemon.calculate_max_hp()
     return wild_pk_max_hp
 
-def find_experience_for_level(group_growth_rate, level, remove_levelcap):
+def find_experience_for_level(group_growth_rate, level, remove_levelcap=True):
     """
     Find experience required to reach a certain level for a Pokémon with a given growth rate.
     Check for levelcap being uncaped in settings => then set diffrent experiences and if level is above 100, if so, set level to 100.
@@ -146,6 +146,8 @@ def create_caught_pokemon(enemy_pokemon, nickname):
         "everstone": False,
         "shiny": enemy_pokemon.shiny,
         "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "individual_id": str(uuid.uuid4())
+        "individual_id": str(uuid.uuid4()),
+        "mega": False,
+        "special-form": None,
     }
     return caught_pokemon
