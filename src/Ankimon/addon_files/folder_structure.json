@@ -117,6 +117,10 @@
                     "type": "file"
                 },
                 {
+                    "name": "sprites_folder_structure.json",
+                    "type": "file"
+                },
+                {
                     "name": "starters.json",
                     "type": "file"
                 },
@@ -803,14 +807,6 @@
                 {
                     "name": "choose_move_dialog.py",
                     "type": "file"
-                },
-                {
-                    "name": "downloader.py",
-                    "type": "file"
-                },
-                {
-                    "name": "testclass.py",
-                    "type": "file"
                 }
             ]
         },
@@ -832,6 +828,10 @@
         },
         {
             "name": "credits.html",
+            "type": "file"
+        },
+        {
+            "name": "folder_structure.json",
             "type": "file"
         },
         {
@@ -889,7 +889,7 @@
                 {
                     "name": "url_functions.py",
                     "type": "file"
-                }                    
+                }
             ]
         },
         {
@@ -4903,6 +4903,10 @@
                             "type": "file"
                         }
                     ]
+                },
+                {
+                    "name": "download_sprites.py",
+                    "type": "file"
                 },
                 {
                     "name": "items.json",
