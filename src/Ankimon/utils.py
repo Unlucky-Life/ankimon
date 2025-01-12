@@ -8,6 +8,7 @@ from .resources import battlescene_path, berries_path, items_path, itembag_path,
 from aqt.utils import showWarning, showInfo
 from collections import Counter
 from PyQt6.QtGui import QFontDatabase, QFont
+from aqt import mw
 
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
@@ -45,19 +46,23 @@ def addon_config_editor_will_display_json(text: str) -> str:
     try:
         # Parse the JSON text
         config = json.loads(text)
-        showInfo("This Configuration is old and wont be used anymore. \n Please use the Settings Window in the Ankimon Menu => Settings")
-        #dont show all mainpokemon and mypokemon information in config
-        if "pokemon_collection" in config:
-            del config["pokemon_collection"]
         if "mainpokemon" in config:
-            del config["mainpokemon"]
-        if "trainer.cash" in config:
-            del config["trainer.cash"]
+            showInfo(f"{config}")
+            showInfo("This Configuration is old and wont be used anymore. \n Please use the Settings Window in the Ankimon Menu => Settings \n We will open the new Settings Window for you")
+            mw.settings_ankimon.show_window()
+            #dont show all mainpokemon and mypokemon information in config
+            if "pokemon_collection" in config:
+                del config["pokemon_collection"]
+            if "mainpokemon" in config:
+                del config["mainpokemon"]
+            if "trainer.cash" in config:
+                del config["trainer.cash"]
         
         
-        # Convert back to JSON string
-        modified_text = json.dumps(config, indent=4)
-        return modified_text
+            # Convert back to JSON string
+            modified_text = json.dumps(config, indent=4)
+            return modified_text
+        return text
     except json.JSONDecodeError:
         # Handle JSON parsing error
         return text
