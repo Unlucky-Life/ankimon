@@ -3432,14 +3432,14 @@ count_items_and_rewrite(itembag_path)
 UserRole = 1000  # Define custom role
 
 class ItemWindow(QWidget):
-    def __init__(self, logger, main_pokemon, enemy_pokemon):
+    def __init__(self, logger, main_pokemon, enemy_pokemon, itembag_path):
         super().__init__()
+        self.itembag_path = itembag_path
+        self.logger=logger
         self.read_item_file()
         self.initUI()
         self.main_pokemon = main_pokemon
         self.enemy_pokemon = enemy_pokemon
-
-        self.logger=logger
 
     def initUI(self):
         self.hp_heal_items = {
@@ -3763,10 +3763,52 @@ class ItemWindow(QWidget):
             json.dump(self.itembag_list, json_file)
 
     def read_item_file(self):
-        # Read the list from the JSON file
-        with open(itembag_path, "r", encoding="utf-8") as json_file:
-            self.itembag_list = json.load(json_file)
+        """
+        Reads the list from the JSON file. If the file contains malformed items,
+        it tries to fix them by converting strings to the correct structure.
+        """
+        try:
+            with open(self.itembag_path, "r", encoding="utf-8") as json_file:
+                self.itembag_list = json.load(json_file)
+        except json.JSONDecodeError:
+            self.logger.log("error", "Malformed JSON detected. Attempting to fix.")
+            self.itembag_list = self._fix_and_load_items()
+            self.write_item_file()
 
+    def _fix_and_load_items(self):
+        """
+        Attempts to fix and load malformed JSON items.
+        Reads the JSON file as a string and corrects malformed items.
+        """
+        try:
+            with open(self.itembag_path, "r", encoding="utf-8") as json_file:
+                raw_data = json_file.read()
+
+            # Parse raw data as JSON (handling malformed structures)
+            corrected_items = []
+            json_data = raw_data.strip().lstrip("[").rstrip("]").split("},")
+            for entry in json_data:
+                entry = entry.strip()
+                if not entry.endswith("}"):
+                    entry += "}"
+
+                try:
+                    item = json.loads(entry)
+                    corrected_items.append(item)
+                except json.JSONDecodeError:
+                    # Fix malformed item (assume it's missing proper structure)
+                    if entry.startswith('{"') and entry.endswith('"}'):
+                        item_name = entry[2:-2]  # Extract item name
+                        corrected_items.append({"item": item_name, "quantity": 1})
+                        self.logger.log("info", f"Fixed malformed item: {item_name}")
+                    else:
+                        self.logger.log("warning", f"Skipping unknown item format: {entry}")
+
+            return corrected_items
+
+        except Exception as e:
+            self.logger.log("error", f"Error fixing and loading items: {e}")
+            
     def clear_layout(self, layout):
         while layout.count():
             item = layout.takeAt(0)
@@ -3810,7 +3852,8 @@ def get_id_and_description_by_item_name(item_name):
 item_window = ItemWindow(
     logger=logger,
     main_pokemon=main_pokemon,
-    enemy_pokemon=enemy_pokemon
+    enemy_pokemon=enemy_pokemon,
+    itembag_path=itembag_path
 )
 
 class AchievementWindow(QWidget):
