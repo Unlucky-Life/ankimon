@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
 from ..functions.pokedex_functions import find_details_move
-
+import random
 
 class MoveSelectionDialog(QDialog):
     def __init__(self, mainpokemon_attacks):
@@ -12,7 +12,7 @@ class MoveSelectionDialog(QDialog):
         # Dialog settings
         self.setWindowTitle("Select a Move")
         self.resize(300, 200)
-        self.selected_move = None
+        self.selected_move = random.choice(mainpokemon_attacks)
         self.mainpokemon_attacks = mainpokemon_attacks
 
         # Create and set layout
@@ -29,8 +29,8 @@ class MoveSelectionDialog(QDialog):
         self.move_labels = []
         for index, move in enumerate(mainpokemon_attacks):
             move_detail = find_details_move(move)
-            move_label = QLabel(f"{index + 1}. {move}({move_detail['basePower']}): {move_detail['shortDesc']}")
-            move_label.setToolTip(f"{move_detail['desc']}")
+            move_label = QLabel(f"{index + 1}. {move_detail.get('name', move.capitalize())}({move_detail.get('basePower', 'Unknown')}): {move_detail.get('shortDesc', 'Unknown')}")
+            move_label.setToolTip(f"{move_detail.get('desc', 'No description available')}")
             move_label.setFont(QFont("Arial", 12))
             move_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
             move_label.setStyleSheet("border: 1px solid #ccc; border-radius: 0px;")  # Removed padding, reduced border-radius

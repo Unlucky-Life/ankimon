@@ -6,6 +6,9 @@ from aqt import mw  # The main window object
 from aqt.utils import qconnect
 from .gui_classes.choose_trainer_sprite import TrainerSpriteDialog
 from .pyobj.trainer_card_window import TrainerCardGUI
+from .gui_classes.pokemon_team_window import PokemonTeamDialog
+from .gui_classes.check_files import FileCheckerApp
+from .user_files.download_sprites import show_agreement_and_download_dialog
 debug = True
 
 # Initialize the menu
@@ -31,7 +34,6 @@ def create_menu_actions(
     flex_pokemon_collection,
     eff_chart,
     gen_id_chart,
-    show_agreement_and_download_database,
     credits,
     license,
     open_help_window,
@@ -111,11 +113,6 @@ def create_menu_actions(
     join_discord_action.triggered.connect(join_discord_url)
     help_menu.addAction(join_discord_action)
 
-    # Download Resources
-    test_action3 = QAction("Download Resources", mw)
-    qconnect(test_action3.triggered, show_agreement_and_download_database)
-    mw.pokemenu.addAction(test_action3)
-
     # Credits
     credits_action = QAction("Credits", mw)
     credits_action.triggered.connect(credits.show_window)
@@ -186,4 +183,19 @@ def create_menu_actions(
     choose_trainer_sprite_action.triggered.connect(lambda: TrainerSpriteDialog(settings_obj=settings_obj).exec())
     game_menu.addAction(choose_trainer_sprite_action)
 
+    pokemon_team_action = QAction("Choose Pokemon Team", mw)
+    pokemon_team_action.triggered.connect(lambda: PokemonTeamDialog(settings_obj, logger))
+    game_menu.addAction(pokemon_team_action)
+
+    file_check_action = QAction("File Checker", mw)
+    file_check_action.triggered.connect(lambda: FileCheckerApp().exec())
+    help_menu.addAction(file_check_action)
+
+    downloader_action = QAction("Download Resources", mw)
+    downloader_action.triggered.connect(show_agreement_and_download_dialog)
+    help_menu.addAction(downloader_action)
+
     mw.form.menubar.addMenu(mw.pokemenu)
+
+
+    

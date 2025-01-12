@@ -207,7 +207,7 @@ class PokemonShopManager:
             self.set_callback('trainer.cash', int(self.get_callback('trainer.cash', 0) - item['price']))
             self.currency_qlabel.setText(f"<h2>Current Cash: ${self.settings_obj.get('trainer.cash', 0)}</h2>")
             QMessageBox.information(mw, "Purchase Successful", f"You purchased {item.get('name', 'poke-ball').replace('-', ' ').capitalize()} for ${item['price']}! \n {self.get_callback('trainer.cash', 0)} cash remaining.")
-            give_item(item['name'], self.logger)
+            give_item(item['name'])
         except Exception as e:
             self.logger.log_and_showinfo("error", f"Failed to purchase item: {e}")
             QMessageBox.critical(mw, "Purchase Failed", "An error occurred while purchasing the item.")
