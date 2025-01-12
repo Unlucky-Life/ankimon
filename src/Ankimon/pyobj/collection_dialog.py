@@ -237,7 +237,7 @@ class PokemonCollectionDialog(QDialog):
         label = QLabel(text)
         label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         font = QFont()
-        font.setPointSize(font_size)
+        font.setPointSize(int(font_size))
         label.setFont(font)
         return label
 

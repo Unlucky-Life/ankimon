@@ -3,13 +3,17 @@ import random
 import time
 from ..addon_files.lib.pypresence import Presence
 from aqt.utils import showWarning, tooltip
+from aqt import mw
 
 class DiscordPresence:
-    def __init__(self, client_id, large_image_url):
+    def __init__(self, client_id, large_image_url, ankimon_tracker, logger, settings_obj, parent=mw):
         try:
             self.RPC = Presence(client_id)
             self.RPC.connect()
             self.large_image_url = large_image_url
+            self.ankimon_tracker = ankimon_tracker
+            self.logger_obj = mw.logger
+            self.settings = settings_obj
             self.loop = True
             self.start_time = time.time()
             self.thread = None
@@ -25,9 +29,13 @@ class DiscordPresence:
                 "Evolve your knowledge—level up with every session!",
                 "Gotta review ‘em all, Ankimon style!"
             ]
+            self.special_quotes = [
+                f"In battle with {self.ankimon_tracker.main_pokemon.nickname or self.ankimon_tracker.main_pokemon.name.capitalize()} Lvl {self.ankimon_tracker.main_pokemon.level}",
+                f"Currently battling {self.ankimon_tracker.enemy_pokemon.name.capitalize()} Lvl {self.ankimon_tracker.enemy_pokemon.level}",
+            ]
             self.state = random.choice(self.quotes)
         except Exception as e:
-            tooltip(f"Error with Discord setup: {e}")
+            mw.logger.log("info",f"Error with Discord setup: {e}")
 
     def update_presence(self):
         """
@@ -36,13 +44,13 @@ class DiscordPresence:
         try:
             while self.loop:
                 self.RPC.update(
-                    state=self.state,
+                    state = random.choice(self.quotes) if int(self.settings.get("misc.discord_rich_presence_text", 1)) == 1 else random.choice(self.special_quotes),
                     large_image=self.large_image_url,
                     start=self.start_time
                 )
-                time.sleep(5)  # Sleep for 5 seconds before updating again
+                time.sleep(60)  # Sleep for 30 seconds before updating again
         except Exception as e:
-            tooltip(f"Error updating Discord Rich Presence: {e}")
+            mw.logger.log("error",f"Error updating Discord Rich Presence: {e}")
 
     def start(self):
         """
@@ -54,7 +62,7 @@ class DiscordPresence:
                 self.thread = threading.Thread(target=self.update_presence, daemon=True)
                 self.thread.start()
         except Exception as e:
-            tooltip(f"Error starting Discord Rich Presence: {e}")
+            mw.logger.log("error",f"Error starting Discord Rich Presence: {e}")
 
     def stop(self):
         """
@@ -67,17 +75,18 @@ class DiscordPresence:
                 self.thread = None  # Reset the thread
             self.RPC.clear()
         except Exception as e:
-            tooltip(f"Error clearing Discord Rich Presence: {e}")
+            mw.logger.log("error",f"Error clearing Discord Rich Presence: {e}")
 
     def stop_presence(self):
         """
         Update the Discord Rich Presence to indicate a break when stopping.
         """
         try:
+            self.loop = False
             if not self.loop:
                 self.RPC.update(
                     state="Break time! You’ve earned it.",
                     large_image=self.large_image_url
                 )
         except Exception as e:
-            tooltip(f"Error updating presence to break state: {e}")
+            mw.logger.log("error",f"Error updating presence to break state: {e}")
