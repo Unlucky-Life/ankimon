@@ -48,7 +48,7 @@ class DiscordPresence:
                     large_image=self.large_image_url,
                     start=self.start_time
                 )
-                time.sleep(60)  # Sleep for 30 seconds before updating again
+                time.sleep(30)  # Sleep for 30 seconds before updating again
         except Exception as e:
             mw.logger.log("error",f"Error updating Discord Rich Presence: {e}")
 
