@@ -344,8 +344,7 @@ def createStatBar(color, value):
 
     # Draw the colored bar based on the value
     painter.setBrush(color)
-    bar_width = int(value * 1)  # Adjust the width as needed
-    painter.drawRect(0, 0, bar_width, 10)
+    painter.drawRect(int(0), int(0), int(value * 1), int(10))
 
     return pixmap
 

@@ -150,6 +150,8 @@ def extract_ids_from_file():
             data = json.load(file)
             ids = [character['id'] for character in data]
             owned_pokemon_ids = ids
+            owned_pokemon_ids = sorted(list(set(owned_pokemon_ids)))
+            #showWarning(f"Owned Pokémon IDs: {owned_pokemon_ids}")
             return owned_pokemon_ids
     except Exception as e:
         showWarning(f"Error: {e} with function extract_ids_from_file")

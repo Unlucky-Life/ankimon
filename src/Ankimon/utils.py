@@ -148,11 +148,7 @@ def random_item():
     item_names = [name for name in item_names if not name.endswith("-nugget")]
     item_name = random.choice(item_names)
     # add item to item list
-    with open(itembag_path, "r", encoding="utf-8") as json_file:
-        itembag_list = json.load(json_file)
-        itembag_list.append(item_name)
-    with open(itembag_path, 'w') as json_file:
-        json.dump(itembag_list, json_file)
+    give_item(item_name)
     return item_name
 
 # Function to get the list of daily items
@@ -171,7 +167,7 @@ def daily_item_list():
     return item_names
 
 # Function to give an item to the player
-def give_item(item_name, logger):
+def give_item(item_name):
     with open(itembag_path, "r", encoding="utf-8") as json_file:
         itembag_list = json.load(json_file)
         # Check if the item exists and update quantity, otherwise append
@@ -184,7 +180,7 @@ def give_item(item_name, logger):
             itembag_list.append({"item": item_name, "quantity": 1})
     with open(itembag_path, 'w', encoding="utf-8") as json_file:
         json.dump(itembag_list, json_file)
-    logger.log_and_showinfo('game', f"Player bought item {item_name.capitalize()}")
+    #logger.log_and_showinfo('game', f"Player bought item {item_name.capitalize()}")
 
 #Function to return a cost of an item
 def get_item_price(item_name, file_path=csv_file_items_cost):
@@ -256,11 +252,7 @@ def random_fossil():
             # Append the file name without the .png extension to the list
             fossil_names.append(file[:-4])
     fossil_name = random.choice(fossil_names)
-    with open(itembag_path, "r", encoding="utf-8") as json_file:
-        itembag_list = json.load(json_file)
-        itembag_list.append(fossil_name)
-    with open(itembag_path, 'w') as json_file:
-        json.dump(itembag_list, json_file, indent=2)
+    give_item(fossil_name)
     return fossil_name
 
 def count_items_and_rewrite(file_path):
@@ -336,17 +328,17 @@ def load_custom_font(font_size, language):
     if language == 1:
         font_file = "pkmn_w.ttf"
         font_file_path = font_path / font_file
-        font_size = (font_size * 1) / 2
+        font_size = int((font_size * 1) / 2)
         if font_file_path.exists():
             font_name = "PKMN Western"
         else:
             font_name = "Early GameBoy"
             font_file = "Early GameBoy.ttf"
-            font_size = (font_size * 5) / 7
+            font_size = int((font_size * 5) / 7)
     else:
         font_name = "Early GameBoy"
         font_file = "Early GameBoy.ttf"
-        font_size = (font_size * 2) / 5
+        font_size = int((font_size * 2) / 5)
 
     # Register the custom font with its file path
     QFontDatabase.addApplicationFont(str(font_path / font_file))
@@ -375,3 +367,4 @@ def get_all_sprites(directory):
     except FileNotFoundError:
         print(f"Error: The directory '{directory}' does not exist.")
         return []
+

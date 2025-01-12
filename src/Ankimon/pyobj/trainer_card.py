@@ -1,6 +1,8 @@
-from ..resources import trainer_sprites_path
-
+from ..resources import trainer_sprites_path, mypokemon_path
+from ..functions.trainer_functions import find_trainer_rank
+from aqt.utils import showWarning, showInfo
 import math
+import json
 
 # Constants for leveling
 BASE_XP = 50  # Base XP required for level 1
@@ -16,31 +18,42 @@ POKEMON_TIERS = {
 }
 
 class TrainerCard:
-    def __init__(self, logger, settings_obj, trainer_name, badge_count, favorite_pokemon, trainer_id, level=1, xp=0, achievements=None, team="", image_path=trainer_sprites_path, highest_level=0, league="unranked"):
+    def __init__(self, logger, main_pokemon, settings_obj, trainer_name, badge_count, trainer_id, level=1, xp=0, achievements=None, team="", image_path=trainer_sprites_path, league="unranked"):
         self.logger = logger
+        self.main_pokemon = main_pokemon
         self.settings_obj = settings_obj,
         self.trainer_name = trainer_name      # Name of the trainer
         self.badge_count = badge_count        # Number of badges the trainer has earned
-        self.favorite_pokemon = favorite_pokemon  # Trainer's favorite Pokémon
+        self.favorite_pokemon = main_pokemon.name  # Trainer's favorite Pokémon
         self.trainer_id = trainer_id          # Unique ID for the trainer
         self.level = int(settings_obj.get("trainer.level", 1))                    # Trainer's level
         self.xp = xp                          # Experience points
         self.achievements = achievements if achievements else []  # List of achievements (if any)
         self.team = team                      # Team as a simple string
-        self.highest_level_pokemon = self.get_highest_level_pokemon()  # Highest level Pokémon
+        self.highest_level = self.get_highest_level_pokemon()  # Highest level Pokémon
         self.image_path = f"{trainer_sprites_path}" + "/" + settings_obj.get("trainer.sprite", "ash-sinnoh") + ".png"
-        self.league = league
-        self.highest_level = highest_level
+        self.league = find_trainer_rank(self.highest_level, self.level)  # Trainer's rank in the Pokémon world
         self.cash = int(settings_obj.get("trainer.cash", 0))
 
     def get_highest_level_pokemon(self):
-        """Method to find the highest level Pokémon (from the team string)"""
-        if not self.team:
-            return None
-        # Split the team string and extract the levels
-        pokemons = self.team.split(", ")
-        highest_pokemon = max(pokemons, key=lambda p: int(p.split(" (Level ")[-1].split(")")[0]))
-        return highest_pokemon
+        """Method to find the name of the highest-level Pokémon from the mypokemon_path."""
+        try:
+            # Read the Pokémon data from the file
+            with open(mypokemon_path, "r", encoding="utf-8") as file:
+                pokemon_data = json.load(file)
+            
+            if not pokemon_data:
+                return None  # Return None if the data is empty
+            
+            # Find the Pokémon with the highest level and return its name
+            highest_pokemon = max(pokemon_data, key=lambda p: p.get("level", 0))
+            return f"{highest_pokemon.get('name', 'None')} (Level {highest_pokemon.get('level', 0)})"
+        except FileNotFoundError:
+            showInfo(f"File not found: {mypokemon_path}")
+            return "None"
+        except json.JSONDecodeError:
+            showInfo(f"Error decoding JSON from file: {mypokemon_path}")
+            return "None"
 
     def add_achievement(self, achievement):
         """Method to add a new achievement"""
@@ -58,11 +71,12 @@ class TrainerCard:
             'level': self.level,
             'xp': self.xp,
             'badges': self.badge_count,
-            'favorite_pokemon': self.favorite_pokemon,
-            'highest_level_pokemon': self.highest_level_pokemon,
+            'favorite_pokemon': self.main_pokemon.name,
+            'highest_level_pokemon': self.get_highest_level_pokemon(),
             'team': self.team,
             'achievements': self.achievements,
-            'xp_for_next_level': self.xp_for_next_level
+            'xp_for_next_level': self.xp_for_next_level,
+            'league': self.league,
         }
 
     def xp_for_next_level(self):
