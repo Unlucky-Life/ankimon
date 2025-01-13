@@ -32,7 +32,7 @@ class TrainerCard:
         self.team = team                      # Team as a simple string
         self.highest_level = self.get_highest_level_pokemon()  # Highest level Pokémon
         self.image_path = f"{trainer_sprites_path}" + "/" + settings_obj.get("trainer.sprite", "ash-sinnoh") + ".png"
-        self.league = find_trainer_rank(self.highest_level, self.level)  # Trainer's rank in the Pokémon world
+        self.league = find_trainer_rank(int(self.highest_pokemon_level()), int(self.level))  # Trainer's rank in the Pokémon world
         self.cash = int(settings_obj.get("trainer.cash", 0))
 
     def get_highest_level_pokemon(self):
@@ -48,6 +48,26 @@ class TrainerCard:
             # Find the Pokémon with the highest level and return its name
             highest_pokemon = max(pokemon_data, key=lambda p: p.get("level", 0))
             return f"{highest_pokemon.get('name', 'None')} (Level {highest_pokemon.get('level', 0)})"
+        except FileNotFoundError:
+            showInfo(f"File not found: {mypokemon_path}")
+            return "None"
+        except json.JSONDecodeError:
+            showInfo(f"Error decoding JSON from file: {mypokemon_path}")
+            return "None"
+    
+    def highest_pokemon_level(self):
+        """Method to find the name of the highest-level Pokémon from the mypokemon_path."""
+        try:
+            # Read the Pokémon data from the file
+            with open(mypokemon_path, "r", encoding="utf-8") as file:
+                pokemon_data = json.load(file)
+            
+            if not pokemon_data:
+                return None  # Return None if the data is empty
+            
+            # Find the Pokémon with the highest level and return its name
+            highest_pokemon = max(pokemon_data, key=lambda p: p.get("level", 0))
+            return f"{highest_pokemon.get('level', 0)}"
         except FileNotFoundError:
             showInfo(f"File not found: {mypokemon_path}")
             return "None"
