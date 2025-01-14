@@ -16,6 +16,7 @@ class SettingsWindow(QMainWindow):
         self.load_config = load_config_callback
         self.setWindowTitle("Settings")
         self.setMaximumWidth(600)
+        self.setMaximumHeight(900)
         self.parent = mw
 
         # Load settings descriptions and friendly names
