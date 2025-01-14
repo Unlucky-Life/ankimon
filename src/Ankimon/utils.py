@@ -47,9 +47,9 @@ def addon_config_editor_will_display_json(text: str) -> str:
         # Parse the JSON text
         config = json.loads(text)
         if "mainpokemon" in config:
-            showInfo(f"{config}")
-            showInfo("This Configuration is old and wont be used anymore. \n Please use the Settings Window in the Ankimon Menu => Settings \n We will open the new Settings Window for you")
-            mw.settings_ankimon.show_window()
+            #showInfo(f"{config}")
+            showInfo("This Configuration is old and wont be used anymore. \n Please use the Settings Window in the Ankimon Menu => Settings")
+            #mw.settings_ankimon.show_window()
             #dont show all mainpokemon and mypokemon information in config
             if "pokemon_collection" in config:
                 del config["pokemon_collection"]
