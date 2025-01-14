@@ -643,8 +643,7 @@ def customCloseTooltip(tooltipLabel):
 		tooltipLabel = None
 
 def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, height=0, centered=False):
-    period = reviewer_text_message_box_time #time for pop up message
-    global reviewer_text_message_box
+    period = int(settings_obj.get("gui.reviewer_text_message_box_time", 3) * 1000) #time for pop up message
     class CustomLabel(QLabel):
         def mousePressEvent(self, evt):
             evt.accept()
@@ -673,7 +672,10 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, heigh
         lab.setPalette(p)
         lab.show()
         lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))    
-        QTimer.singleShot(period, lambda: lab.hide())
+        try:
+            QTimer.singleShot(period, lambda: lab.hide())
+        except:
+            QTimer.singleShot(3000, lambda: lab.hide())
         logger.log_and_showinfo("game", msg)
 
 # Your random Pokémon generation function using the PokeAPI
@@ -4028,16 +4030,14 @@ def add_defeat_pokemon_hook(func):
 
 # Custom function that triggers the catch_pokemon hook
 def CatchPokemonHook():
-    global hp
-    if hp < 1:
+    if enemy_pokemon.hp < 1:
         catch_pokemon("")
     for hook in catch_pokemon_hooks:
         hook()
 
 # Custom function that triggers the defeat_pokemon hook
 def DefeatPokemonHook():
-    global hp
-    if hp < 1:
+    if enemy_pokemon.hp < 1:
         kill_pokemon()
         new_pokemon()
     for hook in defeat_pokemon_hooks:

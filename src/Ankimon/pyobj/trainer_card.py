@@ -67,13 +67,13 @@ class TrainerCard:
             
             # Find the Pokémon with the highest level and return its name
             highest_pokemon = max(pokemon_data, key=lambda p: p.get("level", 0))
-            return f"{highest_pokemon.get('level', 0)}"
+            return int(highest_pokemon.get('level', 0))
         except FileNotFoundError:
             showInfo(f"File not found: {mypokemon_path}")
-            return "None"
+            return int(0)
         except json.JSONDecodeError:
             showInfo(f"Error decoding JSON from file: {mypokemon_path}")
-            return "None"
+            return int(0)
 
     def add_achievement(self, achievement):
         """Method to add a new achievement"""
