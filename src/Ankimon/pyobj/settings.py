@@ -88,8 +88,8 @@ class Settings:
         config = self.config
         sound_effects = config.get("audio.sound_effects", False)
         if sound_effects:
-            from . import playsound
-
+            from .. import playsound
+            
         view_main_front = config.get("gui.view_main_front", True)
         reviewer_image_gif = config.get("gui.reviewer_image_gif", False)
         self.view_main_front = -1 if view_main_front and reviewer_image_gif else 1
