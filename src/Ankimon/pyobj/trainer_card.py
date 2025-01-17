@@ -105,7 +105,7 @@ class TrainerCard:
 
     def on_level_up(self):
         """Triggered when leveling up."""
-        self.logger.log_and_showinfo("game", f"🎉 Congratulations! You reached Level {self.level}!")
+        self.logger.log_and_showinfo("game", f"Congratulations! You reached Level {self.level}!")
 
     def gain_xp(self, tier, allow_to_choose_move=False):
         """Add XP based on defeated Pokémon's tier."""
