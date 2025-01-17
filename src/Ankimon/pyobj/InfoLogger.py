@@ -17,7 +17,7 @@ class ShowInfoLogger:
         # Set up logging
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler(self.log_file)
+        file_handler = logging.FileHandler(self.log_file, encoding='utf-8')  # Explicit UTF-8 encoding
         file_handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
