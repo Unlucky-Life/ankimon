@@ -68,6 +68,7 @@ class Settings:
                 "trainer.sprite": "ash",
                 "trainer.id": 0,
                 "trainer.cash": 0,
+                "trainer.level": 0,
                 }
             self.save_config(config)
         return config
