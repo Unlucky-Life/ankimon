@@ -25,7 +25,7 @@ class ShowInfoLogger:
 
         # Create a separate handler for the game log messages
         self.game_logger = logging.getLogger("GameLogger")
-        game_file_handler = logging.FileHandler(self.log_file)
+        game_file_handler = logging.FileHandler(self.log_file,encoding="utf-8")
         game_file_handler.setLevel(logging.DEBUG)
         game_formatter = logging.Formatter('%(asctime)s - GAME - %(message)s')  # Custom format for game messages
         game_file_handler.setFormatter(game_formatter)
