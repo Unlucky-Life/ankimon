@@ -63,7 +63,7 @@ class TrainerCard:
                 pokemon_data = json.load(file)
             
             if not pokemon_data:
-                return None  # Return None if the data is empty
+                return int(0)  # Return None if the data is empty
             
             # Find the Pokémon with the highest level and return its name
             highest_pokemon = max(pokemon_data, key=lambda p: p.get("level", 0))
