@@ -22,7 +22,7 @@ Ankimon is an Anki addon designed to gamify your learning experience by allowing
 
 ## Important Notes
 
-- "Before reporting an issue on Linux, make sure you check if it works with the package downloaded directly from the Anki github as it could be a problem with the package maintained by a third party (distro maintainer or flatpak)"
+- **Linux OS** Before reporting an issue on Linux, make sure you check if it works with the package downloaded directly from the Anki github as it could be a problem with the package maintained by a third party (distro maintainer or flatpak)
 - **Addon Status:** Ankimon is still in development. Please report any bugs you encounter to help improve the addon.
 - **Backup Files:** Before updating the addon, ensure to copy your "mypokemon.json" and "mainpokemon.json" files to prevent data loss before any updates. Please check out my GitHub Ankimon Page before updating - I will let you know when an update is coming in.
 - **Compatibility:** Currently, Ankimon is **only compatible with PyQt6**. Updates for compatibility with other versions will be provided in the future.
