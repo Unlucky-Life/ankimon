@@ -6,6 +6,7 @@ from ..functions.create_css_for_reviewer import create_css_for_reviewer
 from ..texts import inject_life_bar_css_1, inject_life_bar_css_2
 from ..functions.create_gui_functions import create_status_html
 from ..resources import icon_path
+from ..functions.pokedex_functions import get_pokemon_diff_lang_name
 
 class Reviewer_Manager:
     def __init__(self, settings_obj, main_pokemon, enemy_pokemon, ankimon_tracker):
@@ -63,7 +64,11 @@ class Reviewer_Manager:
                         web_content.body += '<div id="next_lvl_text" class="Ankimon">Next Level</div>'
                         web_content.body += '<div id="xp_text" class="Ankimon">XP</div>'
                     # Inject a div element for the text display
-                    web_content.body += f'<div id="name-display" class="Ankimon">{self.enemy_pokemon.name.capitalize()} LvL: {self.enemy_pokemon.level}</div>'
+                    enemy_lang_name = (get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
+                    if self.enemy_pokemon.shiny is True:
+                        enemy_lang_name += " ⭐ "
+                    name_display_text = f"{enemy_lang_name} LvL: {self.enemy_pokemon.level}"
+                    web_content.body += f'<div id="name-display" class="Ankimon">{name_display_text}</div>'
                     if self.enemy_pokemon.hp > 0:
                         web_content.body += f'{create_status_html(f"{self.enemy_pokemon.battle_status}", settings_obj=self.settings)}'
                     else:
@@ -76,7 +81,11 @@ class Reviewer_Manager:
                     if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
                         image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
                         web_content.body += f'<div id="MyPokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage" style="animation: shake 0s ease;"></div>'
-                        web_content.body += f'<div id="myname-display" class="Ankimon">{self.main_pokemon.name.capitalize()} LvL: {self.main_pokemon.level}</div>'
+                        main_lang_name = (get_pokemon_diff_lang_name(int(self.main_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
+                        if self.main_pokemon.shiny:
+                            main_lang_name += " ⭐ "
+                        main_name_display_text = f"{main_lang_name} LvL: {self.main_pokemon.level}"
+                        web_content.body += f'<div id="myname-display" class="Ankimon">{main_name_display_text}</div>'
                         web_content.body += f'<div id="myhp-display" class="Ankimon">HP: {self.main_pokemon.hp}/{self.main_pokemon.max_hp}</div>'
                         # Inject a div element at the end of the body for the life bar
                         if self.settings.get("gui.hp_bar_config", True) is True:
@@ -148,7 +157,10 @@ class Reviewer_Manager:
                     experience_for_next_lvl = int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings.get("remove_levelcap", False)))
                     xp_bar_percent = int((self.main_pokemon.xp / int(experience_for_next_lvl)) * 100)
                     reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
-                name_display_text = f"{self.enemy_pokemon.name.capitalize()} LvL: {self.enemy_pokemon.level}"
+                enemy_lang_name = (get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
+                if self.enemy_pokemon.shiny is True:
+                    enemy_lang_name += " ⭐ "
+                name_display_text = f"{enemy_lang_name} LvL: {self.enemy_pokemon.level}"
                 hp_display_text = f"HP: {self.enemy_pokemon.hp}/{self.enemy_pokemon.max_hp}"
                 reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
                 reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
@@ -163,7 +175,10 @@ class Reviewer_Manager:
                 reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
                 if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
                     new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage" style="animation: shake {self.myseconds}s ease;">'
-                    main_name_display_text = f"{self.main_pokemon.name.capitalize()} LvL: {self.main_pokemon.level}"
+                    main_lang_name = (get_pokemon_diff_lang_name(int(self.main_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
+                    if self.main_pokemon.shiny:
+                        main_lang_name += " ⭐ "
+                    main_name_display_text = f"{main_lang_name} LvL: {self.main_pokemon.level}"
                     main_hp_display_text = f"HP: {self.main_pokemon.hp}/{self.main_pokemon.max_hp}"
                     reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50)) + '%";')
                     reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
