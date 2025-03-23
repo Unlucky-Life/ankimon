@@ -3,7 +3,9 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from aqt.utils import showWarning
 from aqt import mw
 from ..resources import mainpokemon_path, mypokemon_path, pokeapi_db_path, moves_file_path, pokedex_path
-
+from datetime import datetime
+import uuid
+from ..functions.pokedex_functions import search_pokeapi_db_by_id
 
 class PokemonTrade:
     def __init__(self, name, id, level, ability, iv, ev, gender, attacks, individual_id, logger, refresh_callback):
@@ -113,8 +115,13 @@ class PokemonTrade:
         if not details:
             return
 
+        base_experience = search_pokeapi_db_by_id(pokemon_id, "base_experience")
+
+        # Create new Pokémon object for incoming trade code pokemon
         new_pokemon = {
             "name": details["name"],
+            "nickname": "",
+            "ability": "No Ability",
             "id": pokemon_id,
             "gender": self.gender_from_id(gender_id),
             "level": level,
@@ -124,8 +131,19 @@ class PokemonTrade:
             "iv": iv_stats,
             "attacks": attacks,
             "growth_rate": self.get_growth_rate(pokemon_id),
-            "current_hp": self.calculate_max_hp(details["baseStats"]["hp"], level, ev_stats, iv_stats)
+            "current_hp": self.calculate_max_hp(details["baseStats"]["hp"], level, ev_stats, iv_stats),
+            "base_experience": base_experience,
+            "friendship": 0,
+            "pokemon_defeated": 0,
+            "everstone": False,
+            "shiny": False,
+            "mega": False,
+            "special-form": None,
+            "capture_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "individual_id": str(uuid.uuid4())
         }
+
+        new_pokemon["stats"]["xp"] = 0
 
         self.replace_pokemon(new_pokemon)
 
