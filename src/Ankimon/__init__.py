@@ -95,6 +95,7 @@ from .pyobj.sync_pokemon_data import CheckPokemonData
 from .pyobj.collection_dialog import PokemonCollectionDialog
 from .pyobj.attack_dialog import AttackDialog
 from .pyobj.reviewer_obj import Reviewer_Manager
+from .pyobj.translator import Translator
 
 from .classes.choose_move_dialog import MoveSelectionDialog
 
@@ -118,12 +119,13 @@ settings_window = SettingsWindow(
 
 mw.settings_ankimon = settings_window
 
+#Init Translator
+translator = Translator(language=int(settings_obj.get("misc.language", int(9))))
+
 # Log an startup message
-logger.log_and_showinfo('game', "Ankimon Startup.")
+logger.log_and_showinfo('game', translator.translate("startup"))
 
-# Initialize Pokémon objects
 # Initialize default values for the main Pokémon in a more compact form
-
 default_pokemon_data = {
     "name": "Pikachu", "gender": "M", "level": 5, "id": 1, "ability": "Static", 
     "type": ["Electric"], "stats": {"hp": 20, "atk": 30, "def": 15, "spa": 50, "spd": 40, "spe": 60, "xp": 0}, 
@@ -1762,6 +1764,8 @@ def on_review_card(*args):
         reviewer = Container()
         reviewer.web = mw.reviewer.web
         reviewer_obj.update_life_bar(reviewer, 0, 0)
+        if test_window is not None:
+            test_window.display_battle()
     except Exception as e:
         showWarning(f"An error occurred in reviewer: {str(e)}")
 
@@ -2278,6 +2282,7 @@ class TestWindow(QWidget):
         self.default_path = f"{pkmnimgfolder}/front_default/substitute.png"
         self.init_ui()
         #self.update()
+
     def init_ui(self):
         layout = QVBoxLayout()
         # Main window layout
@@ -2338,13 +2343,14 @@ class TestWindow(QWidget):
         ankimon_tracker_obj.caught = 0
 
         # Capitalize the first letter of the Pokémon's name
-        lang_name = get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), settings_obj.get('misc.language'))
+        lang_name = get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), int(settings_obj.get('misc.language')))
         # calculate wild pokemon max hp
         message_box_text = (f"A wild {lang_name.capitalize()} appeared !")
         if ankimon_tracker_obj.pokemon_encouter == 0:
             bckgimage_path = battlescene_path / ankimon_tracker_obj.battlescene_file
         elif ankimon_tracker_obj.pokemon_encouter > 0:
             bckgimage_path = battlescene_path_without_dialog / ankimon_tracker_obj.battlescene_file
+        msg_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
         image_label, msg_font = self.window_show(bckgimage_path, lang_name)
         return image_label
 
@@ -2436,13 +2442,29 @@ class TestWindow(QWidget):
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(31, 31, 39))  # Text color
-        painter.drawText(48, 67, f"{lang_name} {gender_symbol}")
-        painter.drawText(326, 200, get_pokemon_diff_lang_name(int(self.main_pokemon.id), settings_obj.get('misc.language')))
+        enemy_name = get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), int(settings_obj.get('misc.language')))
+        main_name = get_pokemon_diff_lang_name(int(self.main_pokemon.id), int(settings_obj.get('misc.language')))
+
+        if self.enemy_pokemon.shiny:
+            enemy_name += " 🌠 "
+
+        if self.main_pokemon.shiny:
+            main_name += " 🌠 "
+
+        painter.drawText(48, 67, enemy_name)
+        painter.drawText(326, 200, main_name)
+
         painter.drawText(208, 67, f"{self.enemy_pokemon.level}")
         #painter.drawText(55, 85, gender_text)
         painter.drawText(490, 199, f"{self.main_pokemon.level}")
-        painter.drawText(487, 238, f"{self.main_pokemon.max_hp}")
-        painter.drawText(442, 238, f"{self.main_pokemon.hp}")
+        hp_text = str(self.main_pokemon.hp)
+        max_hp_text = str(self.main_pokemon.max_hp)
+
+        hp_x = 442 if int(self.main_pokemon.hp) < 100 else 430 # Shift left if 3 digits
+        max_hp_x = 487 if int(self.main_pokemon.max_hp) < 100 else 480  # Shift left if 3 digits
+
+        painter.drawText(max_hp_x, 238, max_hp_text)
+        painter.drawText(hp_x, 238, hp_text)
         painter.setFont(msg_font)
         painter.setPen(QColor(240, 240, 208))  # Text color
         painter.drawText(40, 320, message_box_text)
@@ -2544,22 +2566,36 @@ class TestWindow(QWidget):
         painter.drawRect(int(366), int(246), int(mainpokemon_xp_value), int(mainxp_bar_width))
 
         # custom font
-        custom_font = load_custom_font(int(28), int(settings_obj.get("misc.language",11)))
-        msg_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(26), int(settings_obj.get("misc.language",11)))
+        msg_font = load_custom_font(int(28), int(settings_obj.get("misc.language",11)))
 
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(31, 31, 39))  # Text color
-        painter.drawText(48, 67, get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), settings_obj.get('misc.language')))
-        painter.drawText(326, 200, get_pokemon_diff_lang_name(int(self.main_pokemon.id), settings_obj.get('misc.language')))
+        enemy_name = get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), int(settings_obj.get('misc.language')))
+        main_name = get_pokemon_diff_lang_name(int(self.main_pokemon.id), int(settings_obj.get('misc.language')))
+
+        if self.enemy_pokemon.shiny:
+            enemy_name += f" 🌠"  # Green sparkle
+
+        if self.main_pokemon.shiny:
+            main_name += f" 🌠"  # Green sparkles
+
+        painter.drawText(48, 67, enemy_name)
+        painter.drawText(326, 200, main_name)
         painter.drawText(208, 67, f"{self.enemy_pokemon.level}")
         painter.drawText(490, 199, f"{self.main_pokemon.level}")
-        painter.drawText(487, 238, f"{self.main_pokemon.max_hp}")
-        painter.drawText(442, 238, f"{self.main_pokemon.hp}")
+        hp_text = str(self.main_pokemon.hp)
+        max_hp_text = str(self.main_pokemon.max_hp)
+
+        hp_x = 442 if int(self.main_pokemon.hp) < 100 else 430 # Shift left if 3 digits
+        max_hp_x = 487 if int(self.main_pokemon.max_hp) < 100 else 480  # Shift left if 3 digits
+
+        painter.drawText(max_hp_x, 238, max_hp_text)
+        painter.drawText(hp_x, 238, hp_text)
         painter.setFont(msg_font)
         painter.setPen(QColor(240, 240, 208))  # Text color
-        painter.drawText(40, 320, message_box_text)
         painter.end()
         # Set the merged image as the pixmap for the QLabel
         image_label.setPixmap(merged_pixmap)
@@ -2699,7 +2735,7 @@ class TestWindow(QWidget):
         level = self.enemy_pokemon.level
         type = self.enemy_pokemon.type
         # Create the dialog
-        lang_name = get_pokemon_diff_lang_name(int(id), settings_obj.get('misc.language'))
+        lang_name = get_pokemon_diff_lang_name(int(id), int(settings_obj.get('misc.language')))
         self.setWindowTitle(f'Would you like to free or catch the wild {lang_name} ?')
         # Display the Pokémon image
         pkmnimage_file = f"{int(search_pokedex(self.enemy_pokemon.name.lower(),'num'))}.png"
@@ -2781,6 +2817,20 @@ class TestWindow(QWidget):
         #self.setFixedHeight(371)
         layout = self.layout()
         battle_widget = self.pokemon_display_first_encounter()
+        #battle_widget.setScaledContents(True) #scalable ankimon window
+        layout.addWidget(battle_widget)
+        self.setStyleSheet("background-color: rgb(44,44,44);")
+        self.setLayout(layout)
+        self.setMaximumWidth(556)
+        self.setMaximumHeight(300)
+
+    def display_battle(self):
+        # pokemon encounter image
+        self.clear_layout(self.layout())
+        #self.setFixedWidth(556)
+        #self.setFixedHeight(371)
+        layout = self.layout()
+        battle_widget = self.pokemon_display_battle()
         #battle_widget.setScaledContents(True) #scalable ankimon window
         layout.addWidget(battle_widget)
         self.setStyleSheet("background-color: rgb(44,44,44);")
