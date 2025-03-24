@@ -1,6 +1,13 @@
 # Ankimon - Gamify Your Learning Experience with Anki
 
+## Star History
+[![Star History Chart](https://api.star-history.com/svg?repos=unlucky-life/ankimon&type=Date)](https://www.star-history.com/#unlucky-life/ankimon&Date)
+
 Ankimon is an Anki addon designed to gamify your learning experience by allowing you to catch, collect, train, and fight with Pokémon within the Anki environment. With Ankimon, learning becomes an adventure where you can enhance your knowledge while having fun.
+
+Support my Caffeine Addiction (something that helps building this Addon):
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/A0A7SGLI8)
 
 ## Features
 
@@ -40,6 +47,4 @@ Ankimon is an Anki addon designed to gamify your learning experience by allowing
 
 Start your Pokémon journey with Ankimon and make learning an adventure!
 
-Support my Caffeine Addiction (something that helps building this Addon):
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/A0A7SGLI8)
