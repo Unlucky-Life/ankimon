@@ -1,6 +1,7 @@
 # Ankimon - Gamify Your Learning Experience with Anki
 
 ## Star History
+
 <a href="https://www.star-history.com/#unlucky-life/ankimon&Date">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=unlucky-life/ankimon&type=Date&theme=dark" />
