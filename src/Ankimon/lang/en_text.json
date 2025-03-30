@@ -65,5 +65,12 @@
     "ankimon_export_button_title": "Export",
     "ankimon_help_button_title": "Help",
     "ankimon_debug_button_title": "Debug",
-    "backup_error": "An error occured while backing up files. Please check the console for more information."
+    "backup_error": "An error occured while backing up files. Please check the console for more information.",
+    "wild_pokemon_appeared": "A wild {enemy_pokemon_name} appeared !",
+    "received_an_item": "You received an item: {item_name}",
+    "received_a_badge": "You received a badge ",
+    "catch_or_free": "Would you like to free or catch the wild {enemy_pokemon_name} ?",
+    "choose_nickname": "Choose nickname",
+    "stat_increased": "has increased",
+    "stat_decreased": "has decreased"
 }
