@@ -62,14 +62,12 @@ def find_trainer_rank(highest_level, trainer_level):
         print("Error: One of the files (Pokedex or MyPokemon) could not be found.")
         return "Unknown Rank"
 
-def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp):
-    # Retrieve the XP Share Pokémon's individual_id from the settings
-    xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
-
+def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp, xp_share_individual_id):
     # Ensure that the XP Share Pokémon is set and different from the main Pokémon
     if xp_share_individual_id:
         if xp_share_individual_id != main_pokemon_id:
             try:
+                original_exp = int(exp * 0.5)
                 level_cap = settings_obj.get("misc.remove_level_cap", False)
                 exp = int(exp * 0.5)  # Convert the experience to an integer
                 # Open the mypokemon_path JSON file and load the data
@@ -79,11 +77,11 @@ def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp):
                     # Iterate through the Pokémon data and find the matching individual_id
                     for pokemon in mypokemon_data:
                         if pokemon["individual_id"] == str(xp_share_individual_id):  # Ensure same type comparison
-                            logger.log_and_showinfo("info", "Pokémon found for XP share")
+                            #logger.log_and_showinfo("info", "Pokémon found for XP share")
                             # Initialize the message string
                             # Increase the xp of the matched Pokémon
                             try:
-                                logger.log_and_showinfo("info", "Running XP share function")
+                                #logger.log("info", "Running XP share function")
                                 if int(find_experience_for_level(pokemon['growth_rate'], int(pokemon['level']), level_cap)) > exp + int(pokemon['stats']['xp']):
                                     pokemon['stats']['xp'] += exp
                                     showInfo("running adding xp share part")
@@ -106,8 +104,8 @@ def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp):
                 with open(mypokemon_path, "w", encoding="utf-8") as json_file:
                     json.dump(mypokemon_data, json_file, indent=4)
                 
-                logger.log_and_showinfo("info", f"{msg}")
-                return exp  # Return the amount of experience added
+                logger.log("info", f"{msg}")
+                return original_exp  # Return the amount of experience added
             
             except Exception as e:
                 # Handle potential errors (file not found, JSON errors, etc.)
