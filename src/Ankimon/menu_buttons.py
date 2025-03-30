@@ -13,7 +13,7 @@ from .pyobj.ankimon_leaderboard import show_api_key_dialog
 debug = True
 
 # Initialize the menu
-mw.pokemenu = QMenu('&' + mw.translator.translate("ankimon_game_button_title"), mw)
+mw.pokemenu = QMenu('&' + mw.translator.translate("ankimon_button_title"), mw)
 game_menu = mw.pokemenu.addMenu(mw.translator.translate("ankimon_game_button_title"))
 profile_menu = mw.pokemenu.addMenu(mw.translator.translate("ankimon_profile_button_title"))
 collection_menu = mw.pokemenu.addMenu(mw.translator.translate("ankimon_collection_button_title"))
