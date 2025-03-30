@@ -46,5 +46,6 @@ Support my Caffeine Addiction (something that helps building this Addon):
 </div>
 
 Start your Pokémon journey with Ankimon and make learning an adventure!
+![image](https://github.com/user-attachments/assets/1e5b9f0e-18c4-4115-a73e-08fc2e97f4d8)
 
 
