@@ -18,8 +18,9 @@ from ..functions.gui_functions import type_icon_path, move_category_path
 import json
 from ..pyobj.attack_dialog import AttackDialog
 from ..pyobj.pokemon_trade import PokemonTrade
+from ..functions.sprite_functions import get_sprite_path
 
-def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attacks, base_experience, growth_rate, ev, iv, gender, nickname, individual_id, language, gif_in_collection, remove_levelcap, logger, refresh_callback):
+def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats, attacks, base_experience, growth_rate, ev, iv, gender, nickname, individual_id, pokemon_defeated, everstone, captured_date, language, gif_in_collection, remove_levelcap, logger, refresh_callback):
     # Create the dialog
     try:
         lang_name = get_pokemon_diff_lang_name(int(id), language).capitalize()
@@ -41,11 +42,11 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         # Display the Pokémon image
         pkmnimage_label = QLabel()
         pkmnpixmap = QPixmap()
+        pkmnimage_path = get_sprite_path("front", "gif" if gif_in_collection else "png", id, shiny, gender)
+
         if gif_in_collection is True:
-            pkmnimage_path = str(user_path_sprites / "front_default_gif" / f"{int(id)}.gif")
             pkmnimage_label = MovieSplashLabel(pkmnimage_path)
         else:
-            pkmnimage_path = str(frontdefault / f"{int(id)}.png")
             pkmnpixmap.load(str(pkmnimage_path))
             # Calculate the new dimensions to maintain the aspect ratio
             max_width = 150
@@ -75,9 +76,9 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
 
         # Capitalize the first letter of the Pokémon's name
         if nickname is None:
-            capitalized_name = f"{lang_name.capitalize()}"
+            capitalized_name = f"{lang_name.capitalize()} {' ⭐ ' if shiny else ''}"
         else:
-            capitalized_name = f"{nickname} ({lang_name.capitalize()})"
+            capitalized_name = f"{nickname} {' ⭐ ' if shiny else ''} ({lang_name.capitalize()})"
         # Create level text
         if (
             language == 11
@@ -194,6 +195,13 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         TopFirstLayout.setLayout(first_layout)
         layout.addWidget(name_label)
         layout.addWidget(TopFirstLayout)
+        pokemon_defeated_label = QLabel(f"Pokemon Defeated: {pokemon_defeated}")
+        pokemon_defeated_label.setFont(load_custom_font(int(15), language))
+        everstone_label = QLabel(f"Everstone: {everstone}")
+        everstone_label.setFont(load_custom_font(int(15), language))
+        captured_date_label = QLabel(f"Captured: {captured_date}")
+        captured_date_label.setFont(load_custom_font(int(15), language))
+        #new values added to details window
         layout.addWidget(description_label)
         #.addWidget(growth_rate_label)
         #.addWidget(base_exp_label)
@@ -223,6 +231,9 @@ def PokemonCollectionDetails(name, level, id, ability, type, detail_stats, attac
         TopR_layout_Box.addWidget(attacks_label)
         TopR_layout_Box.addWidget(attacks_details_button)
         TopR_layout_Box.addWidget(remember_attacks_details_button)
+        TopR_layout_Box.addWidget(captured_date_label)
+        TopR_layout_Box.addWidget(pokemon_defeated_label)
+        TopR_layout_Box.addWidget(everstone_label)
         first_layout.addLayout(TopL_layout_Box)
         first_layout.addLayout(TopR_layout_Box)
         layout.addLayout(first_layout)
