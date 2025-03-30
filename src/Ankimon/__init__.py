@@ -4081,6 +4081,7 @@ actions = create_menu_actions(
     pokedex_window,
     settings_obj.get("controls.key_for_opening_closing_ankimon","Ctrl+Shift+P"),
     join_discord_url,
+    open_leaderboard_url,
     settings_obj
 )
 
