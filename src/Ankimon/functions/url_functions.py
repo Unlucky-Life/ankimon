@@ -34,3 +34,10 @@ def join_discord_url():
 
     # Open the Team Builder in the default web browser
     QDesktopServices.openUrl(QUrl(discord_url))
+
+def open_leaderboard_url():
+    # Specify the URL of the Pokémon Showdown Team Builder
+    leaderboard_url = "https://leaderboard.ankimon.com/"
+
+    # Open the Team Builder in the default web browser
+    QDesktopServices.openUrl(QUrl(leaderboard_url))

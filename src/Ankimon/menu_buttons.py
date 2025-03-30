@@ -50,6 +50,7 @@ def create_menu_actions(
     pokedex_window,
     ankimon_key,
     join_discord_url,
+    open_leaderboard_url,
     settings_obj
 ):
     actions = []
@@ -120,10 +121,16 @@ def create_menu_actions(
     gen_and_poke_chart_action.triggered.connect(gen_id_chart.show_gen_chart)
     help_menu.addAction(gen_and_poke_chart_action)
 
-    # Effectiveness chart
+    # Join Discord
     join_discord_action = QAction(mw.translator.translate("join_discord_button"), mw)
     join_discord_action.setMenuRole(QAction.MenuRole.NoRole)
     join_discord_action.triggered.connect(join_discord_url)
+    help_menu.addAction(join_discord_action)
+
+    # Open Ankimon Leaderboard
+    join_discord_action = QAction(("Ankimon Leaderboard"), mw)
+    join_discord_action.setMenuRole(QAction.MenuRole.NoRole)
+    join_discord_action.triggered.connect(open_leaderboard_url)
     help_menu.addAction(join_discord_action)
 
     # Credits
