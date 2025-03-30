@@ -96,7 +96,7 @@ from .pyobj.collection_dialog import PokemonCollectionDialog
 from .pyobj.attack_dialog import AttackDialog
 from .pyobj.reviewer_obj import Reviewer_Manager
 from .pyobj.translator import Translator
-
+from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
 
 # start loggerobject for Ankimon
@@ -117,20 +117,30 @@ settings_window = SettingsWindow(
     load_config_callback=settings_obj.load_config
 )
 
-mw.settings_ankimon = settings_window
-
 #Init Translator
 translator = Translator(language=int(settings_obj.get("misc.language", int(9))))
 
+mw.settings_ankimon = settings_window
+mw.logger = logger
+mw.translator = translator
+
 # Log an startup message
 logger.log_and_showinfo('game', translator.translate("startup"))
+logger.log_and_showinfo('game', translator.translate("backing_up_files"))
+
+#backup_files
+try:
+    run_backup()
+except:
+    logger.log("error", translator.translate("backup_error"))
+
 
 # Initialize default values for the main Pokémon in a more compact form
 default_pokemon_data = {
     "name": "Pikachu", "gender": "M", "level": 5, "id": 1, "ability": "Static", 
     "type": ["Electric"], "stats": {"hp": 20, "atk": 30, "def": 15, "spa": 50, "spd": 40, "spe": 60, "xp": 0}, 
     "ev": {"hp": 0, "atk": 1, "def": 0, "spa": 0, "spd": 0, "spe": 0}, "iv": {"hp": 15, "atk": 20, "def": 10, "spa": 10, "spd": 10, "spe": 10},
-    "attacks": ["Thunderbolt", "Quick Attack"], "base_experience": 112, "current_hp": 20, "growth_rate": "Medium", "evos": ["Pikachu"]
+    "attacks": ["Thunderbolt", "Quick Attack"], "base_experience": 112, "current_hp": 20, "growth_rate": "medium", "evos": ["Pikachu"]
 }
 
 # Check if the main Pokémon file exists and is valid
@@ -192,7 +202,7 @@ enemy_pokemon = PokemonObject(
     },
     attacks=["Quick Attack", "Tackle", "Tail Whip"], # Typical moves for Rattata
     base_experience=58,          # Base experience points
-    growth_rate="Medium",        # Growth rate
+    growth_rate="medium-slow",        # Growth rate
     hp=30,                       # Hit points (HP)
     ev={
       "hp": 3,
@@ -653,9 +663,21 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, heigh
     aw = parent or QApplication.activeWindow()
     if aw is None:
         return
+    
+    if color == "#6A4DAC":
+        y_offset = 40
+    elif color == "#F7DC6F":
+        y_offset = -40
+    elif color == "#F0B27A":
+        y_offset = -40
+    elif color == "#D2B4DE":
+        y_offset = -40
+    else:
+        y_offset = 0
+
     if reviewer_text_message_box != False:
         x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
-        y = aw.mapToGlobal(QPoint(0, aw.height() - 180)).y()
+        y = aw.mapToGlobal(QPoint(0, aw.height() - (180 + y_offset))).y()
         lab = CustomLabel(aw)
         lab.setFrameShape(QFrame.Shape.StyledPanel)
         lab.setLineWidth(2)
@@ -733,7 +755,7 @@ if database_complete:
                 try:
                     numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
                 except:
-                    ability = "No Ability"
+                    ability = translator.translate("no_ability")
                 # Check if there are numeric abilities
                 if numeric_abilities:
                     # Convert the filtered abilities dictionary values to a list
@@ -742,7 +764,7 @@ if database_complete:
                     ability = random.choice(abilities_list)
                 else:
                     # Set to "No Ability" if there are no numeric abilities
-                    ability = "No Ability"
+                    ability = translator.translate("no_ability")
                 # ability = abilities.get("0", "No ability")
                 # if ability == "No ability":
                 #    ability = abilities.get("H", None)
@@ -802,7 +824,7 @@ def display_dead_pokemon():
 
     # Create the dialog
     w_dead_pokemon = QDialog(mw)
-    w_dead_pokemon.setWindowTitle(f"Would you want to kill or catch the wild {enemy_pokemon.name} ?")
+    w_dead_pokemon.setWindowTitle(translator.translate("enemy_pokemon_defeat_text", enemy_pokemon_name={enemy_pokemon.name}))
     # Create a layout for the dialog
     layout2 = QVBoxLayout()
     # Display the Pokémon image
@@ -841,13 +863,13 @@ def display_dead_pokemon():
     name_label.setFont(font)
 
     # Create a QLabel for the level
-    level_label = QLabel(f" Level: {level}")
+    level_label = QLabel(f" {translator.translate('level')}: {level}")
     # Align to the center
     level_label.setFont(fontlvl)
 
     # Create buttons for catching and killing the Pokémon
-    catch_button = QPushButton("Catch Pokémon")
-    kill_button = QPushButton("Defeat Pokémon")
+    catch_button = QPushButton(translator.translate("catch_button"))
+    kill_button = QPushButton(translator.translate("defeat_button"))
     qconnect(catch_button.clicked, catch_pokemon)
     qconnect(kill_button.clicked, kill_pokemon)
 
@@ -958,7 +980,7 @@ def choose_random_pkmn_from_tier():
         id = get_pokemon_id_by_tier(tier)
         return id, tier
     except Exception as e:
-        showWarning(f" An error occured with generating a wild pokemon in choose_random_pkmn_from_tier function: {e} \n Please post this error message over the Report Bug Issue")
+        showWarning(translator.translate("error_occured", error="choose_random_pkmn_from_tier"))
 
 def get_pokemon_id_by_tier(tier):
     id_species_path = None
@@ -1039,7 +1061,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
             main_pokemon_data = json.load(json_file)
     else:
-        showWarning("Missing Mainpokemon Data !")
+        showWarning(translator.translate("missing_mainpokemon_data"))
     while int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap", False))) < int(main_pokemon.xp) and (level_cap is None or main_pokemon.level < level_cap):
         main_pokemon.level += 1
         msg = ""
@@ -1059,7 +1081,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         main_pokemon.xp = int(main_pokemon.xp) - int(experience)
         evo_id = check_evolution_for_pokemon(main_pokemon.individual_id, main_pokemon.id, main_pokemon.level, evo_window, main_pokemon.everstone)
         if evo_id is not None:
-            msg += f"{main_pokemon.name} is about to evolve to {return_name_for_id(evo_id).capitalize()} at level {main_pokemon.level}"
+            msg += translator.translate("pokemon_about_to_evolve", main_pokemon_name=main_pokemon.name, evo_pokemon_name=return_name_for_id(evo_id).capitalize(), main_pokemon_level=main_pokemon.level)
             logger.log_and_showinfo("info",f"{msg}")
             color = "#6A4DAC"
             try:
@@ -1073,11 +1095,11 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                 new_attacks = get_levelup_move_for_pokemon(main_pokemon.name.lower(),int(main_pokemon.level))
                 if new_attacks:
                     msg = ""
-                    msg += f"Your {main_pokemon.name.capitalize()} can learn a new attack !"
+                    msg += translator.translate("mainpokemon_can_learn_new_attack", main_pokemon_name=main_pokemon.name.capitalize())
                 for new_attack in new_attacks:
                     if len(attacks) < 4 and new_attack not in attacks:
                         attacks.append(new_attack)
-                        msg += f"\n Your {main_pokemon.name.capitalize()} has learned {new_attack} !"
+                        msg += translator.transalte("mainpokemon_learned_new_attack", new_attack_name=new_attack, main_pokemon_name=main_pokemon.name.capitalize())
                         color = "#6A4DAC"
                         tooltipWithColour(msg, color)
                         if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
@@ -1106,7 +1128,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                 mainpkmndata["attacks"] = attacks
                 break
     msg = ""
-    msg += f"Your {main_pokemon.name} has gained {exp} XP.\n {experience} exp is needed for next level \n Your pokemon currently has {main_pokemon.xp}"
+    msg += translator.translate("mainpokemon_gained_xp", main_pokemon_name=main_pokemon.name, exp=exp, experience_till_next_level=experience, main_pokemon_xp=main_pokemon.xp)
     color = "#6A4DAC" #pokemon leveling info color for tooltip
     try:
         tooltipWithColour(msg, color)
@@ -1189,13 +1211,12 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                                             # If the attack is found, replace it with 'new_attack'
                                             if index_to_replace is not None:
                                                 attacks[index_to_replace] = new_attack
-                                                logger.log_and_showinfo("info",
-                                                    f"Replaced '{selected_attack}' with '{new_attack}'")
+                                                logger.log_and_showinfo("info",translator.translate("replaced_selected_attack", selected_attack=selected_attack, new_attack=new_attack))
                                             else:
-                                                logger.log_and_showinfo("info",f"'{selected_attack}' not found in the list")
+                                                logger.log_and_showinfo("info",translator.translate("selected_attack_not_found", selected_attack=selected_attack))
                                         else:
                                             # Handle the case where the user cancels the dialog
-                                            logger.log_and_showinfo("info","No attack selected")
+                                            logger.log_and_showinfo("info",translator.translate("no_attack_selected"))
                             pokemon["attacks"] = attacks
                             stats = search_pokedex(evo_name.lower(), "baseStats")
                             pokemon["stats"] = stats
@@ -1210,12 +1231,12 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                             try:
                                 numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
                             except:
-                                ability = "No Ability"
+                                ability = translator.translate("no_ability")
                             if numeric_abilities:
                                 abilities_list = list(numeric_abilities.values())
                                 pokemon["ability"] = random.choice(abilities_list)
                             else:
-                                pokemon["ability"] = "No Ability"
+                                pokemon["ability"] = translator.translate("no_ability")
                             with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
                                 mypokemondata = json.load(output_file)
                                 # Find and replace the specified Pokémon's data in mypokemondata
@@ -1239,7 +1260,7 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                                 with open(str(mainpokemon_path), "w") as output_file:
                                         pokemon = [pokemon]
                                         json.dump(pokemon, output_file, indent=2)
-                            logger.log_and_showinfo("info",f"Your {prevo_name.capitalize()} has evolved to {evo_name.capitalize()}! \n You can now close this Window.")
+                            logger.log_and_showinfo("info",translator.translate("mainpokemon_has_evolved", prevo_name=prevo_name, evo_name=evo_name))
     except Exception as e:
         showWarning(f"{e}")
     try:#Update Main Pokemon Object
@@ -1288,13 +1309,12 @@ def cancel_evolution(individual_id, prevo_name):
                                     # If the attack is found, replace it with 'new_attack'
                                     if index_to_replace is not None:
                                         attacks[index_to_replace] = new_attack
-                                        logger.log_and_showinfo("info",
-                                            f"Replaced '{selected_attack}' with '{new_attack}'")
+                                        logger.log_and_showinfo("info",translator.translate("replaced_selected_attack", selected_attack=selected_attack, new_attack=new_attack))
                                     else:
-                                        logger.log_and_showinfo("info",f"'{selected_attack}' not found in the list")
+                                        logger.log_and_showinfo("info",translator.translate("selected_attack_not_found", selected_attack=selected_attack))
                                 else:
                                     # Handle the case where the user cancels the dialog
-                                    logger.log_and_showinfo("info","No attack selected")
+                                    logger.log_and_showinfo("info",translator.translate("no_attack_selected"))
                     break
             for mainpkmndata in main_pokemon_data:
                 mainpkmndata["stats"]["xp"] = int(main_pokemon.xp)
@@ -1336,7 +1356,7 @@ def catch_pokemon(nickname):
         else:
             save_caught_pokemon(enemy_pokemon.name)
         ankimon_tracker_obj.general_card_count_for_battle = 0
-        msg = f"You caught {enemy_pokemon.name.capitalize()}!"
+        msg = translator.translate("caught_wild_pokemon", enemy_pokemon_name=enemy_pokemon.name.capitalize())
         if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
             logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
         color = "#6A4DAC" #pokemon leveling info color for tooltip
@@ -1347,7 +1367,7 @@ def catch_pokemon(nickname):
         new_pokemon()  # Show a new random Pokémon
     else:
         if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-            logger.log_and_showinfo("info","You have already caught the pokemon. Please close this window!") # Display a message when the Pokémon is caught
+            logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
 
 def get_random_starter():
     category = "Starter"
@@ -1556,7 +1576,7 @@ def on_review_card(*args):
             ankimon_tracker_obj.pokemon_encouter += 1
             multiplier = int(ankimon_tracker_obj.multiplier)
             msg = ""
-            msg += f"{multiplier}x Multiplier"
+            msg += f"{multiplier}x {translator.translate('multiplier')}"
             #failed card = enemy attack
             if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:
                 msg += " \n "
@@ -1568,7 +1588,7 @@ def on_review_card(*args):
                         
                         if enemy_move is not None:
                             break  # Exit the loop if a valid enemy_move is found
-                    msg += f"{enemy_pokemon.name.capitalize()} chose {rand_enemy_atk.capitalize()} !"
+                    msg += translator.translate("pokemon_chose_attack", pokemon_name=enemy_pokemon.name.capitalize(), pokemon_attack=rand_enemy_atk.capitalize())
                     e_move_category = enemy_move.get("category")
                     e_move_acc = enemy_move.get("accuracy")
                     if e_move_acc is True:
@@ -1576,7 +1596,7 @@ def on_review_card(*args):
                     elif e_move_acc != 0:
                         e_move_acc = 100 / e_move_acc
                     if random.random() > e_move_acc:
-                        msg += "\n Move has missed !"
+                        msg += "\n" + translator.translate("move_has_missed")
                     else:
                         if e_move_category == "Status":
                             color = "#F7DC6F"
@@ -1591,7 +1611,7 @@ def on_review_card(*args):
                                 enemy_dmg = bP_none_moves(enemy_move)
                                 main_pokemon.hp -= int(enemy_dmg)
                                 if enemy_dmg == 0:
-                                    msg += "\n Move has missed !"
+                                    msg += "\n" + translator.translate("move_has_missed")
                             else:
                                 if e_move_category == "Special":
                                     def_stat = main_pokemon.stats["spd"]
@@ -1609,7 +1629,7 @@ def on_review_card(*args):
                                         play_effect_sound("HurtNormal")
                                 else:
                                     reviewer_obj.myseconds = 0
-                                msg += f" {enemy_dmg} dmg is dealt to {main_pokemon.name.capitalize()}."
+                                msg += translator.translate("dmg_dealt", dmg=enemy_dmg, pokemon_name=main_pokemon.name.capitalize())
                 except:
                     enemy_dmg = 0
                     rand_enemy_atk = random.choice(enemy_pokemon.attacks)
@@ -1635,7 +1655,7 @@ def on_review_card(*args):
                             play_effect_sound("HurtNormal")
                     else:
                         reviewer_obj.myseconds = 0
-                    msg += f" {enemy_dmg} dmg is dealt to {main_pokemon.name.capitalize()}."
+                        msg += translator.translate("dmg_dealt", dmg=enemy_dmg, pokemon_name=main_pokemon.name.capitalize())
     
             # if enemy pokemon hp < 0 - attack enemy pokemon
             if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
@@ -1646,7 +1666,8 @@ def on_review_card(*args):
                     if dialog.exec() == QDialog.DialogCode.Accepted:
                         if dialog.selected_move:
                             random_attack = dialog.selected_move
-                msg += f"\n {main_pokemon.name} has chosen {random_attack.capitalize()} !"
+                msg += "\n"
+                msg += translator.translate("pokemon_chose_attack", pokemon_name=main_pokemon.name.capitalize(), pokemon_attack=random_attack.capitalize())
                 move = find_details_move(random_attack)
                 category = move.get("category")
                 acc = move.get("accuracy")
@@ -1660,16 +1681,16 @@ def on_review_card(*args):
                     calc_acc = 0
                 if battle_status == "slp":
                     calc_acc = 0
-                    msg += f"{enemy_pokemon.name.capitalize()} is deep asleep."
+                    msg += "\n" + translator.translate("pokemon_asleep", pokemon_name=enemy_pokemon.name.capitalize())
                     #slp_counter -= 1
                 elif battle_status == "par":
-                    msg += f"\n {enemy_pokemon.name.capitalize()} is paralyzed."
+                    msg += "\n" + translator.translate("pokemon_is_paralyzed", pokemon_name=enemy_pokemon.name.capitalize())
                     missing_chance = 1 / 4
                     random_number = random.random()
                     if random_number < missing_chance:
                         acc = 0
                 if random.random() > calc_acc:
-                    msg += "\n Move has missed !"
+                    msg += "\n" + translator.translate("move_has_missed")
                 else:
                     if category == "Status":
                         color = "#F7DC6F"
@@ -1685,7 +1706,7 @@ def on_review_card(*args):
                                 dmg = bP_none_moves(move)
                                 enemy_pokemon.hp -= dmg
                                 if dmg == 0:
-                                    msg += "\n Move has missed !"
+                                    msg += "\n" + translator.translate("move_has_missed")
                                     #dmg = 1
                             else:
                                 if category == "Special":
@@ -1698,7 +1719,7 @@ def on_review_card(*args):
                                 if dmg == 0:
                                     dmg = 1
                                 enemy_pokemon.hp -= dmg
-                                msg += f" {dmg} dmg is dealt to {enemy_pokemon.name.capitalize()}."
+                                msg += translator.translate("dmg_dealt", dmg=dmg, pokemon_name=enemy_pokemon.name.capitalize())
                                 move_stat = move.get("status", None)
                                 secondary = move.get("secondary", None)
                                 if secondary is not None:
@@ -1708,7 +1729,7 @@ def on_review_card(*args):
                                 if move_stat is not None:
                                     move_with_status(move, move_stat, secondary)
                                 if dmg == 0:
-                                    msg += " \n Move has missed !"
+                                    msg += "\n" + translator.translate("move_has_missed")
                         except:
                             if category == "Special":
                                 def_stat = enemy_pokemon.stats["spd"]
@@ -1720,7 +1741,7 @@ def on_review_card(*args):
                             enemy_pokemon.hp -= dmg
                         if enemy_pokemon.hp < 0:
                             enemy_pokemon.hp = 0
-                            msg += f" {enemy_pokemon.name.capitalize()} has fainted"
+                            msg += translator.translate("pokemon_fainted", pokemon_name=enemy_pokemon.name.capitalize())
                             
                     tooltipWithColour(msg, color)
                     if dmg > 0:
@@ -1735,7 +1756,6 @@ def on_review_card(*args):
                         reviewer_obj.seconds = 0
             if enemy_pokemon.hp < 1:
                 enemy_pokemon.hp = 0
-                logger.log("info", "in enemy_pokemon death loop")
                 if int(settings_obj.get("battle.automatic_battle",0)) != 0:
                     if int(settings_obj.get("battle.automatic_battle",1)) == 1:
                         catch_pokemon("")
@@ -1752,7 +1772,7 @@ def on_review_card(*args):
             cry_counter = 0
             play_sound()
         if main_pokemon.hp < 1:
-            msg = f"Your {main_pokemon.name} has been defeated and the wild {enemy_pokemon.name} has fled!"
+            msg = translator.translate("pokemon_fainted", main_pokemon_name=main_pokemon.name.capitalize(), enemy_pokemon_name=enemy_pokemon.name.capitalize())
             play_effect_sound("Fainted")
             new_pokemon()
             #mainpokemon_data()
@@ -1834,16 +1854,16 @@ gui_hooks.reviewer_did_answer_card.append(on_review_card)
 
 def MainPokemon(pokemon_data, main_pokemon = main_pokemon):
     # Capitalize the first letter of the Pokémon's name
-    capitalized_name = main_pokemon.name.capitalize()
     # Create a dictionary to store the Pokémon's data
     main_pokemon_data = []
     main_pokemon_data.append({key: value for key, value in pokemon_data.items()})
+    capitalized_name = main_pokemon.name.capitalize()
 
     # Save the caught Pokémon's data to a JSON file
     with open(str(mainpokemon_path), "w") as json_file:
         json.dump(main_pokemon_data, json_file, indent=2)
 
-    logger.log_and_showinfo("info",f"{capitalized_name} has been chosen as your main Pokemon !")
+    logger.log_and_showinfo("info",translator.translate("picked_main_pokemon", main_pokemon_name=capitalized_name))
     #mainpokemon_data()
     update_main_pokemon(main_pokemon, mainpokemon_path)
     class Container(object):
@@ -4159,8 +4179,6 @@ if reviewer_buttons is True:
     Reviewer._bottomHTML = _bottomHTML  # Assuming you have access to self in this context
     # Replace the original link handler function with the modified one
     Reviewer._linkHandler = linkHandler_wrap
-
-mw.logger = logger
 
 if settings_obj.get("misc.discord_rich_presence",False) == True:
     from .functions.discord_function import *  # Import necessary functions for Discord integration
