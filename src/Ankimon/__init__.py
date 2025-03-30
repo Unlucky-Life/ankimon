@@ -1823,18 +1823,18 @@ def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpoke
             mainpokemon_stats[boost] = mainpokemon_stats.get(boost, 0) * stat
             msg += f" {main_pokemon.name.capitalize()}'s "
             if stage < 0:
-                msg += f"{boost.capitalize()} is decreased."
+                msg += f"{boost.capitalize()} {translator.translate('stat_decreased')}."
             elif stage > 0:
-                msg += f"{boost.capitalize()} is increased."
+                msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
     elif target in ["normal", "allAdjacentFoes"]:
         for boost, stage in boosts.items():
             stat = get_multiplier_stats(stage)
             stats[boost] = stats.get(boost, 0) * stat
             msg += f" {name.capitalize()}'s "
             if stage < 0:
-                msg += f"{boost.capitalize()} is decreased."
+                msg += f"{boost.capitalize()} {translator.translate('stat_decreased')}."
             elif stage > 0:
-                msg += f"{boost.capitalize()} is increased."
+                msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
     return msg
 
 def move_with_status(move, move_stat, status):
@@ -2368,7 +2368,7 @@ class TestWindow(QWidget):
         # Capitalize the first letter of the Pokémon's name
         lang_name = get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), int(settings_obj.get('misc.language')))
         # calculate wild pokemon max hp
-        message_box_text = (f"A wild {lang_name.capitalize()} appeared !")
+        message_box_text = f"{mw.translator.translate('wild_pokemon_appeared', enemy_pokemon_name=lang_name.capitalize())}"
         if ankimon_tracker_obj.pokemon_encouter == 0:
             bckgimage_path = battlescene_path / ankimon_tracker_obj.battlescene_file
         elif ankimon_tracker_obj.pokemon_encouter > 0:
@@ -2674,7 +2674,7 @@ class TestWindow(QWidget):
 
         # custom font
         custom_font = load_custom_font(int(26), int(settings_obj.get("misc.language",11)))
-        message_box_text = f"You have received a item: {item.capitalize()} !"
+        message_box_text = f"{translator.translate('received_an_item', item_name=item.capitalize())} !"
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
@@ -2732,7 +2732,7 @@ class TestWindow(QWidget):
 
             # custom font
             custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language",11)))
-            message_box_text = "You have received a badge for:"
+            message_box_text = translator.translate("received_a_badge")
             message_box_text2 = f"{badges[str(badge_number)]}!"
             # Draw the text on top of the image
             # Adjust the font size as needed
@@ -2759,7 +2759,7 @@ class TestWindow(QWidget):
         type = self.enemy_pokemon.type
         # Create the dialog
         lang_name = get_pokemon_diff_lang_name(int(id), int(settings_obj.get('misc.language')))
-        self.setWindowTitle(f'Would you like to free or catch the wild {lang_name} ?')
+        self.setWindowTitle(f"{translator.translate('catch_or_free', enemy_pokemon_name=lang_name.capitalize())}")
         # Display the Pokémon image
         pkmnimage_file = f"{int(search_pokedex(self.enemy_pokemon.name.lower(),'num'))}.png"
         pkmnimage_path = frontdefault / pkmnimage_file
@@ -2806,19 +2806,19 @@ class TestWindow(QWidget):
         level_label.setFont(fontlvl)
 
         nickname_input = QLineEdit()
-        nickname_input.setPlaceholderText("Choose Nickname")
+        nickname_input.setPlaceholderText(translator.translate("choose_nickname"))
         nickname_input.setStyleSheet("background-color: rgb(44,44,44);")
         nickname_input.setFixedSize(120, 30)  # Adjust the size as needed
 
         # Create buttons for catching and killing the Pokémon
-        catch_button = QPushButton("Catch Pokémon")
+        catch_button = QPushButton(translator.translate("catch_button"))
         catch_button.setFixedSize(175, 30)  # Adjust the size as needed
         catch_button.setFont(QFont("Arial", 12))  # Adjust the font size and style as needed
         catch_button.setStyleSheet("background-color: rgb(44,44,44);")
         #catch_button.setFixedWidth(150)
         qconnect(catch_button.clicked, lambda: catch_pokemon(nickname_input.text()))
 
-        kill_button = QPushButton("Defeat Pokémon")
+        kill_button = QPushButton(translator.translate("defeat_button"))
         kill_button.setFixedSize(175, 30)  # Adjust the size as needed
         kill_button.setFont(QFont("Arial", 12))  # Adjust the font size and style as needed
         kill_button.setStyleSheet("background-color: rgb(44,44,44);")
@@ -2885,7 +2885,7 @@ class TestWindow(QWidget):
 
     def display_badge(self, badge_num):
         Receive_Window = QDialog(mw)
-        Receive_Window.setWindowTitle("You have received a Badge!")
+        Receive_Window.setWindowTitle(translator.translate("received_a_badge"))
         layout = QHBoxLayout()
         badge_widget = self.pokemon_display_badge(badge_num)
         layout.addWidget(badge_widget)
