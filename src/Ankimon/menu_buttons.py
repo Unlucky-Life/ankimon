@@ -128,10 +128,10 @@ def create_menu_actions(
     help_menu.addAction(join_discord_action)
 
     # Open Ankimon Leaderboard
-    join_discord_action = QAction(("Ankimon Leaderboard"), mw)
-    join_discord_action.setMenuRole(QAction.MenuRole.NoRole)
-    join_discord_action.triggered.connect(open_leaderboard_url)
-    game_menu.addAction(join_discord_action)
+    open_leaderboard_action = QAction(("Ankimon Leaderboard"), mw)
+    open_leaderboard_action.setMenuRole(QAction.MenuRole.NoRole)
+    open_leaderboard_action.triggered.connect(open_leaderboard_url)
+    game_menu.addAction(open_leaderboard_action)
 
     # Credits
     credits_action = QAction(mw.translator.translate("ankimon_credits_button"), mw)
