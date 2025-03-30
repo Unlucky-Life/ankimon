@@ -3,6 +3,8 @@ from ..functions.trainer_functions import find_trainer_rank
 from aqt.utils import showWarning, showInfo
 import math
 import json
+from .ankimon_leaderboard import sync_data_to_leaderboard, get_unique_pokemon, get_total_pokemon, get_shinies
+
 
 # Constants for leveling
 BASE_XP = 50  # Base XP required for level 1
@@ -29,11 +31,31 @@ class TrainerCard:
         self.level = int(settings_obj.get("trainer.level", 1))                    # Trainer's level
         self.xp = xp                          # Experience points
         self.achievements = achievements if achievements else []  # List of achievements (if any)
-        self.team = team                      # Team as a simple string
-        self.highest_level = self.get_highest_level_pokemon()  # Highest level Pokémon
+        self.team = team   # Team as a simple string
+        highest_level = self.get_highest_level_pokemon()
+        self.highest_level = highest_level  # Highest level Pokémon
         self.image_path = f"{trainer_sprites_path}" + "/" + settings_obj.get("trainer.sprite", "ash-sinnoh") + ".png"
-        self.league = find_trainer_rank(int(self.highest_pokemon_level()), int(self.level))  # Trainer's rank in the Pokémon world
-        self.cash = int(settings_obj.get("trainer.cash", 0))
+        league = find_trainer_rank(int(self.highest_pokemon_level()), int(self.level))  # Trainer's rank in the Pokémon world
+        self.league = league
+        cash = int(settings_obj.get("trainer.cash", 0))
+        self.cash = cash
+
+        #Sync Data to ankimon leaderboard
+        data = {
+            'trainerRank': f"{league}",  # Example rank 
+            'trainerName': trainer_name,  # Example trainer name
+            'level': int(settings_obj.get("trainer.level", 1)),  # Example level
+            'pokedex': get_unique_pokemon(),  # Example Pokedex
+            'caughtPokemon': get_total_pokemon(),  # Example Pokedex
+            'highestLevel': highest_level,  # Example highest level
+            'shinies': f"{get_shinies()}",  # Example shinies
+            'cash': cash,  # Example cash
+        }
+        try:
+            sync_data_to_leaderboard(data)
+        except Exception as e :
+            self.logger.log_and_showinfo("error", f"Error in syncing data to leaderboard {e}")
+
 
     def get_highest_level_pokemon(self):
         """Method to find the name of the highest-level Pokémon from the mypokemon_path."""
@@ -48,6 +70,26 @@ class TrainerCard:
             # Find the Pokémon with the highest level and return its name
             highest_pokemon = max(pokemon_data, key=lambda p: p.get("level", 0))
             return f"{highest_pokemon.get('name', 'None')} (Level {highest_pokemon.get('level', 0)})"
+        except FileNotFoundError:
+            showInfo(f"File not found: {mypokemon_path}")
+            return "None"
+        except json.JSONDecodeError:
+            showInfo(f"Error decoding JSON from file: {mypokemon_path}")
+            return "None"
+    
+    def get_highest_level_pokemon(self):
+        """Method to find the name of the highest-level Pokémon from the mypokemon_path."""
+        try:
+            # Read the Pokémon data from the file
+            with open(mypokemon_path, "r", encoding="utf-8") as file:
+                pokemon_data = json.load(file)
+            
+            if not pokemon_data:
+                return None  # Return None if the data is empty
+            
+            # Find the Pokémon with the highest level and return its name
+            highest_pokemon = max(pokemon_data, key=lambda p: p.get("level", 0))
+            return f"{highest_pokemon.get('level', 0)}"
         except FileNotFoundError:
             showInfo(f"File not found: {mypokemon_path}")
             return "None"
