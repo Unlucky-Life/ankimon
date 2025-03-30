@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 
 addon_dir = Path(__file__).parents[0]
 
@@ -6,6 +7,7 @@ addon_dir = Path(__file__).parents[0]
 user_path = addon_dir / "user_files"
 user_path_data = addon_dir / "user_files" / "data_files"
 user_path_sprites = addon_dir / "user_files" / "sprites"
+user_path_credentials = addon_dir / "user_files" / "data.json"
 
 font_path = addon_dir / "addon_files"
 
@@ -78,8 +80,18 @@ team_pokemon_path = addon_dir / "user_files" / "team.json"
 #lang routes
 lang_path = addon_dir / "lang"
 lang_path_de = addon_dir / "lang" / "de_text.json"
-lang_path_ch = addon_dir / "lang" / "ch.json"
+lang_path_ch = addon_dir / "lang" / "ch_text.json"
 lang_path_en = addon_dir / "lang" / "en_text.json"
-lang_path_fr = addon_dir / "lang" / "fr.json"
-lang_path_jp = addon_dir / "lang" / "jp.json"
-lang_path_sp = addon_dir / "lang" / "sp.json"
+lang_path_fr = addon_dir / "lang" / "fr_text.json"
+lang_path_jp = addon_dir / "lang" / "jp_text.json"
+lang_path_sp = addon_dir / "lang" / "sp_text.json"
+lang_path_it = addon_dir / "lang" / "it_text.json"
+lang_path_cz = addon_dir / "lang" / "cz_text.json"
+lang_path_po = addon_dir / "lang" / "po_text.json"
+lang_path_kr = addon_dir / "lang" / "kr_text.json"
+
+#backup_routes
+backup_root = addon_dir / "user_files" / "backups"
+backup_folder_1 = backup_root / "backup_1"
+backup_folder_2 = backup_root / "backup_2"
+backup_folders = [os.path.join(backup_root, f"backup_{i}") for i in range(1, 4)]
