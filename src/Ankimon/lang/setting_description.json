@@ -36,7 +36,7 @@
     "misc.gen8": "Enable Pokémon from Generation 8. Set true to include these.",
     "misc.gen9": "Enable Pokémon from Generation 9. Set true to include these.",
     "misc.remove_level_cap": "Allow leveling beyond set level cap.",
-    "misc.language": "Select language ID for Pokémon names and descriptions. [1: Japanese (Hir & Kata), 2: Japanese (Roomaji), 3: Korean, ... , 13: Portuguese (Brazil)]",
+    "misc.language": "Select language ID for Pokémon names and descriptions. [1: Japanese (Hir & Kata), 2: Japanese (Roomaji), 3: Korean, 4: Chinese, 5: Frensh, 6: German, 7: Spanish, 8: Italian, 9: English, 10: Czech, 11: Japanese, 12: Chinese, 13: Portuguese (Brazil)]",
     "misc.ssh": "Enable SSH if encountering connectivity issues (like Eduroam restrictions).",
     "misc.YouShallNotPass_Ankimon_News": "Prevent news pop-ups on Ankimon startup by setting this to true.",
     "misc.discord_rich_presence": "Discord Rich Presence for Ankimon showing in Discord 'Playing Ankimon'. Set to False to disable.",
