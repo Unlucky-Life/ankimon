@@ -12,7 +12,17 @@ new_values = {
     "special-form": None,
     "friendship": 0,
     "pokemon_defeated": 0,
+    "ability": "No Ability",
+    "individual_id": uuid.uuid4(),
     "nickname": "",
+    "base_experience": 50,
+    "current_hp": 50,
+    "growth_rate": "medium-slow",
+    "gender": "N",
+    "type": ["Normal"],
+    "attacks": ["tackle", "growl"],
+    "evos": [],
+    "id": 132,
     "captured_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 }
 
