@@ -812,7 +812,10 @@ def kill_pokemon():
         exp = int(calc_experience(main_pokemon.base_experience, enemy_pokemon.level) * 0.5)
     else:
         exp = int(calc_experience(main_pokemon.base_experience, enemy_pokemon.level))
-    exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp)
+    
+    xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
+    if xp_share_individual_id:
+        exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp, xp_share_individual_id)
     main_pokemon.level = save_main_pokemon_progress(mainpokemon_path, main_pokemon.level, main_pokemon.name, main_pokemon.base_experience, main_pokemon.growth_rate, exp)
     ankimon_tracker_obj.general_card_count_for_battle = 0
     if test_window.isVisible() is True:
