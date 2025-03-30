@@ -155,4 +155,6 @@ def get_shinies():
         return 0
 
 def show_api_key_dialog():
-    dialog = ApiKeyDialog()
+    dialog = ApiKeyDialog()  # Create the dialog instance
+    dialog.exec()  # Show the dialog
+
