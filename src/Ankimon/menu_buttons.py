@@ -131,7 +131,7 @@ def create_menu_actions(
     join_discord_action = QAction(("Ankimon Leaderboard"), mw)
     join_discord_action.setMenuRole(QAction.MenuRole.NoRole)
     join_discord_action.triggered.connect(open_leaderboard_url)
-    help_menu.addAction(join_discord_action)
+    game_menu.addAction(join_discord_action)
 
     # Credits
     credits_action = QAction(mw.translator.translate("ankimon_credits_button"), mw)
@@ -229,7 +229,7 @@ def create_menu_actions(
     file_check_action = QAction(mw.translator.translate("ankimon_leaderboard_credentials_button"), mw)
     file_check_action.setMenuRole(QAction.MenuRole.NoRole)
     file_check_action.triggered.connect(show_api_key_dialog)
-    help_menu.addAction(file_check_action)
+    mw.pokemenu.addAction(file_check_action)
 
     downloader_action = QAction(mw.translator.translate("download_resources_button"), mw)
     downloader_action.setMenuRole(QAction.MenuRole.NoRole)
