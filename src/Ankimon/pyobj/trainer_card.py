@@ -39,12 +39,12 @@ class TrainerCard:
         self.league = league
         cash = int(settings_obj.get("trainer.cash", 0))
         self.cash = cash
-
+        
         #Sync Data to ankimon leaderboard
         data = {
             'trainerRank': f"{league}",  # Example rank 
             'trainerName': trainer_name,  # Example trainer name
-            'level': int(settings_obj.get("trainer.level", 1)),  # Example level
+            'level': max(1, int(settings_obj.get("trainer.level", 1))),
             'pokedex': get_unique_pokemon(),  # Example Pokedex
             'caughtPokemon': get_total_pokemon(),  # Example Pokedex
             'highestLevel': highest_level,  # Example highest level
