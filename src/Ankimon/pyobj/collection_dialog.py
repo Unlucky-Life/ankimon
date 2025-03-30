@@ -8,6 +8,7 @@ from PyQt6.QtCore import *
 from ..gui_classes.pokemon_details import PokemonCollectionDetails
 from aqt import mw
 from aqt.utils import showInfo
+from ..functions.sprite_functions import get_sprite_path
 
 class PokemonCollectionDialog(QDialog):
     def __init__(self, logger, settings_obj, mainpokemon_function, main_pokemon, parent=mw):
@@ -159,17 +160,22 @@ class PokemonCollectionDialog(QDialog):
                 # Extract Pokemon data (same as your existing logic)
                 pokemon_id = pokemon['id']
                 pokemon_name = pokemon['name']
+                pokemon_shiny = pokemon.get("shiny", False)
                 pokemon_nickname = pokemon.get('nickname', '')
+                if pokemon_shiny:
+                    pokemon_nickname += " ⭐ "
                 pokemon_gender = pokemon['gender']
                 pokemon_level = pokemon['level']
                 pokemon_ability = pokemon['ability']
                 pokemon_type = pokemon['type']
                 pokemon_stats = pokemon['stats']
                 pokemon_hp = pokemon_stats["hp"]
-                pkmn_image_path = str(frontdefault / f"{pokemon_id}.png")
+                if pokemon_shiny:
+                    pokemon_name += " ⭐ "
+                pokemon_gender = pokemon.get("gender", "M")
+                pkmn_image_path = get_sprite_path("front", "gif" if self.gif_in_collection else "png", pokemon_id, pokemon_shiny, pokemon_gender)
 
                 if self.gif_in_collection:
-                    pkmn_image_path = str(user_path_sprites / "front_default_gif" / f"{pokemon_id}.gif")
                     splash_label = MovieSplashLabel(pkmn_image_path)
 
                 pixmap = QPixmap(pkmn_image_path)
@@ -269,6 +275,7 @@ class PokemonCollectionDialog(QDialog):
             name=pokemon['name'],
             level=pokemon['level'],
             id=pokemon['id'],
+            shiny=pokemon.get("shiny", False),
             ability=pokemon['ability'],
             type=pokemon['type'],
             detail_stats=pokemon['stats'],
@@ -280,6 +287,9 @@ class PokemonCollectionDialog(QDialog):
             gender=pokemon['gender'],
             nickname=pokemon.get('nickname'),
             individual_id=pokemon.get('individual_id'),
+            pokemon_defeated=pokemon.get('pokemon_defeated', 0),
+            everstone=pokemon.get('everstone', False),
+            captured_date=pokemon.get('captured_date', 'Missing'),
             language=self.language,
             gif_in_collection=self.gif_in_collection,
             remove_levelcap=self.remove_levelcap,
@@ -309,7 +319,11 @@ class PokemonCollectionDialog(QDialog):
                     for position, pokemon in enumerate(pokemon_list):
                         pokemon_id = pokemon['id']
                         pokemon_name = pokemon['name'].lower()
+                        if pokemon.get("shiny", False):
+                            pokemon_name += " (shiny) "
                         pokemon_nickname = pokemon.get("nickname", None)
+                        if pokemon.get("shiny", False):
+                            pokemon_nickname += " (shiny) "
                         pokemon_type = pokemon.get("type", " ")
                         
                         # Check if the Pokémon matches the search text and generation filter
@@ -359,7 +373,11 @@ class PokemonCollectionDialog(QDialog):
                 for position, pokemon in enumerate(sorted_pokemon_list):
                     pokemon_id = pokemon['id']
                     pokemon_name = pokemon['name'].lower()
+                    if pokemon.get("shiny", False):
+                        pokemon_name += " (shiny) "
                     pokemon_nickname = pokemon.get("nickname", None)
+                    if pokemon.get("shiny", False):
+                        pokemon_nickname += " (shiny) "
                     pokemon_type = pokemon.get("type", " ")
                     # Check if the Pokémon matches the search text and generation filter
                     if (
