@@ -25,7 +25,7 @@
     "dmg_dealt": "{dmg} Schaden wurde an {pokemon_name} verursacht.",
     "pokemon_paralyzed": "{pokemon_name} ist paralysiert.",
     "pokemon_asleep": "{pokemon_name} schläft.",
-    "pokemon_fainted": "{pokemon_name} ist kampfunfähig.",
+    "pokemon_fainted": "{enemy_pokemon_name} ist kampfunfähig.",
     "own_pokemon_fainted": "Dein {main_pokemon_name} wurde besiegt und das wilde {enemy_pokemon_name} ist geflohen!",
     "picked_main_pokemon": "Du hast {main_pokemon_name} als dein Hauptpokémon gewählt.",
     "show_collection_button": "Pokémon-Sammlung anzeigen",

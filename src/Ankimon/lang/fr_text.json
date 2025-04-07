@@ -25,7 +25,7 @@
     "dmg_dealt": "{dmg} points de dégâts ont été infligés à {pokemon_name}.",
     "pokemon_paralyzed": "{pokemon_name} est paralysé.",
     "pokemon_asleep": "{pokemon_name} est endormi.",
-    "pokemon_fainted": "{pokemon_name} est K.O.",
+    "pokemon_fainted": "{enemy_pokemon_name} est K.O.",
     "own_pokemon_fainted": "Votre {main_pokemon_name} a été vaincu et le {enemy_pokemon_name} sauvage s'est enfui !",
     "picked_main_pokemon": "Vous avez choisi {main_pokemon_name} comme votre Pokémon principal.",
     "show_collection_button": "Afficher la collection de Pokémon",
