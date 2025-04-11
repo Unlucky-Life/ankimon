@@ -25,7 +25,7 @@
     "dmg_dealt": "对 {pokemon_name} 造成了 {dmg} 点伤害。",
     "pokemon_paralyzed": "{pokemon_name} 麻痹了。",
     "pokemon_asleep": "{pokemon_name} 睡着了。",
-    "pokemon_fainted": "{pokemon_name} 失去了战斗能力。",
+    "pokemon_fainted": "{enemy_pokemon_name} 失去了战斗能力。",
     "own_pokemon_fainted": "你的 {main_pokemon_name} 被击败，野生的 {enemy_pokemon_name} 逃走了！",
     "picked_main_pokemon": "你选择了 {main_pokemon_name} 作为你的主宝可梦。",
     "show_collection_button": "显示宝可梦收藏",

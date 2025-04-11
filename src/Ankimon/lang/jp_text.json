@@ -25,7 +25,7 @@
     "dmg_dealt": "{pokemon_name}に{dmg}ダメージを与えた。",
     "pokemon_paralyzed": "{pokemon_name}は麻痺している。",
     "pokemon_asleep": "{pokemon_name}は眠っている。",
-    "pokemon_fainted": "{pokemon_name}はひんしになった。",
+    "pokemon_fainted": "{enemy_pokemon_name}はひんしになった。",
     "own_pokemon_fainted": "あなたの{main_pokemon_name}は敗北し、野生の{enemy_pokemon_name}は逃げ去った！",
     "picked_main_pokemon": "{main_pokemon_name}をメインポケモンに選びました。",
     "show_collection_button": "ポケモンコレクションを表示",

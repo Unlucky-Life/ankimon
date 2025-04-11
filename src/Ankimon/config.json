@@ -39,6 +39,7 @@
     "misc.gen8": false,
     "misc.gen9": false,
     "misc.remove_level_cap": false,
+    "misc.leaderboard": false,
     "misc.language": 9,
     "misc.ssh": true,
     "misc.YouShallNotPass_Ankimon_News": false,
