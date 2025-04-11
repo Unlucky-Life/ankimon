@@ -6,8 +6,12 @@ from ..resources import user_path_credentials, mypokemon_path
 import json
 import requests
 from aqt import mw
+from .settings import Settings  # ✅ Correct
+
 #ANKIMON_LEADERBOARD_API_URL = "https://ankimon.com/api/leaderboard"  # Replace with the actual API URL
 ANKIMON_LEADERBOARD_API_URL = "https://leaderboard-api.ankimon.com/update_stats"  # Replace with the actual API URL
+
+settings_obj = Settings()
 
 class ApiKeyDialog(QDialog):
     def __init__(self):
@@ -65,45 +69,61 @@ class ApiKeyDialog(QDialog):
             showInfo(f"Error saving credentials: {e}")
 
 def sync_data_to_leaderboard(data):
-    try:
-        # Load credentials from the file
-        with open(user_path_credentials, "r", encoding="utf-8") as f:
-            credentials = json.load(f)
+        
+        # First check if leaderboard is enabled in config
+        if not settings_obj.get("misc.leaderboard", False):
+            return
 
-        # Extract username and api_key from the list of dictionaries
-        username = credentials.get("username")
-        api_key = credentials.get("api_key")
+        try:
+            # Load credentials from the file
+            with open(user_path_credentials, "r", encoding="utf-8") as f:
+                credentials = json.load(f)
 
-        # Check if both username and api_key are available
-        if username and api_key:
-            request_data = {
-                "username": username,
-                "api_key": api_key,
-                "stats": data
-            }
+            # Extract username and api_key from the list of dictionaries
+            username = credentials.get("username")
+            api_key = credentials.get("api_key")
 
-            # Send a POST request to the leaderboard API
-            response = requests.post(
-                ANKIMON_LEADERBOARD_API_URL,
-                json=request_data
-            )
+            # Validate credentials
+            if not username or not api_key:
+                showInfo("Error: Missing credentials for Ankimon leaderboard. Please set up leaderboard from Ankimon menu or turn off in Settings.")
+                return
 
-            #showInfo(response.text)  # Show the response text for debugging
 
-            # Check if the request was successful
-            #if response.status_code == 200:
-            #    mw.logger.log("log","Data synced successfully to leaderboard!")
+            # Check if both username and api_key are available
+            if username and api_key:
+                request_data = {
+                    "username": username,
+                    "api_key": api_key,
+                    "stats": data
+                }
+
+                # Send a POST request to the leaderboard API
+                response = requests.post(
+                    ANKIMON_LEADERBOARD_API_URL,
+                    json=request_data
+                )
+
+                #showInfo(response.text)  # Show the response text for debugging
+
+                # Check if the request was successful
+                #if response.status_code == 200:
+                #    mw.logger.log("log","Data synced successfully to leaderboard!")
+                #else:
+                #    mw.logger.log("log",f"Failed to sync data to leaderboard. Status code: {response.status_code}")
             #else:
-            #    mw.logger.log("log",f"Failed to sync data to leaderboard. Status code: {response.status_code}")
-        #else:
-            #mw.logger.log("Credentials are missing (username or api_key)")
+                #mw.logger.log("Credentials are missing (username or api_key)")
 
-    except requests.exceptions.RequestException as e:
-        showInfo(f"Error syncing data to leaderboard: {e}")
-    except Exception as e:
-        showInfo(f"Error loading credentials: {e}")
+        except requests.exceptions.RequestException as e:
+            showInfo(f"Error: Missing credentials for Ankimon leaderboard. Please set up leaderboard from Ankimon menu or turn off in Settings.\n\n {e}")
+        except Exception as e:
+            showInfo(f"Error: Missing credentials for Ankimon leaderboard. Please set up leaderboard from Ankimon menu or turn off in Settings.\n\n {e}")
 
 def get_unique_pokemon():
+
+    # Check if leaderboard syncing is enabled in config
+    if not settings_obj.get("misc.leaderboard", False):
+        return
+
     try:
         with open(mypokemon_path, "r", encoding="utf-8") as file:
             pokemon_data = json.load(file)

@@ -22,6 +22,7 @@ automatic_battle = config["battle.automatic_battle"] #default: 0; 1 = catch_poke
 dmg_in_reviewer = config["battle.dmg_in_reviewer"] #default: false; true = mainpokemon is getting damaged in reviewer for false answers
 cards_per_round = config["battle.cards_per_round"]
 
+leaderboard = config["misc.leaderboard"]
 no_more_news = config["misc.YouShallNotPass_Ankimon_News"] #default: false; true = no more news
 remove_levelcap = config["misc.remove_level_cap"] #default: false; true = no more news
 ssh = config["misc.ssh"] #for eduroam users - false ; default: true

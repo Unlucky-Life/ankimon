@@ -16,6 +16,8 @@ import json
 import os
 import platform
 import random
+import math
+
 from pathlib import Path
 
 #from .install_dependencies import install_package
@@ -807,19 +809,40 @@ if database_complete:
 
 def kill_pokemon():
     trainer_card.gain_xp(enemy_pokemon.tier, settings_obj.get("controls.allow_to_choose_moves", False))
-    if settings_obj.get("controls.allow_to_choose_moves", False) == True:
-        #users that choose moves will only receive 50% of the experience
-        exp = int(calc_experience(main_pokemon.base_experience, enemy_pokemon.level) * 0.5)
-    else:
-        exp = int(calc_experience(main_pokemon.base_experience, enemy_pokemon.level))
     
+    # Calculate experience based on whether moves are chosen manually
+    if settings_obj.get("controls.allow_to_choose_moves", False):
+        exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level) * 0.5
+    else:
+        exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level)
+    
+    # Ensure exp is at least 1 and round up if it's a decimal
+    if exp < 1:
+        exp = 1
+    elif isinstance(exp, float) and not exp.is_integer():
+        exp = math.ceil(exp)
+    
+    # Handle XP share logic
     xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
     if xp_share_individual_id:
         exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp, xp_share_individual_id)
-    main_pokemon.level = save_main_pokemon_progress(mainpokemon_path, main_pokemon.level, main_pokemon.name, main_pokemon.base_experience, main_pokemon.growth_rate, exp)
+    
+    # Save main Pokémon's progress
+    main_pokemon.level = save_main_pokemon_progress(
+        mainpokemon_path,
+        main_pokemon.level,
+        main_pokemon.name,
+        main_pokemon.base_experience,
+        main_pokemon.growth_rate,
+        exp
+    )
+    
     ankimon_tracker_obj.general_card_count_for_battle = 0
-    if test_window.isVisible() is True:
-        new_pokemon()  # Show a new random Pokémon
+    
+    # Show a new random Pokémon if the test window is visible
+    if test_window.isVisible():
+        new_pokemon()
+
 
 def display_dead_pokemon():
     level = enemy_pokemon.level
