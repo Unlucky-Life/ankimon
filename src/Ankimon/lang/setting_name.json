@@ -40,9 +40,10 @@
     "misc.remove_level_cap": "Remove Level Cap",
     "misc.language": "Language",
     "misc.ssh": "SSH Access",
+    "misc.leaderboard": "Ankimon Leaderboard",
     "misc.YouShallNotPass_Ankimon_News": "Receive Ankimon News",
     "misc.discord_rich_presence": "Discord Rich Presence - Ankimon",
-    "misc.discord_rich_presence_text": "Discord Richt Presence - Quote Type",
+    "misc.discord_rich_presence_text": "Discord Rich Presence - Quote Type",
     "trainer.name": "Trainer Name"
 
 }

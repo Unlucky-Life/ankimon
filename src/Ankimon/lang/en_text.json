@@ -25,7 +25,7 @@
     "dmg_dealt": " {dmg} dmg is dealt to {pokemon_name}.",
     "pokemon_paralyzed": "{pokemon_name} is paralyzed.",
     "pokemon_asleep": "{pokemon_name} is asleep.",
-    "pokemon_fainted": "{pokemon_name} has fainted.",
+    "pokemon_fainted": "{enemy_pokemon_name} has fainted.",
     "own_pokemon_fainted": "Your {main_pokemon_name} has been defeated and the wild {enemy_pokemon_name} has fled!",
     "picked_main_pokemon": "You picked {main_pokemon_name} as your main pokemon.",
     "show_collection_button": "Show Pokemon Collection",

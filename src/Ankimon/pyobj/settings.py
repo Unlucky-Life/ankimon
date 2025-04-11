@@ -14,7 +14,14 @@ class Settings:
         return self.descriptions.get(key, "No description available.")
 
     def load_config(self):
+
+        # Load existing config or initialize as empty
         config = mw.addonManager.getConfig(__name__) or {}
+
+        # Check if "misc.leaderboard" exists; if not, add it
+        if "misc.leaderboard" not in config:
+            config["misc.leaderboard"] = False  # Add the new setting with its default value
+
         if not config:
             #Card max time in Seconds
             config = {
@@ -60,6 +67,7 @@ class Settings:
                 "misc.remove_level_cap": False,
                 "misc.language": 9,
                 "misc.ssh": True,
+                "misc.leaderboard": False,
                 "misc.YouShallNotPass_Ankimon_News": False,
                 "misc.discord_rich_presence": False,
                 "misc.discord_rich_presence_text": 1,
