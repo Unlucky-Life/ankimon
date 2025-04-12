@@ -5,13 +5,10 @@ from aqt.utils import showInfo
 from ..resources import user_path_credentials, mypokemon_path
 import json
 import requests
-from aqt import mw
-from .settings import Settings  # ✅ Correct
+from aqt import mw # import setting values direct from init file 
 
 #ANKIMON_LEADERBOARD_API_URL = "https://ankimon.com/api/leaderboard"  # Replace with the actual API URL
 ANKIMON_LEADERBOARD_API_URL = "https://leaderboard-api.ankimon.com/update_stats"  # Replace with the actual API URL
-
-settings_obj = Settings()
 
 class ApiKeyDialog(QDialog):
     def __init__(self):
@@ -71,7 +68,7 @@ class ApiKeyDialog(QDialog):
 def sync_data_to_leaderboard(data):
         
         # First check if leaderboard is enabled in config
-        if not settings_obj.get("misc.leaderboard", False):
+        if not mw.settings_obj.get("misc.leaderboard",False):
             return
 
         try:
@@ -121,7 +118,7 @@ def sync_data_to_leaderboard(data):
 def get_unique_pokemon():
 
     # Check if leaderboard syncing is enabled in config
-    if not settings_obj.get("misc.leaderboard", False):
+    if not mw.settings_obj.get("misc.leaderboard",False):
         return
 
     try:
