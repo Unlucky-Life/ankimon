@@ -125,6 +125,7 @@ translator = Translator(language=int(settings_obj.get("misc.language", int(9))))
 mw.settings_ankimon = settings_window
 mw.logger = logger
 mw.translator = translator
+mw.settings_obj = settings_obj
 
 # Log an startup message
 logger.log_and_showinfo('game', translator.translate("startup"))
