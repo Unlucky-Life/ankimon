@@ -125,6 +125,7 @@ translator = Translator(language=int(settings_obj.get("misc.language", int(9))))
 mw.settings_ankimon = settings_window
 mw.logger = logger
 mw.translator = translator
+mw.settings_obj = settings_obj
 
 # Log an startup message
 logger.log_and_showinfo('game', translator.translate("startup"))
@@ -1767,7 +1768,7 @@ def on_review_card(*args):
                             enemy_pokemon.hp -= dmg
                         if enemy_pokemon.hp < 0:
                             enemy_pokemon.hp = 0
-                            msg += translator.translate("pokemon_fainted", pokemon_name=enemy_pokemon.name.capitalize())
+                            msg += translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize())
                             
                     tooltipWithColour(msg, color)
                     if dmg > 0:
@@ -1798,7 +1799,7 @@ def on_review_card(*args):
             cry_counter = 0
             play_sound()
         if main_pokemon.hp < 1:
-            msg = translator.translate("pokemon_fainted", main_pokemon_name=main_pokemon.name.capitalize(), enemy_pokemon_name=enemy_pokemon.name.capitalize())
+            msg = translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize(), main_pokemon_name=main_pokemon.name.capitalize())
             play_effect_sound("Fainted")
             new_pokemon()
             #mainpokemon_data()
