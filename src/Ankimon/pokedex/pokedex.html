@@ -11,35 +11,41 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            box-sizing: border-box; /* Ensure padding/margins are included in width/height */
+            box-sizing: border-box;
         }
 
         body {
             font-family: 'Courier New', Courier, monospace;
             background: 
-                /* Grid layer: horizontal and vertical lines */
                 repeating-linear-gradient(0deg, transparent, transparent 19px, #7ADAE2 20px),
                 repeating-linear-gradient(90deg, transparent, transparent 19px, #7ADAE2 20px),
-                /* Base layer: linear gradient */
                 linear-gradient(to bottom, #4DCDD8, #7ADAE2, #A6E6EC);
-            color: #333;
-            display: flex; /* Ensure body takes up full space */
+            color: #1A7A85;
+            display: flex;
             flex-direction: column;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: 
+                repeating-linear-gradient(0deg, transparent, transparent 19px, #3A9AA2 20px),
+                repeating-linear-gradient(90deg, transparent, transparent 19px, #3A9AA2 20px),
+                linear-gradient(to bottom, #1A7A85, #2A8A92, #3A9AA2);
         }
 
         .pokedex-container {
-            width: calc(100% - 20px); /* Account for margin to show rounded borders */
-            height: calc(100% - 20px); /* Account for margin to show rounded borders */
-            margin: 10px; /* Small margin to allow rounded borders to be visible */
+            width: calc(100% - 20px);
+            height: calc(100% - 20px);
+            margin: 10px;
             padding: 10px;
             box-sizing: border-box;
             text-align: center;
             display: flex;
             flex-direction: column;
-            flex: 1; /* Ensure it takes up all available space */
-            background: rgba(255, 255, 255, 0.1); /* Slight white overlay for contrast */
-            border-radius: 15px; /* Rounded borders */
-            overflow: hidden; /* Ensure content respects the rounded borders */
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
         }
 
         .header {
@@ -51,17 +57,40 @@
             font-weight: bold;
         }
 
+        .header span {
+            color: black;
+        }
+
+        body.dark-mode .header span {
+            color: white;
+        }
+
+        .theme-toggle {
+            background: #28ACB8;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .theme-toggle:hover {
+            background: #1A7A85;
+        }
+
         .pokemon-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr); /* 5 columns like in the image */
+            grid-template-columns: repeat(5, 1fr);
             gap: 10px;
             justify-items: center;
             align-items: center;
-            background: rgba(255, 255, 255, 0.1); /* Slight white overlay for contrast */
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 10px;
-            overflow: hidden; /* This will ensure content doesn't break the rounded corners */
-            flex: 1; /* Allow the grid to take up remaining space */
+            overflow: hidden;
+            flex: 1;
         }
 
         .pokemon-item {
@@ -71,15 +100,14 @@
         }
 
         .pokemon-item img {
-            width: 56px; /* Adjust based on your sprite size */
+            width: 56px;
             height: 56px;
-            image-rendering: pixelated; /* Keep pixelated look */
-            transition: all 0.3s ease; /* Smooth transition for hover effects */
+            image-rendering: pixelated;
+            transition: all 0.3s ease;
         }
 
-        /* Add hover effect for size increase */
         .pokemon-item img:hover {
-            transform: scale(1.2); /* Increase size by 20% */
+            transform: scale(1.2);
         }
 
         .pokemon-item .pokemon-id {
@@ -100,11 +128,21 @@
             border: none;
             font-size: 24px;
             cursor: pointer;
+            color: black;
+        }
+
+        body.dark-mode .navigation button {
+            color: white;
+        }
+
+        /* Ensure "List X" text is white in Dark mode */
+        body.dark-mode .navigation span {
+            color: white;
         }
 
         .footer {
             display: flex;
-            justify-content: center; /* Center the buttons */
+            justify-content: center;
             align-items: center;
             font-size: 16px;
             margin-top: 20px;
@@ -117,11 +155,21 @@
             padding: 5px 10px;
             border-radius: 5px;
             cursor: pointer;
-            margin: 0 5px; /* Space between buttons */
+            margin: 0 5px;
         }
 
         .footer button.active {
-            background: #1A7A85; /* Darker shade for active filter */
+            background: #1A7A85;
+        }
+
+        body.dark-mode .footer button {
+            background: #4ACCD8;
+            color: #1A7A85;
+        }
+
+        body.dark-mode .footer button.active {
+            background: #3A9AA2;
+            color: white;
         }
     </style>
 </head>
@@ -129,12 +177,13 @@
     <div class="pokedex-container">
         <div class="header">
             <span id="obtained-count">Pokémon Obtained: 0</span>
+            <button id="theme-toggle" class="theme-toggle">Dark</button>
             <span id="seen-count">Pokémon Seen: 0</span>
         </div>
 
         <div class="navigation">
             <button id="prev-btn">←</button>
-            <span id="current-pokemon">No. 001 Bulbasaur</span>
+            <span id="current-pokemon">List 1</span>
             <button id="next-btn">→</button>
         </div>
 
@@ -151,7 +200,7 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", async function() {
-            const totalPokemon = 905; // Adjust based on your total Pokémon count
+            const totalPokemon = 905;
             const pokemonGrid = document.getElementById("pokemon-grid");
             const obtainedCount = document.getElementById("obtained-count");
             const seenCount = document.getElementById("seen-count");
@@ -161,8 +210,8 @@
             const filterAllBtn = document.getElementById("filter-all");
             const filterCaughtBtn = document.getElementById("filter-caught");
             const filterNotCaughtBtn = document.getElementById("filter-not-caught");
+            const themeToggleBtn = document.getElementById("theme-toggle");
 
-            // Load Pokémon names (optional, if you have a JSON file)
             let pokemonNames = {};
             try {
                 const response = await fetch("./pokemon_names.json");
@@ -171,7 +220,13 @@
                 console.log("Could not load Pokémon names:", error);
             }
 
-            // Function to get numbers from URL
+            let isDarkMode = false;
+            themeToggleBtn.addEventListener("click", () => {
+                isDarkMode = !isDarkMode;
+                document.body.classList.toggle("dark-mode", isDarkMode);
+                themeToggleBtn.textContent = isDarkMode ? "Light" : "Dark";
+            });
+
             function getNumbersFromURL() {
                 const params = new URLSearchParams(window.location.search);
                 const numbersParam = params.get("numbers");
@@ -183,7 +238,6 @@
                 return [];
             }
 
-            // Function to get defeated count from URL
             function getDefeatedCountFromURL() {
                 const params = new URLSearchParams(window.location.search);
                 const defeatedParam = params.get("defeated");
@@ -195,25 +249,21 @@
                 }
             }
 
-            // Get caught Pokémon
             const givenNumbers = getNumbersFromURL();
             const allNumbers = Array.from({ length: totalPokemon }, (_, i) => i + 1);
             const caughtNumbers = allNumbers.filter(number => givenNumbers.includes(number));
 
-            // Get defeated Pokémon count
             const defeatedCount = getDefeatedCountFromURL();
 
-            // Calculate and display seen total
             const caughtCount = caughtNumbers.length;
             const seenTotal = caughtCount + defeatedCount;
 
             obtainedCount.textContent = `Pokémon Obtained: ${caughtCount}`;
             seenCount.textContent = `Pokémon Seen: ${seenTotal}`;
 
-            // Display Pokémon in the grid
             let currentPage = 0;
-            const itemsPerPage = 25; // 5x5 grid
-            let currentFilter = "all"; // Default filter
+            const itemsPerPage = 25;
+            let currentFilter = "all";
 
             function updateActiveButton() {
                 filterAllBtn.classList.toggle("active", currentFilter === "all");
@@ -222,7 +272,7 @@
             }
 
             function displayPokemon() {
-                pokemonGrid.innerHTML = ""; // Clear the grid
+                pokemonGrid.innerHTML = "";
                 let displayNumbers = allNumbers;
 
                 if (currentFilter === "caught") {
@@ -256,16 +306,13 @@
                     pokemonGrid.appendChild(pokemonItem);
                 }
 
-                // Update current Pokémon display (show first Pokémon of the page)
                 if (pageNumbers.length > 0) {
-                    const firstId = String(pageNumbers[0]).padStart(3, "0");
-                    currentPokemon.textContent = `No. ${firstId} ${pokemonNames[firstId] || "Unknown"}`;
+                    currentPokemon.textContent = `List ${currentPage + 1}`;
                 } else {
                     currentPokemon.textContent = "No Pokémon to display";
                 }
             }
 
-            // Navigation
             prevBtn.addEventListener("click", () => {
                 if (currentPage > 0) {
                     currentPage--;
@@ -283,7 +330,6 @@
                 }
             });
 
-            // Filter button events
             filterAllBtn.addEventListener("click", () => {
                 currentFilter = "all";
                 currentPage = 0;
@@ -305,10 +351,9 @@
                 displayPokemon();
             });
 
-            // Initial display
             updateActiveButton();
             displayPokemon();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92eaa61b4946ed86',t:'MTc0NDM3NjIzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
