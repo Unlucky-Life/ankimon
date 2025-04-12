@@ -1798,7 +1798,7 @@ def on_review_card(*args):
             cry_counter = 0
             play_sound()
         if main_pokemon.hp < 1:
-            msg = translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize(), main_pokemon_name=main_pokemon.name.capitalize(), enemy_pokemon_name=enemy_pokemon.name.capitalize())
+            msg = translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize(), main_pokemon_name=main_pokemon.name.capitalize())
             play_effect_sound("Fainted")
             new_pokemon()
             #mainpokemon_data()
