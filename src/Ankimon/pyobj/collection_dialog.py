@@ -161,10 +161,11 @@ class PokemonCollectionDialog(QDialog):
                 pokemon_id = pokemon['id']
                 pokemon_name = pokemon['name']
                 pokemon_shiny = pokemon.get("shiny", False)
-                pokemon_nickname = pokemon.get('nickname', '')
+                # Ensure nickname is always a string, even if None
+                pokemon_nickname = pokemon.get('nickname') or ''
                 if pokemon_shiny:
                     pokemon_nickname += " ⭐ "
-                pokemon_gender = pokemon['gender']
+                pokemon_gender = pokemon.get("gender", "M")
                 pokemon_level = pokemon['level']
                 pokemon_ability = pokemon['ability']
                 pokemon_type = pokemon['type']
@@ -172,8 +173,13 @@ class PokemonCollectionDialog(QDialog):
                 pokemon_hp = pokemon_stats["hp"]
                 if pokemon_shiny:
                     pokemon_name += " ⭐ "
-                pokemon_gender = pokemon.get("gender", "M")
-                pkmn_image_path = get_sprite_path("front", "gif" if self.gif_in_collection else "png", pokemon_id, pokemon_shiny, pokemon_gender)
+                pkmn_image_path = get_sprite_path(
+                    "front",
+                    "gif" if self.gif_in_collection else "png",
+                    pokemon_id,
+                    pokemon_shiny,
+                    pokemon_gender
+                )
 
                 if self.gif_in_collection:
                     splash_label = MovieSplashLabel(pkmn_image_path)
@@ -181,7 +187,9 @@ class PokemonCollectionDialog(QDialog):
                 pixmap = QPixmap(pkmn_image_path)
                 pixmap = self.adjust_pixmap_size(pixmap, max_width=300, max_height=230)
 
-                name_label = self.create_label(pokemon_nickname or f"{pokemon_name.capitalize()} {self.get_gender_symbol(pokemon_gender)}", 12)
+                name_label = self.create_label(
+                    pokemon_nickname or f"{pokemon_name.capitalize()} {self.get_gender_symbol(pokemon_gender)}", 12
+                )
                 level_label = self.create_label(f"Level: {pokemon_level}", 8)
                 type_label = self.create_label("Type: " + " ".join([t.capitalize() for t in pokemon_type]), 8)
                 ability_label = self.create_label(f"Ability: {pokemon_ability.capitalize()}", 8)
