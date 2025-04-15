@@ -1104,7 +1104,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             pass
         if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
             logger.log_and_showinfo("info",f"{msg}")
-        main_pokemon.xp = int(max(0, int(main_pokemon.x) - int(experience)))
+        main_pokemon.xp = int(max(0, int(main_pokemon.xp) - int(experience)))
         evo_id = check_evolution_for_pokemon(main_pokemon.individual_id, main_pokemon.id, main_pokemon.level, evo_window, main_pokemon.everstone)
         if evo_id is not None:
             msg += translator.translate("pokemon_about_to_evolve", main_pokemon_name=main_pokemon.name, evo_pokemon_name=return_name_for_id(evo_id).capitalize(), main_pokemon_level=main_pokemon.level)
