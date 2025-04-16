@@ -1781,20 +1781,37 @@ def on_review_card(*args):
                             play_effect_sound("HurtSuper")
                     else:
                         reviewer_obj.seconds = 0
+
             if enemy_pokemon.hp < 1:
                 enemy_pokemon.hp = 0
-                if int(settings_obj.get("battle.automatic_battle",0)) != 0:
-                    if int(settings_obj.get("battle.automatic_battle",1)) == 1:
+                
+                # New automatic battle handling
+                auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))
+                
+                if auto_battle_setting == 3:  # Catch if uncollected
+                    in_collection = False
+                    if mypokemon_path.is_file():
+                        with open(mypokemon_path, "r", encoding="utf-8") as f:
+                            collection = json.load(f)
+                            in_collection = any(pkmn["id"] == enemy_pokemon.id for pkmn in collection)
+                    
+                    if not in_collection:
                         catch_pokemon("")
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
-                    elif int(settings_obj.get("battle.automatic_battle",2)) == 2:
+                    else:
                         kill_pokemon()
-                        new_pokemon()
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
-                else:
-                    if test_window.isVisible() is True:
-                        test_window.display_pokemon_death()
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+                    new_pokemon()
+                
+                elif auto_battle_setting == 1:  # Existing auto-catch
+                    catch_pokemon("")
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+                    new_pokemon()
+                
+                elif auto_battle_setting == 2:  # Existing auto-defeat
+                    kill_pokemon()
+                    new_pokemon()
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()
