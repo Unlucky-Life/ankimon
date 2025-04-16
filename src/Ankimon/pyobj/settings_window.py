@@ -157,8 +157,7 @@ class SettingsWindow(QMainWindow):
     def on_save(self):
         excluded_patterns = {
         'mypokemon', 'mainpokemon',  # Base patterns
-        'mypokemon_path', 'mainpokemon_path', 'pokemon_collection'  # Common path keys
-        'trainer.cash'
+        'pokemon_collection',  'trainer.cash'
         }
 
         # Check for changes, excluding 'mypokemon' and 'mainpokemon'
