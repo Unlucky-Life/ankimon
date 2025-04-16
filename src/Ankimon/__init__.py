@@ -101,6 +101,9 @@ from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
 
+collected_pokemon_ids = set()
+_collection_loaded = False
+
 # start loggerobject for Ankimon
 logger = ShowInfoLogger()
 
@@ -261,6 +264,25 @@ shop_manager = PokemonShopManager(
 ankimon_tracker_window = AnkimonTrackerWindow(
     tracker = ankimon_tracker_obj
 )
+
+# Initialize collected IDs cache
+def load_collected_pokemon_ids():
+    global collected_pokemon_ids, _collection_loaded
+    if _collection_loaded:
+        return  # Already loaded, do nothing
+    if mypokemon_path.is_file():
+        try:
+            with open(mypokemon_path, "r", encoding="utf-8") as f:
+                collection = json.load(f)
+                collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
+            _collection_loaded = True
+        except Exception as e:
+            logger.log("error", f"Error loading collection cache: {str(e)}")
+            collected_pokemon_ids = set()
+            _collection_loaded = True  # Prevent repeated attempts if file is bad
+
+# Call this during addon initialization
+load_collected_pokemon_ids()
 
 pokedex_window = Pokedex(addon_dir, ankimon_tracker = ankimon_tracker_obj)
 
@@ -1378,6 +1400,7 @@ def cancel_evolution(individual_id, prevo_name):
 def catch_pokemon(nickname):
     ankimon_tracker_obj.caught += 1
     if ankimon_tracker_obj.caught == 1:
+        collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
         if nickname is None or not nickname:  # Wenn None oder leer
             save_caught_pokemon(nickname)
         else:
@@ -1781,20 +1804,33 @@ def on_review_card(*args):
                             play_effect_sound("HurtSuper")
                     else:
                         reviewer_obj.seconds = 0
+
             if enemy_pokemon.hp < 1:
                 enemy_pokemon.hp = 0
-                if int(settings_obj.get("battle.automatic_battle",0)) != 0:
-                    if int(settings_obj.get("battle.automatic_battle",1)) == 1:
+                
+                # New automatic battle handling
+                auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))
+                
+                if auto_battle_setting == 3:  # Catch if uncollected
+                    enemy_id = enemy_pokemon.id
+                    # Check cache instead of file
+                    if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
                         catch_pokemon("")
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
-                    elif int(settings_obj.get("battle.automatic_battle",2)) == 2:
+                    else:
                         kill_pokemon()
-                        new_pokemon()
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
-                else:
-                    if test_window.isVisible() is True:
-                        test_window.display_pokemon_death()
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+                    new_pokemon()
+                
+                elif auto_battle_setting == 1:  # Existing auto-catch
+                    catch_pokemon("")
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+                    new_pokemon()
+                
+                elif auto_battle_setting == 2:  # Existing auto-defeat
+                    kill_pokemon()
+                    new_pokemon()
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()
