@@ -101,6 +101,9 @@ from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
 
+collected_pokemon_ids = set()
+_collection_loaded = False
+
 # start loggerobject for Ankimon
 logger = ShowInfoLogger()
 
@@ -261,6 +264,25 @@ shop_manager = PokemonShopManager(
 ankimon_tracker_window = AnkimonTrackerWindow(
     tracker = ankimon_tracker_obj
 )
+
+# Initialize collected IDs cache
+def load_collected_pokemon_ids():
+    global collected_pokemon_ids, _collection_loaded
+    if _collection_loaded:
+        return  # Already loaded, do nothing
+    if mypokemon_path.is_file():
+        try:
+            with open(mypokemon_path, "r", encoding="utf-8") as f:
+                collection = json.load(f)
+                collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
+            _collection_loaded = True
+        except Exception as e:
+            logger.log("error", f"Error loading collection cache: {str(e)}")
+            collected_pokemon_ids = set()
+            _collection_loaded = True  # Prevent repeated attempts if file is bad
+
+# Call this during addon initialization
+load_collected_pokemon_ids()
 
 pokedex_window = Pokedex(addon_dir, ankimon_tracker = ankimon_tracker_obj)
 
@@ -1378,6 +1400,7 @@ def cancel_evolution(individual_id, prevo_name):
 def catch_pokemon(nickname):
     ankimon_tracker_obj.caught += 1
     if ankimon_tracker_obj.caught == 1:
+        collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
         if nickname is None or not nickname:  # Wenn None oder leer
             save_caught_pokemon(nickname)
         else:
@@ -1789,13 +1812,9 @@ def on_review_card(*args):
                 auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))
                 
                 if auto_battle_setting == 3:  # Catch if uncollected
-                    in_collection = False
-                    if mypokemon_path.is_file():
-                        with open(mypokemon_path, "r", encoding="utf-8") as f:
-                            collection = json.load(f)
-                            in_collection = any(pkmn["id"] == enemy_pokemon.id for pkmn in collection)
-                    
-                    if not in_collection or enemy_pokemon.shiny:
+                    enemy_id = enemy_pokemon.id
+                    # Check cache instead of file
+                    if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
                         catch_pokemon("")
                     else:
                         kill_pokemon()
