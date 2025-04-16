@@ -329,7 +329,7 @@ class PokemonCollectionDialog(QDialog):
                         pokemon_name = pokemon['name'].lower()
                         if pokemon.get("shiny", False):
                             pokemon_name += " (shiny) "
-                        pokemon_nickname = pokemon.get("nickname", None)
+                        pokemon_nickname = pokemon.get('nickname') or ''
                         if pokemon.get("shiny", False):
                             pokemon_nickname += " (shiny) "
                         pokemon_type = pokemon.get("type", " ")
@@ -383,7 +383,7 @@ class PokemonCollectionDialog(QDialog):
                     pokemon_name = pokemon['name'].lower()
                     if pokemon.get("shiny", False):
                         pokemon_name += " (shiny) "
-                    pokemon_nickname = pokemon.get("nickname", None)
+                    pokemon_nickname = pokemon.get('nickname') or ''
                     if pokemon.get("shiny", False):
                         pokemon_nickname += " (shiny) "
                     pokemon_type = pokemon.get("type", " ")
