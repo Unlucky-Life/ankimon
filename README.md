@@ -1,4 +1,15 @@
-# Ankimon - Gamify Your Learning Experience with Anki
+# Ankimon EXPERIMENTAL Branch - for community contributors
+
+### NOTE - for any contributions, make sure to **create your own branch** instead of merging into `main`, and add pull requests with your changes. We will review these changes and merge onto `main` after testing them.
+
+## Current contributors and maintainers in this repo
+**h0tp** @h0tp-ftw
+**Peace** @thepeacemonk
+**Gill** @gykoh
+**richy** @richy431 
+
+If you would like to join, please DM me on Discord (@h0tp)
+
 
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=unlucky-life/ankimon&type=Date)](https://www.star-history.com/#unlucky-life/ankimon&Date)
