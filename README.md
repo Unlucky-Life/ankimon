@@ -1,15 +1,30 @@
-# Ankimon EXPERIMENTAL Branch - for community contributors
+# Ankimon EXPERIMENTAL Branch
+
+This branch contains the latest bugfixes and feature additions from community contributors! EXPERIMENTAL, **it can be very unstable**. So you get the coolest features but you have to deal with the issues as well!
 
 ### NOTE - for any contributions, make sure to **create your own branch** instead of merging into `main`, and add pull requests with your changes. We will review these changes and merge onto `main` after testing them.
 
 ## Current contributors and maintainers in this repo
-**h0tp** @h0tp-ftw
-**Peace** @thepeacemonk
-**Gill** @gykoh
-**richy** @richy431 
+- **h0tp** @h0tp-ftw
+- **Peace** @thepeacemonk
+- **Gill** @gykoh
+- **richy** @richy431
 
 If you would like to join, please DM me on Discord (@h0tp)
 
+## How to install this branch
+- Make sure Ankimon is already installed in Anki!
+- Backup your `mypokemon.json`, `mainpokemon.json`, `items.json` and `badges.json` files.
+- Download this as ZIP (top right: Code -> Download ZIP)
+- Extract ZIP, and put all contents of the `src/Ankimon` folder into your Ankimon addon folder.
+- Restore your `mypokemon.json`, `mainpokemon.json`, `items.json` and `badges.json` files.
+- Restart Anki
+
+Recommended to install this on a separate installation of Anki, e.g. in a VM or different device.   
+
+## Reporting bugs
+- BEST way is to report on Ankimon Discord: https://discord.gg/eY8jPHZw4z
+- You can add issues through GitHub: https://github.com/h0tp-ftw/ankimon/issues
 
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=unlucky-life/ankimon&type=Date)](https://www.star-history.com/#unlucky-life/ankimon&Date)
