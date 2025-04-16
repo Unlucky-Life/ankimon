@@ -1795,7 +1795,7 @@ def on_review_card(*args):
                             collection = json.load(f)
                             in_collection = any(pkmn["id"] == enemy_pokemon.id for pkmn in collection)
                     
-                    if not in_collection:
+                    if not in_collection or enemy_pokemon.shiny:
                         catch_pokemon("")
                     else:
                         kill_pokemon()
