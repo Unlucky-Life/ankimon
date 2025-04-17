@@ -975,7 +975,7 @@ def modify_percentages(total_reviews, daily_average, player_level, percentages):
     elif review_ratio < 0.8:
         percentages["Ultra"] += 3
         percentages["Normal"] -= 3
-    elif review_ratio < 1.0:
+    else:
         percentages["Legendary"] += 2
         percentages["Ultra"] += 3
         percentages["Normal"] -= 5
