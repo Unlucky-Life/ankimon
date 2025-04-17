@@ -1008,15 +1008,6 @@ def modify_percentages(total_reviews, daily_average, player_level, percentages):
     for tier in percentages:
         percentages[tier] = (percentages[tier] / total) * 100 if total > 0 else 0
 
-    # --- Logging block: log percentages for all rarities and review_ratio ---
-    logger.log("game", f"Rarity percentages after modification:")
-    for rarity, value in percentages.items():
-        logger.log("game", f"  {rarity}: {value:.2f}%")
-    logger.log("game", f"review_ratio: {review_ratio:.4f}")
-    logger.log("game", f"total_reviews: {total_reviews:.4f}")
-    logger.log("game", f"daily_average: {daily_average:.4f}")
-    # --- End logging block ---
-
     return percentages
 
 def get_tier(total_reviews, player_level=1, event_modifier=None):
