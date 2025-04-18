@@ -74,11 +74,22 @@ jobs:
           FIXES=$(echo "$PR_LIST" | jq -r '.[] | select(.headRefName | test("fix/"; "i")) | "- \(.title) (#\(.number))"')
       
           # Build release body
-          RELEASE_BODY="**Build Details**\n- Commit SHA: ${{ steps.vars.outputs.sha_short }}\n\n"
-          [ -n "$FEATURES" ] && RELEASE_BODY+="## 🚀 New Features\n$FEATURES\n\n"
-          [ -n "$FIXES" ] && RELEASE_BODY+="## 🐛 Bug Fixes\n$FIXES\n\n"
-          
-          echo "notes=$RELEASE_BODY" >> $GITHUB_OUTPUT
+          RELEASE_BODY="**Build Details**
+          - Commit SHA: ${{ steps.vars.outputs.sha_short }}
+
+          "
+          [ -n "$FEATURES" ] && RELEASE_BODY+="## 🚀 New Features
+          $FEATURES
+
+          "
+          [ -n "$FIXES" ] && RELEASE_BODY+="## 🐛 Bug Fixes
+          $FIXES
+
+          "
+
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
         
 
       - name: Create GitHub release
@@ -88,11 +99,8 @@ jobs:
           name: "${{ steps.vars.outputs.module_name }} v${{ github.event.inputs.version }}"
           body: |
             ${{ steps.release_notes.outputs.notes }}
-            
-            ## What's Changed (Auto-Generated)
-            ${{ github.event.release.body }}
+            **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ env.PREV_TAG }}...${{ github.event.inputs.version }}
           files: build/${{ steps.vars.outputs.build_name }}
-          draft: false
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
