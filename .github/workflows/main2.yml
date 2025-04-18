@@ -64,45 +64,34 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get merged PRs since last tag with author information
-          LATEST_TAG=$(git describe --tags --abbrev=0)
-          PREV_TAG=$(git describe --tags --abbrev=0 $LATEST_TAG^ 2>/dev/null || echo "")
-          PR_LIST=$(gh pr list --state merged --base main --search "merged:>$PREV_TAG" --json number,title,headRefName,author)
+          # ... (previous setup code remains the same)
       
-          # Extract features and fixes with contributors
-          FEATURES=$(echo "$PR_LIST" | jq -r '.[] | select(.headRefName | test("feature/"; "i")) | "- \(.title) (#\(.number)) by @\(.author.login)"')
-          FIXES=$(echo "$PR_LIST" | jq -r '.[] | select(.headRefName | test("fix/"; "i")) | "- \(.title) (#\(.number)) by @\(.author.login)"')
+          # Build release body with proper indentation
+          RELEASE_BODY="⚠️ **This is an EXPERIMENTAL build. You may encounter issues and bugs. Thank you for checking it out and helping us improve!**
       
-          # Get unique contributors
-          CONTRIBUTORS=$(echo "$PR_LIST" | jq -r '[.[].author.login] | unique | map("* @\(.)") | join("\n")')
-      
-          # Build release body
-          RELEASE_BODY="**Build Details**
+          **Build Details**
           - Commit SHA: ${{ steps.vars.outputs.sha_short }}
-      
           "
       
-          [ -n "$FEATURES" ] && RELEASE_BODY+="## 🚀 New Features
+          [ -n "$FEATURES" ] && RELEASE_BODY+="
+          ## 🚀 New Features
           $FEATURES
-      
           "
       
-          [ -n "$FIXES" ] && RELEASE_BODY+="## 🐛 Bug Fixes
+          [ -n "$FIXES" ] && RELEASE_BODY+="
+          ## 🐛 Bug Fixes
           $FIXES
-      
           "
       
-          [ -n "$CONTRIBUTORS" ] && RELEASE_BODY+="## 👥 Contributors
+          [ -n "$CONTRIBUTORS" ] && RELEASE_BODY+="
+          ## 👥 Contributors
           $CONTRIBUTORS
-      
           "
       
           echo "notes<<EOF" >> $GITHUB_OUTPUT
           echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-    
-        
-
+                       
       - name: Create GitHub release
         uses: softprops/action-gh-release@v1
         with:
