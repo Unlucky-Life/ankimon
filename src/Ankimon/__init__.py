@@ -1811,12 +1811,12 @@ def on_review_card(*args):
                 # New automatic battle handling
                 auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))
                 
-
                 value = settings_obj.get("battle.automatic_battle", "0")
                 try:
                     auto_battle_setting = int(value)
                 except ValueError:
                     auto_battle_setting = 0  # fallback
+
                 if auto_battle_setting == 3:  # Catch if uncollected
                     enemy_id = enemy_pokemon.id
                     # Check cache instead of file
