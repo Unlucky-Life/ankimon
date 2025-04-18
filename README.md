@@ -1,5 +1,3 @@
-# Ankimon - Gamify Your Learning Experience with Anki
-
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=unlucky-life/ankimon&type=Date)](https://www.star-history.com/#unlucky-life/ankimon&Date)
 
@@ -49,3 +47,10 @@ Start your Pokémon journey with Ankimon and make learning an adventure!
 ![image](https://github.com/user-attachments/assets/1e5b9f0e-18c4-4115-a73e-08fc2e97f4d8)
 
 
+### NOTE - for any contributions, make sure to **create your own branch** instead of merging into `main`, and add pull requests with your changes. We will review these changes and merge onto `main` after testing them.
+
+## Honorable Mentions for current active contributors
+**h0tp** @h0tp-ftw
+**Peace** @thepeacemonk
+**Gill** @gykoh
+**richy** @richy431 
