@@ -10,55 +10,46 @@
     <td align="center">
       <a href="https://github.com/h0tp-ftw">
         <img src="https://avatars.githubusercontent.com/u/141889580?v=4" width="80"><br>
-        <span style="font-size:1.15em; font-weight:bold;">h0tp</span><br>
-        <span style="font-size:0.9em; color:#888;">Owner / Contributor</span><br>
-        <span style="font-size:0.8em; color:gray;">
-          <a href="https://github.com/h0tp-ftw" style="color:gray; text-decoration:none;">@h0tp-ftw</a>
-        </span>
-      </a>
+        <span style="font-size:1.15em; font-weight:bold;">h0tp</span>
+      </a><br>
+      <span style="font-size:0.9em; color:#888;">Owner</span><br>
+      <span style="font-size:0.8em; color:gray;">@h0tp-ftw</span>
     </td>
     <td align="center">
       <a href="https://github.com/thepeacemonk">
         <img src="https://avatars.githubusercontent.com/u/105552060?v=4" width="80"><br>
-        <span style="font-size:1.15em; font-weight:bold;">Peace</span><br>
-        <span style="font-size:0.9em; color:#888;">Contributor</span><br>
-        <span style="font-size:0.8em; color:gray;">
-          <a href="https://github.com/thepeacemonk" style="color:gray; text-decoration:none;">@thepeacemonk</a>
-        </span>
-      </a>
+        <span style="font-size:1.15em; font-weight:bold;">Peace</span>
+      </a><br>
+      <span style="font-size:0.9em; color:#888;">Contributor</span><br>
+      <span style="font-size:0.8em; color:gray;">@thepeacemonk</span>
     </td>
     <td align="center">
       <a href="https://github.com/gykoh">
         <img src="https://avatars.githubusercontent.com/u/105884770?v=4" width="80"><br>
-        <span style="font-size:1.15em; font-weight:bold;">Gill</span><br>
-        <span style="font-size:0.9em; color:#888;">Contributor</span><br>
-        <span style="font-size:0.8em; color:gray;">
-          <a href="https://github.com/gykoh" style="color:gray; text-decoration:none;">@gykoh</a>
-        </span>
-      </a>
+        <span style="font-size:1.15em; font-weight:bold;">Gill</span>
+      </a><br>
+      <span style="font-size:0.9em; color:#888;">Contributor</span><br>
+      <span style="font-size:0.8em; color:gray;">@gykoh</span>
     </td>
     <td align="center">
       <a href="https://github.com/richy431">
         <img src="https://avatars.githubusercontent.com/u/207916526?v=4" width="80"><br>
-        <span style="font-size:1.15em; font-weight:bold;">richy</span><br>
-        <span style="font-size:0.9em; color:#888;">Contributor</span><br>
-        <span style="font-size:0.8em; color:gray;">
-          <a href="https://github.com/richy431" style="color:gray; text-decoration:none;">@richy431</a>
-        </span>
-      </a>
+        <span style="font-size:1.15em; font-weight:bold;">richy</span>
+      </a><br>
+      <span style="font-size:0.9em; color:#888;">Contributor</span><br>
+      <span style="font-size:0.8em; color:gray;">@richy431</span>
     </td>
     <td align="center">
       <a href="https://github.com/unlucky-life">
         <img src="https://avatars.githubusercontent.com/u/77027147?v=4" width="80"><br>
-        <span style="font-size:1.15em; font-weight:bold;">Unlucky</span><br>
-        <span style="font-size:0.9em; color:#888;">Ankimon creator</span><br>
-        <span style="font-size:0.8em; color:gray;">
-          <a href="https://github.com/unlucky-life" style="color:gray; text-decoration:none;">@unlucky-life</a>
-        </span>
-      </a>
+        <span style="font-size:1.15em; font-weight:bold;">Unlucky</span>
+      </a><br>
+      <span style="font-size:0.9em; color:#888;">Ankimon creator</span><br>
+      <span style="font-size:0.8em; color:gray;">@unlucky-life</span>
     </td>
   </tr>
 </table>
+
 
 Want to join us? Read below!
 
