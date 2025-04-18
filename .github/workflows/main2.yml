@@ -82,7 +82,7 @@ jobs:
         with:
           generate_release_notes: true
           tag_name: ${{ github.event.inputs.version }}
-          release_name: "${{ steps.vars.outputs.module_name }} v${{ github.event.inputs.version }}"
+          name: "${{ steps.vars.outputs.module_name }} v${{ github.event.inputs.version }}"
           body: |
             ${{ steps.release_notes.outputs.notes }}
             
