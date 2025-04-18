@@ -64,32 +64,43 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get merged PRs since last tag
+          # Get merged PRs since last tag with author information
           LATEST_TAG=$(git describe --tags --abbrev=0)
           PREV_TAG=$(git describe --tags --abbrev=0 $LATEST_TAG^ 2>/dev/null || echo "")
-          PR_LIST=$(gh pr list --state merged --base main --search "merged:>$PREV_TAG" --json number,title,headRefName)
+          PR_LIST=$(gh pr list --state merged --base main --search "merged:>$PREV_TAG" --json number,title,headRefName,author)
       
-          # Case-insensitive branch prefix matching
-          FEATURES=$(echo "$PR_LIST" | jq -r '.[] | select(.headRefName | test("feature/"; "i")) | "- \(.title) (#\(.number))"')
-          FIXES=$(echo "$PR_LIST" | jq -r '.[] | select(.headRefName | test("fix/"; "i")) | "- \(.title) (#\(.number))"')
+          # Extract features and fixes with contributors
+          FEATURES=$(echo "$PR_LIST" | jq -r '.[] | select(.headRefName | test("feature/"; "i")) | "- \(.title) (#\(.number)) by @\(.author.login)"')
+          FIXES=$(echo "$PR_LIST" | jq -r '.[] | select(.headRefName | test("fix/"; "i")) | "- \(.title) (#\(.number)) by @\(.author.login)"')
+      
+          # Get unique contributors
+          CONTRIBUTORS=$(echo "$PR_LIST" | jq -r '[.[].author.login] | unique | map("* @\(.)") | join("\n")')
       
           # Build release body
           RELEASE_BODY="**Build Details**
           - Commit SHA: ${{ steps.vars.outputs.sha_short }}
-
+      
           "
+      
           [ -n "$FEATURES" ] && RELEASE_BODY+="## 🚀 New Features
           $FEATURES
-
+      
           "
+      
           [ -n "$FIXES" ] && RELEASE_BODY+="## 🐛 Bug Fixes
           $FIXES
-
+      
           "
-
+      
+          [ -n "$CONTRIBUTORS" ] && RELEASE_BODY+="## 👥 Contributors
+          $CONTRIBUTORS
+      
+          "
+      
           echo "notes<<EOF" >> $GITHUB_OUTPUT
           echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+    
         
 
       - name: Create GitHub release
