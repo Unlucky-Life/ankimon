@@ -76,31 +76,31 @@ def find_experience_for_level(group_growth_rate, level, remove_levelcap=True):
             return experience
     elif level > 99:
         if group_growth_rate == "erractic":
-            if level < 50:
-                experience = (level ** 3) * (100 - level) // 50
+            if level + 1 < 50: # +1 was added to prevent -ve amounts of xp to come up (even though it wouldn't since the loop only takes in levels above 99)
+                experience = ((((level+1) ** 3) * (100 - (level+1))) // 50 - ((level ** 3) * (100 - level) // 50))
             elif 50 <= level < 68:
-                experience = (level ** 3) * (150 - level) // 100
+                experience = (((level+1) ** 3) * (150 - (level+1)) // 100) - ((level ** 3) * (150 - level) // 100)
             elif 68 <= level:
-                experience = (level ** 3) * (1911 - 10 * level) // 500
+                experience = (((level+1) ** 3) * (1911 - 10 * (level+1)) // 500) - ((level ** 3) * (1911 - 10 * level) // 500)
             else:
-                experience = (level ** 3) * (160 - level) // 100
+                experience = (((level+1) ** 3) * (160 - (level+1)) // 100) - ((level ** 3) * (160 - level) // 100)
         elif group_growth_rate == "fluctuating":
             if level < 15:
-                experience = (level ** 3) * (level // 3 + 24) // 50
+                experience = (((level+1) ** 3) * ((level+1) // 3 + 24) // 50) - ((level ** 3) * (level // 3 + 24) // 50)
             elif 15 <= level < 36:
-                experience = (level ** 3) * (level + 14) // 50
+                experience = (((level+1) ** 3) * ((level+1) + 14) // 50) - ((level ** 3) * (level + 14) // 50)
             elif 36 <= level:
-                experience = (level ** 3) * (level // 2 + 32) // 50
+                experience = (((level+1) ** 3) * ((level+1) // 2 + 32) // 50) - ((level ** 3) * (level // 2 + 32) // 50)
         elif group_growth_rate == "fast":
-            experience = (4 * (level ** 3)) // 5
+            experience = ((4 * ((level+1) ** 3)) // 5) - ((4 * (level ** 3)) // 5)
         elif group_growth_rate == "medium-fast":
-            experience = level ** 3
+            experience = ((level+1) ** 3) - (level ** 3)
         elif group_growth_rate == "medium":
-            experience = level ** 3
+            experience = ((level+1) ** 3) - (level ** 3)
         elif group_growth_rate == "medium-slow":
-            experience = (6 * (level ** 3)) // 5 - 15 * (level ** 2) + 100 * level - 140
+            experience = ((6 * ((level+1) ** 3)) // 5 - 15 * ((level+1) ** 2) + 100 * (level+1) - 140) - ((6 * (level ** 3)) // 5 - 15 * (level ** 2) + 100 * level - 140)
         elif group_growth_rate == "slow":
-            experience = (5 * (level ** 3)) // 4
+            experience = ((5 * ((level+1) ** 3)) // 4) - ((5 * (level ** 3)) // 4)
         return experience
     
 
