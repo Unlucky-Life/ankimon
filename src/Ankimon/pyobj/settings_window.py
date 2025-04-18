@@ -155,10 +155,6 @@ class SettingsWindow(QMainWindow):
             self.set_config_callback(key, value)
 
     def on_save(self):
-        excluded_patterns = {
-        'mypokemon', 'mainpokemon', 'pokemon_collection', 'trainer.cash'
-        }
-
         # Check for changes, excluding 'mypokemon' and 'mainpokemon'
         changed_settings = {
             key: self.config[key]
