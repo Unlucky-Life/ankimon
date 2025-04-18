@@ -4,13 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: version string (eg. 6.1)
+        description: Version string (eg. 6.1)
         required: true
 
 jobs:
   create-release:
     name: Version ${{ github.event.inputs.version }}
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: read
 
     steps:
       - uses: actions/checkout@v2
@@ -27,35 +31,63 @@ jobs:
         run: |
           python -m pip install git+https://github.com/glutanimate/anki-addon-builder.git@4039b5bb743773a18cb2911e6dd38fa1e3f65982
           python -m pip install pyqt5
-      - name: setup git config
+          sudo apt-get install -y jq
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update && sudo apt install -y gh
+
+      - name: Setup git config
         run: |
-          # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
-      - name: commit version bump and create tag
+
+      - name: Commit version bump and create tag
         run: |
           git commit --allow-empty -m "Bump Version to v${{ github.event.inputs.version }}"
           git push origin main
           git tag ${{ github.event.inputs.version }}
           git push origin tag ${{ github.event.inputs.version }}
+
       - name: Create ankiaddon file
         run: aab build -d ankiweb
 
-      - name: Declare some variables
+      - name: Declare variables
         id: vars
         shell: bash
         run: |
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-          echo "::set-output name=module_name::$(ls src)"
-          echo "::set-output name=build_name::$(ls build | grep --color=never .ankiaddon)"
-          
-      - name: Create github release and upload ankiaddon file
-        uses: xresloader/upload-to-github-release@v1
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "module_name=$(ls src)" >> $GITHUB_OUTPUT
+          echo "build_name=$(ls build | grep --color=never .ankiaddon)" >> $GITHUB_OUTPUT
+
+      - name: Generate branch-aware release notes
+        id: release_notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          PREV_TAG=$(git describe --tags --abbrev=0 $LATEST_TAG^)
+          PR_LIST=$(gh pr list --state merged --base main --search "merged:>$PREV_TAG" --json number,title,headRefName)
+
+          FEATURES=$(echo "$PR_LIST" | jq -r '.[] | select(.headRefName | startswith("feature/")) | "- \(.title) (#\(.number))"')
+          FIXES=$(echo "$PR_LIST" | jq -r '.[] | select(.headRefName | startswith("fix/")) | "- \(.title) (#\(.number))"')
+
+          RELEASE_BODY="**Build Details**\n- Commit SHA: ${{ steps.vars.outputs.sha_short }}\n\n"
+          [ -n "$FEATURES" ] && RELEASE_BODY+="## 🚀 New Features\n$FEATURES\n\n"
+          [ -n "$FIXES" ] && RELEASE_BODY+="## 🐛 Bug Fixes\n$FIXES\n\n"
+          
+          echo "notes=$RELEASE_BODY" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
         with:
-          repo_token: ${{ github.token }}
-          file: "build/${{ steps.vars.outputs.build_name }}"
-          release_name: ${{ steps.vars.outputs.module_name }} v${{ github.event.inputs.version }}
-          tag: ${{ github.event.inputs.version }}
-          draft: true
+          generate_release_notes: true
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: "${{ steps.vars.outputs.module_name }} v${{ github.event.inputs.version }}"
+          body: |
+            ${{ steps.release_notes.outputs.notes }}
+            
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ env.PREV_TAG }}...${{ github.event.inputs.version }}
+          files: build/${{ steps.vars.outputs.build_name }}
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
