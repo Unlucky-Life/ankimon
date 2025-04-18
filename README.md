@@ -1,6 +1,15 @@
 ## Ankimon Experimental Branch `(h0tp-ftw/ankimon)`
  This repository is an **experimental branch** for [Ankimon](https://github.com/Unlucky-life/Ankimon) with new features and community-driven development. You can try out the latest features, but beware, you may also have bugs and issues!
 
+## Table of Contents
+
+- [Current Contributors](#current-contributors)
+- [Downloading the Experimental Ankimon Build](#downloading-the-experimental-ankimon-build)
+- [Instructions for Current Contributors](#instructions-for-current-contributors)
+- [I don't know how to CODE! Where do I start?](#i-dont-know-how-to-code-where-do-i-start)
+- [Instructions for New Contributors](#instructions-for-new-contributors)
+- [Need Help?](#need-help)
+
 ---
 
 ### Current Contributors
