@@ -9,7 +9,7 @@
     "level": "Level",
     "error_occured": "An error occured with {function} Please post this error message over the Report Bug Issue",
     "missing_mainpokemon_data": "Missing pokemon data",
-    "pokemon_about_to_evolve": "{main_pokemon_name} is about to evolve to {evo_pokemon_name)} at level {main_pokemon_level}",
+    "pokemon_about_to_evolve": "{main_pokemon_name} is about to evolve to {evo_pokemon_name} at level {main_pokemon_level}",
     "mainpokemon_can_learn_new_attack": "Your {main_pokemon_name} can learn a new attack !",
     "mainpokemon_learned_new_attack": "Your {main_pokemon_name} learned {new_attack_name} !",
     "mainpokemon_gained_xp": "Your {main_pokemon_name} has gained {exp} XP.\n {experience_till_next_level} exp is needed for next level \n Your pokemon currently has {main_pokemon_xp}",
