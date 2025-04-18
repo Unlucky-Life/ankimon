@@ -7,8 +7,7 @@ I have installed Ankimon => What do I need to do now ?
 - [ ] Download Sounds, Badges and Item Sprites
 -
 ![image](https://github.com/Unlucky-Life/ankimon/assets/77027147/e726ebaf-aaee-4bb8-a50f-1f9cb5b4eadd)
-
-- [ ] 3. After you have run these 3 buttons after each other => Close and Re-Open Anki
+e 3 buttons after each other => Close and Re-Open Anki
 - [ ] 4. Now pick your Starter !
 
 ![image](https://github.com/Unlucky-Life/ankimon/assets/77027147/55cfae77-f710-46a7-a27f-f9310cf65cd2)
