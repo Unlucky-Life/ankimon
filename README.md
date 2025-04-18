@@ -10,47 +10,67 @@
     <td align="center">
       <a href="https://github.com/h0tp-ftw">
         <img src="https://avatars.githubusercontent.com/u/141889580?v=4" width="80"><br>
-        <sub><b>h0tp (Owner)</b></sub><br>
-        <sub><a href="https://github.com/h0tp-ftw">@h0tp-ftw</a></sub>
+        <span style="font-size:1.15em; font-weight:bold;">h0tp</span><br>
+        <span style="font-size:0.9em; color:#888;">Owner / Contributor</span><br>
+        <span style="font-size:0.8em; color:gray;">
+          <a href="https://github.com/h0tp-ftw" style="color:gray; text-decoration:none;">@h0tp-ftw</a>
+        </span>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/thepeacemonk">
         <img src="https://avatars.githubusercontent.com/u/105552060?v=4" width="80"><br>
-        <sub><b>Peace</b></sub><br>
-        <sub><a href="https://github.com/thepeacemonk">@thepeacemonk</a></sub>
+        <span style="font-size:1.15em; font-weight:bold;">Peace</span><br>
+        <span style="font-size:0.9em; color:#888;">Contributor</span><br>
+        <span style="font-size:0.8em; color:gray;">
+          <a href="https://github.com/thepeacemonk" style="color:gray; text-decoration:none;">@thepeacemonk</a>
+        </span>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/gykoh">
         <img src="https://avatars.githubusercontent.com/u/105884770?v=4" width="80"><br>
-        <sub><b>Gill</b></sub><br>
-        <sub><a href="https://github.com/gykoh">@gykoh</a></sub>
+        <span style="font-size:1.15em; font-weight:bold;">Gill</span><br>
+        <span style="font-size:0.9em; color:#888;">Contributor</span><br>
+        <span style="font-size:0.8em; color:gray;">
+          <a href="https://github.com/gykoh" style="color:gray; text-decoration:none;">@gykoh</a>
+        </span>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/richy431">
         <img src="https://avatars.githubusercontent.com/u/207916526?v=4" width="80"><br>
-        <sub><b>richy</b></sub><br>
-        <sub><a href="https://github.com/richy431">@richy431</a></sub>
+        <span style="font-size:1.15em; font-weight:bold;">richy</span><br>
+        <span style="font-size:0.9em; color:#888;">Contributor</span><br>
+        <span style="font-size:0.8em; color:gray;">
+          <a href="https://github.com/richy431" style="color:gray; text-decoration:none;">@richy431</a>
+        </span>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/unlucky-life">
         <img src="https://avatars.githubusercontent.com/u/77027147?v=4" width="80"><br>
-        <sub><b>Unlucky (Ankimon)</b></sub><br>
-        <sub><a href="https://github.com/unlucky-life">@unlucky-life</a></sub>
+        <span style="font-size:1.15em; font-weight:bold;">Unlucky</span><br>
+        <span style="font-size:0.9em; color:#888;">Ankimon creator</span><br>
+        <span style="font-size:0.8em; color:gray;">
+          <a href="https://github.com/unlucky-life" style="color:gray; text-decoration:none;">@unlucky-life</a>
+        </span>
       </a>
     </td>
   </tr>
 </table>
 
+Want to join us? Read below!
+
+
 
 ---
 
-## Downloading the Latest Files (No Coding Needed)
+## Downloading the Experimental Ankimon Build
 
-If you just want to try out the latest version:
+Releases will be published every time a major pull request is merged into `main`; in simple words, after a major change is added. Check the [**Releases**](https://github.com/h0tp-ftw/ankimon/releases) tab here! Make sure to BACKUP before updating!
+
+If you want to download the files and source code directly:
 
 1. Click the green **"Code"** button near the top right of this page.
 2. Select **"Download ZIP"**.
@@ -68,6 +88,7 @@ If you just want to try out the latest version:
   Name your branch using the format:
   - For bug fixes: `fix/your-fix-name`
   - For new features: `feature/your-feature-name`
+  
   `main` is used to get changes from branches (after testing), and `upstream` will be used to send code to the official Ankimon repository.
 
 - **Pull Requests:** After making your changes, open a Pull Request (PR) to merge your branch into the `main` branch.  
