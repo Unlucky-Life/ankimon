@@ -49,7 +49,7 @@ Start your Pokémon journey with Ankimon and make learning an adventure!
 
 ### NOTE - for any contributions, make sure to **create your own branch** instead of merging into `main`, and add pull requests with your changes. We will review these changes and merge onto `main` after testing them.
 
-## Current active contributors
+## Honorable Mentions for current active contributors
 **h0tp** @h0tp-ftw
 **Peace** @thepeacemonk
 **Gill** @gykoh
