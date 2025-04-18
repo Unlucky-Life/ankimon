@@ -1,3 +1,90 @@
+## ankimon (h0tp-ftw/ankimon) - Experimental Branch
+
+Ankimon is an Anki add-on that gamifies your learning by letting you collect, train, and battle with Pokémon as you study. This repository is an **experimental branch** with new features and community-driven development. You can try out the latest files, but beware, you may also have bugs and issues!
+
+---
+
+### Current Contributors
+
+<table> <tr> <td align="center"> <a href="https://github.com/h0tp-ftw"> <img src="https://avatars.githubusercontent.com/u/h0tp-ftw?v=4" width="80" style="border-radius:50%"><br> <sub><b>h0tp (Owner)</b></sub> </a> </td> <td align="center"> <a href="https://github.com/thepeacemonk"> <img src="https://avatars.githubusercontent.com/u/thepaecemonk?v=4" width="80" style="border-radius:50%"><br> <sub><b>Peace</b></sub> </a> </td> <td align="center"> <a href="https://github.com/gykoh"> <img src="https://avatars.githubusercontent.com/u/gykoh?v=4" width="80" style="border-radius:50%"><br> <sub><b>Gill</b></sub> </a> </td> <td align="center"> <a href="https://github.com/richy431"> <img src="https://avatars.githubusercontent.com/u/richy431?v=4" width="80" style="border-radius:50%"><br> <sub><b>richy</b></sub> </a> </td> <td align="center"> <a href="https://github.com/unlucky-life"> <img src="https://avatars.githubusercontent.com/u/unlucky-life?v=4" width="80" style="border-radius:50%"><br> <sub><b>Unlucky (Ankimon owner)</b></sub> </a> </td> </tr> </table>
+---
+
+## Downloading the Latest Files (No Coding Needed)
+
+If you just want to try out the latest version:
+
+1. Click the green **"Code"** button near the top right of this page.
+2. Select **"Download ZIP"**.
+3. Unzip the file on your computer. 
+4. Make sure you have a **backup** of your `mypokemon.json`, `mainpokemon.json`, `badges.json` and `items.json` files (in `user_files` folder of your Ankimon installation)
+5. In the downloaded folder, go in src -> Ankimon and copy all files inside the folder.
+6. Paste these files into your Ankimon folder where the addon is installed in Anki! (Anki -> Add-ons -> Ankimon -> View Files)
+7. If you lost your progress, restore by adding the back-up files into the `user_files` folder!
+
+---
+
+## Instructions for Current Contributors
+
+- **Branching:** Always create a new branch for your changes.  
+  Name your branch using the format:
+  - For bug fixes: `fix/your-fix-name`
+  - For new features: `feature/your-feature-name`
+  `main` is used to get changes from branches (after testing), and `upstream` will be used to send code to the official Ankimon repository.
+
+- **Pull Requests:** After making your changes, open a Pull Request (PR) to merge your branch into the `main` branch.  
+  Add a clear description of your changes in the PR.
+
+---
+
+## Instructions for New Contributors
+
+1. **Fork this repository:**  
+   Click the "Fork" button at the top right of this page to create your own copy.
+
+2. **Make your changes:**  
+   Add your improvements or fixes in your forked repository.
+
+3. **Submit a Pull Request:**  
+   - Push your changes to your fork.
+   - Go to this repository and click "Pull request".
+   - Add a description of your changes and submit.
+
+4. **After your first accepted PR:**, you will become access to this repository as a **maintainer** to help shape the project!
+| You will also get access to our Discord channel for contributors and can collaborate on new features and fixes.
+
+---
+
+## I don't know how to CODE! Where do I start?
+
+Ankimon is largely made using *Vibe-coding*, i.e. getting AI assistance with coding. You do not need ANY experience to start, as long as you have a **passion** for Ankimon and can spend some time learning new stuff!
+
+It is made 100% by volunteers that help in their spare time. Having more people (like you) will help to make Ankimon better! It is also made using Python (for functions) and JavaScript (for data storage), which are easy to learn!
+
+- Download [VS Code](https://code.visualstudio.com/)
+- Go through the [W3schools Python tutorial](https://www.w3schools.com/python/python_syntax.asp) - no need to learn every single thing
+- Make some simple code for practice! For example, you could try making a calculator, or coding some new changes for Ankimon.
+- Go through the Ankimon code, especially [here](https://github.com/Unlucky-Life/ankimon/tree/main/src/Ankimon/functions) and learn about how functions work. For example, if it says 
+``` catchable = set()
+        for pokemon in self.excluded:
+            if self.can_catch(caught_pokemon, pokemon):
+                catchable.add(pokemon)
+        return catchable
+```
+Can you figure out what this code is actually trying to do? 
+- Start using AI! Use the AI service of your choice to get help with coding. Learn how to guide AI and spot the errors that AI makes in coding. 
+| At this point, it is more important to let AI do the coding, and you should be able to *guide* it! 
+
+---
+
+
+### Need Help?
+
+- Please reach out on the [Ankimon Discord server](https://discord.gg/eY8jPHZw4z)
+- You can also add to [Issues](../../issues) or [Discussions](../../discussions) tabs here
+
+___
+
+
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=unlucky-life/ankimon&type=Date)](https://www.star-history.com/#unlucky-life/ankimon&Date)
 
