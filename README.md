@@ -1,7 +1,8 @@
 ## Ankimon Experimental Branch `(h0tp-ftw/ankimon)` by Peace
 This repository is an **experimental branch** for [Ankimon](https://github.com/Unlucky-life/Ankimon) with new features and community-driven development. You can try out the latest features, but beware, you may also encounter bugs and issues!
 
-So far, this version has the updated Pokedex and will have some changes to Achievements soon! 
+The main changes on the Peace Version include: the new PokeDex, new Achievements (soon), new Store (soon) and new Trainer Card (soon).
+
 ---
 
 ### Current Contributors
