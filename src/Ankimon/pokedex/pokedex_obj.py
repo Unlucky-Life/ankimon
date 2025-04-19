@@ -106,4 +106,3 @@ class Pokedex(QDialog):
     def showEvent(self, event):
         self.load_html()
         self.webview.reload()
-        self.show()
