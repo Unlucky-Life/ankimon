@@ -31,7 +31,7 @@
                 repeating-linear-gradient(0deg, transparent, transparent 19px, #3A9AA2 20px),
                 repeating-linear-gradient(90deg, transparent, transparent 19px, #3A9AA2 20px),
                 linear-gradient(to bottom, #1A7A85, #2A8A92, #3A9AA2);
-            color: white; /* <-- This line ensures all text is white in dark mode */
+            color: white; 
         }
 
         .pokedex-container {
@@ -59,7 +59,7 @@
         }
 
         .header span {
-            color: black;
+            color: #0d3d43;
         }
 
         body.dark-mode .header span {
@@ -98,6 +98,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow: visible;
+            position: relative;
         }
 
         .pokemon-item img {
@@ -105,10 +107,14 @@
             height: 56px;
             image-rendering: pixelated;
             transition: all 0.3s ease;
+            overflow: visible;
         }
 
         .pokemon-item img:hover {
             transform: scale(1.2);
+            filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 16px #bef8ffe1);
+            background: radial-gradient(circle, rgba(0,229,255,0.4) 0%, rgba(0,229,255,0) 70%);
+            border-radius: 50%;
         }
 
         .pokemon-item .pokemon-id {
