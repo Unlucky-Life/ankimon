@@ -82,10 +82,11 @@ If you want to download the files and source code directly:
 
 ## Instructions for Current Contributors
 
-- **Branching:** Always create a new branch for your changes.  
+- **NEW CHANGE - Branching:** Always create a new branch for your changes, each branch for each change.  
   Name your branch using the format:
-  - For bug fixes: `fix/your-fix-name`
-  - For new features: `feature/your-feature-name`
+  - `username/your-branch-name`
+
+For example, if I make a branch for new features to automatic battle: `h0tp/auto-battle-enhancements`
   
   `main` is used to get changes from branches (after testing), and `upstream` will be used to send code to the official Ankimon repository.
 
