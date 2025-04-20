@@ -831,40 +831,43 @@ if database_complete:
             # Set the layout for the dialog
 
 def kill_pokemon():
-    trainer_card.gain_xp(enemy_pokemon.tier, settings_obj.get("controls.allow_to_choose_moves", False))
-    
-    # Calculate experience based on whether moves are chosen manually
-    if settings_obj.get("controls.allow_to_choose_moves", False):
-        exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level) * 0.5
-    else:
-        exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level)
-    
-    # Ensure exp is at least 1 and round up if it's a decimal
-    if exp < 1:
-        exp = 1
-    elif isinstance(exp, float) and not exp.is_integer():
-        exp = math.ceil(exp)
-    
-    # Handle XP share logic
-    xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
-    if xp_share_individual_id:
-        exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp, xp_share_individual_id)
-    
-    # Save main Pokémon's progress
-    main_pokemon.level = save_main_pokemon_progress(
-        mainpokemon_path,
-        main_pokemon.level,
-        main_pokemon.name,
-        main_pokemon.base_experience,
-        main_pokemon.growth_rate,
-        exp
-    )
-    
-    ankimon_tracker_obj.general_card_count_for_battle = 0
-    
-    # Show a new random Pokémon if the test window is visible
-    if test_window.isVisible():
-        new_pokemon()
+    try:
+        trainer_card.gain_xp(enemy_pokemon.tier, settings_obj.get("controls.allow_to_choose_moves", False))
+        
+        # Calculate experience based on whether moves are chosen manually
+        if settings_obj.get("controls.allow_to_choose_moves", False):
+            exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level) * 0.5
+        else:
+            exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level)
+        
+        # Ensure exp is at least 1 and round up if it's a decimal
+        if exp < 1:
+            exp = 1
+        elif isinstance(exp, float) and not exp.is_integer():
+            exp = math.ceil(exp)
+        
+        # Handle XP share logic
+        xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
+        if xp_share_individual_id:
+            exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp, xp_share_individual_id)
+        
+        # Save main Pokémon's progress
+        main_pokemon.level = save_main_pokemon_progress(
+            mainpokemon_path,
+            main_pokemon.level,
+            main_pokemon.name,
+            main_pokemon.base_experience,
+            main_pokemon.growth_rate,
+            exp
+        )
+        
+        ankimon_tracker_obj.general_card_count_for_battle = 0
+        
+        # Show a new random Pokémon if the test window is visible
+        if test_window.isVisible():
+            new_pokemon()
+    except Exception as e:
+        showWarning(f"Error occured in killing enemy pokemon: {e}")
 
 
 def display_dead_pokemon():
@@ -1398,26 +1401,29 @@ def cancel_evolution(individual_id, prevo_name):
 
 
 def catch_pokemon(nickname):
-    ankimon_tracker_obj.caught += 1
-    if ankimon_tracker_obj.caught == 1:
-        collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
-        if nickname is None or not nickname:  # Wenn None oder leer
-            save_caught_pokemon(nickname)
+    try:
+        ankimon_tracker_obj.caught += 1
+        if ankimon_tracker_obj.caught == 1:
+            collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
+            if nickname is None or not nickname:  # Wenn None oder leer
+                save_caught_pokemon(nickname)
+            else:
+                save_caught_pokemon(enemy_pokemon.name)
+            ankimon_tracker_obj.general_card_count_for_battle = 0
+            msg = translator.translate("caught_wild_pokemon", enemy_pokemon_name=enemy_pokemon.name.capitalize())
+            if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+                logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
+            color = "#6A4DAC" #pokemon leveling info color for tooltip
+            try:
+                tooltipWithColour(msg, color)
+            except:
+                pass
+            new_pokemon()  # Show a new random Pokémon
         else:
-            save_caught_pokemon(enemy_pokemon.name)
-        ankimon_tracker_obj.general_card_count_for_battle = 0
-        msg = translator.translate("caught_wild_pokemon", enemy_pokemon_name=enemy_pokemon.name.capitalize())
-        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-            logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
-        color = "#6A4DAC" #pokemon leveling info color for tooltip
-        try:
-            tooltipWithColour(msg, color)
-        except:
-            pass
-        new_pokemon()  # Show a new random Pokémon
-    else:
-        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-            logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
+            if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+                logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
+    except Exception as e:
+        showWarning(f"Error occured while catching enemy Pokemon: {e}")
 
 def get_random_starter():
     category = "Starter"
@@ -1451,42 +1457,45 @@ def get_random_starter():
         return None, None, None
 
 def new_pokemon():
-    # new pokemon
-    gender = None
-    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon()
-    pokemon_data = {
-        'name': name,
-        'id': id,
-        'level': level,
-        'ability': ability,
-        'type': type,
-        'stats': stats,
-        'attacks': enemy_attacks,
-        'base_experience': base_experience,
-        'growth_rate': growth_rate,
-        'ev': ev,
-        'iv': iv,
-        'gender': gender,
-        'battle_status': battle_status,
-        'battle_stats': battle_stats,
-        'tier': tier,
-        'ev_yield': ev_yield,
-        'shiny': shiny
-    }
-    enemy_pokemon.update_stats(**pokemon_data)
-    ankimon_tracker_obj.randomize_battle_scene()
-    max_hp = enemy_pokemon.calculate_max_hp()
-    enemy_pokemon.current_hp = max_hp
-    enemy_pokemon.hp = max_hp
-    enemy_pokemon.max_hp = max_hp
-    #reset mainpokemon hp
-    if test_window is not None:
-        test_window.display_first_encounter()
-    class Container(object):
-        pass
-    reviewer = Container()
-    reviewer.web = mw.reviewer.web
-    reviewer_obj.update_life_bar(reviewer, 0, 0)
+    try:
+        # new pokemon
+        gender = None
+        name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon()
+        pokemon_data = {
+            'name': name,
+            'id': id,
+            'level': level,
+            'ability': ability,
+            'type': type,
+            'stats': stats,
+            'attacks': enemy_attacks,
+            'base_experience': base_experience,
+            'growth_rate': growth_rate,
+            'ev': ev,
+            'iv': iv,
+            'gender': gender,
+            'battle_status': battle_status,
+            'battle_stats': battle_stats,
+            'tier': tier,
+            'ev_yield': ev_yield,
+            'shiny': shiny
+        }
+        enemy_pokemon.update_stats(**pokemon_data)
+        ankimon_tracker_obj.randomize_battle_scene()
+        max_hp = enemy_pokemon.calculate_max_hp()
+        enemy_pokemon.current_hp = max_hp
+        enemy_pokemon.hp = max_hp
+        enemy_pokemon.max_hp = max_hp
+        #reset mainpokemon hp
+        if test_window is not None:
+            test_window.display_first_encounter()
+        class Container(object):
+            pass
+        reviewer = Container()
+        reviewer.web = mw.reviewer.web
+        reviewer_obj.update_life_bar(reviewer, 0, 0)
+    except Exception as e:
+                    showWarning(f"An error occurred while generating new Pokemon: {str(e)}") 
             
 def mainpokemon_data():
     try:
@@ -1825,19 +1834,16 @@ def on_review_card(*args):
                             catch_pokemon("")
                         else:
                             kill_pokemon()
-                        new_pokemon()
                         ankimon_tracker_obj.general_card_count_for_battle = 0
                     
                     elif auto_battle_setting == 1:  # Existing auto-catch
                         catch_pokemon("")
-                        new_pokemon()
                         ankimon_tracker_obj.general_card_count_for_battle = 0
                     
                     elif auto_battle_setting == 2:  # Existing auto-defeat
                         kill_pokemon()
-                        new_pokemon()
                         ankimon_tracker_obj.general_card_count_for_battle = 0
-                except:
+                except Exception as e:
                     showWarning(f"An error occurred relating to auto-battle: {str(e)}")
                     
         if cry_counter == 10 and battle_sounds is True:
