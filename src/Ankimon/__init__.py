@@ -1825,13 +1825,13 @@ def on_review_card(*args):
                             catch_pokemon("")
                         else:
                             kill_pokemon()
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
                         new_pokemon()
+                        ankimon_tracker_obj.general_card_count_for_battle = 0
                     
                     elif auto_battle_setting == 1:  # Existing auto-catch
                         catch_pokemon("")
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
                         new_pokemon()
+                        ankimon_tracker_obj.general_card_count_for_battle = 0
                     
                     elif auto_battle_setting == 2:  # Existing auto-defeat
                         kill_pokemon()
