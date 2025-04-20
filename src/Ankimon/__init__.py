@@ -1817,26 +1817,29 @@ def on_review_card(*args):
                 except ValueError:
                     auto_battle_setting = 0  # fallback
 
-                if auto_battle_setting == 3:  # Catch if uncollected
-                    enemy_id = enemy_pokemon.id
-                    # Check cache instead of file
-                    if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
+                try:
+                    if auto_battle_setting == 3:  # Catch if uncollected
+                        enemy_id = enemy_pokemon.id
+                        # Check cache instead of file
+                        if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
+                            catch_pokemon("")
+                        else:
+                            kill_pokemon()
+                        ankimon_tracker_obj.general_card_count_for_battle = 0
+                        new_pokemon()
+                    
+                    elif auto_battle_setting == 1:  # Existing auto-catch
                         catch_pokemon("")
-                    else:
+                        ankimon_tracker_obj.general_card_count_for_battle = 0
+                        new_pokemon()
+                    
+                    elif auto_battle_setting == 2:  # Existing auto-defeat
                         kill_pokemon()
-                    ankimon_tracker_obj.general_card_count_for_battle = 0
-                    new_pokemon()
-                
-                elif auto_battle_setting == 1:  # Existing auto-catch
-                    catch_pokemon("")
-                    ankimon_tracker_obj.general_card_count_for_battle = 0
-                    new_pokemon()
-                
-                elif auto_battle_setting == 2:  # Existing auto-defeat
-                    kill_pokemon()
-                    new_pokemon()
-                    ankimon_tracker_obj.general_card_count_for_battle = 0
-
+                        new_pokemon()
+                        ankimon_tracker_obj.general_card_count_for_battle = 0
+                except:
+                    showWarning(f"An error occurred relating to auto-battle: {str(e)}")
+                    
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()
