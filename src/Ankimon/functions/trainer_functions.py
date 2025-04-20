@@ -85,7 +85,8 @@ def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp, xp
                                 current_xp = int(pokemon['stats']['xp'])  # MODIFIED: Use local variable for XP
                                 growth_rate = pokemon['growth_rate']  # MODIFIED: Use local variable for growth rate
                                 experience_needed = int(find_experience_for_level(growth_rate, current_level, level_cap))  # MODIFIED: Pre-calculate needed XP
-                                
+                                evo_id = None # Initialize variable
+
                                 logger.log("info", "Running XP share function")
                                 if experience_needed > exp + current_xp:
                                     pokemon['stats']['xp'] += exp
