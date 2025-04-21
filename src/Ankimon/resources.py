@@ -1,7 +1,9 @@
+from aqt import mw
 from pathlib import Path
 import os
 
-addon_dir = Path(__file__).parents[0]
+addon_id = "1908235722"
+addon_dir = Path(mw.addonManager.addonsFolder()) / addon_id
 
 #safe route for updates
 user_path = addon_dir / "user_files"
