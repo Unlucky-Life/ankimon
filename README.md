@@ -132,12 +132,13 @@ At this point, it is more important to let AI do the coding, and you should be a
    Click the "Fork" button at the top right of this page to create your own copy.
 
 2. **Make your changes:**  
-   Add your improvements or fixes in your forked repository.
+   Add your improvements or fixes in your forked repository. Make any change you like - can be a new feature or a bug fix!
 
 3. **Submit a Pull Request:**  
    - Push your changes to your fork.
    - Go to this repository and click "Pull request".
    - Add a description of your changes and submit.
+   - If you need help in this process, please contact me on Discord (@h0tp)
 
 4. **After your first accepted PR**, you will become access to this repository as a **maintainer** to help shape the project!
 You will also get access to our Discord channel for contributors and can collaborate on new features and fixes.
