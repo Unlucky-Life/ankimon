@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ankimon Achievements</title>
+    <style>
+        body {
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .achievement-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        .achievement-card:hover {
+            transform: translateY(-3px);
+        }
+        .badge-icon {
+            width: 64px;
+            height: 64px;
+            margin-right: 15px;
+        }
+        .badge-info {
+            flex-grow: 1;
+        }
+        #achievements-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+    </style>
+    <style>
+        /* Add grayscale class */
+        .grayscale {
+            filter: grayscale(100%);
+        }
+    </style>
+</head>
+<body>
+    <div id="achievements-container"></div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const badgeDefinitions = JSON.parse(urlParams.get('badge_definitions') || '{}');
+        const unlockedBadges = JSON.parse(urlParams.get('unlocked_badges') || '[]');
+        const showAll = urlParams.get('show_all') === "1";
+    
+        const container = document.getElementById('achievements-container');
+    
+        // If showAll, show all badges; otherwise, only unlocked
+        const badgeIds = showAll
+            ? Object.keys(badgeDefinitions).map(Number)
+            : unlockedBadges;
+    
+        badgeIds.forEach(badgeId => {
+            const name = badgeDefinitions[badgeId.toString()];
+            if (!name || name.toLowerCase() === "changed" || name.toLowerCase() === "add") return;
+            const isUnlocked = unlockedBadges.includes(badgeId);
+            const displayName = isUnlocked ? name : "????";
+            const grayscaleClass = isUnlocked ? "" : "grayscale";
+            const badgeImgPath = `user_files/sprites/badges/${badgeId}.png`;
+            const badgeHtml = `
+                <div class="achievement-card">
+                    <img src="${badgeImgPath}"
+                         class="badge-icon ${grayscaleClass}" 
+                         alt="${displayName}"
+                         onerror="this.onerror=null;this.src='../user_files/sprites/badges/default.png';">
+                    <div class="badge-info">
+                        <h3>${displayName}</h3>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', badgeHtml);
+        });
+    </script>    
+</body>
+</html>
