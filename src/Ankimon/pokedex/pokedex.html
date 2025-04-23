@@ -306,56 +306,67 @@
       }
 
       function displayPokemon() {
-        pokemonGrid.innerHTML = "";
-        let displayNumbers = allNumbers;
-        if (currentFilter === "caught") {
-          displayNumbers = caughtNumbers;
-        } else if (currentFilter === "not-caught") {
-          displayNumbers = allNumbers.filter(number => !caughtNumbers.includes(number));
-        }
+    pokemonGrid.innerHTML = "";
+    let displayNumbers = allNumbers;
+    if (currentFilter === "caught") {
+        displayNumbers = caughtNumbers;
+    } else if (currentFilter === "not-caught") {
+        displayNumbers = allNumbers.filter(number => !caughtNumbers.includes(number));
+    }
 
-        const startIndex = currentPage * itemsPerPage;
-        const endIndex = Math.min(startIndex + itemsPerPage, displayNumbers.length);
-        const pageNumbers = displayNumbers.slice(startIndex, endIndex);
+    const startIndex = currentPage * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, displayNumbers.length);
+    const pageNumbers = displayNumbers.slice(startIndex, endIndex);
 
-        for (let i of pageNumbers) {
-          const pokemonItem = document.createElement("div");
-          pokemonItem.className = "pokemon-item";
+    for (let i of pageNumbers) {
+        const pokemonItem = document.createElement("div");
+        pokemonItem.className = "pokemon-item";
 
-          const formattedId = i.toString().padStart(3, '0');
-          if (caughtNumbers.includes(i)) {
+        const formattedId = i.toString().padStart(3, '0');
+        const spritePath = `../user_files/sprites/front_default/${i}.png`;
+        const placeholderPath = `../user_files/sprites/front_default/0.png`;
+
+        if (caughtNumbers.includes(i)) {
             const img = document.createElement("img");
-            img.src = `./pokedex_pixel_files/${formattedId}.png`;
+            img.src = spritePath;
+            img.onerror = function() {
+                console.error(`Failed to load sprite: ${spritePath}`);
+                this.src = placeholderPath;
+            };
             pokemonItem.appendChild(img);
-          } else {
+        } else {
             const spriteContainer = document.createElement("div");
             spriteContainer.className = "pokemon-sprite-container";
 
             const baseImg = document.createElement("img");
-            baseImg.src = "./pokedex_pixel_files/0.png";
+            baseImg.src = placeholderPath;
             baseImg.classList.add("base");
 
             const hoverImg = document.createElement("img");
-            hoverImg.src = `./pokedex_pixel_files/${formattedId}.png`;
+            hoverImg.src = spritePath;
             hoverImg.classList.add("grayscale-hidden");
+            hoverImg.onerror = function() {
+                console.error(`Failed to load sprite: ${spritePath}`);
+                this.src = placeholderPath;
+            };
 
             spriteContainer.appendChild(baseImg);
             spriteContainer.appendChild(hoverImg);
             pokemonItem.appendChild(spriteContainer);
-          }
+        }
 
-          const idSpan = document.createElement("span");
-          idSpan.className = "pokemon-id";
-          idSpan.textContent = caughtNumbers.includes(i) ?
+        const idSpan = document.createElement("span");
+        idSpan.className = "pokemon-id";
+        idSpan.textContent = caughtNumbers.includes(i) ?
             (pokemonNames[formattedId] || `Unknown #${formattedId}`) :
             `#${formattedId}`;
 
-          pokemonItem.appendChild(idSpan);
-          pokemonGrid.appendChild(pokemonItem);
-        }
+        pokemonItem.appendChild(idSpan);
+        pokemonGrid.appendChild(pokemonItem);
+    }
 
-        currentPokemon.textContent = pageNumbers.length > 0 ? `List ${currentPage + 1}` : "No Pokémon to display";
-      }
+    currentPokemon.textContent = pageNumbers.length > 0 ? `List ${currentPage + 1}` : "No Pokémon to display";
+    }
 
       prevBtn.addEventListener("click", () => {
         if (currentPage > 0) {
