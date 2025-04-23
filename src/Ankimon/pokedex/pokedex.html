@@ -66,6 +66,11 @@
       color: white;
     }
 
+    .header div {
+      display: flex;
+      gap: 10px;
+    }
+
     .theme-toggle {
       background: #05699E;
       color: white;
@@ -75,10 +80,19 @@
       cursor: pointer;
       font-size: 16px;
       font-family: 'Courier New', Courier, monospace;
+      transition: background 0.2s ease;
     }
 
     .theme-toggle:hover {
       background: #045C9F;
+    }
+
+    body.dark-mode .theme-toggle {
+      background: #04929F;
+    }
+
+    body.dark-mode .theme-toggle:hover {
+      background: #067cbc;
     }
 
     .pokemon-grid {
@@ -103,11 +117,38 @@
     }
 
     .pokemon-item img {
-      width: 85px;
-      height: 85px;
-      image-rendering: pixelated;
-      transition: all 0.3s ease;
-      overflow: visible;
+        width: 85px;
+        height: 85px;
+        image-rendering: pixelated;
+        transition: all 0.3s ease;
+        overflow: visible;
+        object-fit: contain;
+    }
+    
+    .pokemon-item img[src*=".gif"] {
+        max-width: 80px;
+        max-height: 80px;
+        width: auto;
+        height: auto;
+    }
+    
+    .pokemon-sprite-container img {
+        /* Update this existing rule */
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 70px;
+        height: 70px;
+        image-rendering: pixelated;
+        transition: opacity 0.8s ease;
+        object-fit: contain;
+    }
+    
+    .pokemon-sprite-container img[src*=".gif"] {
+        max-width: 70px;
+        max-height: 70px;
+        width: auto;
+        height: auto;
     }
 
     .pokemon-item img:hover {
@@ -219,7 +260,10 @@
   <div class="pokedex-container">
     <div class="header">
       <span id="obtained-count">Pokémon Obtained: 0</span>
-      <button id="theme-toggle" class="theme-toggle">Dark</button>
+      <div>
+        <button id="gif-toggle" class="theme-toggle">GIF Off</button>
+        <button id="theme-toggle" class="theme-toggle">Dark</button>
+      </div>
       <span id="seen-count">Pokémon Seen: 0</span>
     </div>
 
@@ -251,6 +295,7 @@
       const filterCaughtBtn = document.getElementById("filter-caught");
       const filterNotCaughtBtn = document.getElementById("filter-not-caught");
       const themeToggleBtn = document.getElementById("theme-toggle");
+      const gifToggleBtn = document.getElementById("gif-toggle");
 
       let pokemonNames = {};
       try {
@@ -265,6 +310,13 @@
         isDarkMode = !isDarkMode;
         document.body.classList.toggle("dark-mode", isDarkMode);
         themeToggleBtn.textContent = isDarkMode ? "Light" : "Dark";
+      });
+
+      let useGif = false;
+      gifToggleBtn.addEventListener("click", () => {
+        useGif = !useGif;
+        gifToggleBtn.textContent = useGif ? "GIF On" : "GIF Off";
+        displayPokemon();
       });
 
       function getNumbersFromURL() {
@@ -306,35 +358,36 @@
       }
 
       function displayPokemon() {
-    pokemonGrid.innerHTML = "";
-    let displayNumbers = allNumbers;
-    if (currentFilter === "caught") {
-        displayNumbers = caughtNumbers;
-    } else if (currentFilter === "not-caught") {
-        displayNumbers = allNumbers.filter(number => !caughtNumbers.includes(number));
-    }
+        pokemonGrid.innerHTML = "";
+        let displayNumbers = allNumbers;
+        if (currentFilter === "caught") {
+          displayNumbers = caughtNumbers;
+        } else if (currentFilter === "not-caught") {
+          displayNumbers = allNumbers.filter(number => !caughtNumbers.includes(number));
+        }
 
-    const startIndex = currentPage * itemsPerPage;
-    const endIndex = Math.min(startIndex + itemsPerPage, displayNumbers.length);
-    const pageNumbers = displayNumbers.slice(startIndex, endIndex);
+        const startIndex = currentPage * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, displayNumbers.length);
+        const pageNumbers = displayNumbers.slice(startIndex, endIndex);
 
-    for (let i of pageNumbers) {
-        const pokemonItem = document.createElement("div");
-        pokemonItem.className = "pokemon-item";
+        for (let i of pageNumbers) {
+          const pokemonItem = document.createElement("div");
+          pokemonItem.className = "pokemon-item";
 
-        const formattedId = i.toString().padStart(3, '0');
-        const spritePath = `../user_files/sprites/front_default/${i}.png`;
-        const placeholderPath = `../user_files/sprites/front_default/0.png`;
+          const formattedId = i.toString().padStart(3, '0');
+          const spriteFolder = useGif ? "front_default_gif" : "front_default";
+          const spritePath = `../user_files/sprites/${spriteFolder}/${i}.${useGif ? 'gif' : 'png'}`;
+          const placeholderPath = `../user_files/sprites/front_default/0.png`;
 
-        if (caughtNumbers.includes(i)) {
+          if (caughtNumbers.includes(i)) {
             const img = document.createElement("img");
             img.src = spritePath;
             img.onerror = function() {
-                console.error(`Failed to load sprite: ${spritePath}`);
-                this.src = placeholderPath;
+              console.error(`Failed to load sprite: ${spritePath}`);
+              this.src = placeholderPath;
             };
             pokemonItem.appendChild(img);
-        } else {
+          } else {
             const spriteContainer = document.createElement("div");
             spriteContainer.className = "pokemon-sprite-container";
 
@@ -346,27 +399,27 @@
             hoverImg.src = spritePath;
             hoverImg.classList.add("grayscale-hidden");
             hoverImg.onerror = function() {
-                console.error(`Failed to load sprite: ${spritePath}`);
-                this.src = placeholderPath;
+              console.error(`Failed to load sprite: ${spritePath}`);
+              this.src = placeholderPath;
             };
 
             spriteContainer.appendChild(baseImg);
             spriteContainer.appendChild(hoverImg);
             pokemonItem.appendChild(spriteContainer);
-        }
+          }
 
-        const idSpan = document.createElement("span");
-        idSpan.className = "pokemon-id";
-        idSpan.textContent = caughtNumbers.includes(i) ?
+          const idSpan = document.createElement("span");
+          idSpan.className = "pokemon-id";
+          idSpan.textContent = caughtNumbers.includes(i) ?
             (pokemonNames[formattedId] || `Unknown #${formattedId}`) :
             `#${formattedId}`;
 
-        pokemonItem.appendChild(idSpan);
-        pokemonGrid.appendChild(pokemonItem);
-    }
+          pokemonItem.appendChild(idSpan);
+          pokemonGrid.appendChild(pokemonItem);
+        }
 
-    currentPokemon.textContent = pageNumbers.length > 0 ? `List ${currentPage + 1}` : "No Pokémon to display";
-    }
+        currentPokemon.textContent = pageNumbers.length > 0 ? `List ${currentPage + 1}` : "No Pokémon to display";
+      }
 
       prevBtn.addEventListener("click", () => {
         if (currentPage > 0) {
