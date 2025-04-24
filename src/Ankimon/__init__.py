@@ -4117,7 +4117,9 @@ actions = create_menu_actions(
     settings_obj.get("controls.key_for_opening_closing_ankimon","Ctrl+Shift+P"),
     join_discord_url,
     open_leaderboard_url,
-    settings_obj
+    settings_obj,
+    addon_dir,          
+    data_handler_obj    
 )
 
     #https://goo.gl/uhAxsg
