@@ -52,7 +52,9 @@ def create_menu_actions(
     ankimon_key,
     join_discord_url,
     open_leaderboard_url,
-    settings_obj
+    settings_obj,
+    addon_dir,           
+    data_handler_obj     
 ):
     actions = []
 
@@ -77,12 +79,16 @@ def create_menu_actions(
         collection_menu.addAction(itembag_action)
 
         # Achievements
+        def show_achievements_window():
+            # Lazy import inside the handler
+            from .pyobj.achievements_dialog import AchievementsDialog
+            dlg = AchievementsDialog(addon_dir, data_handler_obj)
+            dlg.setWindowModality(Qt.WindowModality.ApplicationModal)
+            dlg.exec()
+
         achievement_bag_action = QAction(mw.translator.translate("achievements_button"), mw)
         achievement_bag_action.setMenuRole(QAction.MenuRole.NoRole)
-
-        # Modified connection
-        achievement_bag_action.triggered.connect(lambda: mw.achievements_window.show())
-
+        achievement_bag_action.triggered.connect(show_achievements_window)
         profile_menu.addAction(achievement_bag_action)
 
         # Showdown Teambuilder
