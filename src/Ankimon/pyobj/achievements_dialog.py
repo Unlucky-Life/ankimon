@@ -3,6 +3,7 @@ import json
 from aqt import QDialog, QVBoxLayout, QWebEngineView, mw
 from aqt.qt import QPushButton, QCheckBox, QFrame
 from PyQt6.QtCore import QUrl, QUrlQuery
+from pathlib import Path
 
 class AchievementsDialog(QDialog):
     def __init__(self, addon_dir, data_handler):
@@ -30,25 +31,48 @@ class AchievementsDialog(QDialog):
         self.load_html()
 
     def load_html(self):
+        from pathlib import Path
+        import json
+        from PyQt6.QtCore import QUrl, QUrlQuery
+
         # Load badge definitions
-        with open(self.addon_dir / "addon_files" / "badges.json", "r") as f:  # Fixed line
+        badges_path = self.addon_dir / "addon_files" / "badges.json"
+        with open(badges_path, "r") as f:
             badge_definitions = json.load(f)
         
         # Load user's unlocked badges
         unlocked_badges = getattr(self.data_handler, "badges", [])
 
-        file_path = os.path.join(self.addon_dir, "achievements", "achievements.html")
-        url = QUrl.fromLocalFile(file_path)
+        # Construct absolute path to HTML file
+        html_path = self.addon_dir / "achievements" / "achievements.html"
         
+        # Convert to POSIX path for QUrl compatibility
+        html_path_str = html_path.as_posix()
+        
+        # Create URL with proper encoding for macOS
+        url = QUrl.fromLocalFile(html_path_str)
+        
+        # Create and encode query parameters
         query = QUrlQuery()
         query.addQueryItem("addon_name", mw.addonManager.addonFromModule(__name__))
-        query.addQueryItem("badge_definitions", json.dumps(badge_definitions))
-        query.addQueryItem("unlocked_badges", json.dumps(unlocked_badges))
-        show_all = "1" if self.show_all_checkbox.isChecked() else "0"
-        query.addQueryItem("show_all", show_all)
+        query.addQueryItem(
+            "badge_definitions", 
+            json.dumps(badge_definitions, separators=(",", ":"))  # Minimize JSON size
+        )
+        query.addQueryItem(
+            "unlocked_badges", 
+            json.dumps(unlocked_badges, separators=(",", ":"))
+        )
+        query.addQueryItem(
+            "show_all", 
+            "1" if self.show_all_checkbox.isChecked() else "0"
+        )
         
-        url.setQuery(query.toString())
+        # Set query and ensure proper encoding
+        url.setQuery(query.query(QUrl.ComponentFormattingOption.FullyEncoded))
         
+        # Load the URL
         self.webview.setUrl(url)
+
 
 

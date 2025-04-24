@@ -100,7 +100,6 @@ from .pyobj.reviewer_obj import Reviewer_Manager
 from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
-from .pyobj.achievements_dialog import AchievementsDialog
 
 collected_pokemon_ids = set()
 _collection_loaded = False
@@ -114,7 +113,6 @@ data_handler_window = DataHandlerWindow(
 )
 # Create the Settings object
 settings_obj = Settings()
-achievements_window = AchievementsDialog(addon_dir, data_handler_obj)
 
 # Pass the correct attributes to SettingsWindow
 settings_window = SettingsWindow(
@@ -131,7 +129,6 @@ mw.settings_ankimon = settings_window
 mw.logger = logger
 mw.translator = translator
 mw.settings_obj = settings_obj
-mw.achievements_window = achievements_window
 
 # Log an startup message
 logger.log_and_showinfo('game', translator.translate("startup"))
