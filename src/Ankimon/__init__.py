@@ -1056,27 +1056,22 @@ def save_caught_pokemon(nickname):
             check = check_for_badge(achievements,17)
             if check is False:
                 achievements = receive_badge(17,achievements)
-                test_window.display_badge(17)
         elif enemy_pokemon.tier == "Baby":
             check = check_for_badge(achievements,18)
             if check is False:
                 achievements = receive_badge(18,achievements)
-                test_window.display_badge(18)
         elif enemy_pokemon.tier == "Ultra":
             check = check_for_badge(achievements,8)
             if check is False:
                 achievements = receive_badge(8,achievements)
-                test_window.display_badge(8)
         elif enemy_pokemon.tier == "Legendary":
             check = check_for_badge(achievements,9)
             if check is False:
                 achievements = receive_badge(9,achievements)
-                test_window.display_badge(9)
         elif enemy_pokemon.tier == "Mythical":
             check = check_for_badge(achievements,10)
             if check is False:
                 achievements = receive_badge(10,achievements)
-                test_window.display_badge(10)
 
     caught_pokemon = create_caught_pokemon(enemy_pokemon, nickname)
     # Load existing Pokémon data if it exists
@@ -1116,7 +1111,6 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         check = check_for_badge(achievements,5)
         if check is False:
             achievements = receive_badge(5,achievements)
-            test_window.display_badge(5)
         try:
             tooltipWithColour(msg, color)
         except:
@@ -1324,7 +1318,6 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
     check = check_for_badge(achievements,16)
     if check is False:
         receive_badge(16,achievements)
-        test_window.display_badge(16)
 
 def cancel_evolution(individual_id, prevo_name):
     ev_yield = enemy_pokemon.ev_yield
@@ -1593,28 +1586,23 @@ def on_review_card(*args):
             check = check_for_badge(achievements,1)
             if check is False:
                 achievements = receive_badge(1,achievements)
-                test_window.display_badge(1)
         elif card_counter == 200:
             check = check_for_badge(achievements,2)
             if check is False:
                 achievements = receive_badge(2,achievements)
-                test_window.display_badge(2)
         elif card_counter == 300:
                 check = check_for_badge(achievements,3)
                 if check is False:
                     achievements = receive_badge(3,achievements)
-                    test_window.display_badge(3)
         elif card_counter == 500:
                 check = check_for_badge(achievements,4)
                 if check is False:
                     receive_badge(4,achievements)
-                    test_window.display_badge(4)
         if card_counter == ankimon_tracker_obj.item_receive_value:
             test_window.display_item()
             check = check_for_badge(achievements,6)
             if check is False:
                 receive_badge(6,achievements)
-                test_window.display_badge(6)
         if ankimon_tracker_obj.cards_battle_round >= int(settings_obj.get("battle.cards_per_round", 2)):
             ankimon_tracker_obj.cards_battle_round = 0
             ankimon_tracker_obj.attack_counter = 0
@@ -2945,18 +2933,6 @@ class TestWindow(QWidget):
         Receive_Window.setLayout(layout)
         Receive_Window.show()
 
-    def display_badge(self, badge_num):
-        Receive_Window = QDialog(mw)
-        Receive_Window.setWindowTitle(translator.translate("received_a_badge"))
-        layout = QHBoxLayout()
-        badge_widget = self.pokemon_display_badge(badge_num)
-        layout.addWidget(badge_widget)
-        Receive_Window.setStyleSheet("background-color: rgb(44,44,44);")
-        Receive_Window.setMaximumWidth(512)
-        Receive_Window.setMaximumHeight(320)
-        Receive_Window.setLayout(layout)
-        Receive_Window.show()
-
     def display_pokemon_death(self):
         # pokemon encounter image
         self.clear_layout(self.layout())
@@ -3181,7 +3157,6 @@ class StarterWindow(QWidget):
         check = check_for_badge(achievements,7)
         if check is False:
             receive_badge(7,achievements)
-            test_window.display_badge(7)
     
     def display_fossil_pokemon(self, fossil_id, fossil_name):
         self.clear_layout(self.layout())
@@ -3199,7 +3174,6 @@ class StarterWindow(QWidget):
         check = check_for_badge(achievements,19)
         if check is False:
             receive_badge(19,achievements)
-            test_window.display_badge(19)
 
     def pokemon_display_starter_buttons(self, water_start, fire_start, grass_start):
         # Create buttons for catching and killing the Pokémon
@@ -3867,7 +3841,6 @@ class ItemWindow(QWidget):
         check = check_for_badge(achievements,20)
         if check is False:
             receive_badge(20,achievements)
-            test_window.display_badge(20)
         if item_name == "fullrestore" or "maxpotion":
             heal_points = self.main_pokemon.max_hp
         self.main_pokemon.hp += heal_points
