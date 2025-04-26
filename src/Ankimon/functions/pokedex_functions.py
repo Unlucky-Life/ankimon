@@ -219,13 +219,29 @@ def get_all_pokemon_moves(pk_name, level):
 
         return attacks
 
-def find_details_move(move_name):
+def find_details_move(move_name, allow_metronome_random=False):
+    """
+    Find the details of a move by its name.
+
+    Args:
+        move_name (str): The name of the move to search for.
+        allow_metronome_random (bool): If True, allows "metronome" to return a random move's details. Defaults to True.
+
+    Returns:
+        dict or None: The details of the move if found, or None if not found.
+    """
     try:
         with open(moves_file_path, "r", encoding="utf-8") as json_file:
             moves_data = json.load(json_file)
+
+            if allow_metronome_random and move_name.lower() == "metronome":
+                random_move = random.choice(list(moves_data.keys()))
+                return moves_data.get(random_move)
+
             move = moves_data.get(move_name.lower())  # Use get() to access the move by name
             if move:
                 return move
+
             move_name = move_name.replace(" ", "")
             try:
                 move = moves_data.get(move_name.lower())
@@ -241,7 +257,8 @@ def find_details_move(move_name):
         #logger.log_and_showinfo("info",f"Error decoding JSON: {e}")
         return None
     except Exception as e:
-        showWarning(f"There is an issue in find_details_move{e}")
+        showWarning(f"There is an issue in find_details_move: {e}")
+        return None
 
 def get_pokemon_evolution_data_all(pokemon_id, file_path=poke_evo_path):
     # Open the CSV file

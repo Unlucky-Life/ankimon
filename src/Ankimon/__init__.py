@@ -1707,7 +1707,7 @@ def on_review_card(*args):
                         reviewer_obj.myseconds = 0
                         msg += translator.translate("dmg_dealt", dmg=enemy_dmg, pokemon_name=main_pokemon.name.capitalize())
     
-            # if enemy pokemon hp < 0 - attack enemy pokemon
+            # if enemy pokemon hp > 0 - attack enemy pokemon
             if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
                 dmg = 0
                 random_attack = random.choice(main_pokemon.attacks)
@@ -1718,7 +1718,7 @@ def on_review_card(*args):
                             random_attack = dialog.selected_move
                 msg += "\n"
                 msg += translator.translate("pokemon_chose_attack", pokemon_name=main_pokemon.name.capitalize(), pokemon_attack=random_attack.capitalize())
-                move = find_details_move(random_attack)
+                move = find_details_move(random_attack, True)
                 category = move.get("category")
                 acc = move.get("accuracy")
                 if battle_status != "fighting":
