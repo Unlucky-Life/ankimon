@@ -225,7 +225,7 @@ def find_details_move(move_name, allow_metronome_random=False):
 
     Args:
         move_name (str): The name of the move to search for.
-        allow_metronome_random (bool): If True, allows "metronome" to return a random move's details. Defaults to True.
+        allow_metronome_random (bool): If True, allows "metronome" to return a random move's details.
 
     Returns:
         dict or None: The details of the move if found, or None if not found.
