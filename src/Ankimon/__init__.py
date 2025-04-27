@@ -18,6 +18,8 @@ import platform
 import random
 import math
 
+from collections import defaultdict
+
 from pathlib import Path
 
 #from .install_dependencies import install_package
@@ -1436,6 +1438,366 @@ def get_random_starter():
         showWarning(f"Error in get_random_starter: {e}")
         return None, None, None
 
+def simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, main_move, enemy_move):
+    """
+    Simulate a battle between two Pokemon using poke-engine if available.
+    Prints and returns the battle outcome as a readable log.
+    """
+    import random
+
+    # If no move is provided, use a random move
+    if main_move is None and main_pokemon.attacks:
+        main_move = random.choice(main_pokemon.attacks)
+    if enemy_move is None and enemy_pokemon.attacks:
+        enemy_move = random.choice(enemy_pokemon.attacks)
+    if not main_move:
+        main_move = "Struggle"
+    if not enemy_move:
+        enemy_move = "Struggle"
+
+    try:
+        from .poke_engine.battle import Move
+        from .poke_engine.objects import Pokemon, State, StateMutator, Side
+        from .poke_engine.helpers import normalize_name
+        from .poke_engine.find_state_instructions import get_all_state_instructions
+
+        main_move_normalized = normalize_name(main_move)
+        enemy_move_normalized = normalize_name(enemy_move)
+
+        main_pokemon_dict = main_pokemon.to_engine_format()
+        enemy_pokemon_dict = enemy_pokemon.to_engine_format()
+
+        # Create Pokemon objects (positional args as required)
+        main_pokemon_obj = Pokemon(
+            main_pokemon_dict['identifier'],
+            main_pokemon_dict['level'],
+            main_pokemon_dict['types'],
+            main_pokemon_dict['hp'],
+            main_pokemon_dict['maxhp'],
+            main_pokemon_dict['ability'],
+            main_pokemon_dict['item'],
+            main_pokemon_dict['attack'],
+            main_pokemon_dict['defense'],
+            main_pokemon_dict['special_attack'],
+            main_pokemon_dict['special_defense'],
+            main_pokemon_dict['speed'],
+            main_pokemon_dict.get('nature', 'serious'),
+            main_pokemon_dict.get('evs', (85,) * 6),
+            main_pokemon_dict.get('attack_boost', 0),
+            main_pokemon_dict.get('defense_boost', 0),
+            main_pokemon_dict.get('special_attack_boost', 0),
+            main_pokemon_dict.get('special_defense_boost', 0),
+            main_pokemon_dict.get('speed_boost', 0),
+            main_pokemon_dict.get('accuracy_boost', 0),
+            main_pokemon_dict.get('evasion_boost', 0),
+            main_pokemon_dict.get('status', None),
+            main_pokemon_dict.get('terastallized', False),
+            main_pokemon_dict.get('volatile_status', set()),
+            main_pokemon_dict.get('moves', [])
+        )
+
+        enemy_pokemon_obj = Pokemon(
+            enemy_pokemon_dict['identifier'],
+            enemy_pokemon_dict['level'],
+            enemy_pokemon_dict['types'],
+            enemy_pokemon_dict['hp'],
+            enemy_pokemon_dict['maxhp'],
+            enemy_pokemon_dict['ability'],
+            enemy_pokemon_dict['item'],
+            enemy_pokemon_dict['attack'],
+            enemy_pokemon_dict['defense'],
+            enemy_pokemon_dict['special_attack'],
+            enemy_pokemon_dict['special_defense'],
+            enemy_pokemon_dict['speed'],
+            enemy_pokemon_dict.get('nature', 'serious'),
+            enemy_pokemon_dict.get('evs', (85,) * 6),
+            enemy_pokemon_dict.get('attack_boost', 0),
+            enemy_pokemon_dict.get('defense_boost', 0),
+            enemy_pokemon_dict.get('special_attack_boost', 0),
+            enemy_pokemon_dict.get('special_defense_boost', 0),
+            enemy_pokemon_dict.get('speed_boost', 0),
+            enemy_pokemon_dict.get('accuracy_boost', 0),
+            enemy_pokemon_dict.get('evasion_boost', 0),
+            enemy_pokemon_dict.get('status', None),
+            enemy_pokemon_dict.get('terastallized', False),
+            enemy_pokemon_dict.get('volatile_status', set()),
+            enemy_pokemon_dict.get('moves', [])
+        )
+
+        # Default side_conditions with all needed keys
+        side_conditions = defaultdict(int, {
+            'stealthrock': 0,
+            'spikes': 0,
+            'toxicspikes': 0,
+            'tailwind': 0,
+            'reflect': 0,
+            'lightscreen': 0,
+            'auroraveil': 0,
+            'protect': 0,
+        })
+
+        # Create State object
+        state = State(
+            user=Side(
+                active=main_pokemon_obj,
+                reserve={},
+                wish=(0, 0),
+                side_conditions=side_conditions.copy(),
+                future_sight=(0, 0)
+            ),
+            opponent=Side(
+                active=enemy_pokemon_obj,
+                reserve={},
+                wish=(0, 0),
+                side_conditions=side_conditions.copy(),
+                future_sight=(0, 0)
+            ),
+            weather=None,
+            field=None,
+            trick_room=False
+        )
+
+        mutator = StateMutator(state)
+        # Get all possible outcomes
+        transpose_instructions = get_all_state_instructions(
+            mutator, main_move_normalized, enemy_move_normalized
+        )
+
+        if not transpose_instructions:
+            return {
+                "error": "No possible outcomes generated",
+                'battle_header': battle_header,
+                'instructions': battle_effects
+            }
+
+        # Select ONE outcome using probability weights
+        weights = [outcome.percentage for outcome in transpose_instructions]
+        chosen_outcome = random.choices(transpose_instructions, weights=weights, k=1)[0]
+        
+        instrs = chosen_outcome.instructions
+        if int(chosen_outcome.percentage) == 0:
+            unlucky_life = int(1)
+        else:
+            unlucky_life = int(chosen_outcome.percentage)
+
+        # Did the chosen outcome deal damage?
+        user_did_damage = any(i[0] == 'damage' and i[1] == 'opponent' and i[2] > 0 for i in instrs)
+        opponent_did_damage = any(i[0] == 'damage' and i[1] == 'user' and i[2] > 0 for i in instrs)
+
+        # Could the move have dealt damage in any possible outcome?
+        user_move_can_hit = any(
+            any(i[0] == 'damage' and i[1] == 'opponent' and i[2] > 0 for i in outcome.instructions)
+            for outcome in transpose_instructions
+        )
+        opponent_move_can_hit = any(
+            any(i[0] == 'damage' and i[1] == 'user' and i[2] > 0 for i in outcome.instructions)
+            for outcome in transpose_instructions
+        )
+
+        # Final miss detection: missed if this outcome did not deal damage, but another could have
+        user_missed = user_move_can_hit and not user_did_damage
+        opponent_missed = opponent_move_can_hit and not opponent_did_damage
+        
+        # Store only the chosen outcome
+        battle_header = {
+            'user': {
+                'name': main_pokemon.name,
+                'level': main_pokemon.level,
+                'move': main_move
+            },
+            'opponent': {
+                'name': enemy_pokemon.name,
+                'level': enemy_pokemon.level,
+                'move': enemy_move
+            }
+        }
+
+        battle_effects = []
+        for instr in chosen_outcome.instructions:
+            battle_effects.append(list(instr))  # Convert tuples to lists
+
+        print(f"{unlucky_life * 100}% chance: {battle_effects}")
+
+        return {
+            'battle_header': battle_header,
+            'instructions': battle_effects,
+            'user_missed': user_missed,
+            'opponent_missed': opponent_missed            
+        }
+    
+    except Exception as e:
+        return {
+            'error': str(e),
+            'battle_header': battle_header,
+            'instructions': battle_effects
+        }
+    
+def process_battle_data(battle_data):
+    """Convert raw battle instructions into human-readable format."""
+    if 'error' in battle_data:
+        return f"Error: {battle_data['error']}"
+
+    # Extract header information
+    header = battle_data['battle_header']
+    user_name = header['user']['name']
+    opponent_name = header['opponent']['name']
+    user_move = header['user']['move']
+    opponent_move = header['opponent']['move']
+    
+    # Create battle intro
+    output = [
+        f"Battle between {user_name} (Lv.{header['user']['level']}) and {opponent_name} (Lv.{header['opponent']['level']})",
+        f"{user_name} uses {user_move}!",
+        f"{opponent_name} uses {opponent_move}!",
+        "\n=== Battle Effects ==="
+    ]
+
+    # Dictionary to map stat abbreviations to full names
+    STAT_NAMES = {
+        'atk': 'Attack',
+        'def': 'Defense',
+        'spa': 'Special Attack',
+        'spd': 'Special Defense',
+        'spe': 'Speed',
+        'accuracy': 'Accuracy',
+        'evasion': 'Evasion'
+    }
+
+    # Process each instruction
+    for instr in battle_data['instructions']:
+        action = instr[0]
+        target = 'user' if instr[1] == 'user' else 'opponent'
+        pokemon_name = user_name if target == 'user' else opponent_name
+
+        if action == 'damage':
+            damage = instr[2]
+            output.append(f"💥 {pokemon_name} takes {damage} damage!")
+
+        elif action == 'heal':
+            amount = instr[2]
+            output.append(f"❤️ {pokemon_name} heals {amount} HP!")
+
+        elif action == 'apply_status':
+            status = instr[2].capitalize()
+            output.append(f"🔄 {pokemon_name} is now {status}!")
+
+        elif action == 'apply_volatile_status':
+            status = instr[2].replace('_', ' ').title()
+            output.append(f"🌀 {pokemon_name} gains {status}!")
+
+        elif action == 'faint':
+            output.append(f"💀 {pokemon_name} fainted!")
+
+        elif action == 'boost':
+            stat = STAT_NAMES.get(instr[2], instr[2])
+            level = instr[3]
+            direction = "rose" if level > 0 else "fell"
+            output.append(f"📈 {pokemon_name}'s {stat} {direction} by {abs(level)} stages!")
+
+        elif action == 'side_start':
+            condition = instr[2].replace('_', ' ').title()
+            side = "Your side" if target == 'user' else "Opponent's side"
+            output.append(f"🛡️ {side} gains {condition}!")
+
+        elif action == 'weather':
+            weather = instr[1].replace('_', ' ').title()
+            output.append(f"☀️ Weather changes to {weather}!")
+
+        elif action == 'field':
+            field = instr[1].replace('_', ' ').title()
+            output.append(f"🏞️ Field changes to {field}!")
+
+        elif action == 'activate':
+            effect = instr[2].replace('_', ' ').title()
+            output.append(f"✨ {effect} activates!")
+
+        elif action == 'terastallize':
+            output.append(f"💎 {pokemon_name} terastallizes into {instr[2]} type!")
+
+        elif action == 'residual':
+            damage = instr[2]
+            source = instr[3].replace('_', ' ').title()
+            output.append(f"⏳ {pokemon_name} takes {damage} damage from {source}")
+
+        elif action == 'transform':
+            new_form = instr[2].replace('_', ' ').title()
+            output.append(f"🌀 {pokemon_name} transforms into {new_form}!")
+
+        elif action == 'message':
+            output.append(f"💬 {instr[1]}")
+
+        else:
+            # Fallback for unknown instructions
+            output.append(f"⚙️ {instr}")
+
+    return "\n".join(output)
+
+def apply_battle_results(battle_data, main_pokemon, enemy_pokemon):
+    # Extract key information from battle_data
+    instructions = battle_data.get('instructions', [])
+    
+    # Initialize damage tracking
+    main_damage = 0
+    enemy_damage = 0
+    
+    # Process each instruction
+    for instr in instructions:
+        action = instr[0]
+        target = instr[1]  # 'user' or 'opponent'
+        
+        # Damage handling
+        if action == 'damage':
+            amount = instr[2]
+            if target == 'user':
+                main_damage += amount
+            else:
+                enemy_damage += amount
+        
+        # Status effects
+        elif action == 'apply_status':
+            status = instr[2]
+            if target == 'user':
+                main_pokemon.battle_status = status
+            else:
+                enemy_pokemon.battle_status = status
+        
+        # Fainting
+        elif action == 'faint':
+            if target == 'user':
+                main_pokemon.current_hp = 0
+            else:
+                enemy_pokemon.current_hp = 0
+    
+    # Apply damage
+    main_pokemon.current_hp = max(0, main_pokemon.current_hp - main_damage)
+    enemy_pokemon.current_hp = max(0, enemy_pokemon.current_hp - enemy_damage)
+    
+    # Sync with max HP
+    main_pokemon.current_hp = min(main_pokemon.current_hp, main_pokemon.max_hp)
+    enemy_pokemon.current_hp = min(enemy_pokemon.current_hp, enemy_pokemon.max_hp)
+    
+    return main_pokemon, enemy_pokemon
+
+def new_calc_atk_dmg(results: dict, target: str) -> int:
+    """
+    Sum up all damage instructions in a simulation result for the given target.
+
+    Args:
+        results: The dict returned by simulate_battle_with_poke_engine, containing
+                 an 'instructions' list of [action, side, value] entries.
+        target:  Either 'user' or 'opponent'-whose damage you want to retrieve.
+
+    Returns:
+        The total HP lost by that side according to the engine’s chosen outcome.
+    """
+    damage = 0
+    for instr in results.get('instructions', []):
+        action, side, *rest = instr
+        if action == 'damage' and side == target:
+            damage += rest[0]
+    return damage
+
+
 def new_pokemon():
     # new pokemon
     gender = None
@@ -1563,6 +1925,8 @@ def on_review_card(*args):
         multiplier = ankimon_tracker_obj.multiplier
         mainpokemon_type = main_pokemon.type
         mainpokemon_name = main_pokemon.name
+        random_attack = random.choice(main_pokemon.attacks)
+        rand_enemy_atk = random.choice(enemy_pokemon.attacks)
 
         global battle_sounds
         global achievements
@@ -1572,7 +1936,6 @@ def on_review_card(*args):
         ankimon_tracker_obj.cry_counter += 1
         cry_counter = ankimon_tracker_obj.cry_counter
         card_counter = ankimon_tracker_obj.card_counter
-        dmg = 0
         reviewer_obj.seconds = 0
         reviewer_obj.myseconds = 0
         ankimon_tracker_obj.general_card_count_for_battle += 1
@@ -1609,76 +1972,91 @@ def on_review_card(*args):
             msg = ""
             msg += f"{multiplier}x {translator.translate('multiplier')}"
             #failed card = enemy attack
+         
+            '''
+            To the next devs, 
+            below is the MOST IMPORTANT function for the new engine.
+            This runs our current Pokemon stats through the SirSkaro Poke-Engine.
+            The "results" can then be used to access battle outcomes.
+            '''
+
+            results = simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, random_attack, rand_enemy_atk)
+          
+            '''
+            It is important that any changes to pokemon stats are accurately represented
+            in the main_pokemon and enemy_pokemon objects, in order to let them
+            be arguments in the engine function.
+            '''
+
+
+            dmg = new_calc_atk_dmg(results, 'user') # Calculating early > individually calling multiple times later
+            enemy_dmg = new_calc_atk_dmg(results, 'opponent')
+
             if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:
                 msg += " \n "
                 try:
-                    max_attempts = 3  # Set the maximum number of attempts
-                    for _ in range(max_attempts):
-                        rand_enemy_atk = random.choice(enemy_pokemon.attacks)
-                        enemy_move = find_details_move(rand_enemy_atk)
-                        
-                        if enemy_move is not None:
-                            break  # Exit the loop if a valid enemy_move is found
                     msg += translator.translate("pokemon_chose_attack", pokemon_name=enemy_pokemon.name.capitalize(), pokemon_attack=rand_enemy_atk.capitalize())
                     e_move_category = enemy_move.get("category")
-                    e_move_acc = enemy_move.get("accuracy")
+                    '''e_move_acc = enemy_move.get("accuracy")
                     if e_move_acc is True:
                         e_move_acc = 100
                     elif e_move_acc != 0:
                         e_move_acc = 100 / e_move_acc
                     if random.random() > e_move_acc:
                         msg += "\n" + translator.translate("move_has_missed")
-                    else:
-                        if e_move_category == "Status":
-                            color = "#F7DC6F"
-                            msg = effect_status_moves(rand_enemy_atk, enemy_pokemon.stats, main_pokemon.stats, msg, main_pokemon.name , enemy_pokemon.name)
-                        elif e_move_category == "Physical" or e_move_category == "Special":
-                            critRatio = enemy_move.get("critRatio", 1)
-                            if e_move_category == "Physical":
-                                color = "#F0B27A"
-                            elif e_move_category == "Special":
-                                color = "#D2B4DE"
-                            if enemy_move["basePower"] == 0:
-                                enemy_dmg = bP_none_moves(enemy_move)
-                                main_pokemon.hp -= int(enemy_dmg)
-                                if enemy_dmg == 0:
+                    else:'''
+                    if e_move_category == "Status":
+                        color = "#F7DC6F"
+                        msg = effect_status_moves(rand_enemy_atk, enemy_pokemon.stats, main_pokemon.stats, msg, main_pokemon.name , enemy_pokemon.name)
+                    elif e_move_category == "Physical" or e_move_category == "Special":
+                        # critRatio = enemy_move.get("critRatio", 1)
+                        if e_move_category == "Physical":
+                            color = "#F0B27A"
+                        elif e_move_category == "Special":
+                            color = "#D2B4DE"
+                        if enemy_move["basePower"] == 0:
+                            main_pokemon.hp -= int(enemy_dmg)
+                            if enemy_dmg == 0:
+                                if results.get('opponent_missed', False):
                                     msg += "\n" + translator.translate("move_has_missed")
+
+                        else:
+                            if e_move_category == "Special":
+                                def_stat = main_pokemon.stats["spd"]
+                                atk_stat = enemy_pokemon.stats["spa"]
+                            elif e_move_category == "Physical":
+                                def_stat = main_pokemon.stats["def"]
+                                atk_stat = enemy_pokemon.stats["atk"]
+                            if enemy_dmg == 0:
+                                if results.get('opponent_missed', False):
+                                    msg += "\n" + translator.translate("move_has_missed")
+
+                            main_pokemon.hp -= enemy_dmg
+                            if enemy_dmg > 0:
+                                reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
+                                if multiplier < 1:
+                                    play_effect_sound("HurtNormal")
                             else:
-                                if e_move_category == "Special":
-                                    def_stat = main_pokemon.stats["spd"]
-                                    atk_stat = enemy_pokemon.stats["spa"]
-                                elif e_move_category == "Physical":
-                                    def_stat = main_pokemon.stats["def"]
-                                    atk_stat = enemy_pokemon.stats["atk"]
-                                enemy_dmg = int(calc_atk_dmg(enemy_pokemon.level ,(multiplier * 2),enemy_move["basePower"], atk_stat, def_stat, enemy_pokemon.type, enemy_move["type"],mainpokemon_type, critRatio))
-                                if enemy_dmg == 0:
-                                    enemy_dmg = 1
-                                main_pokemon.hp -= enemy_dmg
-                                if enemy_dmg > 0:
-                                    reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
-                                    if multiplier < 1:
-                                        play_effect_sound("HurtNormal")
-                                else:
-                                    reviewer_obj.myseconds = 0
-                                msg += translator.translate("dmg_dealt", dmg=enemy_dmg, pokemon_name=main_pokemon.name.capitalize())
+                                reviewer_obj.myseconds = 0
+                            msg += translator.translate("dmg_dealt", dmg=enemy_dmg, pokemon_name=main_pokemon.name.capitalize())
+                    
+
                 except:
-                    enemy_dmg = 0
-                    rand_enemy_atk = random.choice(enemy_pokemon.attacks)
                     enemy_move = find_details_move(rand_enemy_atk)
                     e_move_category = enemy_move.get("category")
                     if e_move_category == "Status":
                             color = "#F7DC6F"
                             msg = effect_status_moves(rand_enemy_atk, enemy_pokemon.stats, main_pokemon.stats, msg, main_pokemon.name , enemy_pokemon.name)
                     elif e_move_category == "Physical" or e_move_category == "Special":
-                        if e_move_category == "Special":
+                        '''if e_move_category == "Special":
                             def_stat = main_pokemon.stats["spd"]
                             atk_stat = enemy_pokemon.stats["spa"]
                         elif e_move_category == "Physical":
                             def_stat = main_pokemon.stats["def"]
-                            atk_stat = enemy_pokemon.stats["atk"]                        
-                        enemy_dmg = int(calc_atk_dmg(enemy_pokemon.level,(multiplier * 2),random.randint(60, 100), atk_stat, def_stat, enemy_pokemon.type, "Normal", mainpokemon_type, critRatio))
+                            atk_stat = enemy_pokemon.stats["atk"]'''                        
                         if enemy_dmg == 0:
-                            enemy_dmg = 1
+                            if results.get('enemy_missed', False):
+                                msg += "\n" + translator.translate("move_has_missed")
                         main_pokemon.hp -= enemy_dmg
                     if enemy_dmg > 0:
                         reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
@@ -1690,8 +2068,7 @@ def on_review_card(*args):
     
             # if enemy pokemon hp < 0 - attack enemy pokemon
             if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
-                dmg = 0
-                random_attack = random.choice(main_pokemon.attacks)
+
                 if settings_obj.get("controls.allow_to_choose_moves", False) == True:
                     dialog = MoveSelectionDialog(main_pokemon.attacks)
                     if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -1702,6 +2079,7 @@ def on_review_card(*args):
                 move = find_details_move(random_attack)
                 category = move.get("category")
                 acc = move.get("accuracy")
+                
                 if battle_status != "fighting":
                     msg, acc, battle_status, enemy_pokemon.stats = status_effect(enemy_pokemon, move, slp_counter, msg, acc)
                 if acc is True:
@@ -1728,16 +2106,16 @@ def on_review_card(*args):
                         msg = effect_status_moves(random_attack, main_pokemon.stats, enemy_pokemon.stats, msg, enemy_pokemon.name, main_pokemon.name)
                     elif category == "Physical" or category == "Special":
                         try:
-                            critRatio = move.get("critRatio", 1)
+                            # critRatio = move.get("critRatio", 1)
                             if category == "Physical":
                                 color = "#F0B27A"
                             elif category == "Special":
                                 color = "#D2B4DE"
                             if move["basePower"] == 0:
-                                dmg = bP_none_moves(move)
                                 enemy_pokemon.hp -= dmg
                                 if dmg == 0:
-                                    msg += "\n" + translator.translate("move_has_missed")
+                                    if results.get('user_missed', False):
+                                        msg += "\n" + translator.translate("move_has_missed")
                                     #dmg = 1
                             else:
                                 if category == "Special":
@@ -1746,9 +2124,10 @@ def on_review_card(*args):
                                 elif category == "Physical":
                                     def_stat = enemy_pokemon.stats["def"]
                                     atk_stat = main_pokemon.stats["atk"]
-                                dmg = int(calc_atk_dmg(main_pokemon.level, multiplier, move["basePower"], atk_stat, def_stat, main_pokemon.type, move["type"],enemy_pokemon.type, critRatio))
                                 if dmg == 0:
-                                    dmg = 1
+                                    if results.get('user_missed', False):
+                                        msg += "\n" + translator.translate("move_has_missed")
+
                                 enemy_pokemon.hp -= dmg
                                 msg += translator.translate("dmg_dealt", dmg=dmg, pokemon_name=enemy_pokemon.name.capitalize())
                                 move_stat = move.get("status", None)
@@ -1760,7 +2139,9 @@ def on_review_card(*args):
                                 if move_stat is not None:
                                     move_with_status(move, move_stat, secondary)
                                 if dmg == 0:
-                                    msg += "\n" + translator.translate("move_has_missed")
+                                    if results.get('user_missed', False):
+                                        msg += "\n" + translator.translate("move_has_missed")
+                                            
                         except:
                             if category == "Special":
                                 def_stat = enemy_pokemon.stats["spd"]
@@ -1768,7 +2149,6 @@ def on_review_card(*args):
                             elif category == "Physical":
                                 def_stat = enemy_pokemon.stats["def"]
                                 atk_stat = main_pokemon.stats["atk"]
-                            dmg = int(calc_atk_dmg(main_pokemon.level, multiplier,random.randint(60, 100), atk_stat, def_stat, main_pokemon.type, "Normal",enemy_pokemon.type, critRatio))
                             enemy_pokemon.hp -= dmg
                         if enemy_pokemon.hp < 0:
                             enemy_pokemon.hp = 0
@@ -1788,7 +2168,7 @@ def on_review_card(*args):
 
             if enemy_pokemon.hp < 1:
                 enemy_pokemon.hp = 0
-                
+
                 # New automatic battle handling
                 auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))
                 
@@ -1817,7 +2197,7 @@ def on_review_card(*args):
                     kill_pokemon()
                     new_pokemon()
                     ankimon_tracker_obj.general_card_count_for_battle = 0
-
+                                
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()
