@@ -10,6 +10,7 @@ from .gui_classes.pokemon_team_window import PokemonTeamDialog
 from .gui_classes.check_files import FileCheckerApp
 from .user_files.download_sprites import show_agreement_and_download_dialog
 from .pyobj.ankimon_leaderboard import show_api_key_dialog
+from .pyobj.achievements_dialog import AchievementsDialog
 debug = True
 
 # Initialize the menu
@@ -51,7 +52,9 @@ def create_menu_actions(
     ankimon_key,
     join_discord_url,
     open_leaderboard_url,
-    settings_obj
+    settings_obj,
+    addon_dir,           
+    data_handler_obj     
 ):
     actions = []
 
@@ -76,9 +79,16 @@ def create_menu_actions(
         collection_menu.addAction(itembag_action)
 
         # Achievements
+        def show_achievements_window():
+            # Lazy import inside the handler
+            from .pyobj.achievements_dialog import AchievementsDialog
+            dlg = AchievementsDialog(addon_dir, data_handler_obj)
+            dlg.setWindowModality(Qt.WindowModality.ApplicationModal)
+            dlg.exec()
+
         achievement_bag_action = QAction(mw.translator.translate("achievements_button"), mw)
         achievement_bag_action.setMenuRole(QAction.MenuRole.NoRole)
-        achievement_bag_action.triggered.connect(achievement_bag.show_window)
+        achievement_bag_action.triggered.connect(show_achievements_window)
         profile_menu.addAction(achievement_bag_action)
 
         # Showdown Teambuilder

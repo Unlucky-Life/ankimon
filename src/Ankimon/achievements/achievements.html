@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ankimon Achievements</title>
+    <style>
+        body {
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .achievement-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        .achievement-card:hover {
+            transform: translateY(-3px);
+        }
+        .badge-icon {
+            width: 64px;
+            height: 64px;
+            margin-right: 15px;
+        }
+        .grayscale {
+            filter: grayscale(100%);
+        }
+        .badge-info {
+            flex-grow: 1;
+        }
+        #achievements-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div id="achievements-container"></div>
+    <script>
+        // Helper to get the add-on ID from the current path
+        function getAddonIdFromPath() {
+            // Handles both file:// and /_addons/ URLs
+            // Example: file:///.../addons21/1908235722/achievements.html
+            // or      /_addons/1908235722/achievements/achievements.html
+            let match = window.location.pathname.match(/(?:addons21|_addons)\/([^\/]+)/);
+            return match ? match[1] : null;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const badgeDefinitions = JSON.parse(urlParams.get('badge_definitions') || '{}');
+        const unlockedBadges = JSON.parse(urlParams.get('unlocked_badges') || '[]');
+        const showAll = urlParams.get('show_all') === "1";
+        const addonId = urlParams.get('addon_name') || getAddonIdFromPath();
+
+        // If we have an addonId, use the Anki webserver path for images.
+        // Otherwise, fallback to a relative path (for file:// debugging).
+        function badgeImgPath(badgeId) {
+            if (addonId) {
+                return `../user_files/sprites/badges/${badgeId}.png`;;
+            } else {
+                return `../user_files/sprites/badges/${badgeId}.png`;
+            }
+        }
+
+        function badgeDefaultImgPath() {
+            if (addonId) {
+                return `../user_files/sprites/badges/default.png`;
+            } else {
+                return `../user_files/sprites/badges/default.png`;
+            }
+        }
+
+        const container = document.getElementById('achievements-container');
+
+        // If showAll, show all badges; otherwise, only unlocked
+        const badgeIds = showAll
+            ? Object.keys(badgeDefinitions).map(Number)
+            : unlockedBadges;
+
+        badgeIds.forEach(badgeId => {
+            const name = badgeDefinitions[badgeId.toString()];
+            if (!name || name.toLowerCase() === "changed" || name.toLowerCase() === "add") return;
+            const isUnlocked = unlockedBadges.includes(badgeId);
+            const displayName = isUnlocked ? name : "????";
+            const grayscaleClass = isUnlocked ? "" : "grayscale";
+            const imgSrc = badgeImgPath(badgeId);
+            const defaultImgSrc = badgeDefaultImgPath();
+            const badgeHtml = `
+                <div class="achievement-card">
+                    <img src="${imgSrc}"
+                         class="badge-icon ${grayscaleClass}" 
+                         alt="${displayName}"
+                         onerror="this.onerror=null;this.src='${defaultImgSrc}';">
+                    <div class="badge-info">
+                        <h3>${displayName}</h3>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', badgeHtml);
+        });
+    </script>    
+</body>
+</html>
