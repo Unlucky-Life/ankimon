@@ -1302,19 +1302,20 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                                         # Save the modified data to the output JSON file
                                 with open(str(mypokemon_path), "w") as output_file:
                                     json.dump(mypokemondata, output_file, indent=2)
-                            with open(str(mainpokemon_path), "r", encoding="utf-8") as output_file:
-                                mainpokemon_data = json.load(output_file)
-                                # Find and replace the specified Pokémon's data in mypokemondata
-                                for index, pokemon_data in enumerate(mainpokemon_data):
-                                    if pokemon_data["individual_id"] == individual_id:
-                                        mypokemondata[index] = pokemon
-                                        break
-                                    else:
-                                        pass
-                                            # Save the modified data to the output JSON file
-                                with open(str(mainpokemon_path), "w") as output_file:
-                                        pokemon = [pokemon]
-                                        json.dump(pokemon, output_file, indent=2)
+                            if main_pokemon.individual_id == individual_id:
+                                with open(str(mainpokemon_path), "r", encoding="utf-8") as output_file:
+                                    mainpokemon_data = json.load(output_file)
+                                    # Find and replace the specified Pokémon's data in mypokemondata
+                                    for index, pokemon_data in enumerate(mainpokemon_data):
+                                        if pokemon_data["individual_id"] == individual_id:
+                                            mypokemondata[index] = pokemon
+                                            break
+                                        else:
+                                            pass
+                                                # Save the modified data to the output JSON file
+                                    with open(str(mainpokemon_path), "w") as output_file:
+                                            pokemon = [pokemon]
+                                            json.dump(pokemon, output_file, indent=2)
                             logger.log_and_showinfo("info",translator.translate("mainpokemon_has_evolved", prevo_name=prevo_name, evo_name=evo_name))
     except Exception as e:
         showWarning(f"{e}")
