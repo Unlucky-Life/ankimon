@@ -1470,8 +1470,11 @@ def simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, main_move, ene
         enemy_move = "Struggle"
     
     try:
-        if main_pokemon.id != new_state.user.active.id:
+        if main_pokemon.name.lower() != new_state.user.active.id:
             mutator_full_reset = 1 # reset AFTER Pokemon is changed !
+        new_state.weather,
+        new_state.field,
+        new_state.trick_room
     except:
         mutator_full_reset = 1
 
@@ -1572,7 +1575,7 @@ def simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, main_move, ene
         })
 
         try:
-            if mutator_full_reset != 0 or mutator_full_reset != 1 or mutator_full_reset != 2:
+            if mutator_full_reset not in (0, 1, 2):
                 mutator_full_reset = 1
         except:
             mutator_full_reset = 1
@@ -1603,7 +1606,13 @@ def simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, main_move, ene
         elif mutator_full_reset == 2: # Store the USER stats!
             
             state = State(
-                user = Side(new_state.user),
+                user=Side(
+                    active=new_state.user.active,
+                    reserve=new_state.user.reserve,
+                    wish=new_state.user.wish,
+                    side_conditions=new_state.user.side_conditions,
+                    future_sight=new_state.user.future_sight
+                ),
                 opponent = Side(
                     active= enemy_pokemon_obj,
                     reserve = {},
@@ -1618,8 +1627,20 @@ def simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, main_move, ene
 
         elif mutator_full_reset == 0: # Store FULL battle state
             state = State(
-                user = Side(new_state.user),
-                opponent = Side(new_state.opponent),
+                user=Side(
+                    active=new_state.user.active,
+                    reserve=new_state.user.reserve,
+                    wish=new_state.user.wish,
+                    side_conditions=new_state.user.side_conditions,
+                    future_sight=new_state.user.future_sight
+                ),
+                opponent=Side(
+                    active=new_state.opponent.active,
+                    reserve=new_state.opponent.reserve,
+                    wish=new_state.opponent.wish,
+                    side_conditions=new_state.opponent.side_conditions,
+                    future_sight=new_state.opponent.future_sight
+                ),
                 weather = new_state.weather,
                 field = new_state.field,
                 trick_room = new_state.trick_room
@@ -2148,9 +2169,17 @@ def on_review_card(*args):
         mainpokemon_name = main_pokemon.name
         user_attack = random.choice(main_pokemon.attacks)
         enemy_attack = random.choice(enemy_pokemon.attacks)
+        
+        global mutator_full_reset
 
         global battle_sounds
         global achievements
+        global new_state
+        global user_hp_after
+        global opponent_hp_after
+        global dmg_from_enemy_move
+        global dmg_from_user_move
+        
         # Increment the counter when a card is reviewed
         attack_counter = ankimon_tracker_obj.attack_counter
         ankimon_tracker_obj.cards_battle_round += 1
@@ -2165,7 +2194,7 @@ def on_review_card(*args):
         achievements = check_and_award_badges(card_counter, achievements, ankimon_tracker_obj, test_window)
 
         try:
-            mutator_full_reset
+             mutator_full_reset
         except:
             mutator_full_reset = 1
 
