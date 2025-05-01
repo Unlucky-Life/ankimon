@@ -4,58 +4,118 @@ from ..resources import pkmnimgfolder
 import os
 
 class PokemonObject:
-    def __init__(self, name="Ditto", shiny=False, id=1, level=3, ability=["None"], type=["Normal"], current_hp=15, stats=None, attacks=None, 
-                 base_experience=0, growth_rate=None, hp=None, ev=None, iv=None, gender=None, 
-                 battle_status="Fighting", xp=0, position=0, nickname=None, moves=None, evos=None, 
-                 tier="Normal", ev_yield=None, friendship=0, **kwargs):
+    def __init__(
+        self,
+        name="Ditto",
+        shiny=False,
+        id=None,
+        level=3,
+        ability=None,
+        type=None,
+        stats=None,
+        attacks=None,
+        base_experience=0,
+        growth_rate="medium",
+        hp=None,
+        ev=None,
+        iv=None,
+        gender="N",
+        battle_status="Fighting",
+        xp=0,
+        position=(0, 0),
+        nickname="",
+        moves=None,
+        evos=None,
+        tier="Normal",
+        ev_yield=None,
+        friendship=0,
+        individual_id=None,
+        everstone=False,
+        **kwargs
+    ):
+        # Unique identifier
+        self.individual_id = str(individual_id) if individual_id else str(uuid.uuid4())
+        self.name = str(name)
+        self.nickname = str(nickname) if nickname is not None else ""
+        self.shiny = bool(shiny)
+        self.id = int(id) if id is not None else 132
+        self.level = int(level)
+        self.ability = ability if ability else "None"
+        self.type = list(type) if type else ["Normal"]
+        self.gender = str(gender) if gender is not None else "N"
+        self.tier = str(tier) if tier is not None else "Normal"
+        self.everstone = bool(everstone)
 
-        self.item = kwargs.get('item', None)
-        self.name = name
-        self.nickname = nickname or "" # Allow nickname to be set in the constructor
-        self.shiny = shiny or False  # Default to False if None
-        self.id = id
-        self.level = level or 3  # Default to 3 if None
-        self.ability = ability or ["None"]  # Default to ["None"] if None
-        self.type = type or ["Normal"]
-        self.stats = stats or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}  # Default to empty dict if None
-        self.attacks = attacks or []  # Default to empty list if None
-        self.base_experience = base_experience
-        self.growth_rate = growth_rate
-        self.current_hp = current_hp or 15  # Ensure 'current_hp' is accepted here
-        self.ev = ev or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}  # Default to empty dict if None
-        self.iv = iv or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}  # Default to empty dict if None
-        self.ev_yield = ev_yield or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}
-        self.hp = int((((((stats["hp"] + iv["hp"]) * 2 ) + (ev["hp"] / 4)) * level) / 100) + level + 10)
-        self.max_hp = self.hp
-        self.gender = gender
-        self.battle_status = battle_status
-        self.xp = xp or 0
-        self.position = position
-        self.evos = evos or []
-        self._battle_stats = {}  # Private attribute for battle stats
-        self.tier = tier or "Normal"
-        self.everstone = kwargs.get('everstone', False)
-        
-        #individual_id for saving pokemon
-        self.individual_id = kwargs.get('individual_id', str(uuid.uuid4()))
+        if not ability or str(ability).strip().lower() in ("none", "no ability", ""):
+            self.ability = "Run Away"
+        else:
+            self.ability = ability
 
-        #friendship value
-        self.friendship = friendship or 0
+        # Stats
+        self.stats = {k: int(v) for k, v in (stats or {"hp": 1, "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1, "xp": 0}).items()}
+        self.ev = {k: int(v) for k, v in (ev or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}).items()}
+        self.iv = {k: int(v) for k, v in (iv or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}).items()}
+        self.ev_yield = {k: int(v) for k, v in (ev_yield or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}).items()}
 
+        # Attacks and moves
+        self.attacks = list(attacks) if attacks else ["Struggle"]
+        self.moves = list(moves) if moves else []
+
+        # Experience and growth
+        self.base_experience = int(base_experience)
+        self.growth_rate = str(growth_rate)
+        self.xp = int(xp)
+        self.friendship = int(friendship)
+        self.evos = list(evos) if evos else []
+
+        # Battle and status
+        self.battle_status = str(battle_status)
+        self.position = tuple(position) if isinstance(position, (list, tuple)) else (0, 0)
         self.stat_stages = kwargs.get('stat_stages', {
-            'atk': 0,
-            'def': 0,
-            'spa': 0,
-            'spd': 0,
-            'spe': 0,
-            'accuracy': 0,
-            'evasion': 0
+            'atk': 0, 'def': 0, 'spa': 0, 'spd': 0, 'spe': 0, 'accuracy': 0, 'evasion': 0
         })
-        self.volatile_status = kwargs.get('volatile_status', set())
+        self.volatile_status = set(kwargs.get('volatile_status', []))
         self.nature = kwargs.get('nature', 'serious')
-        self.item = kwargs.get('item', '')
-        self._update_battle_stats()
-    
+        self.item = kwargs.get('item', None)
+
+        # HP calculation
+        self.max_hp = self.calculate_max_hp()
+        self.current_hp = int(kwargs.get('current_hp', self.max_hp))
+        self.hp = self.current_hp
+
+    def calculate_max_hp(self):
+        # Robust HP calculation with fallbacks
+        base = self.stats.get("hp", 1)
+        iv = self.iv.get("hp", 0)
+        ev = self.ev.get("hp", 0)
+        try:
+            return int((((2 * base + iv + (ev // 4)) * self.level) // 100) + self.level + 10)
+        except Exception:
+            return 20  # Fallback minimum
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "nickname": self.nickname,
+            "level": self.level,
+            "gender": self.gender,
+            "id": self.id,
+            "ability": self.ability,
+            "type": self.type,
+            "stats": self.stats,
+            "ev": self.ev,
+            "iv": self.iv,
+            "attacks": self.attacks,
+            "base_experience": self.base_experience,
+            "growth_rate": self.growth_rate,
+            "everstone": self.everstone,
+            "shiny": self.shiny,
+            "captured_date": getattr(self, "captured_date", None),
+            "individual_id": self.individual_id,
+            "mega": getattr(self, "mega", False),
+            "special-form": getattr(self, "special_form", None),
+            "evos": self.evos
+        }    
     @classmethod
     def from_dict(cls, data):
         return cls(**data)
