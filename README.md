@@ -1,7 +1,5 @@
-## Ankimon Experimental Branch `(h0tp-ftw/ankimon)` by Peace
-This repository is an **experimental branch** for [Ankimon](https://github.com/Unlucky-life/Ankimon) with new features and community-driven development. You can try out the latest features, but beware, you may also encounter bugs and issues!
-
-The main changes on this version **includes**: New `pokedex.html`, new `pokedex_obj.py` and the `pokemon_names.json` (which works together with the new pokedex.
+## Ankimon Experimental Branch `(h0tp-ftw/ankimon)`
+ This repository is an **experimental branch** for [Ankimon](https://github.com/Unlucky-life/Ankimon) with new features and community-driven development. You can try out the latest features, but beware, you may also have bugs and issues!
 
 ---
 
@@ -84,11 +82,10 @@ If you want to download the files and source code directly:
 
 ## Instructions for Current Contributors
 
-- **NEW CHANGE - Branching:** Always create a new branch for your changes, each branch for each change.  
+- **Branching:** Always create a new branch for your changes.  
   Name your branch using the format:
-  - `username/your-branch-name`
-
-For example, if I make a branch for new features to automatic battle: `h0tp/auto-battle-enhancements`
+  - For bug fixes: `fix/your-fix-name`
+  - For new features: `feature/your-feature-name`
   
   `main` is used to get changes from branches (after testing), and `upstream` will be used to send code to the official Ankimon repository.
 
@@ -134,13 +131,12 @@ At this point, it is more important to let AI do the coding, and you should be a
    Click the "Fork" button at the top right of this page to create your own copy.
 
 2. **Make your changes:**  
-   Add your improvements or fixes in your forked repository. Make any change you like - can be a new feature or a bug fix!
+   Add your improvements or fixes in your forked repository.
 
 3. **Submit a Pull Request:**  
    - Push your changes to your fork.
    - Go to this repository and click "Pull request".
    - Add a description of your changes and submit.
-   - If you need help in this process, please contact me on Discord (@h0tp)
 
 4. **After your first accepted PR**, you will become access to this repository as a **maintainer** to help shape the project!
 You will also get access to our Discord channel for contributors and can collaborate on new features and fixes.
