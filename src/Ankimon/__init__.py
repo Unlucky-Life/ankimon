@@ -11,21 +11,28 @@
 # Important - If you redistribute it and/or modify this addon - must give contribution in Title and Code
 # aswell as ask for permission to modify / redistribute this addon or the code itself
 
-import csv
+# import csv
 import json
-import os
-import platform
+# import os
+# import platform
 import random
 import math
+from collections import defaultdict
+import copy
+
+
+from collections import defaultdict
 
 from pathlib import Path
+
+import traceback
 
 #from .install_dependencies import install_package
 #install_package("PyQt6")
 #from .test import * => added for testing
 
 import aqt
-import requests
+# import requests
 import uuid
 from anki.hooks import addHook, wrap
 from aqt import gui_hooks, mw, utils
@@ -101,6 +108,14 @@ from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
 
+
+# Load move and pokemon name mapping at startup
+with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
+    POKEMON_NAME_LOOKUP = json.load(f)
+
+with open(move_names_file_path, "r", encoding="utf-8") as f:
+    MOVE_NAME_LOOKUP = json.load(f)
+
 collected_pokemon_ids = set()
 _collection_loaded = False
 
@@ -170,6 +185,7 @@ else:
 
 def update_main_pokemon(main_pokemon, mainpokemon_path = mainpokemon_path):
     # Check if the main Pokémon file exists and is valid
+    
     if mainpokemon_path.is_file():
         with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
             try:
@@ -178,10 +194,8 @@ def update_main_pokemon(main_pokemon, mainpokemon_path = mainpokemon_path):
                 main_pokemon.update_stats(**main_pokemon_data[0])
                 max_hp = main_pokemon.calculate_max_hp()
                 main_pokemon.max_hp=max_hp
-                if main_pokemon_data[0].get("current_hp", max_hp) > max_hp:
-                    main_pokemon_data[0]["current_hp"] = max_hp
-                main_pokemon.current_hp=main_pokemon_data[0].get("current_hp", max_hp)
-                main_pokemon.hp=main_pokemon_data[0].get("current_hp", max_hp)
+                main_pokemon.current_hp=main_pokemon_data[0].get(max_hp)
+                main_pokemon.hp=main_pokemon_data[0].get(max_hp)
             except json.JSONDecodeError:
                 main_pokemon.update_stats(**default_pokemon_data)
     else:
@@ -252,6 +266,14 @@ ankimon_tracker_obj = AnkimonTracker(
 # Set Pokémon in the tracker
 ankimon_tracker_obj.set_main_pokemon(main_pokemon)
 ankimon_tracker_obj.set_enemy_pokemon(enemy_pokemon)
+
+# Initialize mutator and mutator_full_reset
+global new_state
+global mutator_full_reset 
+global user_hp_after 
+global opponent_hp_after 
+global dmg_from_enemy_move 
+global dmg_from_user_move
 
 # Initialize the Pokémon Shop Manager
 shop_manager = PokemonShopManager(
@@ -831,40 +853,43 @@ if database_complete:
             # Set the layout for the dialog
 
 def kill_pokemon():
-    trainer_card.gain_xp(enemy_pokemon.tier, settings_obj.get("controls.allow_to_choose_moves", False))
-    
-    # Calculate experience based on whether moves are chosen manually
-    if settings_obj.get("controls.allow_to_choose_moves", False):
-        exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level) * 0.5
-    else:
-        exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level)
-    
-    # Ensure exp is at least 1 and round up if it's a decimal
-    if exp < 1:
-        exp = 1
-    elif isinstance(exp, float) and not exp.is_integer():
-        exp = math.ceil(exp)
-    
-    # Handle XP share logic
-    xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
-    if xp_share_individual_id:
-        exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp, xp_share_individual_id)
-    
-    # Save main Pokémon's progress
-    main_pokemon.level = save_main_pokemon_progress(
-        mainpokemon_path,
-        main_pokemon.level,
-        main_pokemon.name,
-        main_pokemon.base_experience,
-        main_pokemon.growth_rate,
-        exp
-    )
-    
-    ankimon_tracker_obj.general_card_count_for_battle = 0
-    
-    # Show a new random Pokémon if the test window is visible
-    if test_window.isVisible():
-        new_pokemon()
+    try:
+        trainer_card.gain_xp(enemy_pokemon.tier, settings_obj.get("controls.allow_to_choose_moves", False))
+        
+        # Calculate experience based on whether moves are chosen manually
+        if settings_obj.get("controls.allow_to_choose_moves", False):
+            exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level) * 0.5
+        else:
+            exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level)
+        
+        # Ensure exp is at least 1 and round up if it's a decimal
+        if exp < 1:
+            exp = 1
+        elif isinstance(exp, float) and not exp.is_integer():
+            exp = math.ceil(exp)
+        
+        # Handle XP share logic
+        xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
+        if xp_share_individual_id:
+            exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp, xp_share_individual_id)
+        
+        # Save main Pokémon's progress
+        main_pokemon.level = save_main_pokemon_progress(
+            mainpokemon_path,
+            main_pokemon.level,
+            main_pokemon.name,
+            main_pokemon.base_experience,
+            main_pokemon.growth_rate,
+            exp
+        )
+        
+        ankimon_tracker_obj.general_card_count_for_battle = 0
+        
+        # Show a new random Pokémon if the test window is visible
+        if test_window.isVisible():
+            new_pokemon()
+    except Exception as e:
+        showWarning(f"Error occured in killing enemy pokemon: {e}")
 
 
 def display_dead_pokemon():
@@ -1053,27 +1078,22 @@ def save_caught_pokemon(nickname):
             check = check_for_badge(achievements,17)
             if check is False:
                 achievements = receive_badge(17,achievements)
-                test_window.display_badge(17)
         elif enemy_pokemon.tier == "Baby":
             check = check_for_badge(achievements,18)
             if check is False:
                 achievements = receive_badge(18,achievements)
-                test_window.display_badge(18)
         elif enemy_pokemon.tier == "Ultra":
             check = check_for_badge(achievements,8)
             if check is False:
                 achievements = receive_badge(8,achievements)
-                test_window.display_badge(8)
         elif enemy_pokemon.tier == "Legendary":
             check = check_for_badge(achievements,9)
             if check is False:
                 achievements = receive_badge(9,achievements)
-                test_window.display_badge(9)
         elif enemy_pokemon.tier == "Mythical":
             check = check_for_badge(achievements,10)
             if check is False:
                 achievements = receive_badge(10,achievements)
-                test_window.display_badge(10)
 
     caught_pokemon = create_caught_pokemon(enemy_pokemon, nickname)
     # Load existing Pokémon data if it exists
@@ -1113,7 +1133,6 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         check = check_for_badge(achievements,5)
         if check is False:
             achievements = receive_badge(5,achievements)
-            test_window.display_badge(5)
         try:
             tooltipWithColour(msg, color)
         except:
@@ -1141,7 +1160,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                 for new_attack in new_attacks:
                     if len(attacks) < 4 and new_attack not in attacks:
                         attacks.append(new_attack)
-                        msg += translator.transalte("mainpokemon_learned_new_attack", new_attack_name=new_attack, main_pokemon_name=main_pokemon.name.capitalize())
+                        msg += translator.translate("mainpokemon_learned_new_attack", new_attack_name=new_attack, main_pokemon_name=main_pokemon.name.capitalize())
                         color = "#6A4DAC"
                         tooltipWithColour(msg, color)
                         if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
@@ -1189,12 +1208,6 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
         mainpkmndata["ev"]["spa"] += ev_yield["special-attack"]
         mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
         mainpkmndata["ev"]["spe"] += ev_yield["speed"]
-        mainpkmndata["current_hp"] = int(main_pokemon.hp)
-        main_pokemon.friendship += random.randint(5, 9)
-        if main_pokemon.friendship > 255:
-            main_pokemon.friendship = 255
-        mainpkmndata["friendship"] = main_pokemon.friendship 
-        mainpkmndata["pokemon_defeated"] += 1
     mypkmndata = mainpkmndata
     mainpkmndata = [mainpkmndata]
     # Save the caught Pokémon's data to a JSON file
@@ -1289,19 +1302,20 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                                         # Save the modified data to the output JSON file
                                 with open(str(mypokemon_path), "w") as output_file:
                                     json.dump(mypokemondata, output_file, indent=2)
-                            with open(str(mainpokemon_path), "r", encoding="utf-8") as output_file:
-                                mainpokemon_data = json.load(output_file)
-                                # Find and replace the specified Pokémon's data in mypokemondata
-                                for index, pokemon_data in enumerate(mainpokemon_data):
-                                    if pokemon_data["individual_id"] == individual_id:
-                                        mypokemondata[index] = pokemon
-                                        break
-                                    else:
-                                        pass
-                                            # Save the modified data to the output JSON file
-                                with open(str(mainpokemon_path), "w") as output_file:
-                                        pokemon = [pokemon]
-                                        json.dump(pokemon, output_file, indent=2)
+                            if main_pokemon.individual_id == individual_id:
+                                with open(str(mainpokemon_path), "r", encoding="utf-8") as output_file:
+                                    mainpokemon_data = json.load(output_file)
+                                    # Find and replace the specified Pokémon's data in mypokemondata
+                                    for index, pokemon_data in enumerate(mainpokemon_data):
+                                        if pokemon_data["individual_id"] == individual_id:
+                                            mypokemondata[index] = pokemon
+                                            break
+                                        else:
+                                            pass
+                                                # Save the modified data to the output JSON file
+                                    with open(str(mainpokemon_path), "w") as output_file:
+                                            pokemon = [pokemon]
+                                            json.dump(pokemon, output_file, indent=2)
                             logger.log_and_showinfo("info",translator.translate("mainpokemon_has_evolved", prevo_name=prevo_name, evo_name=evo_name))
     except Exception as e:
         showWarning(f"{e}")
@@ -1321,7 +1335,6 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
     check = check_for_badge(achievements,16)
     if check is False:
         receive_badge(16,achievements)
-        test_window.display_badge(16)
 
 def cancel_evolution(individual_id, prevo_name):
     ev_yield = enemy_pokemon.ev_yield
@@ -1391,26 +1404,29 @@ def cancel_evolution(individual_id, prevo_name):
 
 
 def catch_pokemon(nickname):
-    ankimon_tracker_obj.caught += 1
-    if ankimon_tracker_obj.caught == 1:
-        collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
-        if nickname is None or not nickname:  # Wenn None oder leer
-            save_caught_pokemon(nickname)
+    try:
+        ankimon_tracker_obj.caught += 1
+        if ankimon_tracker_obj.caught == 1:
+            collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
+            if nickname is None or not nickname:  # Wenn None oder leer
+                save_caught_pokemon(nickname)
+            else:
+                save_caught_pokemon(enemy_pokemon.name)
+            ankimon_tracker_obj.general_card_count_for_battle = 0
+            msg = translator.translate("caught_wild_pokemon", enemy_pokemon_name=enemy_pokemon.name.capitalize())
+            if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+                logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
+            color = "#6A4DAC" #pokemon leveling info color for tooltip
+            try:
+                tooltipWithColour(msg, color)
+            except:
+                pass
+            new_pokemon()  # Show a new random Pokémon
         else:
-            save_caught_pokemon(enemy_pokemon.name)
-        ankimon_tracker_obj.general_card_count_for_battle = 0
-        msg = translator.translate("caught_wild_pokemon", enemy_pokemon_name=enemy_pokemon.name.capitalize())
-        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-            logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
-        color = "#6A4DAC" #pokemon leveling info color for tooltip
-        try:
-            tooltipWithColour(msg, color)
-        except:
-            pass
-        new_pokemon()  # Show a new random Pokémon
-    else:
-        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-            logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
+            if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+                logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
+    except Exception as e:
+        showWarning(f"Error occured while catching enemy Pokemon: {e}")
 
 def get_random_starter():
     category = "Starter"
@@ -1443,43 +1459,520 @@ def get_random_starter():
         showWarning(f"Error in get_random_starter: {e}")
         return None, None, None
 
+def simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, main_move, enemy_move, new_state, mutator_full_reset):
+    """
+    Simulate a battle between two Pokemon using poke-engine if available.
+    Prints and returns the battle outcome as a readable log.
+    """
+    import random
+
+    # If no move is provided, use a random move
+    if main_move is None and main_pokemon.attacks:
+        main_move = random.choice(main_pokemon.attacks)
+    if enemy_move is None and enemy_pokemon.attacks:
+        enemy_move = random.choice(enemy_pokemon.attacks)
+    if not main_move:
+        main_move = "Struggle"
+    if not enemy_move:
+        enemy_move = "Struggle"
+    
+    try:
+        if main_pokemon.name.lower() != new_state.user.active.id:
+            mutator_full_reset = 1 # reset AFTER Pokemon is changed !
+        new_state.weather,
+        new_state.field,
+        new_state.trick_room
+    except:
+        mutator_full_reset = 1
+
+    try:
+        from .poke_engine.battle import Move
+        from .poke_engine.objects import Pokemon, State, StateMutator, Side
+        from .poke_engine.helpers import normalize_name
+        from .poke_engine.find_state_instructions import get_all_state_instructions
+
+        main_move_normalized = normalize_name(main_move)
+        enemy_move_normalized = normalize_name(enemy_move)
+
+                
+        # Store only the chosen outcome
+        battle_header = {
+            'user': {
+                'name': main_pokemon.name,
+                'level': main_pokemon.level,
+                'move': main_move
+            },
+            'opponent': {
+                'name': enemy_pokemon.name,
+                'level': enemy_pokemon.level,
+                'move': enemy_move
+            }
+        }
+
+        main_pokemon_dict = main_pokemon.to_engine_format()
+        enemy_pokemon_dict = enemy_pokemon.to_engine_format()
+
+        # Create Pokemon objects (positional args as required)
+        main_pokemon_obj = Pokemon(
+            main_pokemon_dict['identifier'],
+            main_pokemon_dict['level'],
+            main_pokemon_dict['types'],
+            main_pokemon_dict['hp'],
+            main_pokemon_dict['maxhp'],
+            main_pokemon_dict['ability'],
+            main_pokemon_dict['item'],
+            main_pokemon_dict['attack'],
+            main_pokemon_dict['defense'],
+            main_pokemon_dict['special_attack'],
+            main_pokemon_dict['special_defense'],
+            main_pokemon_dict['speed'],
+            main_pokemon_dict.get('nature', 'serious'),
+            main_pokemon_dict.get('evs', (85,) * 6),
+            main_pokemon_dict.get('attack_boost', 0),
+            main_pokemon_dict.get('defense_boost', 0),
+            main_pokemon_dict.get('special_attack_boost', 0),
+            main_pokemon_dict.get('special_defense_boost', 0),
+            main_pokemon_dict.get('speed_boost', 0),
+            main_pokemon_dict.get('accuracy_boost', 0),
+            main_pokemon_dict.get('evasion_boost', 0),
+            main_pokemon_dict.get('status', None),
+            main_pokemon_dict.get('terastallized', False),
+            main_pokemon_dict.get('volatile_status', set()),
+            main_pokemon_dict.get('moves', [])
+        )
+
+        enemy_pokemon_obj = Pokemon(
+            enemy_pokemon_dict['identifier'],
+            enemy_pokemon_dict['level'],
+            enemy_pokemon_dict['types'],
+            enemy_pokemon_dict['hp'],
+            enemy_pokemon_dict['maxhp'],
+            enemy_pokemon_dict['ability'],
+            enemy_pokemon_dict['item'],
+            enemy_pokemon_dict['attack'],
+            enemy_pokemon_dict['defense'],
+            enemy_pokemon_dict['special_attack'],
+            enemy_pokemon_dict['special_defense'],
+            enemy_pokemon_dict['speed'],
+            enemy_pokemon_dict.get('nature', 'serious'),
+            enemy_pokemon_dict.get('evs', (85,) * 6),
+            enemy_pokemon_dict.get('attack_boost', 0),
+            enemy_pokemon_dict.get('defense_boost', 0),
+            enemy_pokemon_dict.get('special_attack_boost', 0),
+            enemy_pokemon_dict.get('special_defense_boost', 0),
+            enemy_pokemon_dict.get('speed_boost', 0),
+            enemy_pokemon_dict.get('accuracy_boost', 0),
+            enemy_pokemon_dict.get('evasion_boost', 0),
+            enemy_pokemon_dict.get('status', None),
+            enemy_pokemon_dict.get('terastallized', False),
+            enemy_pokemon_dict.get('volatile_status', set()),
+            enemy_pokemon_dict.get('moves', [])
+        )
+
+        # Default side_conditions with all needed keys
+        side_conditions = defaultdict(int, {
+            'stealthrock': 0,
+            'spikes': 0,
+            'toxicspikes': 0,
+            'tailwind': 0,
+            'reflect': 0,
+            'lightscreen': 0,
+            'auroraveil': 0,
+            'protect': 0,
+        })
+
+        try:
+            if mutator_full_reset not in (0, 1, 2):
+                mutator_full_reset = 1
+        except:
+            mutator_full_reset = 1
+
+        if mutator_full_reset == 1: # reset EVERYTHING about the battle 
+
+            # Create State object
+            state = State(
+                user=Side(
+                    active=main_pokemon_obj,
+                    reserve={},
+                    wish=(0, 0),
+                    side_conditions=side_conditions.copy(),
+                    future_sight=(0, 0)
+                ),
+                opponent=Side(
+                    active=enemy_pokemon_obj,
+                    reserve={},
+                    wish=(0, 0),
+                    side_conditions=side_conditions.copy(),
+                    future_sight=(0, 0)
+                ),
+                weather=None,
+                field=None,
+                trick_room=False
+            )
+          
+        elif mutator_full_reset == 2: # Store the USER stats!
+            
+            state = State(
+                user=Side(
+                    active=new_state.user.active,
+                    reserve=new_state.user.reserve,
+                    wish=new_state.user.wish,
+                    side_conditions=new_state.user.side_conditions,
+                    future_sight=new_state.user.future_sight
+                ),
+                opponent = Side(
+                    active= enemy_pokemon_obj,
+                    reserve = {},
+                    wish = (0, 0),
+                    side_conditions = side_conditions.copy(),
+                    future_sight = (0, 0)
+                ),
+                weather = new_state.weather,
+                field = new_state.field,
+                trick_room = new_state.trick_room
+            )
+
+        elif mutator_full_reset == 0: # Store FULL battle state
+            state = State(
+                user=Side(
+                    active=new_state.user.active,
+                    reserve=new_state.user.reserve,
+                    wish=new_state.user.wish,
+                    side_conditions=new_state.user.side_conditions,
+                    future_sight=new_state.user.future_sight
+                ),
+                opponent=Side(
+                    active=new_state.opponent.active,
+                    reserve=new_state.opponent.reserve,
+                    wish=new_state.opponent.wish,
+                    side_conditions=new_state.opponent.side_conditions,
+                    future_sight=new_state.opponent.future_sight
+                ),
+                weather = new_state.weather,
+                field = new_state.field,
+                trick_room = new_state.trick_room
+            )
+
+        mutator = StateMutator(state)
+
+        try:
+            if state.opponent.active.hp == 0:
+                main_move = "Splash"
+                enemy_move = "Splash"
+        except:
+            main_move = "Splash"
+            enemy_move = "Splash"
+
+        # Get all possible outcomes
+        transpose_instructions = get_all_state_instructions(
+            mutator, main_move_normalized, enemy_move_normalized
+        )
+
+        # Randomly select ONE outcome from possible outcomes, using probability weights for the outcomes in actual Pokemon battles
+        # e.g. if P(outcome 1):P(outcome 2) = 20% : 80%, then 20% chance to pick outcome 1 (picks randomly)
+        weights = [outcome.percentage for outcome in transpose_instructions]
+        chosen_outcome = random.choices(transpose_instructions, weights=weights, k=1)[0]
+        
+        instrs = chosen_outcome.instructions
+
+        user_hp_before = int(state.user.active.hp)
+        opponent_hp_before = int(state.opponent.active.hp)
+
+        mutator.apply(instrs)
+
+        new_state = copy.deepcopy(state)
+
+        mutator_full_reset = int(0) # preserve battle state - until something else changes this value
+
+        user_hp_after = int(new_state.user.active.hp)
+        opponent_hp_after = int(new_state.opponent.active.hp)
+
+        dmg_from_user_move = int(opponent_hp_before - opponent_hp_after)
+        dmg_from_enemy_move = int(user_hp_before - user_hp_after)
+
+        # Reference to the founder and creator of Ankimon, Unlucky-life.
+        # Unlucky, we are very proud of you for your work. You are a legend. 
+        # It's been a pleasure being part of this journey. -- h0tp (and friends)
+
+        if int(chosen_outcome.percentage) == 0:
+            unlucky_life = int(1)
+        else:
+            unlucky_life = int(chosen_outcome.percentage)
+        
+        # On a serious note, the function above is the CHANCE that the chosen_outcome was picked out of ALL
+        # the choices in transpose_instructions, based on factors like accuracy rate, the chance to
+        # inflict a certain status (like sleep or paralyze), etc.  
+
+        # Did the chosen outcome deal damage?
+        user_did_damage = any(i[0] == 'damage' and i[1] == 'opponent' and i[2] > 0 for i in instrs)
+        opponent_did_damage = any(i[0] == 'damage' and i[1] == 'user' and i[2] > 0 for i in instrs)
+
+        # Could the move have dealt damage in any possible outcome?
+        user_move_can_hit = any(
+            any(i[0] == 'damage' and i[1] == 'opponent' and i[2] > 0 for i in outcome.instructions)
+            for outcome in transpose_instructions
+        )
+        opponent_move_can_hit = any(
+            any(i[0] == 'damage' and i[1] == 'user' and i[2] > 0 for i in outcome.instructions)
+            for outcome in transpose_instructions
+        )
+
+        # Final miss detection: missed if this outcome did not deal damage, but another could have
+        user_missed = user_move_can_hit and not user_did_damage
+        opponent_missed = opponent_move_can_hit and not opponent_did_damage
+
+        battle_effects = []
+        for instr in chosen_outcome.instructions:
+            battle_effects.append(list(instr))  # Convert tuples to lists
+
+        print(f"{unlucky_life * 100}% chance: {battle_effects}")
+
+        battle_info = {'battle_header': battle_header,
+                'instructions': battle_effects,
+                'user_missed': user_missed,
+                'opponent_missed': opponent_missed}
+
+        return (battle_info, copy.deepcopy(new_state), dmg_from_enemy_move, dmg_from_user_move, mutator_full_reset)
+    
+    except Exception as e:
+        
+        traceback.print_exc()
+
+def process_battle_data(battle_data: dict) -> str:
+    """Convert raw battle instructions into human-readable format."""
+    # Error handling and input validation
+    from .poke_engine import constants
+
+    if not isinstance(battle_data, dict) or 'battle_header' not in battle_data:
+        error_msg = mw.translator.translate("invalid_battle_data")
+        return f"Error: {error_msg}"
+    
+    try:
+        # Extract battle header information
+        header = battle_data['battle_header']
+        user_name = format_pokemon_name(header['user']['name'])
+        opponent_name = format_pokemon_name(header['opponent']['name'])
+        user_move = format_move_name(header['user']['move'])
+        opponent_move = format_move_name(header['opponent']['move'])
+        
+        # Initialize output with battle context
+        output = [
+            mw.translator.translate(
+                "battle_header",
+                user_name=user_name,
+                user_level=header['user']['level'],
+                opponent_name=opponent_name,
+                opponent_level=header['opponent']['level']
+            ),
+            mw.translator.translate("user_move", user_name=user_name, move=user_move),
+            mw.translator.translate("opponent_move", opponent_name=opponent_name, move=opponent_move),
+            "\n=== " + mw.translator.translate("battle_effects") + " ==="
+        ]
+
+        # Helper functions for common patterns
+        def format_stat(raw_stat: str) -> str:
+            """Convert engine stat names to display names."""
+            stat_map = {
+                'atk': 'attack',
+                'def': 'defense',
+                'spa': 'special-attack',
+                'spd': 'special-defense',
+                'spe': 'speed',
+                'accuracy': 'accuracy',
+                'evasion': 'evasion'
+            }
+            return stat_map.get(raw_stat, raw_stat.replace('-', ' ').title())
+
+        def get_pokemon_name(side: str) -> str:
+            """Get formatted Pokémon name based on battle side."""
+            return user_name if side == 'user' else opponent_name
+
+        # Process each instruction
+        for instr in battle_data.get('instructions', []):
+            if not instr:
+                continue
+
+            action = instr[0]
+            target_side = instr[1] if len(instr) > 1 else None
+            pokemon_name = get_pokemon_name(target_side) if target_side else None
+
+            try:
+                if action == constants.MUTATOR_DAMAGE:
+                    damage = instr[2]
+                    output.append(mw.translator.translate(
+                        "damage_taken",
+                        pokemon_name=pokemon_name,
+                        damage=damage
+                    ))
+                
+                elif action == constants.MUTATOR_HEAL:
+                    amount = instr[2]
+                    output.append(mw.translator.translate(
+                        "heal_effect",
+                        pokemon_name=pokemon_name,
+                        amount=amount
+                    ))
+                
+                elif action == constants.MUTATOR_APPLY_STATUS:
+                    status = format_move_name(instr[2])
+                    output.append(mw.translator.translate(
+                        "status_apply",
+                        pokemon_name=pokemon_name,
+                        status=status
+                    ))
+                
+                elif action == constants.MUTATOR_BOOST:
+                    stat = format_stat(instr[2])
+                    amount = instr[3]
+                    direction = mw.translator.translate("rose") if amount > 0 else mw.translator.translate("fell")
+                    output.append(mw.translator.translate(
+                        "stat_change",
+                        pokemon_name=pokemon_name,
+                        stat=stat,
+                        direction=direction,
+                        amount=abs(amount)
+                    ))
+                
+                elif action == constants.MUTATOR_SIDE_START:
+                    condition = format_move_name(instr[2])
+                    side = mw.translator.translate("your_side") if target_side == 'user' else mw.translator.translate("opponent_side")
+                    output.append(mw.translator.translate(
+                        "side_effect",
+                        side=side,
+                        condition=condition
+                    ))
+                
+                elif action == constants.MUTATOR_WEATHER_START:
+                    weather = format_move_name(instr[1])
+                    output.append(mw.translator.translate(
+                        "weather_change",
+                        weather=weather
+                    ))
+                
+                elif action == constants.MUTATOR_VOLATILE_STATUS:
+                    status = format_move_name(instr[2])
+                    output.append(mw.translator.translate(
+                        "volatile_status",
+                        pokemon_name=pokemon_name,
+                        status=status
+                    ))
+                
+                elif action == constants.MUTATOR_FAIL:
+                    reason = instr[2] if len(instr) > 2 else "unknown"
+                    output.append(mw.translator.translate(
+                        "move_failed",
+                        reason=reason
+                    ))
+
+                elif action == constants.MUTATOR_APPLY_VOLATILE_STATUS:
+                    status = format_move_name(instr[2])
+                    output.append(mw.translator.translate(
+                        "volatile_status_apply",
+                        pokemon_name=pokemon_name,
+                        status=status.capitalize()
+                    ))
+
+                else:
+                    output.append(f"Unhandled action: {action}")
+
+            except Exception as e:
+                logger.log("error", f"Error processing instruction {instr}: {str(e)}")
+                continue
+
+        # Add missed move information
+        if battle_data.get('user_missed', False):
+            output.append(mw.translator.translate("user_move_missed"))
+        
+        if battle_data.get('opponent_missed', False):
+            output.append(mw.translator.translate("opponent_move_missed"))
+
+        return "\n".join(output)
+
+    except KeyError as e:
+        error_msg = mw.translator.translate("missing_key_in_data", key=str(e))
+        return f"Error: {error_msg}"
+    except Exception as e:
+        error_msg = mw.translator.translate("unexpected_error", error=str(e))
+        return f"Error: {error_msg}"
+
+def format_pokemon_name(name: str) -> str:
+    """
+    Look up the official Pokémon name using the normalized key.
+    Falls back to capitalizing if not found.
+    """
+    key = name.replace(" ", "").replace("-", "").replace("_", "").lower()
+    return POKEMON_NAME_LOOKUP.get(key, name.capitalize())
+
+def format_move_name(move: str) -> str:
+    """
+    Look up the official move name using the normalized key.
+    Falls back to title-casing with spaces if not found.
+    """
+    key = move.replace(" ", "").replace("-", "").replace("_", "").lower()
+    return MOVE_NAME_LOOKUP.get(key, " ".join(word.capitalize() for word in move.replace("_", " ").split()))
+
+
+
+def new_calc_atk_dmg(results: dict, target: str) -> int:
+    """
+    Sum up all damage instructions in a simulation result for the given target.
+
+    Args:
+        results: The dict returned by simulate_battle_with_poke_engine, containing
+                 an 'instructions' list of [action, side, value] entries.
+        target:  Either 'user' or 'opponent'-whose damage you want to retrieve.
+
+    Returns:
+        The total HP lost by that side according to the engine’s chosen outcome.
+    """
+    damage = 0
+    for instr in results.get('instructions', []):
+        action, side, *rest = instr
+        if action == 'damage' and side == target:
+            damage += rest[0]
+    return damage
+
+
 def new_pokemon():
-    # new pokemon
-    gender = None
-    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon()
-    pokemon_data = {
-        'name': name,
-        'id': id,
-        'level': level,
-        'ability': ability,
-        'type': type,
-        'stats': stats,
-        'attacks': enemy_attacks,
-        'base_experience': base_experience,
-        'growth_rate': growth_rate,
-        'ev': ev,
-        'iv': iv,
-        'gender': gender,
-        'battle_status': battle_status,
-        'battle_stats': battle_stats,
-        'tier': tier,
-        'ev_yield': ev_yield,
-        'shiny': shiny
-    }
-    enemy_pokemon.update_stats(**pokemon_data)
-    ankimon_tracker_obj.randomize_battle_scene()
-    max_hp = enemy_pokemon.calculate_max_hp()
-    enemy_pokemon.current_hp = max_hp
-    enemy_pokemon.hp = max_hp
-    enemy_pokemon.max_hp = max_hp
-    #reset mainpokemon hp
-    if test_window is not None:
-        test_window.display_first_encounter()
-    class Container(object):
-        pass
-    reviewer = Container()
-    reviewer.web = mw.reviewer.web
-    reviewer_obj.update_life_bar(reviewer, 0, 0)
+    try:
+        # new pokemon
+        gender = None
+        name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon()
+        pokemon_data = {
+            'name': name,
+            'id': id,
+            'level': level,
+            'ability': ability,
+            'type': type,
+            'stats': stats,
+            'attacks': enemy_attacks,
+            'base_experience': base_experience,
+            'growth_rate': growth_rate,
+            'ev': ev,
+            'iv': iv,
+            'gender': gender,
+            'battle_status': battle_status,
+            'battle_stats': battle_stats,
+            'tier': tier,
+            'ev_yield': ev_yield,
+            'shiny': shiny
+        }
+        enemy_pokemon.update_stats(**pokemon_data)
+        ankimon_tracker_obj.randomize_battle_scene()
+        max_hp = enemy_pokemon.calculate_max_hp()
+        enemy_pokemon.current_hp = max_hp
+        enemy_pokemon.hp = max_hp
+        enemy_pokemon.max_hp = max_hp
+        #reset mainpokemon hp
+        if test_window is not None:
+            test_window.display_first_encounter()
+        class Container(object):
+            pass
+        reviewer = Container()
+        reviewer.web = mw.reviewer.web
+        reviewer_obj.update_life_bar(reviewer, 0, 0)
+    except Exception as e:
+        showWarning(f"An error occurred while generating new Pokemon: {str(e)}") 
             
 def mainpokemon_data():
     try:
@@ -1563,294 +2056,6 @@ reviewer_obj = Reviewer_Manager(
     ankimon_tracker=ankimon_tracker_obj,
 )
 
-# Hook into Anki's card review event
-def on_review_card(*args):
-    try:
-        battle_status = enemy_pokemon.battle_status
-        multiplier = ankimon_tracker_obj.multiplier
-        mainpokemon_type = main_pokemon.type
-        mainpokemon_name = main_pokemon.name
-
-        global battle_sounds
-        global achievements
-        # Increment the counter when a card is reviewed
-        attack_counter = ankimon_tracker_obj.attack_counter
-        ankimon_tracker_obj.cards_battle_round += 1
-        ankimon_tracker_obj.cry_counter += 1
-        cry_counter = ankimon_tracker_obj.cry_counter
-        card_counter = ankimon_tracker_obj.card_counter
-        dmg = 0
-        reviewer_obj.seconds = 0
-        reviewer_obj.myseconds = 0
-        ankimon_tracker_obj.general_card_count_for_battle += 1
-        if battle_sounds == True and ankimon_tracker_obj.general_card_count_for_battle == 1:
-            play_sound()
-        #test achievment system
-        if card_counter == 100:
-            check = check_for_badge(achievements,1)
-            if check is False:
-                achievements = receive_badge(1,achievements)
-                test_window.display_badge(1)
-        elif card_counter == 200:
-            check = check_for_badge(achievements,2)
-            if check is False:
-                achievements = receive_badge(2,achievements)
-                test_window.display_badge(2)
-        elif card_counter == 300:
-                check = check_for_badge(achievements,3)
-                if check is False:
-                    achievements = receive_badge(3,achievements)
-                    test_window.display_badge(3)
-        elif card_counter == 500:
-                check = check_for_badge(achievements,4)
-                if check is False:
-                    receive_badge(4,achievements)
-                    test_window.display_badge(4)
-        if card_counter == ankimon_tracker_obj.item_receive_value:
-            test_window.display_item()
-            check = check_for_badge(achievements,6)
-            if check is False:
-                receive_badge(6,achievements)
-                test_window.display_badge(6)
-        if ankimon_tracker_obj.cards_battle_round >= int(settings_obj.get("battle.cards_per_round", 2)):
-            ankimon_tracker_obj.cards_battle_round = 0
-            ankimon_tracker_obj.attack_counter = 0
-            slp_counter = 0
-            ankimon_tracker_obj.pokemon_encouter += 1
-            multiplier = int(ankimon_tracker_obj.multiplier)
-            msg = ""
-            msg += f"{multiplier}x {translator.translate('multiplier')}"
-            #failed card = enemy attack
-            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:
-                msg += " \n "
-                try:
-                    max_attempts = 3  # Set the maximum number of attempts
-                    for _ in range(max_attempts):
-                        rand_enemy_atk = random.choice(enemy_pokemon.attacks)
-                        enemy_move = find_details_move(rand_enemy_atk)
-                        
-                        if enemy_move is not None:
-                            break  # Exit the loop if a valid enemy_move is found
-                    msg += translator.translate("pokemon_chose_attack", pokemon_name=enemy_pokemon.name.capitalize(), pokemon_attack=rand_enemy_atk.capitalize())
-                    e_move_category = enemy_move.get("category")
-                    e_move_acc = enemy_move.get("accuracy")
-                    if e_move_acc is True:
-                        e_move_acc = 100
-                    elif e_move_acc != 0:
-                        e_move_acc = 100 / e_move_acc
-                    if random.random() > e_move_acc:
-                        msg += "\n" + translator.translate("move_has_missed")
-                    else:
-                        if e_move_category == "Status":
-                            color = "#F7DC6F"
-                            msg = effect_status_moves(rand_enemy_atk, enemy_pokemon.stats, main_pokemon.stats, msg, main_pokemon.name , enemy_pokemon.name)
-                        elif e_move_category == "Physical" or e_move_category == "Special":
-                            critRatio = enemy_move.get("critRatio", 1)
-                            if e_move_category == "Physical":
-                                color = "#F0B27A"
-                            elif e_move_category == "Special":
-                                color = "#D2B4DE"
-                            if enemy_move["basePower"] == 0:
-                                enemy_dmg = bP_none_moves(enemy_move)
-                                main_pokemon.hp -= int(enemy_dmg)
-                                if enemy_dmg == 0:
-                                    msg += "\n" + translator.translate("move_has_missed")
-                            else:
-                                if e_move_category == "Special":
-                                    def_stat = main_pokemon.stats["spd"]
-                                    atk_stat = enemy_pokemon.stats["spa"]
-                                elif e_move_category == "Physical":
-                                    def_stat = main_pokemon.stats["def"]
-                                    atk_stat = enemy_pokemon.stats["atk"]
-                                enemy_dmg = int(calc_atk_dmg(enemy_pokemon.level ,(multiplier * 2),enemy_move["basePower"], atk_stat, def_stat, enemy_pokemon.type, enemy_move["type"],mainpokemon_type, critRatio))
-                                if enemy_dmg == 0:
-                                    enemy_dmg = 1
-                                main_pokemon.hp -= enemy_dmg
-                                if enemy_dmg > 0:
-                                    reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
-                                    if multiplier < 1:
-                                        play_effect_sound("HurtNormal")
-                                else:
-                                    reviewer_obj.myseconds = 0
-                                msg += translator.translate("dmg_dealt", dmg=enemy_dmg, pokemon_name=main_pokemon.name.capitalize())
-                except:
-                    enemy_dmg = 0
-                    rand_enemy_atk = random.choice(enemy_pokemon.attacks)
-                    enemy_move = find_details_move(rand_enemy_atk)
-                    e_move_category = enemy_move.get("category")
-                    if e_move_category == "Status":
-                            color = "#F7DC6F"
-                            msg = effect_status_moves(rand_enemy_atk, enemy_pokemon.stats, main_pokemon.stats, msg, main_pokemon.name , enemy_pokemon.name)
-                    elif e_move_category == "Physical" or e_move_category == "Special":
-                        if e_move_category == "Special":
-                            def_stat = main_pokemon.stats["spd"]
-                            atk_stat = enemy_pokemon.stats["spa"]
-                        elif e_move_category == "Physical":
-                            def_stat = main_pokemon.stats["def"]
-                            atk_stat = enemy_pokemon.stats["atk"]                        
-                        enemy_dmg = int(calc_atk_dmg(enemy_pokemon.level,(multiplier * 2),random.randint(60, 100), atk_stat, def_stat, enemy_pokemon.type, "Normal", mainpokemon_type, critRatio))
-                        if enemy_dmg == 0:
-                            enemy_dmg = 1
-                        main_pokemon.hp -= enemy_dmg
-                    if enemy_dmg > 0:
-                        reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
-                        if multiplier < 1:
-                            play_effect_sound("HurtNormal")
-                    else:
-                        reviewer_obj.myseconds = 0
-                        msg += translator.translate("dmg_dealt", dmg=enemy_dmg, pokemon_name=main_pokemon.name.capitalize())
-    
-            # if enemy pokemon hp < 0 - attack enemy pokemon
-            if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
-                dmg = 0
-                random_attack = random.choice(main_pokemon.attacks)
-                if settings_obj.get("controls.allow_to_choose_moves", False) == True:
-                    dialog = MoveSelectionDialog(main_pokemon.attacks)
-                    if dialog.exec() == QDialog.DialogCode.Accepted:
-                        if dialog.selected_move:
-                            random_attack = dialog.selected_move
-                msg += "\n"
-                msg += translator.translate("pokemon_chose_attack", pokemon_name=main_pokemon.name.capitalize(), pokemon_attack=random_attack.capitalize())
-                move = find_details_move(random_attack)
-                category = move.get("category")
-                acc = move.get("accuracy")
-                if battle_status != "fighting":
-                    msg, acc, battle_status, enemy_pokemon.stats = status_effect(enemy_pokemon, move, slp_counter, msg, acc)
-                if acc is True:
-                    acc = 100
-                if acc != 0:
-                    calc_acc = 100 / acc
-                else:
-                    calc_acc = 0
-                if battle_status == "slp":
-                    calc_acc = 0
-                    msg += "\n" + translator.translate("pokemon_asleep", pokemon_name=enemy_pokemon.name.capitalize())
-                    #slp_counter -= 1
-                elif battle_status == "par":
-                    msg += "\n" + translator.translate("pokemon_is_paralyzed", pokemon_name=enemy_pokemon.name.capitalize())
-                    missing_chance = 1 / 4
-                    random_number = random.random()
-                    if random_number < missing_chance:
-                        acc = 0
-                if random.random() > calc_acc:
-                    msg += "\n" + translator.translate("move_has_missed")
-                else:
-                    if category == "Status":
-                        color = "#F7DC6F"
-                        msg = effect_status_moves(random_attack, main_pokemon.stats, enemy_pokemon.stats, msg, enemy_pokemon.name, main_pokemon.name)
-                    elif category == "Physical" or category == "Special":
-                        try:
-                            critRatio = move.get("critRatio", 1)
-                            if category == "Physical":
-                                color = "#F0B27A"
-                            elif category == "Special":
-                                color = "#D2B4DE"
-                            if move["basePower"] == 0:
-                                dmg = bP_none_moves(move)
-                                enemy_pokemon.hp -= dmg
-                                if dmg == 0:
-                                    msg += "\n" + translator.translate("move_has_missed")
-                                    #dmg = 1
-                            else:
-                                if category == "Special":
-                                    def_stat = enemy_pokemon.stats["spd"]
-                                    atk_stat = main_pokemon.stats["spa"]
-                                elif category == "Physical":
-                                    def_stat = enemy_pokemon.stats["def"]
-                                    atk_stat = main_pokemon.stats["atk"]
-                                dmg = int(calc_atk_dmg(main_pokemon.level, multiplier, move["basePower"], atk_stat, def_stat, main_pokemon.type, move["type"],enemy_pokemon.type, critRatio))
-                                if dmg == 0:
-                                    dmg = 1
-                                enemy_pokemon.hp -= dmg
-                                msg += translator.translate("dmg_dealt", dmg=dmg, pokemon_name=enemy_pokemon.name.capitalize())
-                                move_stat = move.get("status", None)
-                                secondary = move.get("secondary", None)
-                                if secondary is not None:
-                                    bat_status = move.get("secondary", None).get("status", None)
-                                    if bat_status is not None:
-                                        move_with_status(move, move_stat, secondary)
-                                if move_stat is not None:
-                                    move_with_status(move, move_stat, secondary)
-                                if dmg == 0:
-                                    msg += "\n" + translator.translate("move_has_missed")
-                        except:
-                            if category == "Special":
-                                def_stat = enemy_pokemon.stats["spd"]
-                                atk_stat = main_pokemon.stats["spa"]
-                            elif category == "Physical":
-                                def_stat = enemy_pokemon.stats["def"]
-                                atk_stat = main_pokemon.stats["atk"]
-                            dmg = int(calc_atk_dmg(main_pokemon.level, multiplier,random.randint(60, 100), atk_stat, def_stat, main_pokemon.type, "Normal",enemy_pokemon.type, critRatio))
-                            enemy_pokemon.hp -= dmg
-                        if enemy_pokemon.hp < 0:
-                            enemy_pokemon.hp = 0
-                            msg += translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize())
-                            
-                    tooltipWithColour(msg, color)
-                    if dmg > 0:
-                        reviewer_obj.seconds = int(settings_obj.compute_special_variable("animate_time"))
-                        if multiplier == 1:
-                            play_effect_sound("HurtNormal")
-                        elif multiplier < 1:
-                            play_effect_sound("HurtNotEffective")
-                        elif multiplier > 1:
-                            play_effect_sound("HurtSuper")
-                    else:
-                        reviewer_obj.seconds = 0
-
-            if enemy_pokemon.hp < 1:
-                enemy_pokemon.hp = 0
-                
-                # New automatic battle handling
-                auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))
-                
-                value = settings_obj.get("battle.automatic_battle", "0")
-                try:
-                    auto_battle_setting = int(value)
-                except ValueError:
-                    auto_battle_setting = 0  # fallback
-
-                if auto_battle_setting == 3:  # Catch if uncollected
-                    enemy_id = enemy_pokemon.id
-                    # Check cache instead of file
-                    if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
-                        catch_pokemon("")
-                    else:
-                        kill_pokemon()
-                    ankimon_tracker_obj.general_card_count_for_battle = 0
-                    new_pokemon()
-                
-                elif auto_battle_setting == 1:  # Existing auto-catch
-                    catch_pokemon("")
-                    ankimon_tracker_obj.general_card_count_for_battle = 0
-                    new_pokemon()
-                
-                elif auto_battle_setting == 2:  # Existing auto-defeat
-                    kill_pokemon()
-                    new_pokemon()
-                    ankimon_tracker_obj.general_card_count_for_battle = 0
-
-        if cry_counter == 10 and battle_sounds is True:
-            cry_counter = 0
-            play_sound()
-        if main_pokemon.hp < 1:
-            msg = translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize(), main_pokemon_name=main_pokemon.name.capitalize())
-            play_effect_sound("Fainted")
-            new_pokemon()
-            #mainpokemon_data()
-            main_pokemon.hp = main_pokemon.max_hp
-            color = "#E12939"
-            tooltipWithColour(msg, color)
-        class Container(object):
-            pass
-        reviewer = Container()
-        reviewer.web = mw.reviewer.web
-        reviewer_obj.update_life_bar(reviewer, 0, 0)
-        if test_window is not None:
-            test_window.display_battle()
-    except Exception as e:
-        showWarning(f"An error occurred in reviewer: {str(e)}")
-
 def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpokemon_name):
     global battle_status
     move = find_details_move(move_name)
@@ -1896,44 +2101,357 @@ def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpoke
                 msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
     return msg
 
-def move_with_status(move, move_stat, status):
-    global battle_status
-    target = move.get("target")
-    bat_status = move.get("secondary", None).get("status", None)
-    if target in ["normal", "allAdjacentFoes"]:
-        if move_stat is not None:
-            battle_status = move_stat
-        if status is not None:
-            random_number = random.random()
-            chances = status["chance"] / 100
-            if random_number < chances:
-                battle_status = status["status"]
-    if battle_status == "slp":
-        slp_counter = random.randint(1, 3)
+# some of the functions that are being called within the on_review_card function are below
+# for sake of tidiness ! 
+
+def handle_achievements(card_counter, achievements):
+    if card_counter == 100:
+        check = check_for_badge(achievements,1)
+        if check is False:
+            achievements = receive_badge(1,achievements)
+    elif card_counter == 200:
+        check = check_for_badge(achievements,2)
+        if check is False:
+            achievements = receive_badge(2,achievements)
+    elif card_counter == 300:
+        check = check_for_badge(achievements,3)
+        if check is False:
+            achievements = receive_badge(3,achievements)
+    elif card_counter == 500:
+        check = check_for_badge(achievements,4)
+        if check is False:
+            receive_badge(4,achievements)
+    return achievements
+
+def check_and_award_badges(card_counter, achievements, ankimon_tracker_obj, test_window):
+    if card_counter == ankimon_tracker_obj.item_receive_value:
+        test_window.display_item()
+        check = check_for_badge(achievements,6)
+        if check is False:
+            receive_badge(6,achievements)
+    return achievements
+
+def handle_enemy_faint(enemy_pokemon, collected_pokemon_ids, settings_obj):
+    """
+    Handles what automatically happens when the enemy Pokémon faints, based on auto-battle settings.
+    """
+    try:
+        auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))
+        if not (0 <= auto_battle_setting <= 3):
+            auto_battle_setting = 0  # fallback
+    except ValueError:
+        auto_battle_setting = 0  # fallback
+
+    if auto_battle_setting == 3:  # Catch if uncollected
+        enemy_id = enemy_pokemon.id
+        # Check cache instead of file
+        if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
+            catch_pokemon("")
+        else:
+            kill_pokemon()
+        new_pokemon()
+    elif auto_battle_setting == 1:  # Existing auto-catch
+        catch_pokemon("")
+        new_pokemon()
+    elif auto_battle_setting == 2:  # Existing auto-defeat
+        kill_pokemon()
+        new_pokemon()
+
+    ankimon_tracker_obj.general_card_count_for_battle = 0
+
+def handle_main_pokemon_faint(main_pokemon, enemy_pokemon, msg, translator, play_effect_sound, new_pokemon, tooltipWithColour):
+    """
+    Handles what happens when the main Pokémon faints.
+    """
+    msg += "\n " + translator.translate("pokemon_fainted", enemy_pokemon_name=main_pokemon.name.capitalize())
+    play_effect_sound("Fainted")
+    new_pokemon()
+    main_pokemon.hp = main_pokemon.max_hp
+    main_pokemon.current_hp = main_pokemon.max_hp
+    tooltipWithColour(msg, "#E12939")
+
+# Hook into Anki's card review event
+def on_review_card(*args):
+    try:
+        battle_status = enemy_pokemon.battle_status
+        multiplier = ankimon_tracker_obj.multiplier
+        mainpokemon_type = main_pokemon.type
+        mainpokemon_name = main_pokemon.name
+        user_attack = random.choice(main_pokemon.attacks)
+        enemy_attack = random.choice(enemy_pokemon.attacks)
+        
+        global mutator_full_reset
+
+        global battle_sounds
+        global achievements
+        global new_state
+        global user_hp_after
+        global opponent_hp_after
+        global dmg_from_enemy_move
+        global dmg_from_user_move
+        
+        # Increment the counter when a card is reviewed
+        attack_counter = ankimon_tracker_obj.attack_counter
+        ankimon_tracker_obj.cards_battle_round += 1
+        ankimon_tracker_obj.cry_counter += 1
+        cry_counter = ankimon_tracker_obj.cry_counter
+        card_counter = ankimon_tracker_obj.card_counter
+        reviewer_obj.seconds = 0
+        reviewer_obj.myseconds = 0
+        ankimon_tracker_obj.general_card_count_for_battle += 1
+
+        achievements = handle_achievements(card_counter, achievements)
+        achievements = check_and_award_badges(card_counter, achievements, ankimon_tracker_obj, test_window)
+
+        try:
+             mutator_full_reset
+        except:
+            mutator_full_reset = 1
+
+        if battle_sounds == True and ankimon_tracker_obj.general_card_count_for_battle == 1:
+            play_sound()
+
+        if ankimon_tracker_obj.cards_battle_round >= int(settings_obj.get("battle.cards_per_round", 2)):
+            ankimon_tracker_obj.cards_battle_round = 0
+            ankimon_tracker_obj.attack_counter = 0
+            slp_counter = 0
+            ankimon_tracker_obj.pokemon_encouter += 1
+            multiplier = int(ankimon_tracker_obj.multiplier)
+
+            user_attack = random.choice(main_pokemon.attacks)
+
+            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:               
+               
+                enemy_attack = random.choice(enemy_pokemon.attacks) # triggered IF enemy will attack                                  
+                enemy_move = find_details_move(enemy_attack)
+                enemy_move_category = enemy_move.get("category")
+             
+                if enemy_move_category == "Status":
+                    color = "#F7DC6F"
+                elif enemy_move_category == "Physical":
+                    color = "#F0B27A"
+                elif enemy_move_category == "Special":
+                    color = "#D2B4DE"
+
+            else:
+                enemy_attack = "splash" # if enemy will NOT attack, it uses SPLASH
+            
+            try:
+                enemy_move
+            except:
+                enemy_move = find_details_move(enemy_attack)
+                enemy_move_category = enemy_move.get("category")
+
+            move = find_details_move(user_attack)
+            category = move.get("category")
+            
+            if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
+                
+                if settings_obj.get("controls.allow_to_choose_moves", False) == True:
+                    dialog = MoveSelectionDialog(main_pokemon.attacks)
+                    if dialog.exec() == QDialog.DialogCode.Accepted:
+                        if dialog.selected_move:
+                            user_attack = dialog.selected_move    
+                            
+                if category == "Status":
+                    color = "#F7DC6F"
+
+                if category == "Physical":
+                    color = "#F0B27A"
+
+                elif category == "Special":
+                    color = "#D2B4DE"
+
+            msg = ""
+            # msg += f"{multiplier}x {translator.translate('multiplier')}"
+            # DISABLED for now - multiplier has to be implemented properly into new system
+            #failed card = enemy attack
+
+            try:
+                new_state
+                mutator_full_reset
+
+                user_hp_after
+                opponent_hp_after
+                dmg_from_enemy_move
+                dmg_from_user_move
+            except:
+                new_state = []
+                mutator_full_reset = 1
+                user_hp_after = 0 
+                opponent_hp_after = 0 
+                dmg_from_enemy_move = 0 
+                dmg_from_user_move = 0
+
+            '''
+            To the devs, 
+            below is the MOST IMPORTANT function for the new engine.
+            This runs our current Pokemon stats through the SirSkaro Poke-Engine.
+            The "results" can then be used to access battle outcomes.
+            '''
+
+            results = simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, user_attack, enemy_attack, new_state, mutator_full_reset)
+          
+            '''
+            It is important that any changes to pokemon stats are accurately represented
+            in the main_pokemon and enemy_pokemon objects, in order to let them
+            be arguments in the engine function.
+
+            Next, we need an unpacker to ensure that it goes from tuple values under results, to actual variables!
+            '''
+            battle_info = results[0]
+            new_state = copy.deepcopy(results[1])
+            dmg_from_enemy_move = results[2]
+            dmg_from_user_move = results[3]
+            user_hp_after = new_state.user.active.hp
+            opponent_hp_after = new_state.opponent.active.hp
+            mutator_full_reset = results[4]
+
+            # Unpacked and ready to go ! This info gives us pretty much ANYTHING we need to know about the battle (other than detailed logging)            
+
+            process_battle_data(battle_info)
+
+            # For the variables below, calculating early > individually calling multiple times later
+
+            # Handling enemy attack on main pokemon, when multiplier < 1
+            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:               
+                
+                main_pokemon.hp = user_hp_after
+                main_pokemon.current_hp = user_hp_after
+
+                try:
+                    msg += translator.translate("pokemon_chose_attack", pokemon_name=enemy_pokemon.name.capitalize(), pokemon_attack=enemy_attack.capitalize())
+
+                    if dmg_from_enemy_move > 0:
+                        reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
+                        msg += translator.translate("dmg_dealt", dmg=dmg_from_enemy_move, pokemon_name=main_pokemon.name.capitalize())
+                        msg += "\n"
+                        if multiplier < 1:
+                            play_effect_sound("HurtNormal")
+                        else:
+                            reviewer_obj.myseconds = 0
+                                                             
+                    '''elif dmg_from_enemy_move == 0:
+                        if results.get('opponent_missed', False):
+                            msg += "\n" + translator.translate("move_has_missed")'''
+                    
+                except Exception as e:
+                    showWarning(f"Error rendering enemy attack: {str(e)}")
+
+            # if enemy pokemon hp > 0, attack enemy pokemon
+            if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
+                
+                enemy_pokemon.hp = opponent_hp_after
+                enemy_pokemon.current_hp = opponent_hp_after
+                                
+                msg += translator.translate("pokemon_chose_attack", pokemon_name=main_pokemon.name.capitalize(), pokemon_attack=user_attack.capitalize())
+                
+                if battle_status != "fighting": # dealing with SPECIAL EFFECTS on Pokemon
+                    msg, acc, battle_status, enemy_pokemon.stats = status_effect(enemy_pokemon, move, slp_counter, msg, acc)
+               
+                else:
+                    if category == "Status":
+                        msg = effect_status_moves(user_attack, main_pokemon.stats, enemy_pokemon.stats, msg, enemy_pokemon.name, main_pokemon.name)                        
+
+                        '''if dmg_from_user_move == 0:
+                            if results.get('user_missed', False):
+                                msg += "\n" + translator.translate("move_has_missed")'''
+                            
+                    else:
+                        msg += translator.translate("dmg_dealt", dmg=dmg_from_user_move, pokemon_name=enemy_pokemon.name.capitalize())
+
+                        if enemy_pokemon.hp < 0:
+                            enemy_pokemon.hp = 0
+                            msg += translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize())
+                            
+                    tooltipWithColour(msg, color)
+                    
+                    if dmg_from_user_move > 0:
+                        reviewer_obj.seconds = int(settings_obj.compute_special_variable("animate_time"))
+                        if multiplier == 1:
+                            play_effect_sound("HurtNormal")
+                        elif multiplier < 1:
+                            play_effect_sound("HurtNotEffective")
+                        elif multiplier > 1:
+                            play_effect_sound("HurtSuper")
+                    else:
+                        reviewer_obj.seconds = 0
+
+            # if enemy pokemon faints, this handles AUTOMATIC BATTLE
+            if enemy_pokemon.hp < 1:
+                enemy_pokemon.hp = 0
+                handle_enemy_faint(enemy_pokemon, collected_pokemon_ids, settings_obj)
+
+                mutator_full_reset = 2 # reset opponent state
+
+        if cry_counter == 10 and battle_sounds is True:
+            cry_counter = 0
+            play_sound()
+
+        # user pokemon faints
+        if main_pokemon.hp < 1:
+            handle_main_pokemon_faint(main_pokemon, enemy_pokemon, msg, translator, play_effect_sound, new_pokemon, tooltipWithColour)
+            mutator_full_reset = 1 # fully reset battle state 
+
+        class Container(object):
+            pass
+
+        reviewer = Container()
+        reviewer.web = mw.reviewer.web
+        reviewer_obj.update_life_bar(reviewer, 0, 0)
+        if test_window is not None:
+            test_window.display_battle()
+    except Exception as e:
+        showWarning(f"An error occurred in reviewer: {str(e)}")
+        traceback.print_exc()
+        
+
+
 
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
 
-def MainPokemon(pokemon_data, main_pokemon = main_pokemon):
-    # Capitalize the first letter of the Pokémon's name
-    # Create a dictionary to store the Pokémon's data
-    main_pokemon_data = []
-    main_pokemon_data.append({key: value for key, value in pokemon_data.items()})
-    capitalized_name = main_pokemon.name.capitalize()
+def MainPokemon(pokemon_data, main_pokemon=main_pokemon):
+    # Create NEW PokemonObject instance using class constructor
+    new_main_pokemon = PokemonObject(
+        name=pokemon_data.get('name', 'Missingno'),
+        level=pokemon_data.get('level', 5),
+        ability=pokemon_data.get('ability', ['none']),
+        type=pokemon_data.get('type', ['Normal']),
+        stats=pokemon_data.get('stats', {'hp': 1, 'atk': 1, 'def': 1, 'spa': 1, 'spd': 1, 'spe': 1}),
+        ev=pokemon_data.get('ev', defaultdict(int)),
+        iv=pokemon_data.get('iv', defaultdict(int)),
+        attacks=pokemon_data.get('attacks', ['Struggle']),
+        base_experience=pokemon_data.get('base_experience', 0),
+        growth_rate=pokemon_data.get('growth_rate', 'medium'),
+        current_hp = int((((2 * pokemon_data['stats']['hp'] + pokemon_data['iv']['hp'] + (pokemon_data['ev']['hp'] // 4)) * pokemon_data['level']) // 100) + pokemon_data['level'] + 10),
+        gender=pokemon_data.get('gender', 'N'),
+        shiny=pokemon_data.get('shiny', False),
+        individual_id=pokemon_data.get('individual_id', str(uuid.uuid4())),
+        id=pokemon_data.get('id', 133),
+        status=pokemon_data.get('status', None),
+        volatile_status=set(pokemon_data.get('volatile_status', []))
+    )
+    
+    # Update existing reference
+    main_pokemon.__dict__.update(new_main_pokemon.__dict__)
+    
+    # Save to JSON using the object's native serialization
+    main_pokemon_data = [main_pokemon.to_dict()]
+    with open(mainpokemon_path, "w") as f:
+        json.dump(main_pokemon_data, f, indent=2)
 
-    # Save the caught Pokémon's data to a JSON file
-    with open(str(mainpokemon_path), "w") as json_file:
-        json.dump(main_pokemon_data, json_file, indent=2)
-
-    logger.log_and_showinfo("info",translator.translate("picked_main_pokemon", main_pokemon_name=capitalized_name))
-    #mainpokemon_data()
-    update_main_pokemon(main_pokemon, mainpokemon_path)
-    class Container(object):
-        pass
+    logger.log_and_showinfo("info", 
+        translator.translate("picked_main_pokemon", 
+        main_pokemon_name=main_pokemon.name.capitalize()))
+    
+    # Update UI components
+    class Container(object): pass
     reviewer = Container()
     reviewer.web = mw.reviewer.web
     reviewer_obj.update_life_bar(reviewer, 0, 0)
-    if test_window.isVisible() is True:
+    
+    if test_window.isVisible():
         test_window.display_first_encounter()
 
 pokecollection_win = PokemonCollectionDialog(logger=logger, settings_obj=settings_obj, mainpokemon_function = MainPokemon, main_pokemon = main_pokemon)
@@ -2942,18 +3460,6 @@ class TestWindow(QWidget):
         Receive_Window.setLayout(layout)
         Receive_Window.show()
 
-    def display_badge(self, badge_num):
-        Receive_Window = QDialog(mw)
-        Receive_Window.setWindowTitle(translator.translate("received_a_badge"))
-        layout = QHBoxLayout()
-        badge_widget = self.pokemon_display_badge(badge_num)
-        layout.addWidget(badge_widget)
-        Receive_Window.setStyleSheet("background-color: rgb(44,44,44);")
-        Receive_Window.setMaximumWidth(512)
-        Receive_Window.setMaximumHeight(320)
-        Receive_Window.setLayout(layout)
-        Receive_Window.show()
-
     def display_pokemon_death(self):
         # pokemon encounter image
         self.clear_layout(self.layout())
@@ -3178,7 +3684,6 @@ class StarterWindow(QWidget):
         check = check_for_badge(achievements,7)
         if check is False:
             receive_badge(7,achievements)
-            test_window.display_badge(7)
     
     def display_fossil_pokemon(self, fossil_id, fossil_name):
         self.clear_layout(self.layout())
@@ -3196,7 +3701,6 @@ class StarterWindow(QWidget):
         check = check_for_badge(achievements,19)
         if check is False:
             receive_badge(19,achievements)
-            test_window.display_badge(19)
 
     def pokemon_display_starter_buttons(self, water_start, fire_start, grass_start):
         # Create buttons for catching and killing the Pokémon
@@ -3864,7 +4368,6 @@ class ItemWindow(QWidget):
         check = check_for_badge(achievements,20)
         if check is False:
             receive_badge(20,achievements)
-            test_window.display_badge(20)
         if item_name == "fullrestore" or "maxpotion":
             heal_points = self.main_pokemon.max_hp
         self.main_pokemon.hp += heal_points
@@ -4141,7 +4644,9 @@ actions = create_menu_actions(
     settings_obj.get("controls.key_for_opening_closing_ankimon","Ctrl+Shift+P"),
     join_discord_url,
     open_leaderboard_url,
-    settings_obj
+    settings_obj,
+    addon_dir,          
+    data_handler_obj    
 )
 
     #https://goo.gl/uhAxsg

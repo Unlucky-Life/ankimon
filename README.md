@@ -84,10 +84,11 @@ If you want to download the files and source code directly:
 
 ## Instructions for Current Contributors
 
-- **Branching:** Always create a new branch for your changes.  
+- **NEW CHANGE - Branching:** Always create a new branch for your changes, each branch for each change.  
   Name your branch using the format:
-  - For bug fixes: `fix/your-fix-name`
-  - For new features: `feature/your-feature-name`
+  - `username/your-branch-name`
+
+For example, if I make a branch for new features to automatic battle: `h0tp/auto-battle-enhancements`
   
   `main` is used to get changes from branches (after testing), and `upstream` will be used to send code to the official Ankimon repository.
 
@@ -133,12 +134,13 @@ At this point, it is more important to let AI do the coding, and you should be a
    Click the "Fork" button at the top right of this page to create your own copy.
 
 2. **Make your changes:**  
-   Add your improvements or fixes in your forked repository.
+   Add your improvements or fixes in your forked repository. Make any change you like - can be a new feature or a bug fix!
 
 3. **Submit a Pull Request:**  
    - Push your changes to your fork.
    - Go to this repository and click "Pull request".
    - Add a description of your changes and submit.
+   - If you need help in this process, please contact me on Discord (@h0tp)
 
 4. **After your first accepted PR**, you will become access to this repository as a **maintainer** to help shape the project!
 You will also get access to our Discord channel for contributors and can collaborate on new features and fixes.
