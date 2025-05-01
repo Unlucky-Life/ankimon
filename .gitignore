@@ -1,2 +1,4 @@
-
-/src/Ankimon/classes/__pycache__
+.gitattributes
+.gitignore
+README.md
+.github/workflows/main.yml
