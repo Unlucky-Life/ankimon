@@ -1151,7 +1151,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                 for new_attack in new_attacks:
                     if len(attacks) < 4 and new_attack not in attacks:
                         attacks.append(new_attack)
-                        msg += translator.transalte("mainpokemon_learned_new_attack", new_attack_name=new_attack, main_pokemon_name=main_pokemon.name.capitalize())
+                        msg += translator.translate("mainpokemon_learned_new_attack", new_attack_name=new_attack, main_pokemon_name=main_pokemon.name.capitalize())
                         color = "#6A4DAC"
                         tooltipWithColour(msg, color)
                         if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
@@ -1495,7 +1495,7 @@ def new_pokemon():
         reviewer.web = mw.reviewer.web
         reviewer_obj.update_life_bar(reviewer, 0, 0)
     except Exception as e:
-                    showWarning(f"An error occurred while generating new Pokemon: {str(e)}") 
+        showWarning(f"An error occurred while generating new Pokemon: {str(e)}") 
             
 def mainpokemon_data():
     try:
