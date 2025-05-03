@@ -2046,51 +2046,6 @@ reviewer_obj = Reviewer_Manager(
     ankimon_tracker=ankimon_tracker_obj,
 )
 
-def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpokemon_name):
-    global battle_status
-    move = find_details_move(move_name)
-    target = move.get("target")
-    boosts = move.get("boosts", {})
-    stat_boost_value = {
-        "hp": boosts.get("hp", 0),
-        "atk": boosts.get("atk", 0),
-        "def": boosts.get("def", 0),
-        "spa": boosts.get("spa", 0),
-        "spd": boosts.get("spd", 0),
-        "spe": boosts.get("spe", 0),
-        "xp": mainpokemon_stats.get("xp", 0)
-    }
-    move_stat = move.get("status",None)
-    status = move.get("secondary",None)
-    if move_stat is not None:
-        battle_status = move_stat
-    if status is not None:
-        random_number = random.random()
-        chances = status["chance"] / 100
-        if random_number < chances:
-            battle_status = status["status"]
-    if battle_status == "slp":
-        slp_counter = random.randint(1, 3)
-    if target == "self":
-        for boost, stage in boosts.items():
-            stat = get_multiplier_stats(stage)
-            mainpokemon_stats[boost] = mainpokemon_stats.get(boost, 0) * stat
-            msg += f" {main_pokemon.name.capitalize()}'s "
-            if stage < 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_decreased')}."
-            elif stage > 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
-    elif target in ["normal", "allAdjacentFoes"]:
-        for boost, stage in boosts.items():
-            stat = get_multiplier_stats(stage)
-            stats[boost] = stats.get(boost, 0) * stat
-            msg += f" {name.capitalize()}'s "
-            if stage < 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_decreased')}."
-            elif stage > 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
-    return msg
-
 # some of the functions that are being called within the on_review_card function are below
 # for sake of tidiness ! 
 
@@ -2341,12 +2296,12 @@ def on_review_card(*args):
                
                 else:
                     if category == "Status":
-                        msg = effect_status_moves(user_attack, main_pokemon.stats, enemy_pokemon.stats, msg, enemy_pokemon.name, main_pokemon.name)                        
+                        '''msg = effect_status_moves(user_attack, main_pokemon.stats, enemy_pokemon.stats, msg, enemy_pokemon.name, main_pokemon.name)'''                        
 
                         '''if dmg_from_user_move == 0:
                             if results.get('user_missed', False):
                                 msg += "\n" + translator.translate("move_has_missed")'''
-                            
+                                            
                     else:
                         msg += translator.translate("dmg_dealt", dmg=dmg_from_user_move, pokemon_name=enemy_pokemon.name.capitalize())
 
