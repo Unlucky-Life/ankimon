@@ -101,8 +101,24 @@ from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
 
-collected_pokemon_ids = set()
-_collection_loaded = False
+class PokemonCollection:
+    def __init__(self):
+        self.collected_ids = set()
+        self.loaded = False
+
+    def add(self, pokemon_id):
+        self.collected_ids.add(pokemon_id)
+
+    def is_collected(self, pokemon_id):
+        return pokemon_id in self.collected_ids
+
+    def mark_loaded(self):
+        self.loaded = True
+
+    def is_loaded(self):
+        return self.loaded
+
+pokemon_collection_obj = PokemonCollection()
 
 # start loggerobject for Ankimon
 logger = ShowInfoLogger()
@@ -267,19 +283,18 @@ ankimon_tracker_window = AnkimonTrackerWindow(
 
 # Initialize collected IDs cache
 def load_collected_pokemon_ids():
-    global collected_pokemon_ids, _collection_loaded
-    if _collection_loaded:
+    if pokemon_collection_obj.loaded:
         return  # Already loaded, do nothing
     if mypokemon_path.is_file():
         try:
             with open(mypokemon_path, "r", encoding="utf-8") as f:
                 collection = json.load(f)
-                collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
-            _collection_loaded = True
+                pokemon_collection_obj.collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
+            pokemon_collection_obj.loaded = True
         except Exception as e:
             logger.log("error", f"Error loading collection cache: {str(e)}")
-            collected_pokemon_ids = set()
-            _collection_loaded = True  # Prevent repeated attempts if file is bad
+            pokemon_collection_obj.collected_pokemon_ids = set()
+            pokemon_collection_obj.loaded = True  # Prevent repeated attempts if file is bad
 
 # Call this during addon initialization
 load_collected_pokemon_ids()
