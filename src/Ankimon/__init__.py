@@ -1415,7 +1415,7 @@ def cancel_evolution(individual_id, prevo_name):
 def catch_pokemon(nickname):
     ankimon_tracker_obj.caught += 1
     if ankimon_tracker_obj.caught == 1:
-        collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
+        pokemon_collection_obj.collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
         if nickname is None or not nickname:  # Wenn None oder leer
             save_caught_pokemon(nickname)
         else:
@@ -1835,7 +1835,7 @@ def on_review_card(*args):
                 if auto_battle_setting == 3:  # Catch if uncollected
                     enemy_id = enemy_pokemon.id
                     # Check cache instead of file
-                    if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
+                    if enemy_id not in pokemon_collection_obj.collected_pokemon_ids or enemy_pokemon.shiny:
                         catch_pokemon("")
                     else:
                         kill_pokemon()
