@@ -105,11 +105,11 @@ def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp, xp
                                     pokemon['level'] = current_level
                                     pokemon['stats']['xp'] = 0 if exp < 0 else exp
                                     evo_id = check_evolution_for_pokemon(
-                                        pokemon['individual_id'],
-                                        pokemon['id'],
-                                        pokemon['level'],
+                                        pokemon.get('individual_id'),
+                                        pokemon.get('id'),
+                                        pokemon.get('level'),
                                         evo_window,
-                                        pokemon['everstone']
+                                        pokemon.get('everstone', False)
                                     )
                                 if evo_id is not None:
                                     msg += f"{pokemon['name']} is about to evolve to {return_name_for_id(evo_id).capitalize()} at level {pokemon['level']}"
