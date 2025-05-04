@@ -101,8 +101,24 @@ from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
 
-collected_pokemon_ids = set()
-_collection_loaded = False
+class PokemonCollection:
+    def __init__(self):
+        self.collected_ids = set()
+        self.loaded = False
+
+    def add(self, pokemon_id):
+        self.collected_ids.add(pokemon_id)
+
+    def is_collected(self, pokemon_id):
+        return pokemon_id in self.collected_ids
+
+    def mark_loaded(self):
+        self.loaded = True
+
+    def is_loaded(self):
+        return self.loaded
+
+pokemon_collection_obj = PokemonCollection()
 
 # start loggerobject for Ankimon
 logger = ShowInfoLogger()
@@ -267,19 +283,18 @@ ankimon_tracker_window = AnkimonTrackerWindow(
 
 # Initialize collected IDs cache
 def load_collected_pokemon_ids():
-    global collected_pokemon_ids, _collection_loaded
-    if _collection_loaded:
+    if pokemon_collection_obj.loaded:
         return  # Already loaded, do nothing
     if mypokemon_path.is_file():
         try:
             with open(mypokemon_path, "r", encoding="utf-8") as f:
                 collection = json.load(f)
-                collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
-            _collection_loaded = True
+                pokemon_collection_obj.collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
+            pokemon_collection_obj.loaded = True
         except Exception as e:
             logger.log("error", f"Error loading collection cache: {str(e)}")
-            collected_pokemon_ids = set()
-            _collection_loaded = True  # Prevent repeated attempts if file is bad
+            pokemon_collection_obj.collected_pokemon_ids = set()
+            pokemon_collection_obj.loaded = True  # Prevent repeated attempts if file is bad
 
 # Call this during addon initialization
 load_collected_pokemon_ids()
@@ -1394,28 +1409,28 @@ def cancel_evolution(individual_id, prevo_name):
 
 
 def catch_pokemon(nickname):
-    try:
-        ankimon_tracker_obj.caught += 1
-        if ankimon_tracker_obj.caught == 1:
-            collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
-            if nickname is None or not nickname:  # Wenn None oder leer
-                save_caught_pokemon(nickname)
-            else:
-                save_caught_pokemon(enemy_pokemon.name)
-            ankimon_tracker_obj.general_card_count_for_battle = 0
-            msg = translator.translate("caught_wild_pokemon", enemy_pokemon_name=enemy_pokemon.name.capitalize())
-            if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-                logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
-            color = "#6A4DAC" #pokemon leveling info color for tooltip
-            try:
-                tooltipWithColour(msg, color)
-            except:
-                pass
-            new_pokemon()  # Show a new random Pokémon
+  try:
+    ankimon_tracker_obj.caught += 1
+    if ankimon_tracker_obj.caught == 1:
+        pokemon_collection_obj.collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
+        if nickname is None or not nickname:  # Wenn None oder leer
+            save_caught_pokemon(nickname)
         else:
-            if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-                logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
-    except Exception as e:
+            save_caught_pokemon(enemy_pokemon.name)
+        ankimon_tracker_obj.general_card_count_for_battle = 0
+        msg = translator.translate("caught_wild_pokemon", enemy_pokemon_name=enemy_pokemon.name.capitalize())
+        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+            logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
+        color = "#6A4DAC" #pokemon leveling info color for tooltip
+        try:
+            tooltipWithColour(msg, color)
+        except:
+            pass
+        new_pokemon()  # Show a new random Pokémon
+     else:
+         if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+             logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
+  except Exception as e:
         showWarning(f"Error occured while catching enemy Pokemon: {e}")
 
 def get_random_starter():
@@ -1819,26 +1834,27 @@ def on_review_card(*args):
                 except ValueError:
                     auto_battle_setting = 0  # fallback
 
-                try:
-                    if auto_battle_setting == 3:  # Catch if uncollected
-                        enemy_id = enemy_pokemon.id
-                        # Check cache instead of file
-                        if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
-                            catch_pokemon("")
-                        else:
-                            kill_pokemon()
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
-                    
-                    elif auto_battle_setting == 1:  # Existing auto-catch
+                if auto_battle_setting == 3:  # Catch if uncollected
+                    enemy_id = enemy_pokemon.id
+                    # Check cache instead of file
+                    if enemy_id not in pokemon_collection_obj.collected_pokemon_ids or enemy_pokemon.shiny:
                         catch_pokemon("")
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
-                    
-                    elif auto_battle_setting == 2:  # Existing auto-defeat
+                    else:
                         kill_pokemon()
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+                    new_pokemon()
+                
+                elif auto_battle_setting == 1:  # Existing auto-catch
+                    catch_pokemon("")
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+                    new_pokemon()
+                
+                elif auto_battle_setting == 2:  # Existing auto-defeat
+                    kill_pokemon()
+                    new_pokemon()
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
                 except Exception as e:
                     showWarning(f"An error occurred relating to auto-battle: {str(e)}")
-                    
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()
