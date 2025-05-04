@@ -67,7 +67,7 @@ jobs:
           # ... (previous setup code remains the same)
       
           # Build release body with proper indentation
-          RELEASE_BODY="⚠️ **This is an EXPERIMENTAL build. You may encounter issues and bugs. Thank you for checking it out and helping us improve!**
+          RELEASE_BODY="⚠️ **This is the Original Ankimon Branch. We launch Prereleases and Releases. Releases are mostly stable, while prerelease are untested features and fixes and may contain bugs. You may encounter issues and bugs. Thank you for checking it out and helping us improve!**
       
           **Build Details**
           - Commit SHA: ${{ steps.vars.outputs.sha_short }}
