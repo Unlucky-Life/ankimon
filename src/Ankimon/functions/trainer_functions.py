@@ -81,22 +81,38 @@ def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp, xp
                             # Initialize the message string
                             # Increase the xp of the matched Pokémon
                             try:
-                                #logger.log("info", "Running XP share function")
-                                if int(find_experience_for_level(pokemon['growth_rate'], int(pokemon['level']), level_cap)) > exp + int(pokemon['stats']['xp']):
+                                current_level = int(pokemon['level'])  # MODIFIED: Use local variable for level
+                                current_xp = int(pokemon['stats']['xp'])  # MODIFIED: Use local variable for XP
+                                growth_rate = pokemon['growth_rate']  # MODIFIED: Use local variable for growth rate
+                                experience_needed = int(find_experience_for_level(growth_rate, current_level, level_cap))  # MODIFIED: Pre-calculate needed XP
+                                evo_id = None # Initialize variable
+
+                                logger.log("info", "Running XP share function")
+                                if experience_needed > exp + current_xp:
                                     pokemon['stats']['xp'] += exp
-                                    showInfo("running adding xp share part")
+                                    
                                 else:
-                                    while exp + int(pokemon['stats']['xp']) > int(find_experience_for_level(pokemon['growth_rate'], int(pokemon['level']), level_cap)):
-                                        if (level_cap is False or int(pokemon['level']) < 100):
+                                    while exp + current_xp > experience_needed:
+                                        if (not level_cap or current_level < 100):  
                                             experience = int(find_experience_for_level(pokemon['growth_rate'], pokemon['level'], level_cap))
-                                            pokemon['level'] += 1
-                                            pokemon['stats']['xp'] = 0
-                                            exp = int(exp + int(pokemon['stats']['xp']) - experience)
+                                            current_level += 1
+                                            exp = exp + current_xp - experience_needed
+                                            current_xp = 0
+                                            experience_needed = int(find_experience_for_level(growth_rate, current_level, level_cap))  # MODIFIED: Recalculate needed XP
                                             msg += f"XP increased for {pokemon['name']} with {pokemon['level']} {pokemon['stats']['xp']}"
+                                        else:
+                                            break    
+                                    pokemon['level'] = current_level
                                     pokemon['stats']['xp'] = 0 if exp < 0 else exp
-                                    evo_id = check_evolution_for_pokemon(pokemon['individual_id'], pokemon['id'], pokemon['level'], evo_window, pokemon['everstone'])
-                                    if evo_id is not None:
-                                        msg += f"{pokemon['name']} is about to evolve to {return_name_for_id(evo_id).capitalize()} at level {pokemon['level']}"
+                                    evo_id = check_evolution_for_pokemon(
+                                        pokemon.get('individual_id'),
+                                        pokemon.get('id'),
+                                        pokemon.get('level'),
+                                        evo_window,
+                                        pokemon.get('everstone', False)
+                                    )
+                                if evo_id is not None:
+                                    msg += f"{pokemon['name']} is about to evolve to {return_name_for_id(evo_id).capitalize()} at level {pokemon['level']}"
                             except Exception as e:
                                 logger.log_and_showinfo("error", f"Error during XP share function: {e}")
 

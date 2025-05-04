@@ -952,18 +952,12 @@ def display_dead_pokemon():
     if result == QDialog.Rejected:
         w_dead_pokemon = None  # Reset the global window reference
 
-def get_base_percentages():
-    """
-    Return the fixed base percentages for Pokémon groups.
-    """
-    return {"Baby": 2, "Legendary": 0.5, "Mythical": 0.2, "Normal": 92.3, "Ultra": 5}
-
-def modify_percentages(total_reviews, daily_average, player_level, percentages):
+def modify_percentages(total_reviews, daily_average, player_level):
     """
     Modify Pokémon encounter percentages based on total reviews, player level, event modifiers, and main Pokémon level.
     """
     # Start with the base percentages
-    percentages = get_base_percentages()
+    percentages = {"Baby": 2, "Legendary": 0.5, "Mythical": 0.2, "Normal": 92.3, "Ultra": 5}
 
     # Adjust percentages based on total reviews relative to the daily average
     review_ratio = total_reviews / daily_average if daily_average > 0 else 0
@@ -978,7 +972,7 @@ def modify_percentages(total_reviews, daily_average, player_level, percentages):
     elif review_ratio < 0.8:
         percentages["Ultra"] += 3
         percentages["Normal"] -= 3
-    elif review_ratio < 1.0:
+    else:
         percentages["Legendary"] += 2
         percentages["Ultra"] += 3
         percentages["Normal"] -= 5
@@ -1015,8 +1009,7 @@ def modify_percentages(total_reviews, daily_average, player_level, percentages):
 
 def get_tier(total_reviews, player_level=1, event_modifier=None):
     daily_average = settings_obj.get('daily_average', 100)
-    percentages = get_base_percentages()
-    percentages = modify_percentages(total_reviews, daily_average, player_level, percentages)
+    percentages = modify_percentages(total_reviews, daily_average, player_level)
     
     tiers = list(percentages.keys())
     probabilities = list(percentages.values())
