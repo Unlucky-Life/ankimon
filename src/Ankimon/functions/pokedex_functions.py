@@ -359,8 +359,14 @@ def check_evolution_for_pokemon(individual_id, pokemon_id, level, evo_window, ev
         # Check each possible evolution
         for evos in possible_evos:
             evo_data = get_pokemon_evolution_data(int(evos))
-            if evo_data and int(evo_data["evolution_trigger_id"]) == 1:  # Evolution by level trigger
-                if int(evo_data["minimum_level"]) <= level:
+            # Only handle level-up evolutions (trigger_id == 1)
+            if evo_data and int(evo_data.get("evolution_trigger_id", 0)) == 1:
+                min_level_str = evo_data.get("minimum_level", "")
+                # Only proceed if min_level_str represents a valid integer
+                if not min_level_str or not str(min_level_str).isdigit():
+                    continue  # Skip this evolution if minimum_level is missing or not a number
+                min_level = int(min_level_str)
+                if min_level <= level:
                     evo_window.display_pokemon_evo(individual_id, pokemon_id, int(evos))
                     return int(evos)  # Return the evolution ID
 
