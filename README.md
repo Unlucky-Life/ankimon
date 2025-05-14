@@ -109,7 +109,7 @@ It is made 100% by volunteers that help in their spare time. Having more people 
 To get started:
 
 - Download [VS Code](https://code.visualstudio.com/) for coding
-- Go through the [W3schools Python tutorial](https://www.w3schools.com/python/python_syntax.asp) - no need to learn every single thing
+- Go through the [W3schools Python tutorial](https://www.w3schools.com/python/default.asp) - no need to learn every single thing
 - Make some simple code for practice! For example, you could try making a calculator, or coding some new changes for Ankimon.
 - Go through the Ankimon code, especially [here](https://github.com/Unlucky-Life/ankimon/tree/main/src/Ankimon/functions) and learn about how functions work. For example, if it says 
 ``` catchable = set()
