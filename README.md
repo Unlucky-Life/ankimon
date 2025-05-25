@@ -84,8 +84,8 @@ If you want to download the files and source code directly:
 
 - **Branching:** Always create a new branch for your changes.  
   Name your branch using the format:
-  - For bug fixes: `fix/your-fix-name`
-  - For new features: `feature/your-feature-name`
+  - `name/branch-name`
+  - e.g. If I am adding changes to achievement display, I named it as `h0tp/achievements-new-look`
   
   `main` is used to get changes from branches (after testing), and `upstream` will be used to send code to the official Ankimon repository.
 
