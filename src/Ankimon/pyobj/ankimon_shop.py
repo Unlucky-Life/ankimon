@@ -227,7 +227,7 @@ class PokemonShopManager:
             self.logger.log_and_showinfo("error", f"Failed to purchase item: {e}")
             QMessageBox.critical(mw, "Purchase Failed", "An error occurred while purchasing the item.")
 
-    def reroll_daily_items(self, cost: int = 0) -> None:
+    def reroll_daily_items(self, cost: int = 0) -> None:  # BUG : Closing and reopening Anki will reset the shop to this day's shop, not to the latest reroll
         """
         Rerolls the daily items in the shop
 
