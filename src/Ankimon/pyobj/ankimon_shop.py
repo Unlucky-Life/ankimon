@@ -4,6 +4,8 @@ import random
 from datetime import datetime
 from ..utils import give_item, daily_item_list, get_item_price, get_item_description
 from ..resources import items_path
+
+
 # Daily Rotating Items Pool
 DAILY_ITEMS_POOL = daily_item_list()
 
@@ -22,6 +24,9 @@ class PokemonShopManager:
         self.settings_obj = settings_obj
         self.set_callback = set_callback
         self.get_callback = get_callback
+        self.number_of_daily_items = 3
+        self.daily_items_reroll_cost = 100
+        self.todays_daily_items = []
 
     def toggle_window(self):
         """Toggles the visibility of the Pokémon shop window."""
@@ -52,15 +57,25 @@ class PokemonShopManager:
 
         # --- Left Side for Daily Items ---
         daily_layout = QVBoxLayout()  # Vertical layout for daily items
+        daily_layout_title_and_button = QHBoxLayout()
         daily_label = QLabel("<h1>Daily Items</h1>")
         daily_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        daily_layout.addWidget(daily_label)
+        daily_layout_title_and_button.addWidget(daily_label)
+
+        # Reroll button to reroll daily items
+        daily_items_reroll_button = QPushButton(f"Reroll daily items  ${self.daily_items_reroll_cost}")
+        daily_items_reroll_button.setFixedSize(180, 25)
+        daily_items_reroll_button.clicked.connect(lambda: self.reroll_daily_items(cost=self.daily_items_reroll_cost))
+        daily_layout_title_and_button.addWidget(daily_items_reroll_button, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        daily_layout.addLayout(daily_layout_title_and_button, stretch=1)  # Left side
 
         # Create a grid layout for displaying daily items
         daily_grid = QGridLayout()
 
-        daily_items = self.get_daily_items()
-        for row, item in enumerate(daily_items):
+        if not self.todays_daily_items:  # If the list of daily items is empty
+            self.todays_daily_items = self.get_daily_items()
+        for row, item in enumerate(self.todays_daily_items):
             item['UI_NAME'] = item.get('name', 'poke-ball').replace('-', ' ').capitalize()
             item['price'] = get_item_price(item.get('name', 'poke-ball'))
 
@@ -196,7 +211,7 @@ class PokemonShopManager:
         """Generate daily items based on the current date."""
         seed = datetime.now().strftime("%Y-%m-%d")
         random.seed(seed)
-        return random.sample(DAILY_ITEMS_POOL, 3)
+        return random.sample(DAILY_ITEMS_POOL, self.number_of_daily_items)
 
     def buy_item(self, item):
         try:
@@ -211,3 +226,30 @@ class PokemonShopManager:
         except Exception as e:
             self.logger.log_and_showinfo("error", f"Failed to purchase item: {e}")
             QMessageBox.critical(mw, "Purchase Failed", "An error occurred while purchasing the item.")
+
+    def reroll_daily_items(self, cost: int = 0) -> None:
+        """
+        Rerolls the daily items in the shop
+
+        Args:
+            cost (int): The cost in Pokedollars to reroll the shop. Defaults to 0.
+
+        Returns:
+            None
+        """
+        # First, we check if the user actually has enough money to pay for the reroll
+        if self.settings_obj.get('trainer.cash', 0) < cost:
+            QMessageBox.critical(mw, "Purchase Failed", "You do not have enough money to reroll the shop.")
+            return
+        
+        # We substract the cost of the reroll to the amount of money the user has
+        self.set_callback('trainer.cash', int(self.get_callback('trainer.cash', 0) - cost))
+        self.currency_qlabel.setText(f"<h2>Current Cash: ${self.settings_obj.get('trainer.cash', 0)}</h2>")
+
+        # Rerolling the list of today's items
+        random.seed()
+        self.todays_daily_items = random.sample(DAILY_ITEMS_POOL, self.number_of_daily_items)
+
+        # Refreshing the window by closing and reopening it
+        self.toggle_window() # Closing the window
+        self.toggle_window() # Opening the window
