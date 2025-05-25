@@ -3025,16 +3025,6 @@ class TestWindow(QWidget):
         painter.setBrush(QColor(58, 155, 220))
         painter.drawRect(int(366), int(246), int(mainpokemon_xp_value), int(mainxp_bar_width))
 
-        # Convert gender name to symbol - this function is from Foxy-null
-        if gender == "M":
-            gender_symbol = "♂"
-        elif gender == "F":
-            gender_symbol = "♀"
-        elif gender == "N":
-            gender_symbol = ""
-        else:
-            gender_symbol = ""  # None
-
         # custom font
         custom_font = load_custom_font(int(26), int(settings_obj.get("misc.language",11)))
         msg_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
@@ -3053,6 +3043,18 @@ class TestWindow(QWidget):
 
         painter.drawText(48, 67, enemy_name)
         painter.drawText(326, 200, main_name)
+
+        # Drawing the gender of each Pokemon
+        get_gender_symbol = lambda gender: {"M": "♂", "F": "♀"}.get(gender, "")  # Gets gender symbol. Returns "" by default
+        get_pen_color = lambda gender: QColor(20, 100, 230) if gender == "M" else QColor(230, 20, 20)  # Blue if "M", else Red
+        enemy_pokemon_gender_symbol = get_gender_symbol(self.enemy_pokemon.gender)
+        main_pokemon_gender_symbol = get_gender_symbol(self.main_pokemon.gender)
+        color_backup = painter.pen().color()  # Saving the pen's color to reset it after drawing gender symbols
+        painter.setPen(get_pen_color(self.enemy_pokemon.gender))  # Text color of the gender symbol
+        painter.drawText(175, 64, enemy_pokemon_gender_symbol)
+        painter.setPen(get_pen_color(self.main_pokemon.gender))  # Text color of the gender symbol
+        painter.drawText(457, 196, main_pokemon_gender_symbol)
+        painter.setPen(color_backup)  # Going back to the color we had before drawing gender symbols
 
         painter.drawText(208, 67, f"{self.enemy_pokemon.level}")
         #painter.drawText(55, 85, gender_text)
