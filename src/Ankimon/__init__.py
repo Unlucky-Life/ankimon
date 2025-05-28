@@ -20,6 +20,11 @@ import math
 from collections import defaultdict
 import copy
 
+from .poke_engine.battle import Move
+from .poke_engine.objects import Pokemon, State, StateMutator, Side
+from .poke_engine.helpers import normalize_name
+from .poke_engine.find_state_instructions import get_all_state_instructions
+
 
 from collections import defaultdict
 
@@ -328,7 +333,7 @@ from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
 
 # Set up web exports for static files
-mw.addonManager.setWebExports(__name__, r"user_files/.*\.(css|js|jpg|gif|html|ttf|png|mp3)")
+# mw.addonManager.setWebExports(__name__, r"user_files/.*\.(css|js|jpg|gif|html|ttf|png|mp3)")
 
 def on_webview_will_set_content(web_content: WebContent, context) -> None:
     ankimon_package = mw.addonManager.addonFromModule(__name__)
@@ -1026,11 +1031,12 @@ def modify_percentages(total_reviews, daily_average, player_level):
     total = sum(percentages.values())
     for tier in percentages:
         percentages[tier] = (percentages[tier] / total) * 100 if total > 0 else 0
-
+    # this function gets called maybe 10 times per battle round, which is concerning. 
+    # it could be rewritten to run ONLY when the change in review ratio is detected.
     return percentages
 
 def get_tier(total_reviews, player_level=1, event_modifier=None):
-    daily_average = settings_obj.get('daily_average', 100)
+    daily_average = int(settings_obj.get('battle.daily_average', 100))
     percentages = modify_percentages(total_reviews, daily_average, player_level)
     
     tiers = list(percentages.keys())
@@ -1302,19 +1308,20 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
                                         # Save the modified data to the output JSON file
                                 with open(str(mypokemon_path), "w") as output_file:
                                     json.dump(mypokemondata, output_file, indent=2)
-                            with open(str(mainpokemon_path), "r", encoding="utf-8") as output_file:
-                                mainpokemon_data = json.load(output_file)
-                                # Find and replace the specified Pokémon's data in mypokemondata
-                                for index, pokemon_data in enumerate(mainpokemon_data):
-                                    if pokemon_data["individual_id"] == individual_id:
-                                        mypokemondata[index] = pokemon
-                                        break
-                                    else:
-                                        pass
-                                            # Save the modified data to the output JSON file
-                                with open(str(mainpokemon_path), "w") as output_file:
-                                        pokemon = [pokemon]
-                                        json.dump(pokemon, output_file, indent=2)
+                            if main_pokemon.individual_id == individual_id:
+                                with open(str(mainpokemon_path), "r", encoding="utf-8") as output_file:
+                                    mainpokemon_data = json.load(output_file)
+                                    # Find and replace the specified Pokémon's data in mypokemondata
+                                    for index, pokemon_data in enumerate(mainpokemon_data):
+                                        if pokemon_data["individual_id"] == individual_id:
+                                            mypokemondata[index] = pokemon
+                                            break
+                                        else:
+                                            pass
+                                                # Save the modified data to the output JSON file
+                                    with open(str(mainpokemon_path), "w") as output_file:
+                                            pokemon = [pokemon]
+                                            json.dump(pokemon, output_file, indent=2)
                             logger.log_and_showinfo("info",translator.translate("mainpokemon_has_evolved", prevo_name=prevo_name, evo_name=evo_name))
     except Exception as e:
         showWarning(f"{e}")
@@ -1485,10 +1492,7 @@ def simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, main_move, ene
         mutator_full_reset = 1
 
     try:
-        from .poke_engine.battle import Move
-        from .poke_engine.objects import Pokemon, State, StateMutator, Side
-        from .poke_engine.helpers import normalize_name
-        from .poke_engine.find_state_instructions import get_all_state_instructions
+
 
         main_move_normalized = normalize_name(main_move)
         enemy_move_normalized = normalize_name(enemy_move)
@@ -1513,61 +1517,47 @@ def simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, main_move, ene
 
         # Create Pokemon objects (positional args as required)
         main_pokemon_obj = Pokemon(
-            main_pokemon_dict['identifier'],
-            main_pokemon_dict['level'],
-            main_pokemon_dict['types'],
-            main_pokemon_dict['hp'],
-            main_pokemon_dict['maxhp'],
-            main_pokemon_dict['ability'],
-            main_pokemon_dict['item'],
-            main_pokemon_dict['attack'],
-            main_pokemon_dict['defense'],
-            main_pokemon_dict['special_attack'],
-            main_pokemon_dict['special_defense'],
-            main_pokemon_dict['speed'],
-            main_pokemon_dict.get('nature', 'serious'),
-            main_pokemon_dict.get('evs', (85,) * 6),
-            main_pokemon_dict.get('attack_boost', 0),
-            main_pokemon_dict.get('defense_boost', 0),
-            main_pokemon_dict.get('special_attack_boost', 0),
-            main_pokemon_dict.get('special_defense_boost', 0),
-            main_pokemon_dict.get('speed_boost', 0),
-            main_pokemon_dict.get('accuracy_boost', 0),
-            main_pokemon_dict.get('evasion_boost', 0),
-            main_pokemon_dict.get('status', None),
-            main_pokemon_dict.get('terastallized', False),
-            main_pokemon_dict.get('volatile_status', set()),
-            main_pokemon_dict.get('moves', [])
+            identifier=main_pokemon_dict['identifier'],
+            level=main_pokemon_dict['level'],
+            types=main_pokemon_dict['types'],
+            hp=main_pokemon_dict['hp'],
+            maxhp=main_pokemon_dict['maxhp'],
+            ability=main_pokemon_dict['ability'],
+            item=main_pokemon_dict['item'],
+            attack=main_pokemon_dict['attack'],
+            defense=main_pokemon_dict['defense'],
+            special_attack=main_pokemon_dict['special_attack'],
+            special_defense=main_pokemon_dict['special_defense'],
+            speed=main_pokemon_dict['speed'],
+            nature=main_pokemon_dict.get('nature', 'serious'),
+            evs=main_pokemon_dict.get('evs', (85,) * 6),
+            status=main_pokemon_dict.get('status', None),
+            terastallized=main_pokemon_dict.get('terastallized', False),
+            volatile_status=main_pokemon_dict.get('volatile_status', set()),
+            moves=main_pokemon_dict.get('moves', [])
         )
 
         enemy_pokemon_obj = Pokemon(
-            enemy_pokemon_dict['identifier'],
-            enemy_pokemon_dict['level'],
-            enemy_pokemon_dict['types'],
-            enemy_pokemon_dict['hp'],
-            enemy_pokemon_dict['maxhp'],
-            enemy_pokemon_dict['ability'],
-            enemy_pokemon_dict['item'],
-            enemy_pokemon_dict['attack'],
-            enemy_pokemon_dict['defense'],
-            enemy_pokemon_dict['special_attack'],
-            enemy_pokemon_dict['special_defense'],
-            enemy_pokemon_dict['speed'],
-            enemy_pokemon_dict.get('nature', 'serious'),
-            enemy_pokemon_dict.get('evs', (85,) * 6),
-            enemy_pokemon_dict.get('attack_boost', 0),
-            enemy_pokemon_dict.get('defense_boost', 0),
-            enemy_pokemon_dict.get('special_attack_boost', 0),
-            enemy_pokemon_dict.get('special_defense_boost', 0),
-            enemy_pokemon_dict.get('speed_boost', 0),
-            enemy_pokemon_dict.get('accuracy_boost', 0),
-            enemy_pokemon_dict.get('evasion_boost', 0),
-            enemy_pokemon_dict.get('status', None),
-            enemy_pokemon_dict.get('terastallized', False),
-            enemy_pokemon_dict.get('volatile_status', set()),
-            enemy_pokemon_dict.get('moves', [])
+            identifier=enemy_pokemon_dict['identifier'],
+            level=enemy_pokemon_dict['level'],
+            types=enemy_pokemon_dict['types'],
+            hp=enemy_pokemon_dict['hp'],
+            maxhp=enemy_pokemon_dict['maxhp'],
+            ability=enemy_pokemon_dict['ability'],
+            item=enemy_pokemon_dict['item'],
+            attack=enemy_pokemon_dict['attack'],
+            defense=enemy_pokemon_dict['defense'],
+            special_attack=enemy_pokemon_dict['special_attack'],
+            special_defense=enemy_pokemon_dict['special_defense'],
+            speed=enemy_pokemon_dict['speed'],
+            nature=enemy_pokemon_dict.get('nature', 'serious'),
+            evs=enemy_pokemon_dict.get('evs', (85,) * 6),
+            status=enemy_pokemon_dict.get('status', None),
+            terastallized=enemy_pokemon_dict.get('terastallized', False),
+            volatile_status=enemy_pokemon_dict.get('volatile_status', set()),
+            moves=enemy_pokemon_dict.get('moves', [])
         )
-
+        
         # Default side_conditions with all needed keys
         side_conditions = defaultdict(int, {
             'stealthrock': 0,
@@ -1586,72 +1576,8 @@ def simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, main_move, ene
         except:
             mutator_full_reset = 1
 
-        if mutator_full_reset == 1: # reset EVERYTHING about the battle 
-
-            # Create State object
-            state = State(
-                user=Side(
-                    active=main_pokemon_obj,
-                    reserve={},
-                    wish=(0, 0),
-                    side_conditions=side_conditions.copy(),
-                    future_sight=(0, 0)
-                ),
-                opponent=Side(
-                    active=enemy_pokemon_obj,
-                    reserve={},
-                    wish=(0, 0),
-                    side_conditions=side_conditions.copy(),
-                    future_sight=(0, 0)
-                ),
-                weather=None,
-                field=None,
-                trick_room=False
-            )
-          
-        elif mutator_full_reset == 2: # Store the USER stats!
-            
-            state = State(
-                user=Side(
-                    active=new_state.user.active,
-                    reserve=new_state.user.reserve,
-                    wish=new_state.user.wish,
-                    side_conditions=new_state.user.side_conditions,
-                    future_sight=new_state.user.future_sight
-                ),
-                opponent = Side(
-                    active= enemy_pokemon_obj,
-                    reserve = {},
-                    wish = (0, 0),
-                    side_conditions = side_conditions.copy(),
-                    future_sight = (0, 0)
-                ),
-                weather = new_state.weather,
-                field = new_state.field,
-                trick_room = new_state.trick_room
-            )
-
-        elif mutator_full_reset == 0: # Store FULL battle state
-            state = State(
-                user=Side(
-                    active=new_state.user.active,
-                    reserve=new_state.user.reserve,
-                    wish=new_state.user.wish,
-                    side_conditions=new_state.user.side_conditions,
-                    future_sight=new_state.user.future_sight
-                ),
-                opponent=Side(
-                    active=new_state.opponent.active,
-                    reserve=new_state.opponent.reserve,
-                    wish=new_state.opponent.wish,
-                    side_conditions=new_state.opponent.side_conditions,
-                    future_sight=new_state.opponent.future_sight
-                ),
-                weather = new_state.weather,
-                field = new_state.field,
-                trick_room = new_state.trick_room
-            )
-
+        state = reset_pokemon(new_state,mutator_full_reset,main_pokemon_obj,enemy_pokemon_obj,side_conditions)
+        
         mutator = StateMutator(state)
 
         try:
@@ -1736,6 +1662,76 @@ def simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, main_move, ene
     except Exception as e:
         
         traceback.print_exc()
+        
+def reset_pokemon(state,mutator_full_reset,main_pokemon_obj,enemy_pokemon_obj,side_conditions):
+        if mutator_full_reset == 1: # reset EVERYTHING about the battle 
+
+            # Create State object
+            state = State(
+                user=Side(
+                    active=main_pokemon_obj,
+                    reserve={},
+                    wish=(0, 0),
+                    side_conditions=side_conditions.copy(),
+                    future_sight=(0, 0)
+                ),
+                opponent=Side(
+                    active=enemy_pokemon_obj,
+                    reserve={},
+                    wish=(0, 0),
+                    side_conditions=side_conditions.copy(),
+                    future_sight=(0, 0)
+                ),
+                weather=None,
+                field=None,
+                trick_room=False
+            )
+          
+        elif mutator_full_reset == 2: # Store the USER stats!
+            
+            state = State(
+                user=Side(
+                    active=new_state.user.active,
+                    reserve=new_state.user.reserve,
+                    wish=new_state.user.wish,
+                    side_conditions=new_state.user.side_conditions,
+                    future_sight=new_state.user.future_sight
+                ),
+                opponent = Side(
+                    active= enemy_pokemon_obj,
+                    reserve = {},
+                    wish = (0, 0),
+                    side_conditions = side_conditions.copy(),
+                    future_sight = (0, 0)
+                ),
+                weather = new_state.weather,
+                field = new_state.field,
+                trick_room = new_state.trick_room
+            )
+
+        elif mutator_full_reset == 0: # Store FULL battle state
+            state = State(
+                user=Side(
+                    active=new_state.user.active,
+                    reserve=new_state.user.reserve,
+                    wish=new_state.user.wish,
+                    side_conditions=new_state.user.side_conditions,
+                    future_sight=new_state.user.future_sight
+                ),
+                opponent=Side(
+                    active=new_state.opponent.active,
+                    reserve=new_state.opponent.reserve,
+                    wish=new_state.opponent.wish,
+                    side_conditions=new_state.opponent.side_conditions,
+                    future_sight=new_state.opponent.future_sight
+                ),
+                weather = new_state.weather,
+                field = new_state.field,
+                trick_room = new_state.trick_room
+            )
+        return state
+
+    
 
 def process_battle_data(battle_data: dict) -> str:
     """Convert raw battle instructions into human-readable format."""
@@ -2055,6 +2051,51 @@ reviewer_obj = Reviewer_Manager(
     ankimon_tracker=ankimon_tracker_obj,
 )
 
+def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpokemon_name):
+    global battle_status
+    move = find_details_move(move_name)
+    target = move.get("target")
+    boosts = move.get("boosts", {})
+    stat_boost_value = {
+        "hp": boosts.get("hp", 0),
+        "atk": boosts.get("atk", 0),
+        "def": boosts.get("def", 0),
+        "spa": boosts.get("spa", 0),
+        "spd": boosts.get("spd", 0),
+        "spe": boosts.get("spe", 0),
+        "xp": mainpokemon_stats.get("xp", 0)
+    }
+    move_stat = move.get("status",None)
+    status = move.get("secondary",None)
+    if move_stat is not None:
+        battle_status = move_stat
+    if status is not None:
+        random_number = random.random()
+        chances = status["chance"] / 100
+        if random_number < chances:
+            battle_status = status["status"]
+    if battle_status == "slp":
+        slp_counter = random.randint(1, 3)
+    if target == "self":
+        for boost, stage in boosts.items():
+            stat = get_multiplier_stats(stage)
+            mainpokemon_stats[boost] = mainpokemon_stats.get(boost, 0) * stat
+            msg += f" {main_pokemon.name.capitalize()}'s "
+            if stage < 0:
+                msg += f"{boost.capitalize()} {translator.translate('stat_decreased')}."
+            elif stage > 0:
+                msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
+    elif target in ["normal", "allAdjacentFoes"]:
+        for boost, stage in boosts.items():
+            stat = get_multiplier_stats(stage)
+            stats[boost] = stats.get(boost, 0) * stat
+            msg += f" {name.capitalize()}'s "
+            if stage < 0:
+                msg += f"{boost.capitalize()} {translator.translate('stat_decreased')}."
+            elif stage > 0:
+                msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
+    return msg
+
 # some of the functions that are being called within the on_review_card function are below
 # for sake of tidiness ! 
 
@@ -2305,12 +2346,12 @@ def on_review_card(*args):
                
                 else:
                     if category == "Status":
-                        '''msg = effect_status_moves(user_attack, main_pokemon.stats, enemy_pokemon.stats, msg, enemy_pokemon.name, main_pokemon.name)'''                        
+                        msg = effect_status_moves(user_attack, main_pokemon.stats, enemy_pokemon.stats, msg, enemy_pokemon.name, main_pokemon.name)                        
 
                         '''if dmg_from_user_move == 0:
                             if results.get('user_missed', False):
                                 msg += "\n" + translator.translate("move_has_missed")'''
-                                            
+                            
                     else:
                         msg += translator.translate("dmg_dealt", dmg=dmg_from_user_move, pokemon_name=enemy_pokemon.name.capitalize())
 
