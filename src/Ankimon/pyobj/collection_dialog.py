@@ -164,7 +164,6 @@ class PokemonCollectionDialog(QDialog):
                 pokemon_nickname = pokemon.get('nickname', '')
                 if pokemon_shiny:
                     pokemon_nickname += " ⭐ "
-                pokemon_gender = pokemon['gender']
                 pokemon_level = pokemon['level']
                 pokemon_ability = pokemon['ability']
                 pokemon_type = pokemon['type']
