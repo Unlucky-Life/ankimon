@@ -1,6 +1,6 @@
 {
     "battle.dmg_in_reviewer": "Enable a realistic damage display during reviews. Setting this to true allows wild Pokémon to counterattack when re-engaged.",
-    "battle.automatic_battle": "Set automatic battle mode for wild Pokémon interactions. [0: Disabled, 1: Auto-catch if HP is 0, 2: Auto-defeat if HP is 0].",
+    "battle.automatic_battle": "Set automatic battle mode for wild Pokémon interactions when enemy HP is 0. \n[0: Disabled, 1: Auto-catch, 2: Auto-defeat (to gain XP), 3: Catch if NEW Pokémon (not in collection), otherwise defeat].",
     "battle.cards_per_round": "Number of cards to review per round until the next battle action.",
     "battle.daily_average": "Set the amount of Cards you want to review per day.",
     "battle.card_max_time": "Goal of maximum amount of time needed to answer a card in seconds",
@@ -38,6 +38,7 @@
     "misc.remove_level_cap": "Allow leveling beyond set level cap.",
     "misc.language": "Select language ID for Pokémon names and descriptions. [1: Japanese (Hir & Kata), 2: Japanese (Roomaji), 3: Korean, 4: Chinese, 5: Frensh, 6: German, 7: Spanish, 8: Italian, 9: English, 10: Czech, 11: Japanese, 12: Chinese, 13: Portuguese (Brazil)]",
     "misc.ssh": "Enable SSH if encountering connectivity issues (like Eduroam restrictions).",
+    "misc.leaderboard": "Enable synchronization with Ankimon leaderboard (leaderboard.ankimon.com). \nTo set up, check Ankimon -> Game -> Ankimon Leaderboard and Ankimon -> Ankimon Leaderboard Credentials.",
     "misc.YouShallNotPass_Ankimon_News": "Prevent news pop-ups on Ankimon startup by setting this to true.",
     "misc.discord_rich_presence": "Discord Rich Presence for Ankimon showing in Discord 'Playing Ankimon'. Set to False to disable.",
     "misc.discord_rich_presence_text": "Set to 1 for Ankimon Quotes or set to 2 for showing what pokemon you are battle against or with",
