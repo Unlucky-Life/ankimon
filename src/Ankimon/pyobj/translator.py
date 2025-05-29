@@ -43,15 +43,29 @@ class Translator:
             raise Exception(f"Invalid JSON format in translation file: {self.filepath}")
 
     def translate(self, key, **kwargs):
+        # Track which translation file is being used
+        source_file = self.filepath
         template = self.translations.get(key, None)
+        
+        # Fallback to English if key not found
         if template is None:
-            with open(lang_path_en, 'r', encoding='utf-8') as f:
-                fallback_translations = json.load(f)
-            template = fallback_translations.get(key, key)
+            try:
+                with open(lang_path_en, 'r', encoding='utf-8') as f:
+                    fallback_translations = json.load(f)
+                template = fallback_translations.get(key, key)
+                source_file = lang_path_en  # Now using fallback file
+            except Exception as e:
+                raise Exception(f"Fallback translation failed: {str(e)}")
 
         try:
             return template.format(**kwargs)
         except KeyError as e:
             missing_key = str(e).strip("'")
-            raise Exception(f"Missing placeholder: {missing_key} in translation for key '{key}'")
+            available = list(kwargs.keys())
+            raise Exception(
+                f"Translation error in key '{key}'\n"
+                f"• Missing placeholder: {missing_key}\n"
+                f"• Translation file: {source_file}\n"
+                f"• Available arguments: {available}"
+            )
 

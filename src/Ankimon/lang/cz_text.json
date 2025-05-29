@@ -25,7 +25,7 @@
     "dmg_dealt": "Bylo způsobeno {dmg} poškození pokémonovi {pokemon_name}.",
     "pokemon_paralyzed": "{pokemon_name} je paralyzován.",
     "pokemon_asleep": "{pokemon_name} spí.",
-    "pokemon_fainted": "{pokemon_name} omdlel.",
+    "pokemon_fainted": "{enemy_pokemon_name} omdlel.",
     "own_pokemon_fainted": "Váš {main_pokemon_name} byl poražen a divoký {enemy_pokemon_name} utekl!",
     "picked_main_pokemon": "Vybrali jste {main_pokemon_name} jako hlavního pokémona.",
     "show_collection_button": "Zobrazit sbírku Pokémonů",

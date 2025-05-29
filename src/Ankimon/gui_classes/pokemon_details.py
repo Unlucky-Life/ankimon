@@ -306,7 +306,10 @@ def PokemonDetailsStats(detail_stats, growth_rate, level, remove_levelcap, langu
         "spd": QColor(0, 128, 0),  # Green
         "spe": QColor(255, 192, 203),  # Pink
         "total": QColor(168, 168, 167),  # Beige
-        "xp": QColor(58,155,220)  # lightblue
+        "xp": QColor(58,155,220),  # lightblue
+        # Add any other stats that might appear
+        "current_hp": QColor(200, 0, 0),  # Darker red
+        "max_hp": QColor(255, 0, 0)  # Red
     }
 
     #custom font
@@ -348,21 +351,26 @@ def PokemonDetailsStats(detail_stats, growth_rate, level, remove_levelcap, langu
 
 def createStatBar(color, value):
     pixmap = QPixmap(200, 10)
-    #pixmap.fill(Qt.transparent)
     pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
+    
+    # Default to gray if color is None
+    if color is None:
+        color = QColor(128, 128, 128)  # Gray
+    
     painter = QPainter(pixmap)
 
     # Draw bar in the background
     painter.setPen(QColor(Qt.GlobalColor.black))
-    # new change due to pyqt6.6.1
     painter.setBrush(QColor(0, 0, 0, 200))  # Semi-transparent black
     painter.drawRect(0, 0, 200, 10)
 
     # Draw the colored bar based on the value
-    painter.setBrush(color)
+    painter.setBrush(color)  # Now color is guaranteed to be a valid QColor
     painter.drawRect(int(0), int(0), int(value * 1), int(10))
 
+    painter.end()  # Important: end the painter to avoid memory leaks
     return pixmap
+
 
 def attack_details_window(attacks):
     window = QDialog()

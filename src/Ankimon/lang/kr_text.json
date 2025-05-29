@@ -25,7 +25,7 @@
     "dmg_dealt": "{pokemon_name}에게 {dmg}의 피해를 입혔습니다.",
     "pokemon_paralyzed": "{pokemon_name}이(가) 마비되었습니다.",
     "pokemon_asleep": "{pokemon_name}이(가) 잠들었습니다.",
-    "pokemon_fainted": "{pokemon_name}이(가) 기절했습니다.",
+    "pokemon_fainted": "{enemy_pokemon_name}이(가) 기절했습니다.",
     "own_pokemon_fainted": "당신의 {main_pokemon_name}이(가) 패배했고 야생 {enemy_pokemon_name}이(가) 도망쳤습니다!",
     "picked_main_pokemon": "당신은 {main_pokemon_name}을(를) 메인 포켓몬으로 선택했습니다.",
     "show_collection_button": "포켓몬 컬렉션 보기",

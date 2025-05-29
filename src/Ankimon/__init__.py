@@ -16,6 +16,8 @@ import json
 import os
 import platform
 import random
+import math
+
 from pathlib import Path
 
 #from .install_dependencies import install_package
@@ -99,6 +101,25 @@ from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
 
+class PokemonCollection:
+    def __init__(self):
+        self.collected_ids = set()
+        self.loaded = False
+
+    def add(self, pokemon_id):
+        self.collected_ids.add(pokemon_id)
+
+    def is_collected(self, pokemon_id):
+        return pokemon_id in self.collected_ids
+
+    def mark_loaded(self):
+        self.loaded = True
+
+    def is_loaded(self):
+        return self.loaded
+
+pokemon_collection_obj = PokemonCollection()
+
 # start loggerobject for Ankimon
 logger = ShowInfoLogger()
 
@@ -123,6 +144,7 @@ translator = Translator(language=int(settings_obj.get("misc.language", int(9))))
 mw.settings_ankimon = settings_window
 mw.logger = logger
 mw.translator = translator
+mw.settings_obj = settings_obj
 
 # Log an startup message
 logger.log_and_showinfo('game', translator.translate("startup"))
@@ -258,6 +280,24 @@ shop_manager = PokemonShopManager(
 ankimon_tracker_window = AnkimonTrackerWindow(
     tracker = ankimon_tracker_obj
 )
+
+# Initialize collected IDs cache
+def load_collected_pokemon_ids():
+    if pokemon_collection_obj.loaded:
+        return  # Already loaded, do nothing
+    if mypokemon_path.is_file():
+        try:
+            with open(mypokemon_path, "r", encoding="utf-8") as f:
+                collection = json.load(f)
+                pokemon_collection_obj.collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
+            pokemon_collection_obj.loaded = True
+        except Exception as e:
+            logger.log("error", f"Error loading collection cache: {str(e)}")
+            pokemon_collection_obj.collected_pokemon_ids = set()
+            pokemon_collection_obj.loaded = True  # Prevent repeated attempts if file is bad
+
+# Call this during addon initialization
+load_collected_pokemon_ids()
 
 pokedex_window = Pokedex(addon_dir, ankimon_tracker = ankimon_tracker_obj)
 
@@ -806,20 +846,44 @@ if database_complete:
             # Set the layout for the dialog
 
 def kill_pokemon():
-    trainer_card.gain_xp(enemy_pokemon.tier, settings_obj.get("controls.allow_to_choose_moves", False))
-    if settings_obj.get("controls.allow_to_choose_moves", False) == True:
-        #users that choose moves will only receive 50% of the experience
-        exp = int(calc_experience(main_pokemon.base_experience, enemy_pokemon.level) * 0.5)
-    else:
-        exp = int(calc_experience(main_pokemon.base_experience, enemy_pokemon.level))
-    
-    xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
-    if xp_share_individual_id:
-        exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp, xp_share_individual_id)
-    main_pokemon.level = save_main_pokemon_progress(mainpokemon_path, main_pokemon.level, main_pokemon.name, main_pokemon.base_experience, main_pokemon.growth_rate, exp)
-    ankimon_tracker_obj.general_card_count_for_battle = 0
-    if test_window.isVisible() is True:
-        new_pokemon()  # Show a new random Pokémon
+    try:
+        trainer_card.gain_xp(enemy_pokemon.tier, settings_obj.get("controls.allow_to_choose_moves", False))
+        
+        # Calculate experience based on whether moves are chosen manually
+        if settings_obj.get("controls.allow_to_choose_moves", False):
+            exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level) * 0.5
+        else:
+            exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level)
+        
+        # Ensure exp is at least 1 and round up if it's a decimal
+        if exp < 1:
+            exp = 1
+        elif isinstance(exp, float) and not exp.is_integer():
+            exp = math.ceil(exp)
+        
+        # Handle XP share logic
+        xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
+        if xp_share_individual_id:
+            exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp, xp_share_individual_id)
+        
+        # Save main Pokémon's progress
+        main_pokemon.level = save_main_pokemon_progress(
+            mainpokemon_path,
+            main_pokemon.level,
+            main_pokemon.name,
+            main_pokemon.base_experience,
+            main_pokemon.growth_rate,
+            exp
+        )
+        
+        ankimon_tracker_obj.general_card_count_for_battle = 0
+        
+        # Show a new random Pokémon if the test window is visible
+        if test_window.isVisible():
+            new_pokemon()
+    except Exception as e:
+        showWarning(f"Error occured in killing enemy pokemon: {e}")
+
 
 def display_dead_pokemon():
     level = enemy_pokemon.level
@@ -903,18 +967,12 @@ def display_dead_pokemon():
     if result == QDialog.Rejected:
         w_dead_pokemon = None  # Reset the global window reference
 
-def get_base_percentages():
-    """
-    Return the fixed base percentages for Pokémon groups.
-    """
-    return {"Baby": 2, "Legendary": 0.5, "Mythical": 0.2, "Normal": 92.3, "Ultra": 5}
-
-def modify_percentages(total_reviews, daily_average, player_level, percentages):
+def modify_percentages(total_reviews, daily_average, player_level):
     """
     Modify Pokémon encounter percentages based on total reviews, player level, event modifiers, and main Pokémon level.
     """
     # Start with the base percentages
-    percentages = get_base_percentages()
+    percentages = {"Baby": 2, "Legendary": 0.5, "Mythical": 0.2, "Normal": 92.3, "Ultra": 5}
 
     # Adjust percentages based on total reviews relative to the daily average
     review_ratio = total_reviews / daily_average if daily_average > 0 else 0
@@ -929,7 +987,7 @@ def modify_percentages(total_reviews, daily_average, player_level, percentages):
     elif review_ratio < 0.8:
         percentages["Ultra"] += 3
         percentages["Normal"] -= 3
-    elif review_ratio < 1.0:
+    else:
         percentages["Legendary"] += 2
         percentages["Ultra"] += 3
         percentages["Normal"] -= 5
@@ -966,8 +1024,7 @@ def modify_percentages(total_reviews, daily_average, player_level, percentages):
 
 def get_tier(total_reviews, player_level=1, event_modifier=None):
     daily_average = settings_obj.get('daily_average', 100)
-    percentages = get_base_percentages()
-    percentages = modify_percentages(total_reviews, daily_average, player_level, percentages)
+    percentages = modify_percentages(total_reviews, daily_average, player_level)
     
     tiers = list(percentages.keys())
     probabilities = list(percentages.values())
@@ -1081,7 +1138,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             pass
         if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
             logger.log_and_showinfo("info",f"{msg}")
-        main_pokemon.xp = int(main_pokemon.xp) - int(experience)
+        main_pokemon.xp = int(max(0, int(main_pokemon.xp) - int(experience)))
         evo_id = check_evolution_for_pokemon(main_pokemon.individual_id, main_pokemon.id, main_pokemon.level, evo_window, main_pokemon.everstone)
         if evo_id is not None:
             msg += translator.translate("pokemon_about_to_evolve", main_pokemon_name=main_pokemon.name, evo_pokemon_name=return_name_for_id(evo_id).capitalize(), main_pokemon_level=main_pokemon.level)
@@ -1102,7 +1159,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
                 for new_attack in new_attacks:
                     if len(attacks) < 4 and new_attack not in attacks:
                         attacks.append(new_attack)
-                        msg += translator.transalte("mainpokemon_learned_new_attack", new_attack_name=new_attack, main_pokemon_name=main_pokemon.name.capitalize())
+                        msg += translator.translate("mainpokemon_learned_new_attack", new_attack_name=new_attack, main_pokemon_name=main_pokemon.name.capitalize())
                         color = "#6A4DAC"
                         tooltipWithColour(msg, color)
                         if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
@@ -1352,8 +1409,10 @@ def cancel_evolution(individual_id, prevo_name):
 
 
 def catch_pokemon(nickname):
+  try:
     ankimon_tracker_obj.caught += 1
     if ankimon_tracker_obj.caught == 1:
+        pokemon_collection_obj.collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
         if nickname is None or not nickname:  # Wenn None oder leer
             save_caught_pokemon(nickname)
         else:
@@ -1368,9 +1427,11 @@ def catch_pokemon(nickname):
         except:
             pass
         new_pokemon()  # Show a new random Pokémon
-    else:
-        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-            logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
+     else:
+         if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+             logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
+  except Exception as e:
+        showWarning(f"Error occured while catching enemy Pokemon: {e}")
 
 def get_random_starter():
     category = "Starter"
@@ -1404,42 +1465,45 @@ def get_random_starter():
         return None, None, None
 
 def new_pokemon():
-    # new pokemon
-    gender = None
-    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon()
-    pokemon_data = {
-        'name': name,
-        'id': id,
-        'level': level,
-        'ability': ability,
-        'type': type,
-        'stats': stats,
-        'attacks': enemy_attacks,
-        'base_experience': base_experience,
-        'growth_rate': growth_rate,
-        'ev': ev,
-        'iv': iv,
-        'gender': gender,
-        'battle_status': battle_status,
-        'battle_stats': battle_stats,
-        'tier': tier,
-        'ev_yield': ev_yield,
-        'shiny': shiny
-    }
-    enemy_pokemon.update_stats(**pokemon_data)
-    ankimon_tracker_obj.randomize_battle_scene()
-    max_hp = enemy_pokemon.calculate_max_hp()
-    enemy_pokemon.current_hp = max_hp
-    enemy_pokemon.hp = max_hp
-    enemy_pokemon.max_hp = max_hp
-    #reset mainpokemon hp
-    if test_window is not None:
-        test_window.display_first_encounter()
-    class Container(object):
-        pass
-    reviewer = Container()
-    reviewer.web = mw.reviewer.web
-    reviewer_obj.update_life_bar(reviewer, 0, 0)
+    try:
+        # new pokemon
+        gender = None
+        name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon()
+        pokemon_data = {
+            'name': name,
+            'id': id,
+            'level': level,
+            'ability': ability,
+            'type': type,
+            'stats': stats,
+            'attacks': enemy_attacks,
+            'base_experience': base_experience,
+            'growth_rate': growth_rate,
+            'ev': ev,
+            'iv': iv,
+            'gender': gender,
+            'battle_status': battle_status,
+            'battle_stats': battle_stats,
+            'tier': tier,
+            'ev_yield': ev_yield,
+            'shiny': shiny
+        }
+        enemy_pokemon.update_stats(**pokemon_data)
+        ankimon_tracker_obj.randomize_battle_scene()
+        max_hp = enemy_pokemon.calculate_max_hp()
+        enemy_pokemon.current_hp = max_hp
+        enemy_pokemon.hp = max_hp
+        enemy_pokemon.max_hp = max_hp
+        #reset mainpokemon hp
+        if test_window is not None:
+            test_window.display_first_encounter()
+        class Container(object):
+            pass
+        reviewer = Container()
+        reviewer.web = mw.reviewer.web
+        reviewer_obj.update_life_bar(reviewer, 0, 0)
+    except Exception as e:
+        showWarning(f"An error occurred while generating new Pokemon: {str(e)}") 
             
 def mainpokemon_data():
     try:
@@ -1744,7 +1808,7 @@ def on_review_card(*args):
                             enemy_pokemon.hp -= dmg
                         if enemy_pokemon.hp < 0:
                             enemy_pokemon.hp = 0
-                            msg += translator.translate("pokemon_fainted", pokemon_name=enemy_pokemon.name.capitalize())
+                            msg += translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize())
                             
                     tooltipWithColour(msg, color)
                     if dmg > 0:
@@ -1757,25 +1821,45 @@ def on_review_card(*args):
                             play_effect_sound("HurtSuper")
                     else:
                         reviewer_obj.seconds = 0
+
             if enemy_pokemon.hp < 1:
                 enemy_pokemon.hp = 0
-                if int(settings_obj.get("battle.automatic_battle",0)) != 0:
-                    if int(settings_obj.get("battle.automatic_battle",1)) == 1:
+                
+                # New automatic battle handling
+                auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))
+                
+                value = settings_obj.get("battle.automatic_battle", "0")
+                try:
+                    auto_battle_setting = int(value)
+                except ValueError:
+                    auto_battle_setting = 0  # fallback
+
+                if auto_battle_setting == 3:  # Catch if uncollected
+                    enemy_id = enemy_pokemon.id
+                    # Check cache instead of file
+                    if enemy_id not in pokemon_collection_obj.collected_pokemon_ids or enemy_pokemon.shiny:
                         catch_pokemon("")
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
-                    elif int(settings_obj.get("battle.automatic_battle",2)) == 2:
+                    else:
                         kill_pokemon()
-                        new_pokemon()
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
-                else:
-                    if test_window.isVisible() is True:
-                        test_window.display_pokemon_death()
-                        ankimon_tracker_obj.general_card_count_for_battle = 0
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+                    new_pokemon()
+                
+                elif auto_battle_setting == 1:  # Existing auto-catch
+                    catch_pokemon("")
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+                    new_pokemon()
+                
+                elif auto_battle_setting == 2:  # Existing auto-defeat
+                    kill_pokemon()
+                    new_pokemon()
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+                except Exception as e:
+                    showWarning(f"An error occurred relating to auto-battle: {str(e)}")
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()
         if main_pokemon.hp < 1:
-            msg = translator.translate("pokemon_fainted", main_pokemon_name=main_pokemon.name.capitalize(), enemy_pokemon_name=enemy_pokemon.name.capitalize())
+            msg = translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize(), main_pokemon_name=main_pokemon.name.capitalize())
             play_effect_sound("Fainted")
             new_pokemon()
             #mainpokemon_data()
