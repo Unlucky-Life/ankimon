@@ -1427,9 +1427,9 @@ def catch_pokemon(nickname):
         except:
             pass
         new_pokemon()  # Show a new random Pokémon
-     else:
-         if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-             logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
+    else:
+        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+            logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
   except Exception as e:
         showWarning(f"Error occured while catching enemy Pokemon: {e}")
 
@@ -1853,8 +1853,7 @@ def on_review_card(*args):
                     kill_pokemon()
                     new_pokemon()
                     ankimon_tracker_obj.general_card_count_for_battle = 0
-                except Exception as e:
-                    showWarning(f"An error occurred relating to auto-battle: {str(e)}")
+                
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
             play_sound()

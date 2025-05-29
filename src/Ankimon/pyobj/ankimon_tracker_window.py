@@ -58,7 +58,8 @@ class AnkimonTrackerWindow:
             if main_pokemon_stats:
                 stats_box = QGroupBox(f"Main Pokémon: {self.tracker.main_pokemon.name}")
                 stats_box.setFont(QFont("Arial", 14, QFont.Weight.Bold))
-                stats_box.setStyleSheet(f"color: {self.get_text_color()}; padding: 2px; QGroupBox::title {{ color: {self.get_text_color()}; }}")                stats_layout = QGridLayout()
+                stats_box.setStyleSheet(f"color: {self.get_text_color()}; padding: 2px; QGroupBox::title {{ color: {self.get_text_color()}; }}")
+                stats_layout = QGridLayout()
                 row, col = 0, 0
                 for key, value in main_pokemon_stats.items():
                     label = QLabel(f"{key.capitalize()}: {value if value is not None else 'N/A'}")
