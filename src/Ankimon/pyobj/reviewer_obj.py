@@ -8,6 +8,8 @@ from ..functions.create_gui_functions import create_status_html
 from ..resources import icon_path
 from ..functions.pokedex_functions import get_pokemon_diff_lang_name
 
+from .pokemon_obj import PokemonObject
+
 class Reviewer_Manager:
     def __init__(self, settings_obj, main_pokemon, enemy_pokemon, ankimon_tracker):
         self.settings = settings_obj
@@ -25,6 +27,55 @@ class Reviewer_Manager:
 
     def reviewer_reset_life_bar_inject(self):
         self.life_bar_injected = False
+
+    def get_boost_values_string(self, pokemon: PokemonObject, display_neutral_boost: bool=False) -> str:
+        """Generates a formatted string representing the stat boost multipliers of a Pokémon.
+
+        This function retrieves the stat boost values of a given Pokémon, converts them 
+        into their corresponding multiplier strings (e.g., x1.5 for +1), and compiles 
+        them into a single display string. Neutral boosts (value of 0) can optionally be 
+        omitted from the output.
+
+        Args:
+            pokemon (PokemonObject): The Pokémon object containing current stat boost information.
+            display_neutral_boost (bool, optional): If False, stat boosts with a value of 0 
+                (neutral) are omitted from the output. Defaults to False.
+
+        Returns:
+            str: A string representing the stat boost multipliers.
+        """
+        pokemon_dict = pokemon.to_engine_format()
+        boosts = {
+            "atk": pokemon_dict.get('attack_boost', 0),
+            "def": pokemon_dict.get('defense_boost', 0),
+            "SpA": pokemon_dict.get('special_attack_boost', 0),
+            "SpD": pokemon_dict.get('special_defense_boost', 0),
+            "SPE": pokemon_dict.get('speed_boost', 0),
+            "ACC": pokemon_dict.get('accuracy_boost', 0),
+            "EVD": pokemon_dict.get('evasion_boost', 0),
+        }
+        boost_to_mult = {
+            0: "x1",
+            1: "x1.5",
+            2: "x2",
+            3: "x2.5",
+            4: "x3",
+            5: "x3.5",
+            6: "x4",
+            -1: "x0.67",
+            -2: "x0.5",
+            -3: "x0.4",
+            -4: "x0.33",
+            -5: "x0.29",
+            -6: "x0.25",
+            }
+        boost_display = " "
+        for key, boost_val in boosts.items():
+            if display_neutral_boost is False and boost_val == 0:
+                continue  # Do no display a neutral boost
+            mult_str = boost_to_mult[boost_val]
+            boost_display += f"  | {key} {mult_str} |  "
+        return boost_display
 
     def inject_life_bar(self, web_content, context):
         if int(self.settings.get("gui.show_mainpkmn_in_reviewer", 1)) < 3:
@@ -85,6 +136,7 @@ class Reviewer_Manager:
                         if self.main_pokemon.shiny:
                             main_lang_name += " ⭐ "
                         main_name_display_text = f"{main_lang_name} LvL: {self.main_pokemon.level}"
+                        main_name_display_text += self.get_boost_values_string(self.main_pokemon, display_neutral_boost=False)
                         web_content.body += f'<div id="myname-display" class="Ankimon">{main_name_display_text}</div>'
                         web_content.body += f'<div id="myhp-display" class="Ankimon">HP: {self.main_pokemon.hp}/{self.main_pokemon.max_hp}</div>'
                         # Inject a div element at the end of the body for the life bar
@@ -179,6 +231,7 @@ class Reviewer_Manager:
                     if self.main_pokemon.shiny:
                         main_lang_name += " ⭐ "
                     main_name_display_text = f"{main_lang_name} LvL: {self.main_pokemon.level}"
+                    main_name_display_text += self.get_boost_values_string(self.main_pokemon, display_neutral_boost=False)
                     main_hp_display_text = f"HP: {self.main_pokemon.hp}/{self.main_pokemon.max_hp}"
                     reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50)) + '%";')
                     reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
