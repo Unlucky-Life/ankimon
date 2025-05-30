@@ -1,0 +1,36 @@
+name: Create ZIP file from sprites directory
+
+on:
+  push:
+    branches:
+      - main  # You can modify this to any branch you want to trigger the action on
+
+jobs:
+  create-zip:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Download sprites directory
+      run: |
+        # Define the URL of the sprites directory on GitHub
+        SPRITES_URL="https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/user_files/sprites/"
+        
+        # Create a directory to store the sprites files
+        mkdir -p sprites
+
+        # Use wget or curl to download the content into the sprites folder
+        wget -r -np -nH --cut-dirs=6 -R "index.html*" $SPRITES_URL -P sprites/
+
+    - name: Create ZIP file from sprites directory
+      run: |
+        # Zip the sprites directory
+        zip -r sprites.zip sprites/
+
+    - name: Upload ZIP file as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: sprites-zip
+        path: sprites.zip  # Path to the generated ZIP file
