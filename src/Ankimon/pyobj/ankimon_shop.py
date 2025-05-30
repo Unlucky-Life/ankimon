@@ -1,10 +1,13 @@
-from aqt import mw
-from aqt.qt import *
+import os
 import random
 from datetime import datetime
-from ..utils import give_item, daily_item_list, get_item_price, get_item_description
-from ..resources import items_path
+import json
 
+from aqt import mw
+from aqt.qt import *
+
+from ..utils import give_item, daily_item_list, get_item_price, get_item_description
+from ..resources import items_path, user_path
 
 # Daily Rotating Items Pool
 DAILY_ITEMS_POOL = daily_item_list()
@@ -16,7 +19,6 @@ STANDARD_ITEMS = [
     {"name": "rare-candy"},
 ]
 
-
 class PokemonShopManager:
     def __init__(self, logger, settings_obj, set_callback, get_callback):
         self.window = None
@@ -27,6 +29,7 @@ class PokemonShopManager:
         self.number_of_daily_items = 3
         self.daily_items_reroll_cost = 100
         self.todays_daily_items = []
+        self.shop_save_file = user_path / "todays_shop.json"
 
     def toggle_window(self):
         """Toggles the visibility of the Pokémon shop window."""
@@ -209,6 +212,15 @@ class PokemonShopManager:
 
     def get_daily_items(self):
         """Generate daily items based on the current date."""
+
+        # In case the shop has been reset today, we need to load the latest reroll
+        if os.path.isfile(self.shop_save_file):
+            with open(self.shop_save_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if data.get("items") and data.get("date") == datetime.now().strftime("%Y-%m-%d"):
+                    return data.get("items")
+
+        # If there was no reroll today (i.e. it's a new day), we generate a whole new shop
         seed = datetime.now().strftime("%Y-%m-%d")
         random.seed(seed)
         return random.sample(DAILY_ITEMS_POOL, self.number_of_daily_items)
@@ -227,7 +239,7 @@ class PokemonShopManager:
             self.logger.log_and_showinfo("error", f"Failed to purchase item: {e}")
             QMessageBox.critical(mw, "Purchase Failed", "An error occurred while purchasing the item.")
 
-    def reroll_daily_items(self, cost: int = 0) -> None:  # BUG : Closing and reopening Anki will reset the shop to this day's shop, not to the latest reroll
+    def reroll_daily_items(self, cost: int = 0) -> None:
         """
         Rerolls the daily items in the shop
 
@@ -253,3 +265,11 @@ class PokemonShopManager:
         # Refreshing the window by closing and reopening it
         self.toggle_window() # Closing the window
         self.toggle_window() # Opening the window
+
+        # After the reroll, we save the items currently present in the shop. That way, if Anki is reopened, the new items are still there
+        with open(self.shop_save_file, 'w', encoding='utf-8') as f:
+            data = {
+                "items": self.todays_daily_items,
+                "date": datetime.now().strftime("%Y-%m-%d"),
+            }
+            json.dump(data, f, ensure_ascii=False, indent=4)
