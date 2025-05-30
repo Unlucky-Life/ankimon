@@ -1,5 +1,6 @@
 ## Ankimon Experimental Branch `(h0tp-ftw/ankimon)`
-This repository is an **experimental branch** for [Ankimon](https://github.com/Unlucky-life/Ankimon) with new features and community-driven development. You can try out the latest features, but beware, you may also encounter bugs and issues!
+
+ This repository is an **experimental branch** for [Ankimon](https://github.com/Unlucky-life/Ankimon) with new features and community-driven development. You can try out the latest features, but beware, you may also have bugs and issues!
 
 ---
 
@@ -84,8 +85,8 @@ If you want to download the files and source code directly:
 
 - **Branching:** Always create a new branch for your changes.  
   Name your branch using the format:
-  - For bug fixes: `fix/your-fix-name`
-  - For new features: `feature/your-feature-name`
+  - `name/branch-name`
+  - e.g. If I am adding changes to achievement display, I named it as `h0tp/achievements-new-look`
   
   `main` is used to get changes from branches (after testing), and `upstream` will be used to send code to the official Ankimon repository.
 
@@ -109,7 +110,7 @@ It is made 100% by volunteers that help in their spare time. Having more people 
 To get started:
 
 - Download [VS Code](https://code.visualstudio.com/) for coding
-- Go through the [W3schools Python tutorial](https://www.w3schools.com/python/python_syntax.asp) - no need to learn every single thing
+- Go through the [W3schools Python tutorial](https://www.w3schools.com/python/default.asp) - no need to learn and memorize every single topic in detail. Have a general understanding of what code looks like and how it works! 
 - Make some simple code for practice! For example, you could try making a calculator, or coding some new changes for Ankimon.
 - Go through the Ankimon code, especially [here](https://github.com/Unlucky-Life/ankimon/tree/main/src/Ankimon/functions) and learn about how functions work. For example, if it says 
 ``` catchable = set()
