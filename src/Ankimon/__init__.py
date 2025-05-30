@@ -108,6 +108,7 @@ from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
 
+from .functions.drawing_utils import draw_gender_symbols
 
 # Load move and pokemon name mapping at startup
 with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
@@ -3045,16 +3046,7 @@ class TestWindow(QWidget):
         painter.drawText(326, 200, main_name)
 
         # Drawing the gender of each Pokemon
-        get_gender_symbol = lambda gender: {"M": "♂", "F": "♀"}.get(gender, "")  # Gets gender symbol. Returns "" by default
-        get_pen_color = lambda gender: QColor(20, 100, 230) if gender == "M" else QColor(230, 20, 20)  # Blue if "M", else Red
-        enemy_pokemon_gender_symbol = get_gender_symbol(self.enemy_pokemon.gender)
-        main_pokemon_gender_symbol = get_gender_symbol(self.main_pokemon.gender)
-        color_backup = painter.pen().color()  # Saving the pen's color to reset it after drawing gender symbols
-        painter.setPen(get_pen_color(self.enemy_pokemon.gender))  # Text color of the gender symbol
-        painter.drawText(175, 64, enemy_pokemon_gender_symbol)
-        painter.setPen(get_pen_color(self.main_pokemon.gender))  # Text color of the gender symbol
-        painter.drawText(457, 196, main_pokemon_gender_symbol)
-        painter.setPen(color_backup)  # Going back to the color we had before drawing gender symbols
+        draw_gender_symbols(self.main_pokemon, self.enemy_pokemon, painter, (457, 196), (175, 64))
 
         painter.drawText(208, 67, f"{self.enemy_pokemon.level}")
         #painter.drawText(55, 85, gender_text)
@@ -3188,16 +3180,7 @@ class TestWindow(QWidget):
         painter.drawText(326, 200, main_name)
 
         # Drawing the gender of each Pokemon
-        get_gender_symbol = lambda gender: {"M": "♂", "F": "♀"}.get(gender, "")  # Gets gender symbol. Returns "" by default
-        get_pen_color = lambda gender: QColor(20, 100, 230) if gender == "M" else QColor(230, 20, 20)  # Blue if "M", else Red
-        enemy_pokemon_gender_symbol = get_gender_symbol(self.enemy_pokemon.gender)
-        main_pokemon_gender_symbol = get_gender_symbol(self.main_pokemon.gender)
-        color_backup = painter.pen().color()  # Saving the pen's color to reset it after drawing gender symbols
-        painter.setPen(get_pen_color(self.enemy_pokemon.gender))  # Text color of the gender symbol
-        painter.drawText(175, 64, enemy_pokemon_gender_symbol)
-        painter.setPen(get_pen_color(self.main_pokemon.gender))  # Text color of the gender symbol
-        painter.drawText(457, 196, main_pokemon_gender_symbol)
-        painter.setPen(color_backup)  # Going back to the color we had before drawing gender symbols
+        draw_gender_symbols(self.main_pokemon, self.enemy_pokemon, painter, (457, 196), (175, 64))
         
         painter.drawText(208, 67, f"{self.enemy_pokemon.level}")
         painter.drawText(490, 199, f"{self.main_pokemon.level}")
