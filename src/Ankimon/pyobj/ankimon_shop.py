@@ -4,7 +4,17 @@ from datetime import datetime
 import json
 
 from aqt import mw
-from aqt.qt import *
+from aqt.qt import (
+    Qt,
+    QDialog,
+    QHBoxLayout,
+    QVBoxLayout,
+    QLabel,
+    QPushButton,
+    QGridLayout,
+    QFrame,
+    QPixmap
+)
 
 from ..utils import give_item, daily_item_list, get_item_price, get_item_description
 from ..resources import items_path, user_path
