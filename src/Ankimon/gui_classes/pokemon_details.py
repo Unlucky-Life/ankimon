@@ -225,12 +225,15 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         remember_attacks_details_button = QPushButton("Remember Attacks") #add Details to Moves
         all_attacks = get_all_pokemon_moves(name, level)
         qconnect(remember_attacks_details_button.clicked, lambda: remember_attack_details_window(id, attacks, all_attacks, logger))
+        forget_attacks_details_button = QPushButton("Forget Attacks") 
+        qconnect(forget_attacks_details_button.clicked, lambda: forget_attack_details_window(id, attacks, logger))
         
         #free_pokemon_button = QPushButton("Release Pokemon") #add Details to Moves unneeded button
         attacks_label.setFixedHeight(150)
         TopR_layout_Box.addWidget(attacks_label)
         TopR_layout_Box.addWidget(attacks_details_button)
         TopR_layout_Box.addWidget(remember_attacks_details_button)
+        TopR_layout_Box.addWidget(forget_attacks_details_button)
         TopR_layout_Box.addWidget(captured_date_label)
         TopR_layout_Box.addWidget(pokemon_defeated_label)
         TopR_layout_Box.addWidget(everstone_label)
@@ -460,6 +463,79 @@ def remember_attack_details_window(id, attack_set, all_attacks, logger):
     window.resize(1000, 400)  # Optional: Set a default size for the window
     window.exec()
 
+def forget_attack_details_window(id: int, attack_set: list[str], logger: "InfoLogger.ShowInfoLogger") -> None:
+    """
+    Creates a window that will allow the user to erase moves from a Pokemon.
+
+    Args:
+        id (int): The Pokemon's identifier.
+        attack_set (list[str]): The Pokemon's move set.
+        logger: Logger object that can log info and display windows containing messages.
+
+    Returns:
+        None
+    """
+    window = QDialog()
+    window.setWindowIcon(QIcon(str(icon_path)))
+    layout = QHBoxLayout()
+    window.setWindowTitle("Forget Attacks")  # Optional: Set a window title
+    # Outer layout contains everything
+    outer_layout = QVBoxLayout(window)
+
+    # Create a scroll area that will contain our main layout
+    scroll_area = QScrollArea()
+    scroll_area.setWidgetResizable(True)
+
+    # Main widget that contains the content
+    content_widget = QWidget()
+    layout = QHBoxLayout(content_widget)  # The main layout is now set on this widget
+
+    # HTML content
+    html_content = remember_attack_details_window_template
+    # Loop through the list of attacks and add them to the HTML content
+    for attack in attack_set:
+        move = find_details_move(attack)
+
+        html_content += f"""
+        <tr>
+          <td class="move-name">{move['name']}</td>
+          <td><img src="{type_icon_path(move['type'])}" alt="{move['type']}"/></td>
+          <td><img src="{move_category_path(move['category'].lower())}" alt="{move['category']}"/></td>
+          <td class="basePower">{move['basePower']}</td>
+          <td class="no-accuracy">{move['accuracy']}</td>
+          <td>{move['pp']}</td>
+          <td>{move['shortDesc']}</td>
+        </tr>
+        """
+
+    html_content += remember_attack_details_window_template_end
+
+    # Create a QLabel to display the HTML content
+    label = QLabel(html_content)
+    label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align the label's content to the top
+    label.setScaledContents(True)  # Enable scaling of the pixmap
+    attack_layout = QVBoxLayout()
+    for attack in attack_set:
+        move = find_details_move(attack)
+        forget_attack_button = QPushButton(f"Forget {attack}") #add Details to Moves
+        forget_attack_button.clicked.connect(lambda checked, a=attack: forget_attack(id, attack_set, a, logger))
+        attack_layout.addWidget(forget_attack_button)
+    attack_layout_widget = QWidget()
+    attack_layout_widget.setLayout(attack_layout)
+    # Add the label and button layout widget to the main layout
+    layout.addWidget(label)
+    layout.addWidget(attack_layout_widget)
+
+    # Set the main widget with content as the scroll area's widget
+    scroll_area.setWidget(content_widget)
+
+    # Add the scroll area to the outer layout
+    outer_layout.addWidget(scroll_area)
+
+    window.setLayout(outer_layout)
+    window.resize(1000, 400)  # Optional: Set a default size for the window
+    window.exec()
+
 def remember_attack(id, attacks, new_attack, logger):
     if new_attack in attacks:
         logger.log_and_showinfo("warning","Your pokemon already knows this move!")
@@ -518,6 +594,66 @@ def remember_attack(id, attacks, new_attack, logger):
                 json.dump(mypokemondata, output_file, indent=2)
         else:
             logger.log_and_showinfo("info","Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
+
+def forget_attack(id: int, attacks: list[str], attack_to_forget: str, logger: "InfoLogger.ShowInfoLogger") -> None:
+    """
+    Forgets a Pokemon's move. This is done by erasing the chosen move from the list
+    of attacks known by the Pokemon and then saving that new Pokemon data in the main
+    Pokemon data file.
+
+    Args:
+        id (int): The Pokemon's identifier.
+        attacks (list[str]): The Pokemon's move set.
+        attack_to_forget (str): Name of the move to forget.
+        logger: Logger object that can log info and display windows containing messages.
+
+    Returns:
+        None
+    """
+    if not mainpokemon_path.is_file():
+        logger.log_and_showinfo("warning","Missing Mainpokemon Data !")
+        return
+    with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
+        main_pokemon_data = json.load(json_file)
+    for mainpkmndata in main_pokemon_data:
+        if mainpkmndata["id"] == id:
+            mainpokemon_name = mainpkmndata["name"]
+            attacks = mainpkmndata["attacks"]
+            if attack_to_forget:
+                if attack_to_forget in attacks:
+                    if len(attacks) > 1:
+                        attacks.remove(attack_to_forget)
+                        msg = ""
+                        msg += f"Your {mainpkmndata['name'].capitalize()} forgot {attack_to_forget}."
+                        logger.log_and_showinfo("info",f"{msg}")
+                    else:  # If we reach here, it means the Pokemon only has 1 move left. We can't allow this move to be forgotten
+                        msg = ""
+                        msg += f"Your {mainpkmndata['name'].capitalize()} only knows this move, you can't forget it ! "
+                        logger.log_and_showinfo("info",f"{msg}")
+                else:
+                    msg = ""
+                    msg += f"Your {mainpkmndata['name'].capitalize()} does not know {attack_to_forget}."
+                    logger.log_and_showinfo("info",f"{msg}")
+            mainpkmndata["attacks"] = attacks
+            mypkmndata = mainpkmndata
+            mainpkmndata = [mainpkmndata]
+            # Save the caught Pokémon's data to a JSON file
+            with open(str(mainpokemon_path), "w") as json_file:
+                json.dump(mainpkmndata, json_file, indent=2)
+            
+            with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
+                mypokemondata = json.load(output_file)
+
+            # Find and replace the specified Pokémon's data in mypokemondata
+            for index, pokemon_data in enumerate(mypokemondata):
+                if pokemon_data["name"] == mainpokemon_name:
+                    mypokemondata[index] = mypkmndata
+                    break
+            # Save the modified data to the output JSON file
+            with open(str(mypokemon_path), "w") as output_file:
+                json.dump(mypokemondata, output_file, indent=2)
+        else:
+            logger.log_and_showinfo("info","Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can forget attacks!")
 
 from PyQt6.QtWidgets import QMessageBox
 from aqt.utils import showWarning
