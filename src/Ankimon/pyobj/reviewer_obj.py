@@ -74,7 +74,7 @@ class Reviewer_Manager:
             if display_neutral_boost is False and boost_val == 0:
                 continue  # Do no display a neutral boost
             mult_str = boost_to_mult[boost_val]
-            boost_display += f"{key} {mult_str}; "
+            boost_display += f"  | {key} {mult_str} |  "
         return boost_display
 
     def inject_life_bar(self, web_content, context):
@@ -136,7 +136,7 @@ class Reviewer_Manager:
                         if self.main_pokemon.shiny:
                             main_lang_name += " ⭐ "
                         main_name_display_text = f"{main_lang_name} LvL: {self.main_pokemon.level}"
-                        main_name_display_text += self.get_boost_values_string(self.main_pokemon, display_neutral_boost=True)
+                        main_name_display_text += self.get_boost_values_string(self.main_pokemon, display_neutral_boost=False)
                         web_content.body += f'<div id="myname-display" class="Ankimon">{main_name_display_text}</div>'
                         web_content.body += f'<div id="myhp-display" class="Ankimon">HP: {self.main_pokemon.hp}/{self.main_pokemon.max_hp}</div>'
                         # Inject a div element at the end of the body for the life bar
@@ -231,7 +231,7 @@ class Reviewer_Manager:
                     if self.main_pokemon.shiny:
                         main_lang_name += " ⭐ "
                     main_name_display_text = f"{main_lang_name} LvL: {self.main_pokemon.level}"
-                    main_name_display_text += self.get_boost_values_string(self.main_pokemon, display_neutral_boost=True)
+                    main_name_display_text += self.get_boost_values_string(self.main_pokemon, display_neutral_boost=False)
                     main_hp_display_text = f"HP: {self.main_pokemon.hp}/{self.main_pokemon.max_hp}"
                     reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50)) + '%";')
                     reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
