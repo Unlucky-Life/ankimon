@@ -117,38 +117,37 @@
     }
 
     .pokemon-item img {
-        width: 85px;
-        height: 85px;
-        image-rendering: pixelated;
-        transition: all 0.3s ease;
-        overflow: visible;
-        object-fit: contain;
+      width: 85px;
+      height: 85px;
+      image-rendering: pixelated;
+      transition: all 0.3s ease;
+      overflow: visible;
+      object-fit: contain;
     }
     
     .pokemon-item img[src*=".gif"] {
-        max-width: 80px;
-        max-height: 80px;
-        width: auto;
-        height: auto;
+      max-width: 80px;
+      max-height: 80px;
+      width: auto;
+      height: auto;
     }
     
     .pokemon-sprite-container img {
-        /* Update this existing rule */
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 70px;
-        height: 70px;
-        image-rendering: pixelated;
-        transition: opacity 0.8s ease;
-        object-fit: contain;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 70px;
+      height: 70px;
+      image-rendering: pixelated;
+      transition: opacity 0.8s ease;
+      object-fit: contain;
     }
     
     .pokemon-sprite-container img[src*=".gif"] {
-        max-width: 70px;
-        max-height: 70px;
-        width: auto;
-        height: auto;
+      max-width: 70px;
+      max-height: 70px;
+      width: auto;
+      height: auto;
     }
 
     .pokemon-item img:hover {
@@ -201,26 +200,58 @@
 
     .navigation {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       margin: 20px 0;
       font-size: 16px;
     }
 
-    .navigation button {
-      background: none;
+    .pagination {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .pagination button {
+      background-color: #05699E;
+      color: white;
       border: none;
-      font-size: 24px;
+      padding: 5px 10px;
+      border-radius: 5px;
       cursor: pointer;
-      color: black;
+      font-size: 16px;
+      font-family: 'Courier New', Courier, monospace;
+      transition: background-color 0.2s ease;
     }
 
-    body.dark-mode .navigation button {
-      color: white;
+    .pagination button:hover:not(:disabled) {
+      background-color: #045C9F;
     }
 
-    body.dark-mode .navigation span {
-      color: white;
+    .pagination button:disabled {
+      cursor: not-allowed;
+    }
+
+    .pagination button.active {
+      background-color: #067cbc;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+    }
+
+    body.dark-mode .pagination button {
+      background: #04929F;
+    }
+
+    body.dark-mode .pagination button:hover:not(:disabled) {
+      background: #067cbc;
+    }
+
+    body.dark-mode .pagination button.active {
+      background: #067cbc;
+    }
+
+    body.dark-mode .pagination button:disabled {
+      background: #666666;
     }
 
     .footer {
@@ -268,9 +299,7 @@
     </div>
 
     <div class="navigation">
-      <button id="prev-btn">←</button>
-      <span id="current-pokemon">List 1</span>
-      <button id="next-btn">→</button>
+      <div class="pagination" id="pagination"></div>
     </div>
 
     <div class="pokemon-grid" id="pokemon-grid"></div>
@@ -288,9 +317,7 @@
       const pokemonGrid = document.getElementById("pokemon-grid");
       const obtainedCount = document.getElementById("obtained-count");
       const seenCount = document.getElementById("seen-count");
-      const prevBtn = document.getElementById("prev-btn");
-      const nextBtn = document.getElementById("next-btn");
-      const currentPokemon = document.getElementById("current-pokemon");
+      const paginationContainer = document.getElementById("pagination");
       const filterAllBtn = document.getElementById("filter-all");
       const filterCaughtBtn = document.getElementById("filter-caught");
       const filterNotCaughtBtn = document.getElementById("filter-not-caught");
@@ -357,6 +384,63 @@
         filterNotCaughtBtn.classList.toggle("active", currentFilter === "not-caught");
       }
 
+      function getTotalItems() {
+        return currentFilter === "all" ? totalPokemon :
+               currentFilter === "caught" ? caughtNumbers.length :
+               totalPokemon - caughtNumbers.length;
+      }
+
+      function updatePagination() {
+        const totalItems = getTotalItems();
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        paginationContainer.innerHTML = '';
+
+        // Add Previous button
+        const prevBtn = document.createElement("button");
+        prevBtn.textContent = "← Prev";
+        prevBtn.disabled = currentPage === 0;
+        prevBtn.addEventListener("click", () => {
+          if (currentPage > 0) {
+            currentPage--;
+            displayPokemon();
+          }
+        });
+        paginationContainer.appendChild(prevBtn);
+
+        // Add numbered page buttons (show up to 5 pages)
+        const maxButtons = 5;
+        const half = Math.floor(maxButtons / 2);
+        let startPage = Math.max(0, currentPage - half);
+        let endPage = Math.min(totalPages, startPage + maxButtons);
+
+        if (endPage - startPage < maxButtons && startPage > 0) {
+          startPage = Math.max(0, endPage - maxButtons);
+        }
+
+        for (let i = startPage; i < endPage; i++) {
+          const pageBtn = document.createElement("button");
+          pageBtn.textContent = i + 1;
+          pageBtn.classList.toggle("active", i === currentPage);
+          pageBtn.addEventListener("click", () => {
+            currentPage = i;
+            displayPokemon();
+          });
+          paginationContainer.appendChild(pageBtn);
+        }
+
+        // Add Next button
+        const nextBtn = document.createElement("button");
+        nextBtn.textContent = "Next →";
+        nextBtn.disabled = (currentPage + 1) * itemsPerPage >= totalItems;
+        nextBtn.addEventListener("click", () => {
+          if ((currentPage + 1) * itemsPerPage < totalItems) {
+            currentPage++;
+            displayPokemon();
+          }
+        });
+        paginationContainer.appendChild(nextBtn);
+      }
+
       function displayPokemon() {
         pokemonGrid.innerHTML = "";
         let displayNumbers = allNumbers;
@@ -382,6 +466,7 @@
           if (caughtNumbers.includes(i)) {
             const img = document.createElement("img");
             img.src = spritePath;
+            img.loading = "lazy"; // Enable lazy loading
             img.onerror = function() {
               console.error(`Failed to load sprite: ${spritePath}`);
               this.src = placeholderPath;
@@ -394,10 +479,12 @@
             const baseImg = document.createElement("img");
             baseImg.src = placeholderPath;
             baseImg.classList.add("base");
+            baseImg.loading = "lazy"; // Enable lazy loading
 
             const hoverImg = document.createElement("img");
             hoverImg.src = spritePath;
             hoverImg.classList.add("grayscale-hidden");
+            hoverImg.loading = "lazy"; // Enable lazy loading
             hoverImg.onerror = function() {
               console.error(`Failed to load sprite: ${spritePath}`);
               this.src = placeholderPath;
@@ -418,25 +505,8 @@
           pokemonGrid.appendChild(pokemonItem);
         }
 
-        currentPokemon.textContent = pageNumbers.length > 0 ? `List ${currentPage + 1}` : "No Pokémon to display";
+        updatePagination();
       }
-
-      prevBtn.addEventListener("click", () => {
-        if (currentPage > 0) {
-          currentPage--;
-          displayPokemon();
-        }
-      });
-
-      nextBtn.addEventListener("click", () => {
-        const totalItems = currentFilter === "all" ? totalPokemon :
-                           currentFilter === "caught" ? caughtNumbers.length :
-                           totalPokemon - caughtNumbers.length;
-        if ((currentPage + 1) * itemsPerPage < totalItems) {
-          currentPage++;
-          displayPokemon();
-        }
-      });
 
       filterAllBtn.addEventListener("click", () => {
         currentFilter = "all";
