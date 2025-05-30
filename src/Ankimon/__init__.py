@@ -1845,15 +1845,7 @@ def process_battle_data(battle_data: dict) -> str:
                         "weather_change",
                         weather=weather
                     ))
-                
-                elif action == constants.MUTATOR_VOLATILE_STATUS:
-                    status = format_move_name(instr[2])
-                    output.append(mw.translator.translate(
-                        "volatile_status",
-                        pokemon_name=pokemon_name,
-                        status=status
-                    ))
-                
+                              
                 elif action == constants.MUTATOR_FAIL:
                     reason = instr[2] if len(instr) > 2 else "unknown"
                     output.append(mw.translator.translate(
