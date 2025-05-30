@@ -1465,7 +1465,8 @@ def get_random_starter():
         showWarning(f"Error in get_random_starter: {e}")
         return None, None, None
 
-def simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, main_move, enemy_move, new_state, mutator_full_reset):
+from .poke_engine.ankimon_hooks_to_poke_engine import simulate_battle_with_poke_engine
+def simulate_battle_with_poke_engine_old(main_pokemon, enemy_pokemon, main_move, enemy_move, new_state, mutator_full_reset):
     """
     Simulate a battle between two Pokemon using poke-engine if available.
     Prints and returns the battle outcome as a readable log.
@@ -2285,7 +2286,16 @@ def on_review_card(*args):
             The "results" can then be used to access battle outcomes.
             '''
 
-            results = simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, user_attack, enemy_attack, new_state, mutator_full_reset)
+            #results = simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, user_attack, enemy_attack, new_state, mutator_full_reset)
+            results = simulate_battle_with_poke_engine(
+                main_pokemon,
+                enemy_pokemon,
+                user_attack,
+                enemy_attack,
+                new_state,
+                mutator_full_reset,
+                traceback
+                )
           
             '''
             It is important that any changes to pokemon stats are accurately represented
