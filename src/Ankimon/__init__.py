@@ -108,6 +108,7 @@ from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
 
+from .functions.drawing_utils import draw_gender_symbols
 
 # Load move and pokemon name mapping at startup
 with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
@@ -3025,16 +3026,6 @@ class TestWindow(QWidget):
         painter.setBrush(QColor(58, 155, 220))
         painter.drawRect(int(366), int(246), int(mainpokemon_xp_value), int(mainxp_bar_width))
 
-        # Convert gender name to symbol - this function is from Foxy-null
-        if gender == "M":
-            gender_symbol = "♂"
-        elif gender == "F":
-            gender_symbol = "♀"
-        elif gender == "N":
-            gender_symbol = ""
-        else:
-            gender_symbol = ""  # None
-
         # custom font
         custom_font = load_custom_font(int(26), int(settings_obj.get("misc.language",11)))
         msg_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
@@ -3053,6 +3044,9 @@ class TestWindow(QWidget):
 
         painter.drawText(48, 67, enemy_name)
         painter.drawText(326, 200, main_name)
+
+        # Drawing the gender of each Pokemon
+        draw_gender_symbols(self.main_pokemon, self.enemy_pokemon, painter, (457, 196), (175, 64))
 
         painter.drawText(208, 67, f"{self.enemy_pokemon.level}")
         #painter.drawText(55, 85, gender_text)
@@ -3184,6 +3178,10 @@ class TestWindow(QWidget):
 
         painter.drawText(48, 67, enemy_name)
         painter.drawText(326, 200, main_name)
+
+        # Drawing the gender of each Pokemon
+        draw_gender_symbols(self.main_pokemon, self.enemy_pokemon, painter, (457, 196), (175, 64))
+        
         painter.drawText(208, 67, f"{self.enemy_pokemon.level}")
         painter.drawText(490, 199, f"{self.main_pokemon.level}")
         hp_text = str(self.main_pokemon.hp)
