@@ -113,7 +113,7 @@ from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
 
-from .functions.drawing_utils import draw_gender_symbols
+from .functions.drawing_utils import draw_gender_symbols, draw_stat_boosts
 
 # Load move and pokemon name mapping at startup
 with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
@@ -2157,6 +2157,7 @@ def handle_main_pokemon_faint(main_pokemon, enemy_pokemon, msg, translator, play
     new_pokemon()
     main_pokemon.hp = main_pokemon.max_hp
     main_pokemon.current_hp = main_pokemon.max_hp
+    main_pokemon.stat_stages = {'atk': 0, 'def': 0, 'spa': 0, 'spd': 0, 'spe': 0, 'accuracy': 0, 'evasion': 0}
     tooltipWithColour(msg, "#E12939")
 
 # Hook into Anki's card review event
@@ -3045,6 +3046,8 @@ class TestWindow(QWidget):
         # Drawing the gender of each Pokemon
         draw_gender_symbols(self.main_pokemon, self.enemy_pokemon, painter, (457, 196), (175, 64))
 
+        draw_stat_boosts(self.main_pokemon, self.enemy_pokemon, painter, (326, 155), (48, 25))
+
         painter.drawText(208, 67, f"{self.enemy_pokemon.level}")
         #painter.drawText(55, 85, gender_text)
         painter.drawText(490, 199, f"{self.main_pokemon.level}")
@@ -3179,6 +3182,8 @@ class TestWindow(QWidget):
         # Drawing the gender of each Pokemon
         draw_gender_symbols(self.main_pokemon, self.enemy_pokemon, painter, (457, 196), (175, 64))
         
+        draw_stat_boosts(self.main_pokemon, self.enemy_pokemon, painter, (326, 155), (48, 25))
+
         painter.drawText(208, 67, f"{self.enemy_pokemon.level}")
         painter.drawText(490, 199, f"{self.main_pokemon.level}")
         hp_text = str(self.main_pokemon.hp)
