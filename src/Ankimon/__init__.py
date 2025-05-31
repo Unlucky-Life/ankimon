@@ -2157,6 +2157,7 @@ def handle_main_pokemon_faint(main_pokemon, enemy_pokemon, msg, translator, play
     new_pokemon()
     main_pokemon.hp = main_pokemon.max_hp
     main_pokemon.current_hp = main_pokemon.max_hp
+    main_pokemon.stat_stages = {'atk': 0, 'def': 0, 'spa': 0, 'spd': 0, 'spe': 0, 'accuracy': 0, 'evasion': 0}
     tooltipWithColour(msg, "#E12939")
 
 # Hook into Anki's card review event
