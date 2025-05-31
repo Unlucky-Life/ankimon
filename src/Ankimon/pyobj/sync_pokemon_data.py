@@ -80,7 +80,7 @@ class CheckPokemonData(QDialog):
 
         if self.mainpokemon_web_data != self.mainpokemon_sync_data or self.pokemon_collection_web_data != self.pokemon_collection_sync_data:
             self.show()
-        
+
     def sync_data_to_local(self):
         try:
             with open(self.mypokemon_path, 'w', encoding='utf-8') as file:
@@ -174,7 +174,7 @@ class CheckPokemonData(QDialog):
         for local, ankiweb in zip(self.mainpokemon_sync_data, self.mainpokemon_web_data):
             pokemon_name = local.get('name', "Unknown")
             individual_id = local.get('individual_id', "Unknown")
-            for key in set(local.keys()).union(ankiweb.keys()):
+            for key in local:
                 local_value = local.get(key, "Unknown")
                 web_value = ankiweb.get(key, "Unknown")
                 if local_value != web_value:
@@ -188,7 +188,7 @@ class CheckPokemonData(QDialog):
         for local, ankiweb in zip(self.pokemon_collection_sync_data, self.pokemon_collection_web_data):
             pokemon_name = local.get('name', "Unknown")
             individual_id = local.get('individual_id', "Unknown")
-            for key in set(local.keys()).union(ankiweb.keys()):
+            for key in local:
                 local_value = local.get(key, "Unknown")
                 web_value = ankiweb.get(key, "Unknown")
                 if local_value != web_value:
