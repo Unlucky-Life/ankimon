@@ -119,6 +119,7 @@ class Reviewer_Manager:
                     if self.enemy_pokemon.shiny is True:
                         enemy_lang_name += " ⭐ "
                     name_display_text = f"{enemy_lang_name} LvL: {self.enemy_pokemon.level}"
+                    name_display_text += self.get_boost_values_string(self.enemy_pokemon, display_neutral_boost=False)
                     web_content.body += f'<div id="name-display" class="Ankimon">{name_display_text}</div>'
                     if self.enemy_pokemon.hp > 0:
                         web_content.body += f'{create_status_html(f"{self.enemy_pokemon.battle_status}", settings_obj=self.settings)}'
@@ -213,6 +214,7 @@ class Reviewer_Manager:
                 if self.enemy_pokemon.shiny is True:
                     enemy_lang_name += " ⭐ "
                 name_display_text = f"{enemy_lang_name} LvL: {self.enemy_pokemon.level}"
+                name_display_text += self.get_boost_values_string(self.enemy_pokemon, display_neutral_boost=False)
                 hp_display_text = f"HP: {self.enemy_pokemon.hp}/{self.enemy_pokemon.max_hp}"
                 reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
                 reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
