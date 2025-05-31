@@ -265,6 +265,8 @@ def simulate_battle_with_poke_engine(
 
         mutator.apply(instrs)
 
+        # In case the pokemon used a stat enhancing move or a healing move, we need to save those changes from the State into the PokemonObject so that they carry to the next round
+        main_pokemon.current_hp = main_pokemon.hp = state.user.active.hp
         main_pokemon.stat_stages = {
             'atk': state.user.active.attack_boost,
             'def': state.user.active.defense_boost,
@@ -274,6 +276,9 @@ def simulate_battle_with_poke_engine(
             'accuracy': state.user.active.accuracy_boost, 
             'evasion': state.user.active.evasion_boost
         }
+        
+         # In case the pokemon used a stat enhancing move or a healing move, we need to save those changes from the State into the PokemonObject so that they carry to the next round
+        enemy_pokemon.current_hp = enemy_pokemon.hp = state.opponent.active.hp
         enemy_pokemon.stat_stages = {
             'atk': state.opponent.active.attack_boost,
             'def': state.opponent.active.defense_boost,
