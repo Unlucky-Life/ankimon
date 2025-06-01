@@ -68,15 +68,7 @@ Want to join us? Read below!
 
 Releases will be published every time a major pull request is merged into `main`; in simple words, after a major change is added. Check the [**Releases**](https://github.com/h0tp-ftw/ankimon/releases) tab here! Make sure to BACKUP before updating!
 
-If you want to download the files and source code directly:
-
-1. Click the green **"Code"** button near the top right of this page.
-2. Select **"Download ZIP"**.
-3. Unzip the file on your computer. 
-4. Make sure you have a **backup** of your `mypokemon.json`, `mainpokemon.json`, `badges.json` and `items.json` files (in `user_files` folder of your Ankimon installation)
-5. In the downloaded folder, go in `src` -> `Ankimon` and copy all files inside the folder.
-6. Paste these files into your Ankimon folder where the addon is installed in Anki! (Anki -> Add-ons -> Ankimon -> View Files)
-7. If you lost your progress, restore by adding the back-up files into the `user_files` folder!
+You can also download the source code directly, but this is NOT RECOMMENDED. If there is a specific fix or change you are looking for, you can download the individual files that are changed and replace those files.
 
 ---
 
@@ -87,7 +79,7 @@ If you want to download the files and source code directly:
   - `name/branch-name`
   - e.g. If I am adding changes to achievement display, I named it as `h0tp/achievements-new-look`
   
-  `main` is used to get changes from branches (after testing), and `upstream` will be used to send code to the official Ankimon repository.
+  `main` is used to get changes from branches (after testing), it combines all the new changes to be combined into a "release".
 
 - **Pull Requests:** After making your changes, open a Pull Request (PR) to merge your branch into the `main` branch.  
   Add a clear description of your changes in the PR.
