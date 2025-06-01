@@ -3,6 +3,7 @@ import json
 from ..resources import pkmnimgfolder
 import os
 
+
 class PokemonObject:
     def __init__(
         self,
@@ -80,18 +81,8 @@ class PokemonObject:
 
         # HP calculation
         self.max_hp = self.calculate_max_hp()
-        self.current_hp = int(kwargs.get('current_hp', self.max_hp))
-        self.hp = self.current_hp
-
-    def calculate_max_hp(self):
-        # Robust HP calculation with fallbacks
-        base = self.stats.get("hp", 1)
-        iv = self.iv.get("hp", 0)
-        ev = self.ev.get("hp", 0)
-        try:
-            return int((((2 * base + iv + (ev // 4)) * self.level) // 100) + self.level + 10)
-        except Exception:
-            return 20  # Fallback minimum
+        self.hp = int(kwargs.get('hp', self.max_hp))
+        self.current_hp = self.hp  # to be removed later
 
     def to_dict(self):
         return {
@@ -148,7 +139,7 @@ class PokemonObject:
     def calculate_max_hp(self):
         ev_value = self.ev["hp"] / 4
         iv_value = self.iv["hp"]
-        #hp = int(((iv + 2 * (base_stat_hp + ev) + 100) * level) / 100 + 10)
+        # hp = int(((iv + 2 * (base_stat_hp + ev) + 100) * level) / 100 + 10)
         hp = int((((((self.stats["hp"] + iv_value) * 2 ) + ev_value) * self.level) / 100) + self.level + 10)
         return hp
     
@@ -192,7 +183,7 @@ class PokemonObject:
                 self.ev.get('spe', 0)
             ),
             'types': [normalize_name(t) for t in self.type],
-            'hp': self.current_hp,
+            'hp': self.hp,
             'maxhp': self.max_hp,
             'ability': normalize_name(self.ability[0]) if self.ability else 'none',
             'item': None,
@@ -227,7 +218,7 @@ class PokemonObject:
         return cls(
             name=engine_data['identifier'].capitalize(),
             level=engine_data['level'],
-            current_hp=engine_data['hp'],
+            hp=engine_data['hp'],
             stats={
                 'hp': engine_data.get('maxhp', 0),
                 'atk': engine_data['attack'],
