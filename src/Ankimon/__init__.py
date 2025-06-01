@@ -114,6 +114,7 @@ from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
 
 from .functions.drawing_utils import draw_gender_symbols, draw_stat_boosts
+from .functions.update_main_pokemon import update_main_pokemon
 
 # Load move and pokemon name mapping at startup
 with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
@@ -163,52 +164,10 @@ except:
 
 
 # Initialize default values for the main Pokémon in a more compact form
-default_pokemon_data = {
-    "name": "Pikachu", "gender": "M", "level": 5, "id": 1, "ability": "Static", 
-    "type": ["Electric"], "stats": {"hp": 20, "atk": 30, "def": 15, "spa": 50, "spd": 40, "spe": 60, "xp": 0}, 
-    "ev": {"hp": 0, "atk": 1, "def": 0, "spa": 0, "spd": 0, "spe": 0}, "iv": {"hp": 15, "atk": 20, "def": 10, "spa": 10, "spd": 10, "spe": 10},
-    "attacks": ["Thunderbolt", "Quick Attack"], "base_experience": 112, "current_hp": 20, "growth_rate": "medium", "evos": ["Pikachu"]
-}
 
 # Check if the main Pokémon file exists and is valid
-if mainpokemon_path.is_file():
-    with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
-        try:
-            main_pokemon_data = json.load(json_file)
-            mainpokemon_empty = not main_pokemon_data
-            # Extract first Pokémon data if available
-            main_pokemon = PokemonObject(**main_pokemon_data[0]) if main_pokemon_data else PokemonObject(**default_pokemon_data)
-            main_pokemon.xp = main_pokemon.stats["xp"]
-            if main_pokemon.current_hp > main_pokemon.max_hp:
-                main_pokemon.current_hp = main_pokemon.max_hp
-        except json.JSONDecodeError:
-            main_pokemon = PokemonObject(**default_pokemon_data)
-else:
-    mainpokemon_empty = True
-    # Initialize with default data if file is empty or invalid
-    if mainpokemon_empty:
-        main_pokemon = PokemonObject(**default_pokemon_data)
 
-def update_main_pokemon(main_pokemon, mainpokemon_path = mainpokemon_path):
-    # Check if the main Pokémon file exists and is valid
-    
-    if mainpokemon_path.is_file():
-        with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
-            try:
-                main_pokemon_data = json.load(json_file)
-                # Use default values if the file is empty or invalid
-                main_pokemon.update_stats(**main_pokemon_data[0])
-                max_hp = main_pokemon.calculate_max_hp()
-                main_pokemon.max_hp=max_hp
-                main_pokemon.current_hp=main_pokemon_data[0].get(max_hp)
-                main_pokemon.hp=main_pokemon_data[0].get(max_hp)
-            except json.JSONDecodeError:
-                main_pokemon.update_stats(**default_pokemon_data)
-    else:
-        # Initialize with default data if file is empty or invalid
-        if mainpokemon_empty:
-            for key, value in default_pokemon_data.items():
-                main_pokemon.update_stats(key, value)
+main_pokemon, mainpokemon_empty = update_main_pokemon()
         
 enemy_pokemon = PokemonObject(
     name="Rattata",             # Name of the Pokémon
@@ -1237,7 +1196,7 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
 
     return main_pokemon.level
 
-def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
+def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name, main_pokemon):
     global achievements
     try:
         with open(mypokemon_path, "r", encoding="utf-8") as json_file:
@@ -1328,7 +1287,7 @@ def evolve_pokemon(individual_id, prevo_name, evo_id, evo_name):
         showWarning(f"{e}")
     try:#Update Main Pokemon Object
         if main_pokemon.individual_id == individual_id:
-            update_main_pokemon(main_pokemon)
+            main_pokemon = update_main_pokemon(main_pokemon)
             class Container(object):
                 pass
             reviewer = Container()
