@@ -4693,7 +4693,7 @@ addHook("profileLoaded", on_profile_loaded)
 
 def catch_shorcut_function():
     if enemy_pokemon.hp > 1:
-        tooltip("You only catch a pokemon once its fained !")
+        tooltip("You only catch a pokemon once its fainted !")
     else:
         catch_pokemon("")
 
