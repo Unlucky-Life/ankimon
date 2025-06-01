@@ -1158,7 +1158,10 @@ def get_end_of_turn_instructions(mutator, instruction, bot_move, opponent_move, 
             (pkmn.item in constants.CHOICE_ITEMS or locking_move or pkmn.ability == 'gorillatactics')
         ):
             move_used = move[constants.ID]
-            for m in filter(lambda x: x[constants.ID] != move_used and not x[constants.DISABLED], pkmn.moves):
+            for m in filter(
+                lambda x: x[constants.ID] != move_used and not x.get(constants.DISABLED, False), 
+                pkmn.moves
+            ):
                 disable_instruction = (
                     constants.MUTATOR_DISABLE_MOVE,
                     attacker,
