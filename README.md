@@ -66,7 +66,7 @@ Want to join us? Read below!
 
 ## Downloading the Experimental Ankimon Build
 
-Releases will be published every time a major pull request is merged into `main`; in simple words, after a major change is added. Check the [**Releases**](https://github.com/h0tp-ftw/ankimon/releases) tab here! Make sure to BACKUP before updating!
+Check the [**Releases**](https://github.com/h0tp-ftw/ankimon/releases) tab here! Make sure to **BACKUP** before updating! Releases will be published every time a major pull request or a large number of pull requests are merged into `main`; in simple words, after a major change is added. 
 
 You can also download the source code directly, but this is NOT RECOMMENDED. If there is a specific fix or change you are looking for, you can download the individual files that are changed and replace those files.
 
