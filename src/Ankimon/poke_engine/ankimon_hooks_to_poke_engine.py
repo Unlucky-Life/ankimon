@@ -1,6 +1,7 @@
 import random
 from collections import defaultdict
 import copy
+import traceback
 
 from .battle import Move
 from .objects import Pokemon, State, StateMutator, Side
@@ -84,7 +85,6 @@ def simulate_battle_with_poke_engine(
     enemy_move: str,
     new_state: State,
     mutator_full_reset: int,
-    traceback: "module"
     ):
     """
     Simulates a battle between two Pokémon using the poke-engine if available. 
@@ -100,7 +100,6 @@ def simulate_battle_with_poke_engine(
         enemy_move (str or None): The move chosen by the opponent's Pokémon. If None, a random move will be selected.
         new_state (State): The current battle state, including the Pokémon's stats, field conditions, etc.
         mutator_full_reset (int): A flag controlling whether the battle state should be reset.
-        traceback (module): The traceback module used to handle exceptions during battle simulation.
 
     Returns:
         tuple: A tuple containing:
