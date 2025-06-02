@@ -1,15 +1,59 @@
 import os
+from pathlib import Path
 import requests
 import json
 import markdown
 import random
 import csv
-from .resources import battlescene_path, berries_path, items_path, itembag_path, csv_file_items_cost, csv_file_descriptions, items_list_path, font_path
-from aqt.utils import showWarning, showInfo
 from collections import Counter
-from PyQt6.QtGui import QFontDatabase, QFont
-from aqt import mw
 
+from aqt import mw
+from aqt.utils import showWarning, showInfo
+from PyQt6.QtGui import QFontDatabase, QFont
+
+from . import audios
+from .pyobj.settings import Settings
+from .resources import (
+    battlescene_path,
+    berries_path,
+    items_path,
+    itembag_path,
+    csv_file_items_cost,
+    csv_file_descriptions,
+    font_path,
+    pokemon_names_file_path,
+    move_names_file_path,
+    hurt_normal_sound_path,
+    hurt_noteff_sound_path,
+    hurt_supereff_sound_path,
+    hpheal_sound_path,
+    ownhplow_sound_path,
+    fainted_sound_path,
+)
+
+# Load move and pokemon name mapping at startup
+with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
+    POKEMON_NAME_LOOKUP = json.load(f)
+with open(move_names_file_path, "r", encoding="utf-8") as f:
+    MOVE_NAME_LOOKUP = json.load(f)
+
+
+def format_pokemon_name(name: str) -> str:
+    """
+    Look up the official Pokémon name using the normalized key.
+    Falls back to capitalizing if not found.
+    """
+    key = name.replace(" ", "").replace("-", "").replace("_", "").lower()
+    return POKEMON_NAME_LOOKUP.get(key, name.capitalize())
+
+def format_move_name(move: str) -> str:
+    """
+    Look up the official move name using the normalized key.
+    Falls back to title-casing with spaces if not found.
+    """
+    key = move.replace(" ", "").replace("-", "").replace("_", "").lower()
+    return MOVE_NAME_LOOKUP.get(key, " ".join(word.capitalize() for word in move.replace("_", " ").split()))
+    
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
     return os.path.isdir(folder_path)
@@ -352,8 +396,6 @@ def load_custom_font(font_size, language):
 
     return custom_font
 
-import os
-
 def get_all_sprites(directory):
     """
     Returns a list of trainer sprite names without the '.png' extension
@@ -372,4 +414,31 @@ def get_all_sprites(directory):
     except FileNotFoundError:
         print(f"Error: The directory '{directory}' does not exist.")
         return []
+    
+def play_effect_sound(sound_type):
+    sound_effects = Settings().get("audio.sound_effects", False)
+    if sound_effects is True:
+        audio_path = None
+        if sound_type == "HurtNotEffective":
+            audio_path = hurt_noteff_sound_path
+        elif sound_type == "HurtNormal":
+            audio_path = hurt_normal_sound_path
+        elif sound_type == "HurtSuper":
+            audio_path = hurt_supereff_sound_path
+        elif sound_type == "OwnHpLow":
+            audio_path = ownhplow_sound_path
+        elif sound_type == "HpHeal":
+            audio_path = hpheal_sound_path
+        elif sound_type == "Fainted":
+            audio_path = fainted_sound_path
+
+        if not audio_path.is_file():
+            return
+        else:   
+            audio_path = Path(audio_path)
+            #threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
+            audios.will_use_audio_player()
+            audios.audio(audio_path)
+    else:
+        pass
 
