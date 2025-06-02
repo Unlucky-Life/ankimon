@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui import QAction, QKeySequence
 from aqt import mw  # The main window object
 from aqt.utils import qconnect
+
 from .gui_classes.choose_trainer_sprite import TrainerSpriteDialog
 from .pyobj.trainer_card_window import TrainerCardGUI
 from .gui_classes.pokemon_team_window import PokemonTeamDialog
@@ -11,9 +12,13 @@ from .gui_classes.check_files import FileCheckerApp
 from .user_files.download_sprites import show_agreement_and_download_dialog
 from .pyobj.ankimon_leaderboard import show_api_key_dialog
 from .pyobj.achievements_dialog import AchievementsDialog
+from .pyobj.settings import Settings
+from .pyobj.translator import Translator
+
 debug = True
 
 # Initialize the menu
+mw.translator = Translator(language=int(Settings().get("misc.language", int(9))))
 mw.pokemenu = QMenu('&' + mw.translator.translate("ankimon_button_title"), mw)
 game_menu = mw.pokemenu.addMenu(mw.translator.translate("ankimon_game_button_title"))
 profile_menu = mw.pokemenu.addMenu(mw.translator.translate("ankimon_profile_button_title"))
@@ -247,6 +252,4 @@ def create_menu_actions(
     help_menu.addAction(downloader_action)
 
     mw.form.menubar.addMenu(mw.pokemenu)
-
-
     

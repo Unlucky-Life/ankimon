@@ -11,38 +11,31 @@
 # Important - If you redistribute it and/or modify this addon - must give contribution in Title and Code
 # aswell as ask for permission to modify / redistribute this addon or the code itself
 
-# import csv
 import json
-# import os
-# import platform
 import random
 import math
 from collections import defaultdict
 import copy
-
-from .poke_engine.battle import Move
-from .poke_engine.objects import Pokemon, State, StateMutator, Side
-from .poke_engine.helpers import normalize_name
-from .poke_engine.find_state_instructions import get_all_state_instructions
-
-
-from collections import defaultdict
-
 from pathlib import Path
-
 import traceback
-
-#from .install_dependencies import install_package
-#install_package("PyQt6")
-#from .test import * => added for testing
+import uuid
 
 import aqt
-# import requests
-import uuid
 from anki.hooks import addHook, wrap
 from aqt import gui_hooks, mw, utils
-from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
-                    QPixmap, Qt, QVBoxLayout, QWidget, qconnect)
+from aqt.qt import (
+    QAction,
+    QDialog,
+    QFont,
+    QGridLayout,
+    QLabel,
+    QPainter,
+    QPixmap,
+    Qt,
+    QVBoxLayout,
+    QWidget,
+    qconnect
+    )
 from aqt.reviewer import Reviewer
 from aqt.utils import downArrow, showInfo, showWarning, tr, tooltip
 from aqt.utils import *
@@ -50,29 +43,85 @@ from aqt.qt import *
 from PyQt6 import *
 from PyQt6.QtCore import QPoint, QTimer, QThread, QEvent, QObject, QUrl
 from PyQt6.QtGui import QIcon, QColor, QPalette, QDesktopServices, QPen, QFontDatabase
-from PyQt6.QtWidgets import (QApplication, QDialog, QLabel,
-                             QPushButton, QVBoxLayout, QWidget, QMessageBox, QCheckBox, QTextEdit, QHBoxLayout, QComboBox, QLineEdit, QScrollArea, 
-                             QFrame, QMenu, QLayout, QProgressBar)
+from PyQt6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+    QMessageBox,
+    QCheckBox,
+    QTextEdit,
+    QHBoxLayout,
+    QComboBox,
+    QLineEdit,
+    QScrollArea, 
+    QFrame,
+    QMenu,
+    QLayout,
+    QProgressBar
+    )
+from aqt.gui_hooks import webview_will_set_content
+from aqt.webview import WebContent
+try:
+    from anki.sound import SoundOrVideoTag
+    from aqt.sound import av_player
+    legacy_play = None
+    from . import audios
+except (ImportError, ModuleNotFoundError):
+    showWarning("Sound import error occured.")
+    from anki.sound import play as legacy_play
+    av_player = None
 
+from .config_var import *
 from .resources import *
-from .texts import _bottomHTML_template, button_style, \
-                    attack_details_window_template, attack_details_window_template_end, \
-                    remember_attack_details_window_template, remember_attack_details_window_template_end, \
-                    rate_addon_text_label, inject_life_bar_css_1, inject_life_bar_css_2, \
-                    thankyou_message_text, dont_show_this_button_text
-
+from .menu_buttons import create_menu_actions
+from .hooks import setupHooks
+from .texts import (
+    _bottomHTML_template,
+    button_style,
+    attack_details_window_template,
+    attack_details_window_template_end,
+    remember_attack_details_window_template,
+    remember_attack_details_window_template_end,
+    rate_addon_text_label,
+    inject_life_bar_css_1,
+    inject_life_bar_css_2,
+    thankyou_message_text,
+    dont_show_this_button_text
+)
 from .const import gen_ids, status_colors_html, status_colors_label
-from .business import get_image_as_base64, \
-    split_string_by_length, split_japanese_string_by_length, capitalize_each_word, \
-    resize_pixmap_img, type_colors, \
-    calc_experience, get_multiplier_stats, get_multiplier_acc_eva, bP_none_moves, \
-    calc_exp_gain, \
-    read_csv_file, read_descriptions_csv
-from .utils import check_folders_exist, check_file_exists, test_online_connectivity, \
-    read_local_file, read_github_file, \
-    compare_files, write_local_file, random_berries, \
-    random_item, random_fossil, count_items_and_rewrite, filter_item_sprites, give_item
-
+from .business import (
+    get_image_as_base64,
+    split_string_by_length,
+    split_japanese_string_by_length,
+    capitalize_each_word,
+    resize_pixmap_img,
+    type_colors,
+    calc_experience,
+    get_multiplier_stats,
+    get_multiplier_acc_eva,
+    bP_none_moves,
+    calc_exp_gain,
+    read_csv_file,
+    read_descriptions_csv
+)
+from .utils import (
+    check_folders_exist,
+    check_file_exists,
+    test_online_connectivity,
+    read_local_file,
+    read_github_file,
+    compare_files,
+    write_local_file,
+    random_berries,
+    random_item,
+    random_fossil,
+    count_items_and_rewrite,
+    filter_item_sprites,
+    give_item
+)
 try:
     from .functions.pokedex_functions import *
     from .functions.badges_functions import *
@@ -87,11 +136,20 @@ try:
     from .functions.trainer_functions import xp_share_gain_exp
 except ImportError as e:
     showWarning(f"Error in importing functions library {e}")
-
-from .gui_entities import MovieSplashLabel, UpdateNotificationWindow, AgreementDialog, \
-    Version_Dialog, License, Credits, HelpWindow, TableWidget, IDTableWidget, \
-    Pokedex_Widget, CheckFiles
-
+from .gui_entities import (
+    MovieSplashLabel,
+    UpdateNotificationWindow,
+    AgreementDialog,
+    Version_Dialog,
+    License,
+    Credits,
+    HelpWindow,
+    TableWidget,
+    IDTableWidget,
+    Pokedex_Widget,
+    CheckFiles
+)
+from .functions.discord_function import *  # Import necessary functions for Discord integration
 from .pyobj.ankimon_tracker import AnkimonTracker
 from .pyobj.settings import Settings
 from .pyobj.settings_window import SettingsWindow
@@ -112,9 +170,14 @@ from .pyobj.reviewer_obj import Reviewer_Manager
 from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
-
 from .functions.drawing_utils import draw_gender_symbols, draw_stat_boosts
 from .functions.update_main_pokemon import update_main_pokemon
+from .poke_engine.battle import Move
+from .poke_engine.objects import Pokemon, State, StateMutator, Side
+from .poke_engine.helpers import normalize_name
+from .poke_engine.find_state_instructions import get_all_state_instructions
+from .poke_engine.ankimon_hooks_to_poke_engine import simulate_battle_with_poke_engine
+from .poke_engine import constants
 
 # Load move and pokemon name mapping at startup
 with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
@@ -273,7 +336,6 @@ load_collected_pokemon_ids()
 
 pokedex_window = Pokedex(addon_dir, ankimon_tracker = ankimon_tracker_obj)
 
-#from .download_pokeapi_db import create_pokeapidb
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
 
@@ -289,8 +351,7 @@ ankimon_tracker_obj.pokemon_encouter = 0
 """
 get web exports ready for special reviewer look
 """
-from aqt.gui_hooks import webview_will_set_content
-from aqt.webview import WebContent
+
 
 # Set up web exports for static files
 # mw.addonManager.setWebExports(__name__, r"user_files/.*\.(css|js|jpg|gif|html|ttf|png|mp3)")
@@ -341,7 +402,7 @@ if mainpokemon_path.is_file():
 window = None
 gender = None
 
-from .config_var import *
+
 
 check_data = CheckPokemonData(settings_obj, logger)
 
@@ -363,7 +424,7 @@ def on_show_answer(Card):
 gui_hooks.reviewer_did_show_question.append(on_show_question)
 gui_hooks.reviewer_did_show_answer.append(on_show_answer)
 
-from .hooks import setupHooks
+
 
 setupHooks(check_data , ankimon_tracker_obj, prepare)
 
@@ -406,16 +467,6 @@ def open_help_window(online_connectivity):
     except:
         showWarning("Error in opening HelpGuide")
         
-try:
-    from anki.sound import SoundOrVideoTag
-    from aqt.sound import av_player
-    legacy_play = None
-    from . import audios
-except (ImportError, ModuleNotFoundError):
-    showWarning("Sound import error occured.")
-    from anki.sound import play as legacy_play
-    av_player = None
-
 
 def play_effect_sound(sound_type):
     sound_effects = settings_obj.get("audio.sound_effects", False)
@@ -1424,280 +1475,11 @@ def get_random_starter():
     except Exception as e:
         showWarning(f"Error in get_random_starter: {e}")
         return None, None, None
-
-from .poke_engine.ankimon_hooks_to_poke_engine import simulate_battle_with_poke_engine
-def simulate_battle_with_poke_engine_old(main_pokemon, enemy_pokemon, main_move, enemy_move, new_state, mutator_full_reset):
-    """
-    Simulate a battle between two Pokemon using poke-engine if available.
-    Prints and returns the battle outcome as a readable log.
-    """
-    import random
-
-    # If no move is provided, use a random move
-    if main_move is None and main_pokemon.attacks:
-        main_move = random.choice(main_pokemon.attacks)
-    if enemy_move is None and enemy_pokemon.attacks:
-        enemy_move = random.choice(enemy_pokemon.attacks)
-    if not main_move:
-        main_move = "Struggle"
-    if not enemy_move:
-        enemy_move = "Struggle"
-    
-    try:
-        if main_pokemon.name.lower() != new_state.user.active.id:
-            mutator_full_reset = 1 # reset AFTER Pokemon is changed !
-        new_state.weather,
-        new_state.field,
-        new_state.trick_room
-    except:
-        mutator_full_reset = 1
-
-    try:
-
-
-        main_move_normalized = normalize_name(main_move)
-        enemy_move_normalized = normalize_name(enemy_move)
-
-                
-        # Store only the chosen outcome
-        battle_header = {
-            'user': {
-                'name': main_pokemon.name,
-                'level': main_pokemon.level,
-                'move': main_move
-            },
-            'opponent': {
-                'name': enemy_pokemon.name,
-                'level': enemy_pokemon.level,
-                'move': enemy_move
-            }
-        }
-
-        main_pokemon_dict = main_pokemon.to_engine_format()
-        enemy_pokemon_dict = enemy_pokemon.to_engine_format()
-
-        # Create Pokemon objects (positional args as required)
-        main_pokemon_obj = Pokemon(
-            identifier=main_pokemon_dict['identifier'],
-            level=main_pokemon_dict['level'],
-            types=main_pokemon_dict['types'],
-            hp=main_pokemon_dict['hp'],
-            maxhp=main_pokemon_dict['maxhp'],
-            ability=main_pokemon_dict['ability'],
-            item=main_pokemon_dict['item'],
-            attack=main_pokemon_dict['attack'],
-            defense=main_pokemon_dict['defense'],
-            special_attack=main_pokemon_dict['special_attack'],
-            special_defense=main_pokemon_dict['special_defense'],
-            speed=main_pokemon_dict['speed'],
-            nature=main_pokemon_dict.get('nature', 'serious'),
-            evs=main_pokemon_dict.get('evs', (85,) * 6),
-            status=main_pokemon_dict.get('status', None),
-            terastallized=main_pokemon_dict.get('terastallized', False),
-            volatile_status=main_pokemon_dict.get('volatile_status', set()),
-            moves=main_pokemon_dict.get('moves', [])
-        )
-
-        enemy_pokemon_obj = Pokemon(
-            identifier=enemy_pokemon_dict['identifier'],
-            level=enemy_pokemon_dict['level'],
-            types=enemy_pokemon_dict['types'],
-            hp=enemy_pokemon_dict['hp'],
-            maxhp=enemy_pokemon_dict['maxhp'],
-            ability=enemy_pokemon_dict['ability'],
-            item=enemy_pokemon_dict['item'],
-            attack=enemy_pokemon_dict['attack'],
-            defense=enemy_pokemon_dict['defense'],
-            special_attack=enemy_pokemon_dict['special_attack'],
-            special_defense=enemy_pokemon_dict['special_defense'],
-            speed=enemy_pokemon_dict['speed'],
-            nature=enemy_pokemon_dict.get('nature', 'serious'),
-            evs=enemy_pokemon_dict.get('evs', (85,) * 6),
-            status=enemy_pokemon_dict.get('status', None),
-            terastallized=enemy_pokemon_dict.get('terastallized', False),
-            volatile_status=enemy_pokemon_dict.get('volatile_status', set()),
-            moves=enemy_pokemon_dict.get('moves', [])
-        )
         
-        # Default side_conditions with all needed keys
-        side_conditions = defaultdict(int, {
-            'stealthrock': 0,
-            'spikes': 0,
-            'toxicspikes': 0,
-            'tailwind': 0,
-            'reflect': 0,
-            'lightscreen': 0,
-            'auroraveil': 0,
-            'protect': 0,
-        })
-
-        try:
-            if mutator_full_reset not in (0, 1, 2):
-                mutator_full_reset = 1
-        except:
-            mutator_full_reset = 1
-
-        state = reset_pokemon(new_state,mutator_full_reset,main_pokemon_obj,enemy_pokemon_obj,side_conditions)
-        
-        mutator = StateMutator(state)
-
-        try:
-            if state.opponent.active.hp == 0:
-                main_move = "Splash"
-                enemy_move = "Splash"
-        except:
-            main_move = "Splash"
-            enemy_move = "Splash"
-
-        # Get all possible outcomes
-        transpose_instructions = get_all_state_instructions(
-            mutator, main_move_normalized, enemy_move_normalized
-        )
-
-        # Randomly select ONE outcome from possible outcomes, using probability weights for the outcomes in actual Pokemon battles
-        # e.g. if P(outcome 1):P(outcome 2) = 20% : 80%, then 20% chance to pick outcome 1 (picks randomly)
-        weights = [outcome.percentage for outcome in transpose_instructions]
-        chosen_outcome = random.choices(transpose_instructions, weights=weights, k=1)[0]
-        
-        instrs = chosen_outcome.instructions
-
-        user_hp_before = int(state.user.active.hp)
-        opponent_hp_before = int(state.opponent.active.hp)
-
-        mutator.apply(instrs)
-
-        new_state = copy.deepcopy(state)
-
-        mutator_full_reset = int(0) # preserve battle state - until something else changes this value
-
-        user_hp_after = int(new_state.user.active.hp)
-        opponent_hp_after = int(new_state.opponent.active.hp)
-
-        dmg_from_user_move = int(opponent_hp_before - opponent_hp_after)
-        dmg_from_enemy_move = int(user_hp_before - user_hp_after)
-
-        # Reference to the founder and creator of Ankimon, Unlucky-life.
-        # Unlucky, we are very proud of you for your work. You are a legend. 
-        # It's been a pleasure being part of this journey. -- h0tp (and friends)
-
-        if int(chosen_outcome.percentage) == 0:
-            unlucky_life = int(1)
-        else:
-            unlucky_life = int(chosen_outcome.percentage)
-        
-        # On a serious note, the function above is the CHANCE that the chosen_outcome was picked out of ALL
-        # the choices in transpose_instructions, based on factors like accuracy rate, the chance to
-        # inflict a certain status (like sleep or paralyze), etc.  
-
-        # Did the chosen outcome deal damage?
-        user_did_damage = any(i[0] == 'damage' and i[1] == 'opponent' and i[2] > 0 for i in instrs)
-        opponent_did_damage = any(i[0] == 'damage' and i[1] == 'user' and i[2] > 0 for i in instrs)
-
-        # Could the move have dealt damage in any possible outcome?
-        user_move_can_hit = any(
-            any(i[0] == 'damage' and i[1] == 'opponent' and i[2] > 0 for i in outcome.instructions)
-            for outcome in transpose_instructions
-        )
-        opponent_move_can_hit = any(
-            any(i[0] == 'damage' and i[1] == 'user' and i[2] > 0 for i in outcome.instructions)
-            for outcome in transpose_instructions
-        )
-
-        # Final miss detection: missed if this outcome did not deal damage, but another could have
-        user_missed = user_move_can_hit and not user_did_damage
-        opponent_missed = opponent_move_can_hit and not opponent_did_damage
-
-        battle_effects = []
-        for instr in chosen_outcome.instructions:
-            battle_effects.append(list(instr))  # Convert tuples to lists
-
-        print(f"{unlucky_life * 100}% chance: {battle_effects}")
-
-        battle_info = {'battle_header': battle_header,
-                'instructions': battle_effects,
-                'user_missed': user_missed,
-                'opponent_missed': opponent_missed}
-
-        return (battle_info, copy.deepcopy(new_state), dmg_from_enemy_move, dmg_from_user_move, mutator_full_reset)
-    
-    except Exception as e:
-        
-        traceback.print_exc()
-        
-def reset_pokemon(state,mutator_full_reset,main_pokemon_obj,enemy_pokemon_obj,side_conditions):
-        if mutator_full_reset == 1: # reset EVERYTHING about the battle 
-
-            # Create State object
-            state = State(
-                user=Side(
-                    active=main_pokemon_obj,
-                    reserve={},
-                    wish=(0, 0),
-                    side_conditions=side_conditions.copy(),
-                    future_sight=(0, 0)
-                ),
-                opponent=Side(
-                    active=enemy_pokemon_obj,
-                    reserve={},
-                    wish=(0, 0),
-                    side_conditions=side_conditions.copy(),
-                    future_sight=(0, 0)
-                ),
-                weather=None,
-                field=None,
-                trick_room=False
-            )
-          
-        elif mutator_full_reset == 2: # Store the USER stats!
-            
-            state = State(
-                user=Side(
-                    active=new_state.user.active,
-                    reserve=new_state.user.reserve,
-                    wish=new_state.user.wish,
-                    side_conditions=new_state.user.side_conditions,
-                    future_sight=new_state.user.future_sight
-                ),
-                opponent = Side(
-                    active= enemy_pokemon_obj,
-                    reserve = {},
-                    wish = (0, 0),
-                    side_conditions = side_conditions.copy(),
-                    future_sight = (0, 0)
-                ),
-                weather = new_state.weather,
-                field = new_state.field,
-                trick_room = new_state.trick_room
-            )
-
-        elif mutator_full_reset == 0: # Store FULL battle state
-            state = State(
-                user=Side(
-                    active=new_state.user.active,
-                    reserve=new_state.user.reserve,
-                    wish=new_state.user.wish,
-                    side_conditions=new_state.user.side_conditions,
-                    future_sight=new_state.user.future_sight
-                ),
-                opponent=Side(
-                    active=new_state.opponent.active,
-                    reserve=new_state.opponent.reserve,
-                    wish=new_state.opponent.wish,
-                    side_conditions=new_state.opponent.side_conditions,
-                    future_sight=new_state.opponent.future_sight
-                ),
-                weather = new_state.weather,
-                field = new_state.field,
-                trick_room = new_state.trick_room
-            )
-        return state
-
-    
-
 def process_battle_data(battle_data: dict) -> str:
     """Convert raw battle instructions into human-readable format."""
     # Error handling and input validation
-    from .poke_engine import constants
+    
 
     if not isinstance(battle_data, dict) or 'battle_header' not in battle_data:
         error_msg = mw.translator.translate("invalid_battle_data")
@@ -2247,7 +2029,6 @@ def on_review_card(*args):
                 enemy_attack,
                 new_state,
                 mutator_full_reset,
-                traceback
                 )
           
             '''
@@ -4570,7 +4351,6 @@ achievement_bag = AchievementWindow()
 version_dialog = Version_Dialog()
 
 #buttonlayout
-from .menu_buttons import create_menu_actions
 
 # Create menu actions
 # Create menu actions
@@ -4708,8 +4488,6 @@ if reviewer_buttons is True:
     Reviewer._linkHandler = linkHandler_wrap
 
 if settings_obj.get("misc.discord_rich_presence",False) == True:
-    from .functions.discord_function import *  # Import necessary functions for Discord integration
-
     client_id = '1319014423876075541'  # Replace with your actual client ID
     large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
     mw.ankimon_presence = DiscordPresence(client_id, large_image_url, ankimon_tracker_obj, logger, settings_obj)  # Establish connection and get the presence instance
