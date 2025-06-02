@@ -105,7 +105,8 @@ from .business import (
     bP_none_moves,
     calc_exp_gain,
     read_csv_file,
-    read_descriptions_csv
+    read_descriptions_csv,
+    get_id_and_description_by_item_name
 )
 from .utils import (
     check_folders_exist,
@@ -120,7 +121,10 @@ from .utils import (
     random_fossil,
     count_items_and_rewrite,
     filter_item_sprites,
-    give_item
+    give_item,
+    format_pokemon_name,
+    format_move_name,
+    play_effect_sound,
 )
 try:
     from .functions.pokedex_functions import *
@@ -134,6 +138,8 @@ try:
     from .functions.gui_functions import type_icon_path, move_category_path
     from .gui_classes.pokemon_details import *
     from .functions.trainer_functions import xp_share_gain_exp
+    from .functions.badges_functions import check_badges, check_for_badge, receive_badge
+    from .functions.pokemon_functions import get_random_moves_for_pokemon
 except ImportError as e:
     showWarning(f"Error in importing functions library {e}")
 from .gui_entities import (
@@ -169,6 +175,7 @@ from .pyobj.attack_dialog import AttackDialog
 from .pyobj.reviewer_obj import Reviewer_Manager
 from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
+from .pyobj.item_window import ItemWindow
 from .classes.choose_move_dialog import MoveSelectionDialog
 from .functions.drawing_utils import draw_gender_symbols, draw_stat_boosts
 from .functions.update_main_pokemon import update_main_pokemon
@@ -468,33 +475,6 @@ def open_help_window(online_connectivity):
         showWarning("Error in opening HelpGuide")
         
 
-def play_effect_sound(sound_type):
-    sound_effects = settings_obj.get("audio.sound_effects", False)
-    if sound_effects is True:
-        audio_path = None
-        if sound_type == "HurtNotEffective":
-            audio_path = hurt_noteff_sound_path
-        elif sound_type == "HurtNormal":
-            audio_path = hurt_normal_sound_path
-        elif sound_type == "HurtSuper":
-            audio_path = hurt_supereff_sound_path
-        elif sound_type == "OwnHpLow":
-            audio_path = ownhplow_sound_path
-        elif sound_type == "HpHeal":
-            audio_path = hpheal_sound_path
-        elif sound_type == "Fainted":
-            audio_path = fainted_sound_path
-
-        if not audio_path.is_file():
-            return
-        else:   
-            audio_path = Path(audio_path)
-            #threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
-            audios.will_use_audio_player()
-            audios.audio(audio_path)
-    else:
-        pass
-
 def play_sound():
     if settings_obj.get("audio.sounds", False) is True:
         file_name = f"{enemy_pokemon.id}.ogg"
@@ -562,74 +542,6 @@ def answerCard_after(rev, card, ease):
 
 aqt.gui_hooks.reviewer_will_answer_card.append(answerCard_before)
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
-
-
-if database_complete:
-    def get_random_moves_for_pokemon(pokemon_name, level):
-        """
-        Get up to 4 random moves learned by a Pokémon at a specific level and lower, along with the highest level,
-        excluding moves that can be learned at a higher level.
-
-        Args:
-            json_file_name (str): The name of the JSON file containing Pokémon learnset data.
-            pokemon_name (str): The name of the Pokémon.
-            level (int): The level at which to check for moves.
-
-        Returns:
-            list: A list of up to 4 random moves and their highest levels.
-        """
-        # Load the JSON file
-        with open(learnset_path, "r", encoding="utf-8") as file:
-            learnsets = json.load(file)
-
-        # Normalize the Pokémon name to lowercase for consistency
-        pokemon_name = pokemon_name.lower()
-
-        # Retrieve the learnset for the specified Pokémon
-        pokemon_learnset = learnsets.get(pokemon_name, {})
-
-        # Create a dictionary to store moves and their corresponding highest levels
-        moves_at_level_and_lower = {}
-
-        # Loop through the learnset dictionary
-        for move, levels in pokemon_learnset.get('learnset', {}).items():
-            highest_level = float('-inf')  # Initialize with negative infinity
-            eligible_moves = []  # Store moves eligible for inclusion
-
-            for move_level in levels:
-                # Check if the move_level string contains 'L'
-                if 'L' in move_level:
-                    # Extract the level from the move_level string
-                    move_level_int = int(move_level.split('L')[1])
-
-                    # Check if the move can be learned at the specified level or lower
-                    if move_level_int <= level:
-                        # Update the highest_level if a higher level is found
-                        highest_level = max(highest_level, move_level_int)
-                        eligible_moves.append(move)
-
-            # Check if the eligible moves can be learned at a higher level
-            if highest_level != float('-inf'):
-                can_learn_at_higher_level = any(
-                    int(move_level.split('L')[1]) > highest_level
-                    for move_level in levels
-                    if 'L' in move_level
-                )
-                if not can_learn_at_higher_level:
-                    moves_at_level_and_lower[move] = highest_level
-
-        attacks = []
-        if moves_at_level_and_lower:
-            # Convert the dictionary into a list of tuples for random selection
-            moves_and_levels_list = list(moves_at_level_and_lower.items())
-            random.shuffle(moves_and_levels_list)
-
-            # Pick up to 4 random moves and append them to the attacks list
-            for move, highest_level in moves_and_levels_list[:4]:
-                #attacks.append(f"{move} at level: {highest_level}")
-                attacks.append(f"{move}")
-
-        return attacks
 
 if database_complete:
     def get_levelup_move_for_pokemon(pokemon_name, level):
@@ -1625,24 +1537,6 @@ def process_battle_data(battle_data: dict) -> str:
         error_msg = mw.translator.translate("unexpected_error", error=str(e))
         return f"Error: {error_msg}"
 
-def format_pokemon_name(name: str) -> str:
-    """
-    Look up the official Pokémon name using the normalized key.
-    Falls back to capitalizing if not found.
-    """
-    key = name.replace(" ", "").replace("-", "").replace("_", "").lower()
-    return POKEMON_NAME_LOOKUP.get(key, name.capitalize())
-
-def format_move_name(move: str) -> str:
-    """
-    Look up the official move name using the normalized key.
-    Falls back to title-casing with spaces if not found.
-    """
-    key = move.replace(" ", "").replace("-", "").replace("_", "").lower()
-    return MOVE_NAME_LOOKUP.get(key, " ".join(word.capitalize() for word in move.replace("_", " ").split()))
-
-
-
 def new_calc_atk_dmg(results: dict, target: str) -> int:
     """
     Sum up all damage instructions in a simulation result for the given target.
@@ -2280,71 +2174,6 @@ def choose_pokemon(starter_name):
     logger.log_and_showinfo("info",f"{name.capitalize()} has been chosen as Starter Pokemon !")
 
     starter_window.display_chosen_starter_pokemon(starter_name)
-
-def save_fossil_pokemon(pokemon_id):
-    # Create a dictionary to store the Pokémon's data
-    # add all new values like hp as max_hp, evolution_data, description and growth rate
-    name = search_pokedex_by_id(pokemon_id)
-    id = pokemon_id
-    stats = search_pokedex(name, "baseStats")
-    abilities = search_pokedex(name, "abilities")
-    evos = search_pokedex(name, "evos")
-    gender = pick_random_gender(name.lower())
-    numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
-    # Check if there are numeric abilities
-    if numeric_abilities:
-        # Convert the filtered abilities dictionary values to a list
-        abilities_list = list(numeric_abilities.values())
-        # Select a random ability from the list
-        ability = random.choice(abilities_list)
-    else:
-        # Set to "No Ability" if there are no numeric abilities
-        ability = "No Ability"
-    type = search_pokedex(name, "types")
-    name = search_pokedex(name, "name")
-    generation_file = "pokeapi_db.json"
-    growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
-    base_experience = search_pokeapi_db_by_id(id, "base_experience")
-    description= search_pokeapi_db_by_id(id, "description")
-    level = 5
-    attacks = get_random_moves_for_pokemon(name, level)
-    stats["xp"] = 0
-    ev = {
-        "hp": 0,
-        "atk": 0,
-        "def": 0,
-        "spa": 0,
-        "spd": 0,
-        "spe": 0
-    }
-    caught_pokemon = {
-        "name": name,
-        "gender": gender,
-        "level": level,
-        "id": id,
-        "ability": ability,
-        "type": type,
-        "stats": stats,
-        "ev": ev,
-        "iv": iv,
-        "attacks": attacks,
-        "base_experience": base_experience,
-        "current_hp": calculate_hp(int(stats["hp"]), level, ev, iv),
-        "growth_rate": growth_rate,
-        "evos": evos
-    }
-    # Load existing Pokémon data if it exists
-    if mypokemon_path.is_file():
-        with open(mypokemon_path, "r", encoding="utf-8") as json_file:
-            caught_pokemon_data = json.load(json_file)
-    else:
-        caught_pokemon_data = []
-
-    # Append the caught Pokémon's data to the list
-    caught_pokemon_data.append(caught_pokemon)
-    # Save the caught Pokémon's data to a JSON file
-    with open(str(mypokemon_path), "w") as json_file:
-        json.dump(caught_pokemon_data, json_file, indent=2)
 
 def export_to_pkmn_showdown():
     # Create a main window
@@ -3320,38 +3149,7 @@ with open(badges_list_path, "r", encoding="utf-8") as json_file:
 
 achievements = {str(i): False for i in range(1, 69)}
 
-def check_badges(achievements):
-        with open(badgebag_path, "r", encoding="utf-8") as json_file:
-            badge_list = json.load(json_file)
-            for badge_num in badge_list:
-                achievements[str(badge_num)] = True
-        return achievements
-
-def check_for_badge(achievements, rec_badge_num):
-        achievements = check_badges(achievements)
-        if achievements[str(rec_badge_num)] is False:
-            got_badge = False
-        else:
-            got_badge = True
-        return got_badge
-        
-def save_badges(badges_collection):
-        with open(badgebag_path, 'w') as json_file:
-            json.dump(badges_collection, json_file)
-
 achievements = check_badges(achievements)
-
-def receive_badge(badge_num,achievements):
-    achievements = check_badges(achievements)
-    #for badges in badge_list:
-    achievements[str(badge_num)] = True
-    badges_collection = []
-    for num in range(1,69):
-        if achievements[str(num)] is True:
-            badges_collection.append(int(num))
-    save_badges(badges_collection)
-    return achievements
-
 
 class StarterWindow(QWidget):
     def __init__(self):
@@ -3762,7 +3560,7 @@ class EvoWindow(QWidget):
         # Create buttons for catching and killing the Pokémon
         evolve_button = QPushButton("Evolve Pokémon")
         dont_evolve_button = QPushButton("Cancel Evolution")
-        qconnect(evolve_button.clicked, lambda: evolve_pokemon(individual_id, prevo_name, evo_id, evo_name))
+        qconnect(evolve_button.clicked, lambda: evolve_pokemon(individual_id, prevo_name, evo_id, evo_name, main_pokemon))
         qconnect(dont_evolve_button.clicked, lambda: cancel_evolution(individual_id, prevo_id))
 
         # Set the merged image as the pixmap for the QLabel
@@ -3803,429 +3601,15 @@ credits = Credits()
 count_items_and_rewrite(itembag_path)
 
 UserRole = 1000  # Define custom role
-
-class ItemWindow(QWidget):
-    def __init__(self, logger, main_pokemon, enemy_pokemon, itembag_path):
-        super().__init__()
-        self.itembag_path = itembag_path
-        self.logger=logger
-        self.read_item_file()
-        self.initUI()
-        self.main_pokemon = main_pokemon
-        self.enemy_pokemon = enemy_pokemon
-
-    def initUI(self):
-        self.hp_heal_items = {
-            'potion': 20,
-            'sweet-heart': 20,
-            'berry-juice': 20,
-            'fresh-water': 30,
-            'soda-pop': 50,
-            'super-potion': 60,
-            'energy-powder': 60,
-            'lemonade': 70,
-            'moomoo-milk': 100,
-            'hyper-potion': 120,
-            'energy-root': 120,
-            'full-restore': 1000,
-            'max-potion': 1000
-        }
-
-        self.fossil_pokemon = {
-            "helix-fossil": 138,
-            "dome-fossil": 140,
-            "old-amber": 142,
-            "root-fossil": 345,
-            "claw-fossil": 347,
-            "skull-fossil": 408,
-            "armor-fossil": 410,
-            "cover-fossil": 564,
-            "plume-fossil": 566
-        }
-            
-        self.pokeball_chances = {
-            'dive-ball': 11,      # Increased chance when fishing or underwater
-            'dusk-ball': 11,      # Increased chance at night or in caves
-            'great-ball': 12,     # Increased catch rate (original was 9, now 12)
-            'heal-ball': 12,      # Same as a Poké Ball but heals the Pokémon
-            'iron-ball': 12,      # Used for Steel-type Pokémon, 1.5x chance
-            'light-ball': 1,      # Not actually used for catching Pokémon; it's an item
-            'luxury-ball': 12,    # Same as a Poké Ball but increases happiness
-            'master-ball': 100,   # Guarantees a successful catch (100% chance)
-            'nest-ball': 12,      # Works better on lower-level Pokémon
-            'net-ball': 12,       # Higher chance for Water- and Bug-type Pokémon
-            'poke-ball': 8,       # Increased chance from 5 to 8
-            'premier-ball': 8,    # Same as Poké Ball, but it’s a special ball
-            'quick-ball': 13,     # High chance if used at the start of battle
-            'repeat-ball': 12,    # Higher chance on Pokémon that have been caught before
-            'safari-ball': 8,     # Used in Safari Zone, with a fixed catch rate
-            'smoke-ball': 1,      # Used to flee from wild battles, no catch chance
-            'timer-ball': 13,     # Higher chance the longer the battle goes
-            'ultra-ball': 13      # Increased catch rate (original was 10, now 13)
-        }
-        
-        self.evolution_items = {}
-        self.tm_hm_list = {}
-
-        self.setWindowIcon(QIcon(str(icon_path)))  # Add a Pokeball icon
-        self.setWindowTitle("Itembag")
-        self.layout = QVBoxLayout()  # Main layout is now a QVBoxLayout
-
-        # Search Filter
-        self.search_edit = QLineEdit()
-        self.search_edit.setPlaceholderText("Search Items...")
-        self.search_edit.returnPressed.connect(self.filter_items)
-        self.search_button = QPushButton("Search")
-        self.search_button.clicked.connect(self.filter_items)
-
-        # Add dropdown menu for generation filtering
-        self.category = QComboBox()
-        self.category.addItem("All")
-        self.category.addItems(["Fossils", "TMs and HMs", "Heal", "Evolution Items"])
-        self.category.currentIndexChanged.connect(self.filter_items)
-
-        # Add widgets to layout
-        filter_layout = QHBoxLayout()
-        filter_layout.addWidget(self.search_edit)
-        filter_layout.addWidget(self.search_button)
-        filter_layout.addWidget(self.category)
-        self.layout.addLayout(filter_layout)
-
-        # Create the scroll area and its properties
-        self.scrollArea = QScrollArea(self)
-        self.scrollArea.setWidgetResizable(True)
-
-        # Create a widget and layout for content inside the scroll area
-        self.contentWidget = QWidget()
-        self.contentLayout = QGridLayout()  # The layout for items
-        self.contentWidget.setLayout(self.contentLayout)
-
-        # Add the content widget to the scroll area
-        self.scrollArea.setWidget(self.contentWidget)
-
-        # Add the scroll area to the main layout
-        self.layout.addWidget(self.scrollArea)
-        self.setLayout(self.layout)
-        self.resize(600, 500)
-
-    def renewWidgets(self):
-        self.read_item_file()
-        # Clear the existing widgets from the content layout
-        for i in reversed(range(self.contentLayout.count())):
-            widget = self.contentLayout.itemAt(i).widget()
-            if widget:
-                widget.deleteLater()
-        row, col = 0, 0
-        max_items_per_row = 3
-
-        if not self.itembag_list:  # Simplified check
-            empty_label = QLabel("You don't own any items yet.")
-            self.contentLayout.addWidget(empty_label, 1, 1)
-        else:
-            for item in self.itembag_list:
-                item_widget = self.ItemLabel(item["item"], item["quantity"])
-                self.contentLayout.addWidget(item_widget, row, col)
-                col += 1
-                if col >= max_items_per_row:
-                    row += 1
-                    col = 0
-    
-    def filter_items(self):
-        self.read_item_file()
-        search_text = self.search_edit.text().lower()
-        category_index = self.category.currentIndex()
-        # Clear the existing widgets from the content layout
-        for i in reversed(range(self.contentLayout.count())):
-            widget = self.contentLayout.itemAt(i).widget()
-            if widget:
-                widget.deleteLater()
-        row, col = 0, 0
-        max_items_per_row = 3
-
-        try:
-            if not self.itembag_list:  # Simplified check
-                empty_label = QLabel("Empty Search")
-                self.contentLayout.addWidget(empty_label, 1, 1)
-            else:
-                # Filter items based on category index
-                if category_index == 1:  # Fossils
-                    filtered_items = [
-                        item for item in self.itembag_list 
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.fossil_pokemon and search_text in item["item"].lower()
-                    ]
-                elif category_index == 2:  # TMs and HMs
-                    filtered_items = [
-                        item for item in self.itembag_list 
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.tm_hm_list and search_text in item["item"].lower()
-                    ]
-                elif category_index == 3:  # Heal items
-                    filtered_items = [
-                        item for item in self.itembag_list 
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.hp_heal_items and search_text in item["item"].lower()
-                    ]
-                elif category_index == 4:  # Evolution items
-                    filtered_items = [
-                        item for item in self.itembag_list 
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.evolution_items and search_text in item["item"].lower()
-                    ]
-                elif category_index == 5: # Pokeballs
-                    filtered_items = [
-                        item for item in self.itembag_list 
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.pokeball_chances and search_text in item["item"].lower()
-                    ]
-                else:
-                    filtered_items = [item for item in self.itembag_list if search_text in item["item"].lower()]
-        except Exception as e:
-            filtered_items = []    
-            self.logger.log_and_showinfo("error", f"Error filtering items: {e}")
-
-        for item in filtered_items:
-            item_widget = self.ItemLabel(item["item"], item["quantity"])
-            self.contentLayout.addWidget(item_widget, row, col)
-            col += 1
-            if col >= max_items_per_row:
-                row += 1
-                col = 0
-
-    def ItemLabel(self, item_name, quantity):
-        item_file_path = items_path / f"{item_name}.png"
-        item_frame = QVBoxLayout()  # itemframe
-        info_item_button = QPushButton("More Info")
-        info_item_button.clicked.connect(lambda: self.more_info_button_act(item_name))
-        item_name_for_label = item_name.replace("-", " ")  # Remove hyphens from item_name
-        item_name_label = QLabel(f"{item_name_for_label.capitalize()} x{quantity}")  # Display quantity
-        item_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        item_picture_pixmap = QPixmap(str(item_file_path))
-        item_picture_label = QLabel()
-        item_picture_label.setPixmap(item_picture_pixmap)
-        item_picture_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        item_frame.addWidget(item_picture_label)
-        item_frame.addWidget(item_name_label)
-
-        item_name = item_name.lower()
-        if item_name in self.hp_heal_items:
-            use_item_button = QPushButton("Heal Mainpokemon")
-            hp_heal = self.hp_heal_items[item_name]
-            use_item_button.clicked.connect(lambda: self.Check_Heal_Item(self.main_pokemon.name, hp_heal, item_name))
-        elif item_name in self.fossil_pokemon:
-            fossil_id = self.fossil_pokemon[item_name]
-            fossil_pokemon_name = search_pokedex_by_id(fossil_id)
-            use_item_button = QPushButton(f"Evolve Fossil to {fossil_pokemon_name.capitalize()}")
-            use_item_button.clicked.connect(lambda: self.Evolve_Fossil(item_name, fossil_id, fossil_pokemon_name))
-        elif item_name in self.pokeball_chances:
-            use_item_button = QPushButton("Try catching wild Pokemon")
-            use_item_button.clicked.connect(lambda: self.Handle_Pokeball(item_name))
-        else:
-            use_item_button = QPushButton("Evolve Pokemon")
-            use_item_button.clicked.connect(
-                lambda: self.Check_Evo_Item(comboBox.itemData(comboBox.currentIndex(), role=UserRole), comboBox.itemData(comboBox.currentIndex(), role=UserRole + 1), item_name)
-            )
-            comboBox = QComboBox()
-            self.PokemonList(comboBox)
-            item_frame.addWidget(comboBox)
-        item_frame.addWidget(use_item_button)
-        item_frame.addWidget(info_item_button)
-        item_frame_widget = QWidget()
-        item_frame_widget.setLayout(item_frame)
-
-        return item_frame_widget
-
-    def PokemonList(self, comboBox):
-        try:
-            with open(mypokemon_path, "r", encoding="utf-8") as json_file:
-                captured_pokemon_data = json.load(json_file)
-                if captured_pokemon_data:
-                    for pokemon in captured_pokemon_data:
-                        pokemon_name = pokemon['name']
-                        individual_id = pokemon.get('individual_id', None)
-                        id = pokemon.get('id', None)
-                        if individual_id and id:  # Ensure the ID exists
-                            # Add Pokémon name to comboBox
-                            comboBox.addItem(pokemon_name)
-                            # Store both individual_id and id as separate data using roles
-                            comboBox.setItemData(comboBox.count() - 1, individual_id, role=UserRole)
-                            comboBox.setItemData(comboBox.count() - 1, id, role=UserRole + 1)
-        except Exception as e:
-            self.logger.log_and_showinfo("error", f"Error loading Pokémon list: {e}")
-            
-    def Evolve_Fossil(self, item_name, fossil_id, fossil_poke_name):
-        starter_window.display_fossil_pokemon(fossil_id, fossil_poke_name)
-        save_fossil_pokemon(fossil_id)
-        self.delete_item(item_name)
-    
-    def modified_pokeball_chances(self, item_name, catch_chance):
-        # Adjust catch chance based on Pokémon type and Poké Ball
-        if item_name == 'net-ball' and ('water' in self.enemy_pokemon.type or 'bug' in self.enemy_pokemon.type):
-            catch_chance += 10  # Additional 10% for Water or Bug-type Pokémon
-            self.logger.log("game",f"{item_name} gets a bonus for Water/Bug-type Pokémon!")
-        
-        elif item_name == 'iron-ball' and 'steel' in self.enemy_pokemon.type:
-            catch_chance += 10  # Additional 10% for Steel-type Pokémon
-            self.logger.log("game",f"{item_name} gets a bonus for Steel-type Pokémon!")
-        
-        elif item_name == 'dive-ball' and 'water' in self.enemy_pokemon.type:
-            catch_chance += 10  # Additional 10% for Water-type Pokémon
-            self.logger.log("game",f"{item_name} gets a bonus for Water-type Pokémon!")
-
-        return catch_chance
-
-    def Handle_Pokeball(self, item_name):
-        # Check if the item exists in the pokeball chances
-        if item_name in self.pokeball_chances:
-            catch_chance = self.pokeball_chances[item_name]
-            catch_chance = self.modified_pokeball_chances(item_name, catch_chance)
-            
-            # Simulate catching the Pokémon based on the catch chance
-            if random.randint(1, 100) <= catch_chance:
-                # Pokémon caught successfully
-                self.logger.log_and_showinfo("info",f"{item_name} successfully caught the Pokémon!")
-                self.delete_item(item_name)  # Delete the Poké Ball after use
-            else:
-                # Pokémon was not caught
-                self.logger.log_and_showinfo("info",f"{item_name} failed to catch the Pokémon.")
-                self.delete_item(item_name)  # Still delete the Poké Ball after use
-        else:
-            self.logger.log_and_showinfo("error",f"{item_name} is not a valid Poké Ball!")
-
-    def delete_item(self, item_name):
-        self.read_item_file()
-        
-        for item in self.itembag_list:
-            # Check if the item exists and if the name matches
-            if item['item'] == item_name:
-                # Decrease the quantity by 1
-                item['quantity'] -= 1
-                
-                # If quantity reaches 0, remove the item from the list
-                if item['quantity'] == 0:
-                    self.itembag_list.remove(item)
-        
-        self.write_item_file()
-        self.renewWidgets()
-
-    def Check_Heal_Item(self, prevo_name, heal_points, item_name):
-        global achievments
-        check = check_for_badge(achievements,20)
-        if check is False:
-            receive_badge(20,achievements)
-        if item_name == "fullrestore" or "maxpotion":
-            heal_points = self.main_pokemon.max_hp
-        self.main_pokemon.hp += heal_points
-        if self.main_pokemon.hp > (self.main_pokemon.max_hp):
-            self.main_pokemon.hp = self.main_pokemon.max_hp
-        self.delete_item(item_name)
-        play_effect_sound("HpHeal")
-        self.logger.log_and_showinfo("info",f"{prevo_name} was healed for {heal_points}")
-
-    def Check_Evo_Item(self, individual_id, prevo_id, item_name):
-        try:
-            item_id = return_id_for_item_name(item_name)
-            evo_id = check_evolution_by_item(prevo_id, item_id)
-            if evo_id is not None:
-                # Perform your action when the item matches the Pokémon's evolution item
-                self.logger.log_and_showinfo("info","Pokemon Evolution is fitting !")
-                evo_window.display_pokemon_evo(individual_id, prevo_id, evo_id )
-            else:
-                self.logger.log_and_showinfo("info","This Pokemon does not need this item.")
-        except Exception as e:
-            showWarning(f"{e}")
-    
-    def write_item_file(self):
-        with open(itembag_path, 'w') as json_file:
-            json.dump(self.itembag_list, json_file)
-
-    def read_item_file(self):
-        """
-        Reads the list from the JSON file. If the file contains malformed items,
-        it tries to fix them by converting strings to the correct structure.
-        """
-        try:
-            with open(self.itembag_path, "r", encoding="utf-8") as json_file:
-                self.itembag_list = json.load(json_file)
-        except json.JSONDecodeError:
-            self.logger.log("error", "Malformed JSON detected. Attempting to fix.")
-            self.itembag_list = self._fix_and_load_items()
-            self.write_item_file()
-
-    def _fix_and_load_items(self):
-        """
-        Attempts to fix and load malformed JSON items.
-        Reads the JSON file as a string and corrects malformed items.
-        """
-        try:
-            with open(self.itembag_path, "r", encoding="utf-8") as json_file:
-                raw_data = json_file.read()
-
-            # Parse raw data as JSON (handling malformed structures)
-            corrected_items = []
-            json_data = raw_data.strip().lstrip("[").rstrip("]").split("},")
-            for entry in json_data:
-                entry = entry.strip()
-                if not entry.endswith("}"):
-                    entry += "}"
-
-                try:
-                    item = json.loads(entry)
-                    corrected_items.append(item)
-                except json.JSONDecodeError:
-                    # Fix malformed item (assume it's missing proper structure)
-                    if entry.startswith('{"') and entry.endswith('"}'):
-                        item_name = entry[2:-2]  # Extract item name
-                        corrected_items.append({"item": item_name, "quantity": 1})
-                        self.logger.log("info", f"Fixed malformed item: {item_name}")
-                    else:
-                        self.logger.log("warning", f"Skipping unknown item format: {entry}")
-
-            return corrected_items
-
-        except Exception as e:
-            self.logger.log("error", f"Error fixing and loading items: {e}")
-            
-    def clear_layout(self, layout):
-        while layout.count():
-            item = layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-
-    def showEvent(self, event):
-        # This method is called when the window is shown or displayed
-        self.renewWidgets()
-
-    def show_window(self):
-        # Get the geometry of the main screen
-        main_screen_geometry = mw.geometry()
-        
-        # Calculate the position to center the ItemWindow on the main screen
-        x = int(main_screen_geometry.center().x() - self.width() // 2)
-        y = int(main_screen_geometry.center().y() - self.height() // 2)
-        
-        # Move the ItemWindow to the calculated position
-        self.move(x, y)
-        
-        self.show()
-
-    def more_info_button_act(self, item_name):
-        description = get_id_and_description_by_item_name(item_name)
-        self.logger.log_and_showinfo("info",f"{description}")
-
-
-def get_id_and_description_by_item_name(item_name):
-    item_name = capitalize_each_word(item_name)
-    item_id_mapping = read_csv_file(csv_file_items)
-    item_id = item_id_mapping.get(item_name.lower())
-    if item_id is None:
-        return None, None
-    descriptions = read_descriptions_csv(csv_file_descriptions)
-    key = (item_id, 11, 9)  # Assuming version_group_id 11 and language_id 9
-    description = descriptions.get(key, None)
-    return description
     
 item_window = ItemWindow(
     logger=logger,
     main_pokemon=main_pokemon,
     enemy_pokemon=enemy_pokemon,
-    itembag_path=itembag_path
+    itembagpath=itembag_path,
+    achievements=achievements,
+    starter_window = starter_window,
+    evo_window=evo_window,
 )
 
 class AchievementWindow(QWidget):
