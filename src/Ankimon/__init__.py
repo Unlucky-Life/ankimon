@@ -183,7 +183,8 @@ from .singletons import (
     enemy_pokemon,
     trainer_card,
     ankimon_tracker_obj,
-    test_window
+    test_window,
+    achievement_bag,
 )
 
 # Load move and pokemon name mapping at startup
@@ -2902,8 +2903,6 @@ item_window = ItemWindow(
     starter_window = starter_window,
     evo_window=evo_window,
 )
-
-achievement_bag = AchievementWindow()
 
 version_dialog = Version_Dialog()
 

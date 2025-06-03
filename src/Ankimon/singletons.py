@@ -25,8 +25,8 @@ from .pyobj.InfoLogger import ShowInfoLogger
 from .pyobj.trainer_card import TrainerCard
 from .pyobj.translator import Translator
 from .pyobj.test_window import TestWindow
+from .pyobj.achievement_window import AchievementWindow
 from .functions.update_main_pokemon import update_main_pokemon
-
 
 # start loggerobject for Ankimon
 logger = ShowInfoLogger()
@@ -126,6 +126,8 @@ test_window = TestWindow(
     parent=mw,
     )
 
+achievement_bag = AchievementWindow()
+
 # data_handler_obj = DataHandler()
 # data_handler_window = DataHandlerWindow(
 #     data_handler = data_handler_obj
@@ -182,7 +184,5 @@ test_window = TestWindow(
 #     starter_window = starter_window,
 #     evo_window=evo_window,
 # )
-
-# achievement_bag = AchievementWindow()
 
 # version_dialog = Version_Dialog()
