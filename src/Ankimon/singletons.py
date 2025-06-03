@@ -30,7 +30,10 @@ from .pyobj.data_handler import DataHandler
 from .pyobj.data_handler_window import DataHandlerWindow
 from .pyobj.ankimon_tracker_window import AnkimonTrackerWindow
 from .pyobj.ankimon_shop import PokemonShopManager
+from .pokedex.pokedex_obj import Pokedex
+from .pyobj.reviewer_obj import Reviewer_Manager
 from .functions.update_main_pokemon import update_main_pokemon
+from .resources import addon_dir
 
 # start loggerobject for Ankimon
 logger = ShowInfoLogger()
@@ -144,6 +147,13 @@ shop_manager = PokemonShopManager(
 )
 
 ankimon_tracker_window = AnkimonTrackerWindow(tracker=ankimon_tracker_obj)
+pokedex_window = Pokedex(addon_dir, ankimon_tracker=ankimon_tracker_obj)
+reviewer_obj = Reviewer_Manager(
+    settings_obj=settings_obj,
+    main_pokemon=main_pokemon,
+    enemy_pokemon=enemy_pokemon,
+    ankimon_tracker=ankimon_tracker_obj,
+)
 
 # # Initialize the Pokémon Shop Manager
 # shop_manager = PokemonShopManager(
