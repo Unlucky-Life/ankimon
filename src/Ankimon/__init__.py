@@ -156,8 +156,6 @@ from .gui_entities import (
     CheckFiles
 )
 from .functions.discord_function import *  # Import necessary functions for Discord integration
-from .pyobj.data_handler import DataHandler
-from .pyobj.data_handler_window import DataHandlerWindow
 from .pyobj.ankimon_tracker_window import AnkimonTrackerWindow
 from .pyobj.pokemon_obj import PokemonObject
 from .pyobj.ankimon_shop import PokemonShopManager
@@ -185,6 +183,8 @@ from .singletons import (
     ankimon_tracker_obj,
     test_window,
     achievement_bag,
+    data_handler_obj,
+    data_handler_window,
 )
 
 # Load move and pokemon name mapping at startup
@@ -196,11 +196,6 @@ with open(move_names_file_path, "r", encoding="utf-8") as f:
 
 collected_pokemon_ids = set()
 _collection_loaded = False
-
-data_handler_obj = DataHandler()
-data_handler_window = DataHandlerWindow(
-    data_handler = data_handler_obj
-)
 
 mw.settings_ankimon = settings_window
 mw.logger = logger
