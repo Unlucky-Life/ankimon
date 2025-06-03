@@ -26,6 +26,8 @@ from .pyobj.trainer_card import TrainerCard
 from .pyobj.translator import Translator
 from .pyobj.test_window import TestWindow
 from .pyobj.achievement_window import AchievementWindow
+from .pyobj.data_handler import DataHandler
+from .pyobj.data_handler_window import DataHandlerWindow
 from .functions.update_main_pokemon import update_main_pokemon
 
 # start loggerobject for Ankimon
@@ -128,14 +130,8 @@ test_window = TestWindow(
 
 achievement_bag = AchievementWindow()
 
-# data_handler_obj = DataHandler()
-# data_handler_window = DataHandlerWindow(
-#     data_handler = data_handler_obj
-# )
-
-# # Log an startup message
-# logger.log_and_showinfo('game', translator.translate("startup"))
-# logger.log_and_showinfo('game', translator.translate("backing_up_files"))
+data_handler_obj = DataHandler()
+data_handler_window = DataHandlerWindow(data_handler = data_handler_obj)
 
 # # Initialize the Pokémon Shop Manager
 # shop_manager = PokemonShopManager(
