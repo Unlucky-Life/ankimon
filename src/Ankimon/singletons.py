@@ -34,6 +34,7 @@ from .pokedex.pokedex_obj import Pokedex
 from .pyobj.reviewer_obj import Reviewer_Manager
 from .pyobj.evolution_window import EvoWindow
 from .pyobj.starter_window import StarterWindow
+from .pyobj.item_window import ItemWindow
 from .gui_entities import (
     License,
     Credits,
@@ -43,7 +44,7 @@ from .gui_entities import (
 )
 from .functions.update_main_pokemon import update_main_pokemon
 from .functions.badges_functions import check_badges
-from .resources import addon_dir
+from .resources import addon_dir, itembag_path
 
 # start loggerobject for Ankimon
 logger = ShowInfoLogger()
@@ -184,6 +185,15 @@ evo_window = EvoWindow(
     achievements,
 )
 starter_window = StarterWindow(logger, settings_obj)
+item_window = ItemWindow(
+    logger=logger,
+    main_pokemon=main_pokemon,
+    enemy_pokemon=enemy_pokemon,
+    itembagpath=itembag_path,
+    achievements=achievements,
+    starter_window=starter_window,
+    evo_window=evo_window,
+)
 
 # # Initialize the Pokémon Shop Manager
 # shop_manager = PokemonShopManager(
