@@ -28,6 +28,8 @@ from .pyobj.test_window import TestWindow
 from .pyobj.achievement_window import AchievementWindow
 from .pyobj.data_handler import DataHandler
 from .pyobj.data_handler_window import DataHandlerWindow
+from .pyobj.ankimon_tracker_window import AnkimonTrackerWindow
+from .pyobj.ankimon_shop import PokemonShopManager
 from .functions.update_main_pokemon import update_main_pokemon
 
 # start loggerobject for Ankimon
@@ -132,6 +134,16 @@ achievement_bag = AchievementWindow()
 
 data_handler_obj = DataHandler()
 data_handler_window = DataHandlerWindow(data_handler = data_handler_obj)
+
+# Initialize the Pokémon Shop Manager
+shop_manager = PokemonShopManager(
+    logger=logger,
+    settings_obj=settings_obj,
+    set_callback=settings_obj.set,
+    get_callback=settings_obj.get
+)
+
+ankimon_tracker_window = AnkimonTrackerWindow(tracker=ankimon_tracker_obj)
 
 # # Initialize the Pokémon Shop Manager
 # shop_manager = PokemonShopManager(
