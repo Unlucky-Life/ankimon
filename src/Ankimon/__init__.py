@@ -156,9 +156,7 @@ from .gui_entities import (
     CheckFiles
 )
 from .functions.discord_function import *  # Import necessary functions for Discord integration
-from .pyobj.ankimon_tracker_window import AnkimonTrackerWindow
 from .pyobj.pokemon_obj import PokemonObject
-from .pyobj.ankimon_shop import PokemonShopManager
 from .pokedex.pokedex_obj import Pokedex
 from .pyobj.sync_pokemon_data import CheckPokemonData
 from .pyobj.collection_dialog import PokemonCollectionDialog
@@ -166,7 +164,6 @@ from .pyobj.attack_dialog import AttackDialog
 from .pyobj.reviewer_obj import Reviewer_Manager
 from .pyobj.backup_files import run_backup
 from .pyobj.item_window import ItemWindow
-from .pyobj.achievement_window import AchievementWindow
 from .classes.choose_move_dialog import MoveSelectionDialog
 from .functions.update_main_pokemon import update_main_pokemon
 from .poke_engine.ankimon_hooks_to_poke_engine import simulate_battle_with_poke_engine
@@ -185,6 +182,8 @@ from .singletons import (
     achievement_bag,
     data_handler_obj,
     data_handler_window,
+    shop_manager,
+    ankimon_tracker_window,
 )
 
 # Load move and pokemon name mapping at startup
@@ -219,18 +218,6 @@ global user_hp_after
 global opponent_hp_after 
 global dmg_from_enemy_move 
 global dmg_from_user_move
-
-# Initialize the Pokémon Shop Manager
-shop_manager = PokemonShopManager(
-    logger=logger,
-    settings_obj=settings_obj,
-    set_callback=settings_obj.set,
-    get_callback=settings_obj.get
-)
-
-ankimon_tracker_window = AnkimonTrackerWindow(
-    tracker = ankimon_tracker_obj
-)
 
 # Initialize collected IDs cache
 def load_collected_pokemon_ids():
