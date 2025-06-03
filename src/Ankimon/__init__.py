@@ -161,7 +161,6 @@ from .pyobj.sync_pokemon_data import CheckPokemonData
 from .pyobj.collection_dialog import PokemonCollectionDialog
 from .pyobj.attack_dialog import AttackDialog
 from .pyobj.backup_files import run_backup
-from .pyobj.item_window import ItemWindow
 from .classes.choose_move_dialog import MoveSelectionDialog
 from .functions.update_main_pokemon import update_main_pokemon
 from .poke_engine.ankimon_hooks_to_poke_engine import simulate_battle_with_poke_engine
@@ -191,6 +190,7 @@ from .singletons import (
     credits,
     evo_window,
     starter_window,
+    item_window,
 )
 
 # Load move and pokemon name mapping at startup
@@ -2435,16 +2435,6 @@ if database_complete:
 count_items_and_rewrite(itembag_path)
 
 UserRole = 1000  # Define custom role
-    
-item_window = ItemWindow(
-    logger=logger,
-    main_pokemon=main_pokemon,
-    enemy_pokemon=enemy_pokemon,
-    itembagpath=itembag_path,
-    achievements=achievements,
-    starter_window = starter_window,
-    evo_window=evo_window,
-)
 
 version_dialog = Version_Dialog()
 
