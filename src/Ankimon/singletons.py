@@ -32,6 +32,13 @@ from .pyobj.ankimon_tracker_window import AnkimonTrackerWindow
 from .pyobj.ankimon_shop import PokemonShopManager
 from .pokedex.pokedex_obj import Pokedex
 from .pyobj.reviewer_obj import Reviewer_Manager
+from .gui_entities import (
+    License,
+    Credits,
+    TableWidget,
+    IDTableWidget,
+    Pokedex_Widget,
+)
 from .functions.update_main_pokemon import update_main_pokemon
 from .resources import addon_dir
 
@@ -155,6 +162,12 @@ reviewer_obj = Reviewer_Manager(
     ankimon_tracker=ankimon_tracker_obj,
 )
 
+eff_chart = TableWidget()
+pokedex = Pokedex_Widget()
+gen_id_chart = IDTableWidget()
+license = License()
+credits = Credits()
+
 # # Initialize the Pokémon Shop Manager
 # shop_manager = PokemonShopManager(
 #     logger=logger,
@@ -185,14 +198,6 @@ reviewer_obj = Reviewer_Manager(
 
 # evo_window = EvoWindow()
 
-# eff_chart = TableWidget()
-# pokedex = Pokedex_Widget()
-# gen_id_chart = IDTableWidget()
-
-# license = License()
-
-# credits = Credits()
-    
 # item_window = ItemWindow(
 #     logger=logger,
 #     main_pokemon=main_pokemon,
