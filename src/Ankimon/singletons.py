@@ -32,6 +32,7 @@ from .pyobj.ankimon_tracker_window import AnkimonTrackerWindow
 from .pyobj.ankimon_shop import PokemonShopManager
 from .pokedex.pokedex_obj import Pokedex
 from .pyobj.reviewer_obj import Reviewer_Manager
+from .pyobj.evolution_window import EvoWindow
 from .gui_entities import (
     License,
     Credits,
@@ -40,6 +41,7 @@ from .gui_entities import (
     Pokedex_Widget,
 )
 from .functions.update_main_pokemon import update_main_pokemon
+from .functions.badges_functions import check_badges
 from .resources import addon_dir
 
 # start loggerobject for Ankimon
@@ -168,6 +170,19 @@ gen_id_chart = IDTableWidget()
 license = License()
 credits = Credits()
 
+achievements = check_badges({str(i): False for i in range(1, 69)})
+
+evo_window = EvoWindow(
+    logger,
+    settings_obj,
+    main_pokemon,
+    enemy_pokemon,
+    translator,
+    reviewer_obj,
+    test_window,
+    achievements,
+)
+
 # # Initialize the Pokémon Shop Manager
 # shop_manager = PokemonShopManager(
 #     logger=logger,
@@ -195,8 +210,6 @@ credits = Credits()
 
 # # Create an instance of the MainWindow
 # starter_window = StarterWindow()
-
-# evo_window = EvoWindow()
 
 # item_window = ItemWindow(
 #     logger=logger,
