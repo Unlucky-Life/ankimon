@@ -157,11 +157,9 @@ from .gui_entities import (
 )
 from .functions.discord_function import *  # Import necessary functions for Discord integration
 from .pyobj.pokemon_obj import PokemonObject
-from .pokedex.pokedex_obj import Pokedex
 from .pyobj.sync_pokemon_data import CheckPokemonData
 from .pyobj.collection_dialog import PokemonCollectionDialog
 from .pyobj.attack_dialog import AttackDialog
-from .pyobj.reviewer_obj import Reviewer_Manager
 from .pyobj.backup_files import run_backup
 from .pyobj.item_window import ItemWindow
 from .classes.choose_move_dialog import MoveSelectionDialog
@@ -184,6 +182,8 @@ from .singletons import (
     data_handler_window,
     shop_manager,
     ankimon_tracker_window,
+    pokedex_window,
+    reviewer_obj,
 )
 
 # Load move and pokemon name mapping at startup
@@ -237,8 +237,6 @@ def load_collected_pokemon_ids():
 
 # Call this during addon initialization
 load_collected_pokemon_ids()
-
-pokedex_window = Pokedex(addon_dir, ankimon_tracker = ankimon_tracker_obj)
 
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
@@ -1569,13 +1567,6 @@ if database_complete:
     ankimon_tracker_obj.randomize_battle_scene()
 
 cry_counter = 0
-
-reviewer_obj = Reviewer_Manager(
-    settings_obj=settings_obj,
-    main_pokemon=main_pokemon,
-    enemy_pokemon=enemy_pokemon,
-    ankimon_tracker=ankimon_tracker_obj,
-)
 
 def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpokemon_name):
     global battle_status
