@@ -41,6 +41,7 @@ from .gui_entities import (
     TableWidget,
     IDTableWidget,
     Pokedex_Widget,
+    Version_Dialog,
 )
 from .functions.update_main_pokemon import update_main_pokemon
 from .functions.badges_functions import check_badges
@@ -171,6 +172,7 @@ pokedex = Pokedex_Widget()
 gen_id_chart = IDTableWidget()
 license = License()
 credits = Credits()
+version_dialog = Version_Dialog()
 
 achievements = check_badges({str(i): False for i in range(1, 69)})
 
@@ -185,7 +187,7 @@ evo_window = EvoWindow(
     achievements,
 )
 starter_window = StarterWindow(logger, settings_obj)
-item_window = ItemWindow(
+item_window = ItemWindow(  # Create an instance of the MainWindow
     logger=logger,
     main_pokemon=main_pokemon,
     enemy_pokemon=enemy_pokemon,
@@ -195,42 +197,8 @@ item_window = ItemWindow(
     evo_window=evo_window,
 )
 
-# # Initialize the Pokémon Shop Manager
-# shop_manager = PokemonShopManager(
-#     logger=logger,
-#     settings_obj=settings_obj,
-#     set_callback=settings_obj.set,
-#     get_callback=settings_obj.get
-# )
-
-# ankimon_tracker_window = AnkimonTrackerWindow(
-#     tracker = ankimon_tracker_obj
-# )
-
-# pokedex_window = Pokedex(addon_dir, ankimon_tracker = ankimon_tracker_obj)
-
-# reviewer_obj = Reviewer_Manager(
-#     settings_obj=settings_obj,
-#     main_pokemon=main_pokemon,
-#     enemy_pokemon=enemy_pokemon,
-#     ankimon_tracker=ankimon_tracker_obj,
-# )
-
 # pokecollection_win = PokemonCollectionDialog(logger=logger, settings_obj=settings_obj, mainpokemon_function = MainPokemon, main_pokemon = main_pokemon)
 
 
 
-# # Create an instance of the MainWindow
 
-
-# item_window = ItemWindow(
-#     logger=logger,
-#     main_pokemon=main_pokemon,
-#     enemy_pokemon=enemy_pokemon,
-#     itembagpath=itembag_path,
-#     achievements=check_badges(),
-#     starter_window = starter_window,
-#     evo_window=evo_window,
-# )
-
-# version_dialog = Version_Dialog()

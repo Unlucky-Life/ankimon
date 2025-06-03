@@ -143,16 +143,8 @@ try:
 except ImportError as e:
     showWarning(f"Error in importing functions library {e}")
 from .gui_entities import (
-    MovieSplashLabel,
     UpdateNotificationWindow,
-    AgreementDialog,
-    Version_Dialog,
-    License,
-    Credits,
     HelpWindow,
-    TableWidget,
-    IDTableWidget,
-    Pokedex_Widget,
     CheckFiles
 )
 from .functions.discord_function import *  # Import necessary functions for Discord integration
@@ -191,6 +183,7 @@ from .singletons import (
     evo_window,
     starter_window,
     item_window,
+    version_dialog,
 )
 
 # Load move and pokemon name mapping at startup
@@ -2435,8 +2428,6 @@ if database_complete:
 count_items_and_rewrite(itembag_path)
 
 UserRole = 1000  # Define custom role
-
-version_dialog = Version_Dialog()
 
 #buttonlayout
 
