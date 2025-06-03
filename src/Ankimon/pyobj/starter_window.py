@@ -23,20 +23,30 @@ from PyQt6.QtWidgets import (
 
 from ..business import resize_pixmap_img
 from ..pyobj.pokemon_obj import PokemonObject
+from ..pyobj.settings import Settings
+from ..pyobj.InfoLogger import ShowInfoLogger
 from ..functions.badges_functions import check_for_badge, receive_badge
 from ..functions.battle_functions import calculate_hp
 from ..functions.pokedex_functions import search_pokedex, search_pokeapi_db_by_id
-from ..functions.pokemon_functions import get_random_moves_for_pokemon
-from ..utils import load_custom_font, pick_random_gender
+from ..functions.pokemon_functions import get_random_moves_for_pokemon, pick_random_gender
+from ..utils import load_custom_font
 from ..resources import starters_path, addon_dir, frontdefault, mainpokemon_path, mypokemon_path
-from ..singletons import logger, settings_obj
 
 
 class StarterWindow(QWidget):
-    def __init__(self):
+    def __init__(
+            self,
+            logger: ShowInfoLogger,
+            settings_obj: Settings,
+            ):
         super().__init__()
         self.init_ui()
         #self.update()
+
+        # To avoid circular imports, instead of importing those things, we
+        # save a reference to them as an attribute
+        self.logger = logger
+        self.settings_obj = settings_obj
 
     def init_ui(self):
         basic_layout = QVBoxLayout()
@@ -147,7 +157,7 @@ class StarterWindow(QWidget):
         with open(str(mypokemon_path), "w") as json_file:
             json.dump(caught_pokemon_data, json_file, indent=2)
 
-        logger.log_and_showinfo("info",f"{name.capitalize()} has been chosen as Starter Pokemon !")
+        self.logger.log_and_showinfo("info",f"{name.capitalize()} has been chosen as Starter Pokemon !")
 
         self.display_chosen_starter_pokemon(starter_name)
 
@@ -213,7 +223,7 @@ class StarterWindow(QWidget):
         self.setMaximumHeight(340)
         self.show()
         self.starter = True
-        logger.log_and_showinfo("info","You have chosen your Starter Pokemon ! \n You can now close this window ! \n Please restart your Anki to restart your Pokemon Journey!")
+        self.logger.log_and_showinfo("info","You have chosen your Starter Pokemon ! \n You can now close this window ! \n Please restart your Anki to restart your Pokemon Journey!")
         #global achievments
         #check = check_for_badge(achievements, 7)
         #if check is False:
@@ -230,7 +240,7 @@ class StarterWindow(QWidget):
         self.setMaximumHeight(340)
         self.show()
         self.starter = True
-        logger.log_and_showinfo("info","You have received your Fossil Pokemon ! \n You can now close this window !")
+        self.logger.log_and_showinfo("info","You have received your Fossil Pokemon ! \n You can now close this window !")
         global achievments
         #check = check_for_badge(achievements, 19)
         #if check is False:
@@ -315,14 +325,14 @@ class StarterWindow(QWidget):
         painter.drawPixmap(311,-3,grass_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(28), int(settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(28), int(self.settings_obj.get("misc.language",11)))
         message_box_text = "Choose your Starter Pokemon"
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(255,255,255))  # Text color
         painter.drawText(110, 310, message_box_text)
-        custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(20), int(self.settings_obj.get("misc.language",11)))
         painter.setFont(custom_font)
         painter.drawText(10, 330, "Press G to change Generation")
         painter.end()
@@ -358,7 +368,7 @@ class StarterWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(32), int(self.settings_obj.get("misc.language",11)))
         message_box_text = f"{(starter_name).capitalize()} was chosen as Starter !"
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -398,7 +408,7 @@ class StarterWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(32), int(self.settings_obj.get("misc.language",11)))
         message_box_text = f"{(fossil_name).capitalize()} was brought to life !"
         # Draw the text on top of the image
         # Adjust the font size as needed

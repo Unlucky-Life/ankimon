@@ -33,6 +33,7 @@ from .pyobj.ankimon_shop import PokemonShopManager
 from .pokedex.pokedex_obj import Pokedex
 from .pyobj.reviewer_obj import Reviewer_Manager
 from .pyobj.evolution_window import EvoWindow
+from .pyobj.starter_window import StarterWindow
 from .gui_entities import (
     License,
     Credits,
@@ -182,6 +183,7 @@ evo_window = EvoWindow(
     test_window,
     achievements,
 )
+starter_window = StarterWindow(logger, settings_obj)
 
 # # Initialize the Pokémon Shop Manager
 # shop_manager = PokemonShopManager(
@@ -209,7 +211,7 @@ evo_window = EvoWindow(
 
 
 # # Create an instance of the MainWindow
-# starter_window = StarterWindow()
+
 
 # item_window = ItemWindow(
 #     logger=logger,
