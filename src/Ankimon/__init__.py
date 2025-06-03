@@ -184,6 +184,11 @@ from .singletons import (
     ankimon_tracker_window,
     pokedex_window,
     reviewer_obj,
+    eff_chart,
+    pokedex,
+    gen_id_chart,
+    license,
+    credits,
 )
 
 # Load move and pokemon name mapping at startup
@@ -2854,14 +2859,6 @@ if database_complete:
             pokemon_list = json.load(file)
             if not pokemon_list :
                 starter_window.display_starter_pokemon()
-
-eff_chart = TableWidget()
-pokedex = Pokedex_Widget()
-gen_id_chart = IDTableWidget()
-
-license = License()
-
-credits = Credits()
 
 count_items_and_rewrite(itembag_path)
 
