@@ -14,155 +14,120 @@
 import json
 import random
 import math
-from collections import defaultdict
 import copy
 from pathlib import Path
 import traceback
-import uuid
 
 import aqt
 from anki.hooks import addHook, wrap
 from aqt import gui_hooks, mw, utils
 from aqt.qt import (
-    QAction,
     QDialog,
-    QFont,
-    QGridLayout,
     QLabel,
-    QPainter,
-    QPixmap,
     Qt,
     QVBoxLayout,
-    QWidget,
-    qconnect
     )
 from aqt.reviewer import Reviewer
-from aqt.utils import downArrow, showInfo, showWarning, tr, tooltip
+from aqt.utils import downArrow, showWarning, tr, tooltip
 from aqt.utils import *
 from aqt.qt import *
 from PyQt6 import *
-from PyQt6.QtCore import QPoint, QTimer, QThread, QEvent, QObject, QUrl
-from PyQt6.QtGui import QIcon, QColor, QPalette, QDesktopServices, QPen, QFontDatabase
+from PyQt6.QtCore import QPoint, QTimer, QUrl
+from PyQt6.QtGui import QColor, QPalette, QDesktopServices
 from PyQt6.QtWidgets import (
     QApplication,
     QDialog,
     QLabel,
     QPushButton,
     QVBoxLayout,
-    QWidget,
-    QMessageBox,
-    QCheckBox,
-    QTextEdit,
-    QHBoxLayout,
-    QComboBox,
-    QLineEdit,
-    QScrollArea, 
     QFrame,
-    QMenu,
-    QLayout,
-    QProgressBar
     )
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
-try:
-    from anki.sound import SoundOrVideoTag
-    from aqt.sound import av_player
-    legacy_play = None
-    from . import audios
-except (ImportError, ModuleNotFoundError):
-    showWarning("Sound import error occured.")
-    from anki.sound import play as legacy_play
-    av_player = None
 
-from .config_var import *
-from .resources import *
+from . import audios
+from .config_var import (
+    reviewer_text_message_box,
+    dmg_in_reviewer,
+    no_more_news,
+    remove_levelcap,
+    ssh,
+    defeat_shortcut,
+    catch_shortcut,
+    reviewer_buttons,
+    battle_sounds
+)
+from .resources import (
+    addon_dir,
+    pkmnimgfolder,
+    mypokemon_path,
+    mainpokemon_path,
+    pokemon_names_file_path,
+    move_names_file_path,
+    itembag_path,
+    badgebag_path,
+    sound_list_path,
+    badges_list_path,
+    items_list_path,
+    rate_path
+)
 from .menu_buttons import create_menu_actions
 from .hooks import setupHooks
 from .texts import (
     _bottomHTML_template,
     button_style,
-    attack_details_window_template,
-    attack_details_window_template_end,
-    remember_attack_details_window_template,
-    remember_attack_details_window_template_end,
     rate_addon_text_label,
-    inject_life_bar_css_1,
-    inject_life_bar_css_2,
     thankyou_message_text,
     dont_show_this_button_text
 )
-from .const import gen_ids, status_colors_html, status_colors_label
+from .const import gen_ids
 from .business import (
-    get_image_as_base64,
-    split_string_by_length,
-    split_japanese_string_by_length,
-    capitalize_each_word,
-    resize_pixmap_img,
-    type_colors,
     calc_experience,
     get_multiplier_stats,
-    get_multiplier_acc_eva,
-    bP_none_moves,
-    calc_exp_gain,
-    read_csv_file,
-    read_descriptions_csv,
-    get_id_and_description_by_item_name
 )
 from .utils import (
     check_folders_exist,
-    check_file_exists,
     test_online_connectivity,
     read_local_file,
     read_github_file,
     compare_files,
     write_local_file,
-    random_berries,
-    random_item,
-    random_fossil,
     count_items_and_rewrite,
-    filter_item_sprites,
     give_item,
     format_pokemon_name,
     format_move_name,
     play_effect_sound,
 )
-try:
-    from .functions.pokedex_functions import *
-    from .functions.battle_functions import *
-    from .functions.create_gui_functions import *
-    from .functions.create_css_for_reviewer import create_css_for_reviewer
-    from .functions.reviewer_iframe import create_iframe_html, create_head_code
-    from .functions.url_functions import *
-    from .functions.gui_functions import type_icon_path, move_category_path
-    from .gui_classes.pokemon_details import *
-    from .functions.trainer_functions import xp_share_gain_exp
-    from .functions.badges_functions import check_badges, check_for_badge, receive_badge, handle_achievements, check_and_award_badges
-    from .functions.pokemon_functions import get_random_moves_for_pokemon
-    from .functions.encounter_functions import choose_random_pkmn_from_tier
-    from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
-    from .functions.pokemon_functions import (
-        pick_random_gender,
-        find_experience_for_level,
-        shiny_chance,
-        create_caught_pokemon,
-        get_random_moves_for_pokemon,
-        check_min_generate_level,
-        get_levelup_move_for_pokemon,
-    )
-except ImportError as e:
-    showWarning(f"Error in importing functions library {e}")
-from .gui_entities import (
-    UpdateNotificationWindow,
-    HelpWindow,
-    CheckFiles
+from .functions.battle_functions import calculate_hp, status_effect
+from .functions.reviewer_iframe import create_iframe_html, create_head_code
+from .functions.url_functions import open_team_builder, rate_addon_url, report_bug, join_discord_url, open_leaderboard_url
+from .functions.trainer_functions import xp_share_gain_exp
+from .functions.badges_functions import check_badges, check_for_badge, receive_badge, handle_achievements, check_and_award_badges
+from .functions.encounter_functions import choose_random_pkmn_from_tier
+from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
+from .functions.discord_function import DiscordPresence
+from .functions.pokedex_functions import (
+    search_pokedex,
+    search_pokedex_by_id,
+    search_pokeapi_db_by_id,
+    get_all_pokemon_moves,
+    find_details_move,
+    check_evolution_for_pokemon,
+    return_name_for_id
 )
-from .functions.discord_function import *  # Import necessary functions for Discord integration
-from .pyobj.pokemon_obj import PokemonObject
+from .functions.pokemon_functions import (
+    pick_random_gender,
+    find_experience_for_level,
+    shiny_chance,
+    create_caught_pokemon,
+    check_min_generate_level,
+    get_levelup_move_for_pokemon,
+)
+from .gui_entities import UpdateNotificationWindow, HelpWindow, CheckFiles
 from .pyobj.sync_pokemon_data import CheckPokemonData
 from .pyobj.attack_dialog import AttackDialog
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
-from .functions.update_main_pokemon import update_main_pokemon
 from .poke_engine.ankimon_hooks_to_poke_engine import simulate_battle_with_poke_engine
 from .poke_engine import constants
 from .singletons import (
@@ -171,7 +136,6 @@ from .singletons import (
     settings_window,
     translator,
     main_pokemon,
-    mainpokemon_empty,
     enemy_pokemon,
     trainer_card,
     ankimon_tracker_obj,
@@ -184,7 +148,6 @@ from .singletons import (
     pokedex_window,
     reviewer_obj,
     eff_chart,
-    pokedex,
     gen_id_chart,
     license,
     credits,
