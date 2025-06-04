@@ -112,6 +112,7 @@ from .pyobj.reviewer_obj import Reviewer_Manager
 from .pyobj.translator import Translator
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
+from .pyobj.error_handler import show_warning_with_traceback
 
 from .functions.drawing_utils import draw_gender_symbols, draw_stat_boosts
 
@@ -1865,7 +1866,7 @@ def process_battle_data(battle_data: dict) -> str:
                     output.append(f"Unhandled action: {action}")
 
             except Exception as e:
-                logger.log("error", f"Error processing instruction {instr}: {str(e)}")
+                show_warning_with_traceback(parent=mw, exception=e, message="Error processing instruction:")
                 continue
 
         # Add missed move information
@@ -1879,9 +1880,11 @@ def process_battle_data(battle_data: dict) -> str:
 
     except KeyError as e:
         error_msg = mw.translator.translate("missing_key_in_data", key=str(e))
+        show_warning_with_traceback(parent=mw, exception=e, message=str(error_msg))
         return f"Error: {error_msg}"
     except Exception as e:
         error_msg = mw.translator.translate("unexpected_error", error=str(e))
+        show_warning_with_traceback(parent=mw, exception=e, message=str(error_msg))
         return f"Error: {error_msg}"
 
 def format_pokemon_name(name: str) -> str:
@@ -1961,7 +1964,7 @@ def new_pokemon():
         reviewer.web = mw.reviewer.web
         reviewer_obj.update_life_bar(reviewer, 0, 0)
     except Exception as e:
-        showWarning(f"An error occurred while generating new Pokemon: {str(e)}") 
+        show_warning_with_traceback(parent=mw, exception=e, message="An error occurred while generating new Pokemon:") 
             
 def mainpokemon_data():
     try:
@@ -2000,7 +2003,7 @@ def mainpokemon_data():
                     
                     return mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname
     except Exception as e:
-            logger.log("error", f"{e} error has come up in the main_pokemon function.")
+        show_warning_with_traceback(parent=mw, exception=e, message="Error in mainpokemon function:")
 #get main pokemon details:
 if database_complete:
     try:
@@ -2335,7 +2338,7 @@ def on_review_card(*args):
                             msg += "\n" + translator.translate("move_has_missed")'''
                     
                 except Exception as e:
-                    showWarning(f"Error rendering enemy attack: {str(e)}")
+                    show_warning_with_traceback(parent=mw, exception=e, message="Error rendering enemy attack:")
 
             # if enemy pokemon hp > 0, attack enemy pokemon
             if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
@@ -2401,12 +2404,8 @@ def on_review_card(*args):
         if test_window is not None:
             test_window.display_battle()
     except Exception as e:
-        showWarning(f"An error occurred in reviewer: {str(e)}")
-        traceback.print_exc()
+        show_warning_with_traceback(parent=mw, exception=e, message="An error occurred in reviewer:")
         
-
-
-
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
 
@@ -2686,7 +2685,7 @@ def save_error_code(error_code):
         error_fix_msg += (f"\n Please use Gen {str(generation_number)[0]} or lower")
 
     except Exception as e:
-        logger.log_and_showinfo("info",f"An error occurred: {e}")
+        show_warning_with_traceback(parent=mw, exception=e, message="An error occurred:")
 
     logger.log_and_showinfo("info",f"{error_fix_msg}")
 
@@ -2779,7 +2778,7 @@ def export_all_pkmn_showdown():
 
         export_window.exec()
     except Exception as e:
-        logger.log_and_showinfo("info",f"An error occurred: {e}")
+        show_warning_with_traceback(parent=mw, exception=e, message="Error in exporting Pokemon to Showdown:")
 
 def flex_pokemon_collection():
     # Create a main window
@@ -2863,7 +2862,7 @@ def flex_pokemon_collection():
 
         export_window.exec()
     except Exception as e:
-        logger.log_and_showinfo("info",f"An error occurred: {e}")
+        show_warning_with_traceback(parent=mw, exception=e, message="Error in flexing Pokemon collection:")
 
 video = False
 first_start = False
@@ -2917,7 +2916,7 @@ class TestWindow(QWidget):
             else:
                 self.show()
         except Exception as e:
-            showWarning(f"Following Error occured when opening window: {e}")
+            show_warning_with_traceback(parent=mw, exception=e, message="Error while opening window:")
 
     def display_first_start_up(self):
         if self.first_start == False:
@@ -4256,7 +4255,7 @@ class ItemWindow(QWidget):
                     filtered_items = [item for item in self.itembag_list if search_text in item["item"].lower()]
         except Exception as e:
             filtered_items = []    
-            self.logger.log_and_showinfo("error", f"Error filtering items: {e}")
+            show_warning_with_traceback(parent=mw, exception=e, message="Error filtering items:")
 
         for item in filtered_items:
             item_widget = self.ItemLabel(item["item"], item["quantity"])
@@ -4325,7 +4324,7 @@ class ItemWindow(QWidget):
                             comboBox.setItemData(comboBox.count() - 1, individual_id, role=UserRole)
                             comboBox.setItemData(comboBox.count() - 1, id, role=UserRole + 1)
         except Exception as e:
-            self.logger.log_and_showinfo("error", f"Error loading Pokémon list: {e}")
+            show_warning_with_traceback(parent=mw, exception=e, message="Error loading Pokemon list:")
             
     def Evolve_Fossil(self, item_name, fossil_id, fossil_poke_name):
         starter_window.display_fossil_pokemon(fossil_id, fossil_poke_name)
@@ -4407,7 +4406,7 @@ class ItemWindow(QWidget):
             else:
                 self.logger.log_and_showinfo("info","This Pokemon does not need this item.")
         except Exception as e:
-            showWarning(f"{e}")
+            show_warning_with_traceback(parent=mw, exception=e, message="Error in evolution item:")
     
     def write_item_file(self):
         with open(itembag_path, 'w') as json_file:
@@ -4458,7 +4457,7 @@ class ItemWindow(QWidget):
             return corrected_items
 
         except Exception as e:
-            self.logger.log("error", f"Error fixing and loading items: {e}")
+            show_warning_with_traceback(parent=mw, exception=e, message="Error fixing and loading items:")
             
     def clear_layout(self, layout):
         while layout.count():
@@ -4712,7 +4711,7 @@ addHook("profileLoaded", on_profile_loaded)
 
 def catch_shorcut_function():
     if enemy_pokemon.hp > 1:
-        tooltip("You only catch a pokemon once it's fainted !")
+        tooltip("You only catch a pokemon once its fained !")
     else:
         catch_pokemon("")
 
