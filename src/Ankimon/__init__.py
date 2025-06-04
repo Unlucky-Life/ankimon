@@ -418,24 +418,52 @@ if database_complete:
     def generate_random_pokemon():
         # Fetch random Pokémon data from Generation
         # Load the JSON file with Pokémon data
+	#State of the current battle
+	#	- pokemon_encounter: 0 => Start of Battle, 1 => Current Battle
         ankimon_tracker_obj.pokemon_encounter = 0
+	# card_battle_round: amount of anki cards into the current battle against wild pokemon
         ankimon_tracker_obj.cards_battle_round = 0
+	#Tier fallbackvalue if no tier has been established
         tier = "Normal"
-        #generation_file = ("pokeapi_db.json")
         try:
+	    #the choose_random_pkmn_from_tier function chooses a random pokemon from a tier (normal, ultra, mythical, legendary, baby)
+	    #returns the id (integer) of the pokemon from national dex and its tier (String) (normal, ultra, mythical, legendary, baby)
             id, tier = choose_random_pkmn_from_tier()
+	    
+	    #below lines for debug tests if certain pokemon doesnt work
             #test_ids = [719]
             #id = random.choice(test_ids)
+	    
+	    #search pokedex by id - searches pokemons name by the id (integer) from the choose_random_pkmn_from_tier
+	    #=> returns a name as string
             name = search_pokedex_by_id(id)
+	    
+	    #fall back value gender if its missing later
             gender = "N"
+
+	    #shiny_chance calculates the % chance for a shiny pokemon to appear
+	    #=> returns a boolean
             shiny = shiny_chance()
+
+	    #If multiple pokemon names are returned from search_pokedex_by_id due to multiple pokemon having same id
+	    #just use the first name from that array
             if name is list:
                 name = name[0]
+
+	    #check_min_generate_level takes as only argument the name of the pokemon => finds if pokemon is allowed to be generated at a certain level without it being below its evolution level
+	    #returns the min_level (integer) with the lowest level a pokemon is allowed to appear
             try:
                 min_level = int(check_min_generate_level(str(name.lower())))
             except:
+		#if check_min_generate_level fails rerun this function to find a better fit
                 generate_random_pokemon()
+
+	    #var_level (int) allows to evaluate how much away from the main pokemon level is allow to range +/-
             var_level = 3
+
+	    #if check if main_pokemon level is selected - if not - like if you start Ankimon for the first time - set the enemy pokemon level to 5
+	    #this prevents throwing errors on first ever startup
+	    #additionally this function makes sure that the enemy pokemon doesnt exceed 100 lvl or level is lower than 1
             if main_pokemon.level or main_pokemon.level != None:
                 try:
                     level = random.randint((main_pokemon.level - (random.randint(0, var_level))), (main_pokemon.level + (random.randint(0, var_level))))  # Random level between 1 and 100
@@ -450,23 +478,34 @@ if database_complete:
             else:
                 level = 5
                 min_level = 0
+
+	    #check if min_level is there or missing
             if min_level is None or not min_level or main_pokemon.level is None or not main_pokemon.level:
                 level = 5
                 min_level = 0
+	    #check if minimum allowed level for enemy pokemon to spawn is below above calculated level, if so proceed, else re run function
             if min_level < level:
+		#check_id_ok uses integer (id) from above (choose_random_pkmn_tier)
+		#checkes if pokemon id is ok to generate based on the allowed generations choosen by user aswell as staying below 898 (implemented pokemon in ankimon)
+		#if id outside of above settings rerun function
                 id_check = check_id_ok(id)
                 if id_check:
                     pass
                 else:
                     return generate_random_pokemon()
+
+		#seach_pokedex searched pokedex for given name string as first Argument,
+		#second Argument the key for the value wanting to be returned
                 abilities = search_pokedex(name, "abilities")
-                # Filter abilities to include only those with numeric keys
+                
+		# Filter abilities to include only those with numeric keys
                 # numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
-                numeric_abilities = None
+                numeric_abilities = None #set default value
                 try:
                     numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
                 except:
                     ability = translator.translate("no_ability")
+			
                 # Check if there are numeric abilities
                 if numeric_abilities:
                     # Convert the filtered abilities dictionary values to a list
@@ -481,12 +520,18 @@ if database_complete:
                 #    ability = abilities.get("H", None)
                 type = search_pokedex(name, "types")
                 stats = search_pokedex(name, "baseStats")
+
+		#get_all_pokemon_moves returns the possible pokemon attacks (array) based on name (string) and level (int) of the currently generate pokemon
                 enemy_attacks_list = get_all_pokemon_moves(name, level)
                 enemy_attacks = []
+
+	        #choose the pokemon attack set randomly
                 if len(enemy_attacks_list) <= 4:
                     enemy_attacks = enemy_attacks_list
                 else:
                     enemy_attacks = random.sample(enemy_attacks_list, 4)
+
+		#search_pokeapi_db_by_id search for given id (int) and key, then returns the value of given key for given pokemon
                 base_experience = search_pokeapi_db_by_id(id, "base_experience")
                 growth_rate = search_pokeapi_db_by_id(id, "growth_rate")
                 gender = pick_random_gender(name)
@@ -506,11 +551,14 @@ if database_complete:
                     "spd": 0,
                     "spe": 0
                 }
+		#initialize the battle status and battle_stats of enemy pokemon
                 battle_stats = stats
                 battle_status = "fighting"
                 ev_yield = search_pokeapi_db_by_id(id, "effort_values")
+		#return all generated values of wild pokemon to save it to the object enemy_pokemon
                 return name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny
             else:
+		# if function fails due to level wanting to be generated lower than min_level rerun function
                 return generate_random_pokemon()  # Return the result of the recursive call
         except FileNotFoundError:
             logger.log_and_showinfo("info","Error - Can't open the JSON File.")
