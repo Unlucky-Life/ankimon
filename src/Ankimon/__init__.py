@@ -1014,26 +1014,6 @@ def process_battle_data(battle_data: dict) -> str:
         error_msg = mw.translator.translate("unexpected_error", error=str(e))
         return f"Error: {error_msg}"
 
-def new_calc_atk_dmg(results: dict, target: str) -> int:
-    """
-    Sum up all damage instructions in a simulation result for the given target.
-
-    Args:
-        results: The dict returned by simulate_battle_with_poke_engine, containing
-                 an 'instructions' list of [action, side, value] entries.
-        target:  Either 'user' or 'opponent'-whose damage you want to retrieve.
-
-    Returns:
-        The total HP lost by that side according to the engine’s chosen outcome.
-    """
-    damage = 0
-    for instr in results.get('instructions', []):
-        action, side, *rest = instr
-        if action == 'damage' and side == target:
-            damage += rest[0]
-    return damage
-
-
 def new_pokemon():
     try:
         # new pokemon
