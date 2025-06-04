@@ -208,7 +208,7 @@ class EvoWindow(QWidget):
         evolve_button = QPushButton("Evolve Pokémon")
         dont_evolve_button = QPushButton("Cancel Evolution")
         qconnect(evolve_button.clicked, lambda: self.evolve_pokemon(individual_id, prevo_name, evo_id, evo_name, self.main_pokemon))
-        qconnect(dont_evolve_button.clicked, lambda: self.cancel_evolution(individual_id, prevo_id))
+        qconnect(dont_evolve_button.clicked, lambda: self.cancel_evolution(individual_id, prevo_name))
 
         # Set the merged image as the pixmap for the QLabel
         evo_image_label = QLabel()
