@@ -1847,13 +1847,6 @@ def process_battle_data(battle_data: dict) -> str:
                         weather=weather
                     ))
                               
-                elif action == constants.MUTATOR_FAIL:
-                    reason = instr[2] if len(instr) > 2 else "unknown"
-                    output.append(mw.translator.translate(
-                        "move_failed",
-                        reason=reason
-                    ))
-
                 elif action == constants.MUTATOR_APPLY_VOLATILE_STATUS:
                     status = format_move_name(instr[2])
                     output.append(mw.translator.translate(
@@ -4730,7 +4723,14 @@ def _shortcutKeys_wrap(self, _old):
     original.append((catch_shortcut, lambda: catch_shorcut_function()))
     original.append((defeat_shortcut, lambda: defeat_shortcut_function()))
     return original
+'''
+Traceback (most recent call last):
+  File "/var/home/USER/.var/app/net.ankiweb.Anki/data/Anki2/addons21/Ankimon/__init__.py", line 1850, in process_battle_data
+    elif action == constants.MUTATOR_FAIL:
+                   ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'Ankimon.poke_engine.constants' has no attribute 'MUTATOR_FAIL'. Did you mean: 'MUTATOR_HEAL'?
 
+'''
 Reviewer._shortcutKeys = wrap(Reviewer._shortcutKeys, _shortcutKeys_wrap, 'around')
 
 if reviewer_buttons is True:
