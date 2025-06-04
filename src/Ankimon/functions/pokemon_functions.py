@@ -1,13 +1,18 @@
+from collections import defaultdict
 import csv
 import json
 import random
 import uuid
 from datetime import datetime
 
+from aqt import mw
+
 from .pokedex_functions import search_pokeapi_db_by_id, search_pokedex, search_pokedex_by_id
 from .battle_functions import calculate_hp
-
-from ..resources import pokedex_path, next_lvl_file_path, mypokemon_path, learnset_path
+from ..pyobj.pokemon_obj import PokemonObject
+from ..pyobj.InfoLogger import ShowInfoLogger
+from ..pyobj.translator import Translator
+from ..resources import pokedex_path, next_lvl_file_path, mypokemon_path, learnset_path, mainpokemon_path
 
 def pick_random_gender(pokemon_name):
     """
@@ -289,3 +294,54 @@ def save_fossil_pokemon(pokemon_id):
     # Save the caught Pokémon's data to a JSON file
     with open(str(mypokemon_path), "w") as json_file:
         json.dump(caught_pokemon_data, json_file, indent=2)
+
+def MainPokemon(
+        pokemon_data: dict,
+        main_pokemon: PokemonObject,
+        logger: ShowInfoLogger,
+        translator: Translator,
+        reviewer_obj: "Reviewer_Manager",  # I can't import Reviewer_Manager without a circular import :'(
+        test_window: "TestWindow",  # I can't import TestWindow without a circular import :'(
+        ):
+    # Create NEW PokemonObject instance using class constructor
+    new_main_pokemon = PokemonObject(
+        name=pokemon_data.get('name', 'Missingno'),
+        level=pokemon_data.get('level', 5),
+        ability=pokemon_data.get('ability', ['none']),
+        type=pokemon_data.get('type', ['Normal']),
+        stats=pokemon_data.get('stats', {'hp': 1, 'atk': 1, 'def': 1, 'spa': 1, 'spd': 1, 'spe': 1}),
+        ev=pokemon_data.get('ev', defaultdict(int)),
+        iv=pokemon_data.get('iv', defaultdict(int)),
+        attacks=pokemon_data.get('attacks', ['Struggle']),
+        base_experience=pokemon_data.get('base_experience', 0),
+        growth_rate=pokemon_data.get('growth_rate', 'medium'),
+        current_hp = int((((2 * pokemon_data['stats']['hp'] + pokemon_data['iv']['hp'] + (pokemon_data['ev']['hp'] // 4)) * pokemon_data['level']) // 100) + pokemon_data['level'] + 10),
+        gender=pokemon_data.get('gender', 'N'),
+        shiny=pokemon_data.get('shiny', False),
+        individual_id=pokemon_data.get('individual_id', str(uuid.uuid4())),
+        id=pokemon_data.get('id', 133),
+        status=pokemon_data.get('status', None),
+        volatile_status=set(pokemon_data.get('volatile_status', []))
+    )
+    
+    # Update existing reference
+    main_pokemon.__dict__.update(new_main_pokemon.__dict__)
+    
+    # Save to JSON using the object's native serialization
+    main_pokemon_data = [main_pokemon.to_dict()]
+    with open(mainpokemon_path, "w") as f:
+        json.dump(main_pokemon_data, f, indent=2)
+
+    logger.log_and_showinfo(
+        "info",
+        translator.translate("picked_main_pokemon",main_pokemon_name=main_pokemon.name.capitalize())
+        )
+    
+    # Update UI components
+    class Container(object): pass
+    reviewer = Container()
+    reviewer.web = mw.reviewer.web
+    reviewer_obj.update_life_bar(reviewer, 0, 0)
+    
+    if test_window.isVisible():
+        test_window.display_first_encounter()
