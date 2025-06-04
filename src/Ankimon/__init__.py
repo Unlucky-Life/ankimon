@@ -139,7 +139,7 @@ try:
     from .functions.trainer_functions import xp_share_gain_exp
     from .functions.badges_functions import check_badges, check_for_badge, receive_badge
     from .functions.pokemon_functions import get_random_moves_for_pokemon
-    from .functions.encounter_functions import modify_percentages
+    from .functions.encounter_functions import choose_random_pkmn_from_tier
     from .functions.pokemon_functions import (
         pick_random_gender,
         find_experience_for_level,
@@ -147,7 +147,6 @@ try:
         create_caught_pokemon,
         get_random_moves_for_pokemon,
         check_min_generate_level,
-        get_pokemon_id_by_tier,
     )
 except ImportError as e:
     showWarning(f"Error in importing functions library {e}")
@@ -790,26 +789,6 @@ def display_dead_pokemon():
     # Check the result to determine if the user closed the dialog
     if result == QDialog.Rejected:
         w_dead_pokemon = None  # Reset the global window reference
-
-def get_tier(total_reviews, player_level=1, event_modifier=None):
-    daily_average = int(settings_obj.get('battle.daily_average', 100))
-    percentages = modify_percentages(total_reviews, daily_average, player_level)
-    
-    tiers = list(percentages.keys())
-    probabilities = list(percentages.values())
-    
-    choice = random.choices(tiers, probabilities, k=1)
-    return choice[0]
-
-def choose_random_pkmn_from_tier():
-    total_reviews = ankimon_tracker_obj.total_reviews
-    trainer_level = trainer_card.level
-    try:
-        tier = get_tier(total_reviews, trainer_level)
-        id = get_pokemon_id_by_tier(tier)
-        return id, tier
-    except Exception as e:
-        showWarning(translator.translate("error_occured", error="choose_random_pkmn_from_tier"))
 
 def save_caught_pokemon(nickname):
     # Create a dictionary to store the Pokémon's data
