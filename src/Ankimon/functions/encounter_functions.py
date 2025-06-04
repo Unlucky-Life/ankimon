@@ -95,6 +95,17 @@ def get_pokemon_id_by_tier(tier):
     return random_pokemon_id
 
 def get_tier(total_reviews, player_level=1, event_modifier=None):
+    """_summary_
+    Randomly picks the tier for a new enemy Pokemon to be generated from, based on weighted probabilities based on number of reviews and player level.
+
+    Args:
+        total_reviews (int): Number of reviews done in that Anki session.
+        player_level (int, optional): Trainer XP level. Defaults to 1.
+        event_modifier (?, optional): Unused argument. Defaults to None.
+
+    Returns:
+        choice[0]: The first choice of TIER picked randomly (by a random.choices function) 
+    """
     daily_average = int(settings_obj.get('battle.daily_average', 100))
     percentages = modify_percentages(total_reviews, daily_average, player_level)
     
@@ -105,6 +116,15 @@ def get_tier(total_reviews, player_level=1, event_modifier=None):
     return choice[0]
 
 def choose_random_pkmn_from_tier():
+    """
+    Runs a tier-selection and a subsequent ID-selection function to pick a random Pokemon from a given randomly picked Tier.
+    The tier is a weighted probability selection, based on total_reviews and trainer_level.
+    Pokemon ID is picked randomly from within that tier. 
+
+    Returns:
+        id (int): Pokedex ID for generated Pokemon
+        tier (string): Rarity tier for generated Pokemon (normal/ultra/legendary etc.)
+    """
     total_reviews = ankimon_tracker_obj.total_reviews
     trainer_level = trainer_card.level
     try:
