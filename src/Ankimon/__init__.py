@@ -832,37 +832,6 @@ def catch_pokemon(nickname):
                 logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
     except Exception as e:
         showWarning(f"Error occured while catching enemy Pokemon: {e}")
-
-def get_random_starter():
-    category = "Starter"
-    try:
-        # Reload the JSON data from the file
-        with open(str(starters_path), "r", encoding="utf-8") as file:
-            pokemon_in_tier = json.load(file)
-            # Convert the input to lowercase to match the values in our JSON data
-            category_name = category.lower()
-            # Filter the Pokémon data to only include those in the given tier
-            water_starter = []
-            fire_starter = []
-            grass_starter = []
-            for pokemon in pokemon_in_tier:
-                pokemon = (pokemon).lower()
-                types = search_pokedex(pokemon, "types")
-                for type in types:
-                    if type == "Grass":
-                        grass_starter.append(pokemon)
-                    if type == "Fire":
-                        fire_starter.append(pokemon)
-                    if type == "Water":
-                        water_starter.append(pokemon)
-            random_gen = random.randint(0, 6)
-            water_start = f"{water_starter[random_gen]}"
-            fire_start = f"{fire_starter[random_gen]}"
-            grass_start = f"{grass_starter[random_gen]}"
-            return water_start, fire_start, grass_start
-    except Exception as e:
-        showWarning(f"Error in get_random_starter: {e}")
-        return None, None, None
         
 def process_battle_data(battle_data: dict) -> str:
     """Convert raw battle instructions into human-readable format."""
