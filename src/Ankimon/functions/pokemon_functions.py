@@ -4,9 +4,11 @@ import random
 import uuid
 from datetime import datetime
 
-from .pokedex_functions import search_pokeapi_db_by_id, search_pokedex, search_pokedex_by_id
+from aqt.utils import showWarning
+
+from .pokedex_functions import search_pokeapi_db_by_id, search_pokedex, search_pokedex_by_id, get_all_pokemon_moves
 from .battle_functions import calculate_hp
-from ..resources import pokedex_path, next_lvl_file_path, mypokemon_path, learnset_path, mainpokemon_path
+from ..resources import pokedex_path, next_lvl_file_path, mypokemon_path, learnset_path
 
 def pick_random_gender(pokemon_name):
     """
@@ -288,3 +290,18 @@ def save_fossil_pokemon(pokemon_id):
     # Save the caught Pokémon's data to a JSON file
     with open(str(mypokemon_path), "w") as json_file:
         json.dump(caught_pokemon_data, json_file, indent=2)
+
+def check_min_generate_level(name):
+    evoType = search_pokedex(name.lower(), "evoType")
+    evoLevel = search_pokedex(name.lower(), "evoLevel")
+    if evoLevel is not None:
+        return int(evoLevel)
+    elif evoType is not None:
+        min_level = 100
+        return int(min_level)
+    elif evoType and evoLevel is None:
+        min_level = 1
+        return int(min_level)
+    else:
+        min_level = 1
+        return min_level

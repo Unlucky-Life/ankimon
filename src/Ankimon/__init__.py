@@ -130,7 +130,6 @@ try:
     from .functions.pokedex_functions import *
     from .functions.badges_functions import *
     from .functions.battle_functions import *
-    from .functions.pokemon_functions import *
     from .functions.create_gui_functions import *
     from .functions.create_css_for_reviewer import create_css_for_reviewer
     from .functions.reviewer_iframe import create_iframe_html, create_head_code
@@ -140,6 +139,8 @@ try:
     from .functions.trainer_functions import xp_share_gain_exp
     from .functions.badges_functions import check_badges, check_for_badge, receive_badge
     from .functions.pokemon_functions import get_random_moves_for_pokemon
+    from .functions.encounter_functions import modify_percentages
+    from .functions.pokemon_functions import pick_random_gender, find_experience_for_level, shiny_chance, create_caught_pokemon, get_random_moves_for_pokemon, check_min_generate_level
 except ImportError as e:
     showWarning(f"Error in importing functions library {e}")
 from .gui_entities import (
@@ -500,21 +501,6 @@ if database_complete:
 
 caught_pokemon = {} #pokemon not caught
 
-def check_min_generate_level(name):
-    evoType = search_pokedex(name.lower(), "evoType")
-    evoLevel = search_pokedex(name.lower(), "evoLevel")
-    if evoLevel is not None:
-        return int(evoLevel)
-    elif evoType is not None:
-        min_level = 100
-        return int(min_level)
-    elif evoType and evoLevel is None:
-        min_level = 1
-        return int(min_level)
-    else:
-        min_level = 1
-        return min_level
-
 def customCloseTooltip(tooltipLabel):
 	if tooltipLabel:
 		try:
@@ -796,62 +782,6 @@ def display_dead_pokemon():
     # Check the result to determine if the user closed the dialog
     if result == QDialog.Rejected:
         w_dead_pokemon = None  # Reset the global window reference
-
-def modify_percentages(total_reviews, daily_average, player_level):
-    """
-    Modify Pokémon encounter percentages based on total reviews, player level, event modifiers, and main Pokémon level.
-    """
-    # Start with the base percentages
-    percentages = {"Baby": 2, "Legendary": 0.5, "Mythical": 0.2, "Normal": 92.3, "Ultra": 5}
-
-    # Adjust percentages based on total reviews relative to the daily average
-    review_ratio = total_reviews / daily_average if daily_average > 0 else 0
-
-    # Adjust for review progress
-    if review_ratio < 0.4:
-        percentages["Normal"] += percentages.pop("Baby", 0) + percentages.pop("Legendary", 0) + \
-                                 percentages.pop("Mythical", 0) + percentages.pop("Ultra", 0)
-    elif review_ratio < 0.6:
-        percentages["Baby"] += 2
-        percentages["Normal"] -= 2
-    elif review_ratio < 0.8:
-        percentages["Ultra"] += 3
-        percentages["Normal"] -= 3
-    else:
-        percentages["Legendary"] += 2
-        percentages["Ultra"] += 3
-        percentages["Normal"] -= 5
-
-    # Restrict access to certain tiers based on main Pokémon level
-    if main_pokemon.level:
-        # Define level thresholds for each tier
-        level_thresholds = {
-            "Ultra": 30,  # Example threshold for Ultra Pokémon
-            "Legendary": 50,  # Example threshold for Legendary Pokémon
-            "Mythical": 75  # Example threshold for Mythical Pokémon
-        }
-
-        for tier in ["Ultra", "Legendary", "Mythical"]:
-            if main_pokemon.level < level_thresholds.get(tier, float("inf")):
-                percentages[tier] = 0  # Set percentage to 0 if the level requirement isn't met
-
-    # Example modification based on player level
-    if player_level:
-        adjustment = 5  # Adjustment value for the example
-        if player_level > 10:
-            for tier in percentages:
-                if tier == "Normal":
-                    percentages[tier] = max(percentages[tier] - adjustment, 0)
-                else:
-                    percentages[tier] = percentages.get(tier, 0) + adjustment
-                    
-    # Normalize percentages to ensure they sum to 100
-    total = sum(percentages.values())
-    for tier in percentages:
-        percentages[tier] = (percentages[tier] / total) * 100 if total > 0 else 0
-    # this function gets called maybe 10 times per battle round, which is concerning. 
-    # it could be rewritten to run ONLY when the change in review ratio is detected.
-    return percentages
 
 def get_tier(total_reviews, player_level=1, event_modifier=None):
     daily_average = int(settings_obj.get('battle.daily_average', 100))
