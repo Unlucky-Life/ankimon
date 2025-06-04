@@ -18,9 +18,7 @@ import uuid
 
 from aqt import mw
 
-from .functions.pokemon_functions import MainPokemon
 from .pyobj.collection_dialog import PokemonCollectionDialog
-
 from .pyobj.ankimon_tracker import AnkimonTracker
 from .pyobj.settings import Settings
 from .pyobj.settings_window import SettingsWindow
@@ -203,8 +201,9 @@ item_window = ItemWindow(  # Create an instance of the MainWindow
 
 pokecollection_win = PokemonCollectionDialog(
     logger=logger,
+    translator=translator,
+    reviewer_obj=reviewer_obj,
+    test_window=test_window,
     settings_obj=settings_obj,
     main_pokemon=main_pokemon,
-    mainpokemon_function=lambda _pokemon_data: MainPokemon(_pokemon_data, main_pokemon, logger, translator, reviewer_obj, test_window)
 )
-
