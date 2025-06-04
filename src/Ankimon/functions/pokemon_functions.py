@@ -310,3 +310,62 @@ def check_min_generate_level(name):
     else:
         min_level = 1
         return min_level
+    
+def get_levelup_move_for_pokemon(pokemon_name, level):
+    """
+    Get a random move learned by a Pokémon at a specific level and lower, excluding moves that can be learned at a higher level.
+
+    Args:
+        pokemon_name (str): The name of the Pokémon.
+        level (int): The level at which to check for moves.
+
+    Returns:
+        str: A random move and its highest level.
+    """
+    # Load the JSON file
+    with open(learnset_path, "r", encoding="utf-8") as file:
+        learnsets = json.load(file)
+
+    # Normalize the Pokémon name to lowercase for consistency
+    pokemon_name = pokemon_name.lower()
+
+    # Retrieve the learnset for the specified Pokémon
+    pokemon_learnset = learnsets.get(pokemon_name, {})
+
+    # Create a dictionary to store moves and their corresponding highest levels
+    moves_at_level_and_lower = {}
+
+    # Loop through the learnset dictionary
+    for move, levels in pokemon_learnset.get('learnset', {}).items():
+        highest_level = float('-inf')  # Initialize with negative infinity
+        eligible_moves = []  # Store moves eligible for inclusion
+
+        for move_level in levels:
+            # Check if the move_level string contains 'L'
+            if 'L' in move_level:
+                # Extract the level from the move_level string
+                move_level_int = int(move_level.split('L')[1])
+
+                # Check if the move can be learned at the specified level or lower
+                if move_level_int <= level:
+                    # Update the highest_level if a higher level is found
+                    highest_level = max(highest_level, move_level_int)
+                    eligible_moves.append(move)
+
+        # Check if the move can be learned at a higher level
+        can_learn_at_higher_level = any(
+            'L' in move_level and int(move_level.split('L')[1]) > level
+            for move_level in levels
+        )
+
+        # Add the move and its highest level to the dictionary if not learnable at a higher level
+        if highest_level != float('-inf') and not can_learn_at_higher_level:
+            moves_at_level_and_lower[move] = highest_level
+
+    if moves_at_level_and_lower:
+        # Filter moves with the same highest level as the input level
+        eligible_moves = [
+            move for move, highest_level in moves_at_level_and_lower.items()
+            if highest_level == level
+        ]
+        return eligible_moves
