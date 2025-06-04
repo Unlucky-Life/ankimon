@@ -3515,7 +3515,8 @@ def rate_this_addon():
         rate_data = default_data
         with open(rate_path, "w", encoding="utf-8") as f:
             json.dump(default_data, f, indent=4)
-        rate_this = rate_data.get("rate_this", False)
+            
+    rate_this = rate_data.get("rate_this", False)
     
     # Check if rating is needed
     if not rate_this:
