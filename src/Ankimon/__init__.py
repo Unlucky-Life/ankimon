@@ -3494,9 +3494,27 @@ test_window = TestWindow(main_pokemon, enemy_pokemon, settings_obj)
 #Test window
 def rate_this_addon():
     global rate_this
+    # Default data for the file
+    default_data = {"rate_this": False}
+
+    # Create the file with default contents if it doesn't exist
+    if not os.path.exists(rate_path):
+        os.makedirs(os.path.dirname(rate_path), exist_ok=True)
+        with open(rate_path, "w", encoding="utf-8") as f:
+            json.dump(default_data, f, indent=4)
+
     # Load rate data
-    with open(rate_path, "r", encoding="utf-8") as file:
-        rate_data = json.load(file)
+    try:
+        with open(rate_path, "r", encoding="utf-8") as file:
+            rate_data = json.load(file)
+            # If the file was blank or corrupted, reset to default
+            if not isinstance(rate_data, dict) or "rate_this" not in rate_data:
+                rate_data = default_data
+    except Exception:
+        # If there was any error reading, recreate with default
+        rate_data = default_data
+        with open(rate_path, "w", encoding="utf-8") as f:
+            json.dump(default_data, f, indent=4)
         rate_this = rate_data.get("rate_this", False)
     
     # Check if rating is needed
