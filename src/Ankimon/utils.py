@@ -442,3 +442,35 @@ def play_effect_sound(sound_type):
     else:
         pass
 
+def save_error_code(error_code, logger=None):
+    error_fix_msg = ""
+    try:
+        # Find the position of the phrase "can't be transferred from Gen"
+        index = error_code.find("can't be transferred from Gen")
+
+        # Extract the substring starting from this position
+        relevant_text = error_code[index:]
+
+        # Find the first number in the extracted text (assuming it's the generation number)
+        generation_number = int(''.join(filter(str.isdigit, relevant_text)))
+
+        # Show the generation number
+        error_fix_msg += (f"\n Please use Gen {str(generation_number)[0]} or lower")
+
+        index = error_code.find("can't be transferred from Gen")
+
+        # Extract the substring starting from this position
+        relevant_text = error_code[index:]
+
+        # Find the first number in the extracted text (assuming it's the generation number)
+        generation_number = int(''.join(filter(str.isdigit, relevant_text)))
+
+        error_fix_msg += (f"\n Please use Gen {str(generation_number)[0]} or lower")
+
+    except Exception as e:
+        if logger is not None:
+            logger.log_and_showinfo("info",f"An error occurred: {e}")
+
+    if logger is not None:
+        logger.log_and_showinfo("info",f"{error_fix_msg}")
+
