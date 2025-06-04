@@ -5,5 +5,7 @@ src/Ankimon/user_files/mainpokemon.json
 src/Ankimon/user_files/mypokemon.json
 src/Ankimon/user_files/backups
 src/Ankimon/meta.json
+src/Ankimon/team.json
+src/Ankimon/rate_this.json
 **/*.log
 **/*.pyc
