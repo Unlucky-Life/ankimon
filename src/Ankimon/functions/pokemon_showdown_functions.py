@@ -5,6 +5,7 @@ from aqt.qt import QDialog, QLabel,Qt, QVBoxLayout
 from PyQt6.QtWidgets import QDialog, QLabel, QPushButton, QVBoxLayout, QLineEdit
 
 from ..functions.pokedex_functions import search_pokedex
+from ..functions.url_functions import open_browser_window
 from ..utils import save_error_code
 from ..resources import mypokemon_path
 from ..singletons import main_pokemon, logger
@@ -148,6 +149,90 @@ def export_all_pkmn_showdown():
         save_button.clicked.connect(lambda: save_error_code(error_code_input.text(), logger=logger))
 
         # Set the layout for the main window
+        export_window.setLayout(layout)
+
+        export_window.exec()
+    except Exception as e:
+        logger.log_and_showinfo("info",f"An error occurred: {e}")
+
+def flex_pokemon_collection():
+    # Create a main window
+    export_window = QDialog()
+    #export_window.setWindowTitle("Export Pokemon to Pkmn Showdown")
+
+    # Information label
+    info = "Pokemon Infos have been Copied to your Clipboard! \nNow simply paste this text into https://pokepast.es/.\nAfter pasting the infos in your clipboard and submitting the needed infos on the right,\n you will receive a link to send friends to flex."
+    info_label = QLabel(info)
+
+# Get all pokemon data
+    pokemon_info_complete_text = ""
+    try:
+        with (open(mypokemon_path, "r", encoding="utf-8") as json_file):
+            captured_pokemon_data = json.load(json_file)
+
+            # Check if there are any captured Pokémon
+            if captured_pokemon_data:
+                # Counter for tracking the column position
+                column = 0
+                row = 0
+                for pokemon in captured_pokemon_data:
+                    pokemon_name = pokemon['name']
+                    pokemon_level = pokemon['level']
+                    pokemon_ability = pokemon['ability']
+                    pokemon_type = pokemon['type']
+                    pokemon_type_text = pokemon_type[0].capitalize()
+                    if len(pokemon_type) > 1:
+                        pokemon_type_text = ""
+                        pokemon_type_text += f"{pokemon_type[0].capitalize()}"
+                        pokemon_type_text += f" {pokemon_type[1].capitalize()}"
+                    pokemon_stats = pokemon['stats']
+                    pokemon_hp = pokemon_stats["hp"]
+                    pokemon_attacks = pokemon['attacks']
+                    pokemon_ev = pokemon['ev']
+                    pokemon_iv = pokemon['iv']
+
+                    pokemon_info = "{} \nAbility: {}\nLevel: {}\nType: {}\nEVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe\n IVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe \n".format(
+                        pokemon_name,
+                        pokemon_ability.capitalize(),
+                        pokemon_level,
+                        pokemon_type_text,
+                        pokemon_stats["hp"],
+                        pokemon_stats["atk"],
+                        pokemon_stats["def"],
+                        pokemon_stats["spa"],
+                        pokemon_stats["spd"],
+                        pokemon_stats["spe"],
+                        pokemon_iv["hp"],
+                        pokemon_iv["atk"],
+                        pokemon_iv["def"],
+                        pokemon_iv["spa"],
+                        pokemon_iv["spd"],
+                        pokemon_iv["spe"]
+                    )
+                    for attack in pokemon_attacks:
+                        pokemon_info += f"- {attack}\n"
+                    pokemon_info += "\n"
+                    pokemon_info_complete_text += pokemon_info
+
+                    # Create labels to display the text
+                    #label = QLabel(pokemon_info_complete_text)
+                    # Align labels
+                    #label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Align center
+                    info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Align center
+
+                    # Create a layout and add the labels, input field, and button
+                    layout = QVBoxLayout()
+                    layout.addWidget(info_label)
+                    #layout.addWidget(label)
+
+                    # Copy text to clipboard in Anki
+                    mw.app.clipboard().setText(pokemon_info_complete_text)
+        #save_button.clicked.connect(lambda: save_error_code(error_code_input.text()))
+        # Set the layout for the main window
+        open_browser_for_pokepaste = QPushButton("Open Pokepaste")
+        open_browser_for_pokepaste.clicked.connect(open_browser_window)
+        layout.addWidget(open_browser_for_pokepaste)
+
         export_window.setLayout(layout)
 
         export_window.exec()
