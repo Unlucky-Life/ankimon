@@ -105,6 +105,7 @@ from .functions.trainer_functions import xp_share_gain_exp
 from .functions.badges_functions import check_badges, check_for_badge, receive_badge, handle_achievements, check_and_award_badges
 from .functions.encounter_functions import choose_random_pkmn_from_tier
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
+from .functions.drawing_utils import tooltipWithColour
 from .functions.discord_function import DiscordPresence
 from .functions.pokedex_functions import (
     search_pokedex,
@@ -411,63 +412,6 @@ aqt.gui_hooks.reviewer_will_answer_card.append(answerCard_before)
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
 
 caught_pokemon = {} #pokemon not caught
-
-def customCloseTooltip(tooltipLabel):
-	if tooltipLabel:
-		try:
-			tooltipLabel.deleteLater()
-		except:
-			# already deleted as parent window closed
-			pass
-		tooltipLabel = None
-
-def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, height=0, centered=False):
-    period = int(settings_obj.get("gui.reviewer_text_message_box_time", 3) * 1000) #time for pop up message
-    class CustomLabel(QLabel):
-        def mousePressEvent(self, evt):
-            evt.accept()
-            self.hide()
-    aw = parent or QApplication.activeWindow()
-    if aw is None:
-        return
-    
-    if color == "#6A4DAC":
-        y_offset = 40
-    elif color == "#F7DC6F":
-        y_offset = -40
-    elif color == "#F0B27A":
-        y_offset = -40
-    elif color == "#D2B4DE":
-        y_offset = -40
-    else:
-        y_offset = 0
-
-    if reviewer_text_message_box != False:
-        x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
-        y = aw.mapToGlobal(QPoint(0, aw.height() - (180 + y_offset))).y()
-        lab = CustomLabel(aw)
-        lab.setFrameShape(QFrame.Shape.StyledPanel)
-        lab.setLineWidth(2)
-        lab.setWindowFlags(Qt.WindowType.ToolTip)
-        lab.setText(msg)
-        lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
-        
-        if width > 0:
-            lab.setFixedWidth(width)
-        if height > 0:
-            lab.setFixedHeight(height)
-        
-        p = QPalette()
-        p.setColor(QPalette.ColorRole.Window, QColor(color))
-        p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
-        lab.setPalette(p)
-        lab.show()
-        lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))    
-        try:
-            QTimer.singleShot(period, lambda: lab.hide())
-        except:
-            QTimer.singleShot(3000, lambda: lab.hide())
-        logger.log_and_showinfo("game", msg)
 
 # Your random Pokémon generation function using the PokeAPI
 if database_complete:
