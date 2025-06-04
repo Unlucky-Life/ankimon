@@ -315,6 +315,10 @@ def PokemonDetailsStats(detail_stats, growth_rate, level, remove_levelcap, langu
 
     # Populate the table and create the stat bars
     for row, (stat, value) in enumerate(detail_stats.items()):
+        # Skip unknown stats that are not in stat_colors
+        if stat not in stat_colors:
+            continue
+            
         stat_item2 = QLabel(stat.capitalize())
         max_width_stat_item = 200
         stat_item2.setFixedWidth(max_width_stat_item)
@@ -328,7 +332,7 @@ def PokemonDetailsStats(detail_stats, growth_rate, level, remove_levelcap, langu
         value_item2.setFont(custom_font)
         # Create a bar item
         bar_item2 = QLabel()
-        pixmap2 = createStatBar(stat_colors.get(stat), value)
+        pixmap2 = createStatBar(stat_colors[stat], value)  # Now guaranteed to exist
         # Convert the QPixmap to an QIcon
         icon = QIcon(pixmap2)
         # Set the QIcon as the background for the QLabel
