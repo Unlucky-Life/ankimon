@@ -1,4 +1,22 @@
-from ..singletons import main_pokemon
+import json
+import random
+
+from aqt.utils import showWarning
+
+from ..singletons import (
+    main_pokemon,
+    ankimon_tracker_obj,
+    trainer_card,
+    settings_obj,
+    translator,
+)
+from ..resources import (
+    pokemon_species_baby_path,
+    pokemon_species_legendary_path,
+    pokemon_species_mythical_path,
+    pokemon_species_normal_path,
+    pokemon_species_ultra_path,
+)
 
 def modify_percentages(total_reviews, daily_average, player_level):
     """
@@ -55,3 +73,43 @@ def modify_percentages(total_reviews, daily_average, player_level):
     # this function gets called maybe 10 times per battle round, which is concerning. 
     # it could be rewritten to run ONLY when the change in review ratio is detected.
     return percentages
+
+def get_pokemon_id_by_tier(tier):
+    id_species_path = None
+    if tier == "Normal":
+        id_species_path = pokemon_species_normal_path
+    elif tier == "Baby":
+        id_species_path = pokemon_species_baby_path
+    elif tier == "Ultra":
+        id_species_path = pokemon_species_ultra_path
+    elif tier == "Legendary":
+        id_species_path = pokemon_species_legendary_path
+    elif tier == "Mythical":
+        id_species_path = pokemon_species_mythical_path
+
+    with open(id_species_path, "r", encoding="utf-8") as file:
+        id_data = json.load(file)
+
+    # Select a random Pokemon ID from those in the tier
+    random_pokemon_id = random.choice(id_data)
+    return random_pokemon_id
+
+def get_tier(total_reviews, player_level=1, event_modifier=None):
+    daily_average = int(settings_obj.get('battle.daily_average', 100))
+    percentages = modify_percentages(total_reviews, daily_average, player_level)
+    
+    tiers = list(percentages.keys())
+    probabilities = list(percentages.values())
+    
+    choice = random.choices(tiers, probabilities, k=1)
+    return choice[0]
+
+def choose_random_pkmn_from_tier():
+    total_reviews = ankimon_tracker_obj.total_reviews
+    trainer_level = trainer_card.level
+    try:
+        tier = get_tier(total_reviews, trainer_level)
+        id = get_pokemon_id_by_tier(tier)
+        return id, tier
+    except Exception as e:
+        showWarning(translator.translate("error_occured", error="choose_random_pkmn_from_tier"))
