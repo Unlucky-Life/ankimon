@@ -416,9 +416,25 @@ caught_pokemon = {} #pokemon not caught
 # Your random Pokémon generation function using the PokeAPI
 if database_complete:
     def generate_random_pokemon():
-        # Fetch random Pokémon data from Generation
-        # Load the JSON file with Pokémon data
+	#Generates a wild pokemon and its values based on multiple diffrent functions.
+	# 1. id (int), tier (string): Chooses the pokemon tier and id to be generated
+	# 2. name (string) = Searches the pokemon name to use for pokedex.json
+	    #pokedex.json can be better searched with names instead of id
+	    #pokeapidb can be better searched with id
+	# 3. shiny (boolean): calculate shiny_chance 
+	# 4. min_level (int): Check at what the lowest minimum level a pokemon is allowed to be generated is (evolution level that pokemon is evolved at)
+	# 5. level (int): Generate a random level based on main_pokemon.level if found
 	#State of the current battle
+	# 6. type (array), abilites (string), stats (base stats of pokemon - (dictionary)) with pokedex_search(name (string), *key (string))
+	# 7. enemy_attacks (array) - find with get_all_pokemon_moves(name (string), level (int)) returns array of possible pokemon moves learned by evolution
+	# 8. base_experience (int), growth_rate(string) - search_pokeapi_db(id (int), *key (string)) - find wild pokemons growth_rate (growth_rate type) and base_experience (individual experience received on defeating pokemon)
+	# 9. gender (string) - pick_random_gender(name (string)) returns the gender of wild pokemon based on gender ratio chances
+	# 10. ev_yield (dictionary) - what ev yield this pokemon would give - key and value, found with search_pokeapi_db_by_id( id(int), key* (string))
+	# 11. set iv(dictionary) (randomly distributed) and ev (dictionary) - default 0 for all keys
+	# 12. battle_stats(dictionary) - the stats battled with iv + base_stats
+	# 13. battle_status(string) - the default battle status of enemy pokemon "fighting" so battle status isnt none at the start
+	# 14. return all above named variables and update them to the enemy_pokemon object
+	
 	#	- pokemon_encounter: 0 => Start of Battle, 1 => Current Battle
         ankimon_tracker_obj.pokemon_encounter = 0
 	# card_battle_round: amount of anki cards into the current battle against wild pokemon
@@ -441,8 +457,8 @@ if database_complete:
 	    #fall back value gender if its missing later
             gender = "N"
 
-	    #shiny_chance calculates the % chance for a shiny pokemon to appear
-	    #=> returns a boolean
+	    #shiny_chance calculates the % chance for a shiny pokemon to appear, no arguments needed
+	    #=> returns a boolean (True = shiny, False = no shiny)
             shiny = shiny_chance()
 
 	    #If multiple pokemon names are returned from search_pokedex_by_id due to multiple pokemon having same id
