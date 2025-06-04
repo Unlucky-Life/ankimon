@@ -1,6 +1,9 @@
-src/Ankimon/__pycache__
+src/Ankimon/pyobj/__pycache__
 src/Ankimon/user_files/badges.json
 src/Ankimon/user_files/items.json
 src/Ankimon/user_files/mainpokemon.json
 src/Ankimon/user_files/mypokemon.json
 src/Ankimon/user_files/backups
+src/Ankimon/meta.json
+**/*.log
+**/*.pyc
