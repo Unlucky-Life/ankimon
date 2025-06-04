@@ -128,7 +128,6 @@ from .utils import (
 )
 try:
     from .functions.pokedex_functions import *
-    from .functions.badges_functions import *
     from .functions.battle_functions import *
     from .functions.create_gui_functions import *
     from .functions.create_css_for_reviewer import create_css_for_reviewer
@@ -137,7 +136,7 @@ try:
     from .functions.gui_functions import type_icon_path, move_category_path
     from .gui_classes.pokemon_details import *
     from .functions.trainer_functions import xp_share_gain_exp
-    from .functions.badges_functions import check_badges, check_for_badge, receive_badge
+    from .functions.badges_functions import check_badges, check_for_badge, receive_badge, handle_achievements, check_and_award_badges
     from .functions.pokemon_functions import get_random_moves_for_pokemon
     from .functions.encounter_functions import choose_random_pkmn_from_tier
     from .functions.pokemon_functions import (
@@ -1177,33 +1176,6 @@ def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpoke
 
 # some of the functions that are being called within the on_review_card function are below
 # for sake of tidiness ! 
-
-def handle_achievements(card_counter, achievements):
-    if card_counter == 100:
-        check = check_for_badge(achievements,1)
-        if check is False:
-            achievements = receive_badge(1,achievements)
-    elif card_counter == 200:
-        check = check_for_badge(achievements,2)
-        if check is False:
-            achievements = receive_badge(2,achievements)
-    elif card_counter == 300:
-        check = check_for_badge(achievements,3)
-        if check is False:
-            achievements = receive_badge(3,achievements)
-    elif card_counter == 500:
-        check = check_for_badge(achievements,4)
-        if check is False:
-            receive_badge(4,achievements)
-    return achievements
-
-def check_and_award_badges(card_counter, achievements, ankimon_tracker_obj, test_window):
-    if card_counter == ankimon_tracker_obj.item_receive_value:
-        test_window.display_item()
-        check = check_for_badge(achievements,6)
-        if check is False:
-            receive_badge(6,achievements)
-    return achievements
 
 def handle_enemy_faint(enemy_pokemon, collected_pokemon_ids, settings_obj):
     """
