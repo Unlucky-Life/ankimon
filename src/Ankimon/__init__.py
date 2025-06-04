@@ -140,7 +140,15 @@ try:
     from .functions.badges_functions import check_badges, check_for_badge, receive_badge
     from .functions.pokemon_functions import get_random_moves_for_pokemon
     from .functions.encounter_functions import modify_percentages
-    from .functions.pokemon_functions import pick_random_gender, find_experience_for_level, shiny_chance, create_caught_pokemon, get_random_moves_for_pokemon, check_min_generate_level
+    from .functions.pokemon_functions import (
+        pick_random_gender,
+        find_experience_for_level,
+        shiny_chance,
+        create_caught_pokemon,
+        get_random_moves_for_pokemon,
+        check_min_generate_level,
+        get_pokemon_id_by_tier,
+    )
 except ImportError as e:
     showWarning(f"Error in importing functions library {e}")
 from .gui_entities import (
@@ -802,26 +810,6 @@ def choose_random_pkmn_from_tier():
         return id, tier
     except Exception as e:
         showWarning(translator.translate("error_occured", error="choose_random_pkmn_from_tier"))
-
-def get_pokemon_id_by_tier(tier):
-    id_species_path = None
-    if tier == "Normal":
-        id_species_path = pokemon_species_normal_path
-    elif tier == "Baby":
-        id_species_path = pokemon_species_baby_path
-    elif tier == "Ultra":
-        id_species_path = pokemon_species_ultra_path
-    elif tier == "Legendary":
-        id_species_path = pokemon_species_legendary_path
-    elif tier == "Mythical":
-        id_species_path = pokemon_species_mythical_path
-
-    with open(id_species_path, "r", encoding="utf-8") as file:
-        id_data = json.load(file)
-
-    # Select a random Pokemon ID from those in the tier
-    random_pokemon_id = random.choice(id_data)
-    return random_pokemon_id
 
 def save_caught_pokemon(nickname):
     # Create a dictionary to store the Pokémon's data
