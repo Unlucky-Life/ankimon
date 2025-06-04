@@ -31,3 +31,30 @@ def receive_badge(badge_num,achievements):
             badges_collection.append(int(num))
     save_badges(badges_collection)
     return achievements
+
+def handle_achievements(card_counter, achievements):
+    if card_counter == 100:
+        check = check_for_badge(achievements,1)
+        if check is False:
+            achievements = receive_badge(1,achievements)
+    elif card_counter == 200:
+        check = check_for_badge(achievements,2)
+        if check is False:
+            achievements = receive_badge(2,achievements)
+    elif card_counter == 300:
+        check = check_for_badge(achievements,3)
+        if check is False:
+            achievements = receive_badge(3,achievements)
+    elif card_counter == 500:
+        check = check_for_badge(achievements,4)
+        if check is False:
+            receive_badge(4,achievements)
+    return achievements
+
+def check_and_award_badges(card_counter, achievements, ankimon_tracker_obj, test_window):
+    if card_counter == ankimon_tracker_obj.item_receive_value:
+        test_window.display_item()
+        check = check_for_badge(achievements,6)
+        if check is False:
+            receive_badge(6,achievements)
+    return achievements
