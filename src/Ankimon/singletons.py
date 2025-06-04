@@ -15,7 +15,11 @@ Created: 2025-06-03 (YYY-MM-DD)
 import json
 import uuid
 
+
 from aqt import mw
+
+from .functions.pokemon_functions import MainPokemon
+from .pyobj.collection_dialog import PokemonCollectionDialog
 
 from .pyobj.ankimon_tracker import AnkimonTracker
 from .pyobj.settings import Settings
@@ -197,8 +201,10 @@ item_window = ItemWindow(  # Create an instance of the MainWindow
     evo_window=evo_window,
 )
 
-# pokecollection_win = PokemonCollectionDialog(logger=logger, settings_obj=settings_obj, mainpokemon_function = MainPokemon, main_pokemon = main_pokemon)
-
-
-
+pokecollection_win = PokemonCollectionDialog(
+    logger=logger,
+    settings_obj=settings_obj,
+    main_pokemon=main_pokemon,
+    mainpokemon_function=lambda _pokemon_data: MainPokemon(_pokemon_data, main_pokemon, logger, translator, reviewer_obj, test_window)
+)
 

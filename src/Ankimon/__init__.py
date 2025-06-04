@@ -150,7 +150,6 @@ from .gui_entities import (
 from .functions.discord_function import *  # Import necessary functions for Discord integration
 from .pyobj.pokemon_obj import PokemonObject
 from .pyobj.sync_pokemon_data import CheckPokemonData
-from .pyobj.collection_dialog import PokemonCollectionDialog
 from .pyobj.attack_dialog import AttackDialog
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
@@ -184,6 +183,7 @@ from .singletons import (
     starter_window,
     item_window,
     version_dialog,
+    pokecollection_win,
 )
 
 # Load move and pokemon name mapping at startup
@@ -1925,57 +1925,9 @@ def on_review_card(*args):
     except Exception as e:
         showWarning(f"An error occurred in reviewer: {str(e)}")
         traceback.print_exc()
-        
-
-
 
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
-
-def MainPokemon(pokemon_data, main_pokemon=main_pokemon):
-    # Create NEW PokemonObject instance using class constructor
-    new_main_pokemon = PokemonObject(
-        name=pokemon_data.get('name', 'Missingno'),
-        level=pokemon_data.get('level', 5),
-        ability=pokemon_data.get('ability', ['none']),
-        type=pokemon_data.get('type', ['Normal']),
-        stats=pokemon_data.get('stats', {'hp': 1, 'atk': 1, 'def': 1, 'spa': 1, 'spd': 1, 'spe': 1}),
-        ev=pokemon_data.get('ev', defaultdict(int)),
-        iv=pokemon_data.get('iv', defaultdict(int)),
-        attacks=pokemon_data.get('attacks', ['Struggle']),
-        base_experience=pokemon_data.get('base_experience', 0),
-        growth_rate=pokemon_data.get('growth_rate', 'medium'),
-        current_hp = int((((2 * pokemon_data['stats']['hp'] + pokemon_data['iv']['hp'] + (pokemon_data['ev']['hp'] // 4)) * pokemon_data['level']) // 100) + pokemon_data['level'] + 10),
-        gender=pokemon_data.get('gender', 'N'),
-        shiny=pokemon_data.get('shiny', False),
-        individual_id=pokemon_data.get('individual_id', str(uuid.uuid4())),
-        id=pokemon_data.get('id', 133),
-        status=pokemon_data.get('status', None),
-        volatile_status=set(pokemon_data.get('volatile_status', []))
-    )
-    
-    # Update existing reference
-    main_pokemon.__dict__.update(new_main_pokemon.__dict__)
-    
-    # Save to JSON using the object's native serialization
-    main_pokemon_data = [main_pokemon.to_dict()]
-    with open(mainpokemon_path, "w") as f:
-        json.dump(main_pokemon_data, f, indent=2)
-
-    logger.log_and_showinfo("info", 
-        translator.translate("picked_main_pokemon", 
-        main_pokemon_name=main_pokemon.name.capitalize()))
-    
-    # Update UI components
-    class Container(object): pass
-    reviewer = Container()
-    reviewer.web = mw.reviewer.web
-    reviewer_obj.update_life_bar(reviewer, 0, 0)
-    
-    if test_window.isVisible():
-        test_window.display_first_encounter()
-
-pokecollection_win = PokemonCollectionDialog(logger=logger, settings_obj=settings_obj, mainpokemon_function = MainPokemon, main_pokemon = main_pokemon)
 
 life_bar_injected = False
 
