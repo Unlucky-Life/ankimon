@@ -6,6 +6,9 @@ from aqt import mw
 from aqt.utils import showWarning
 
 from ..pyobj.ankimon_tracker import AnkimonTracker
+from ..pyobj.pokemon_obj import PokemonObject
+from ..pyobj.reviewer_obj import Reviewer_Manager
+from ..pyobj.test_window import TestWindow
 from ..functions.pokemon_functions import check_min_generate_level, pick_random_gender, shiny_chance
 from ..functions.pokedex_functions import get_all_pokemon_moves, search_pokeapi_db_by_id, search_pokedex, search_pokedex_by_id
 from ..const import gen_ids
@@ -268,3 +271,82 @@ def generate_random_pokemon(main_pokemon_level: int, ankimon_tracker_obj: Ankimo
         ev_yield,
         is_shiny
     )
+
+def new_pokemon(
+        pokemon: PokemonObject,
+        test_window: TestWindow,
+        ankimon_tracker: AnkimonTracker,
+        reviewer_obj: Reviewer_Manager
+        ) -> PokemonObject:
+    """
+    Initializes a new wild Pokémon encounter by generating a random Pokémon,
+    updating its stats, setting its HP, and preparing the battle scene.
+
+    This function uses the player's main Pokémon level to generate an appropriately
+    leveled wild Pokémon with randomized attributes. It updates the provided `pokemon`
+    object with generated data, resets HP, triggers any battle scene randomization,
+    and updates the reviewer interface if applicable.
+
+    Args:
+        pokemon (PokemonObject): The Pokémon object to be updated with the new wild Pokémon's data.
+        test_window (TestWindow): Optional UI window to display the first encounter scene.
+        ankimon_tracker (AnkimonTracker): Object tracking battle-related state and handling battle scene randomization.
+        reviewer_obj (Reviewer_Manager): Manager object responsible for updating battle review elements like life bars.
+
+    Returns:
+        PokemonObject: The updated `pokemon` object representing the newly generated wild Pokémon ready for battle.
+    """
+    (
+        name,
+        pkmn_id,
+        level,
+        ability,
+        pkmn_type,
+        stats,
+        enemy_attacks,
+        base_experience,
+        growth_rate,
+        ev,
+        iv,
+        gender,
+        battle_status,
+        battle_stats,
+        tier,
+        ev_yield,
+        is_shiny
+        ) = generate_random_pokemon(main_pokemon.level, ankimon_tracker_obj)
+    pokemon_data = {
+        'name': name,
+        'id': pkmn_id,
+        'level': level,
+        'ability': ability,
+        'type': pkmn_type,
+        'stats': stats,
+        'attacks': enemy_attacks,
+        'base_experience': base_experience,
+        'growth_rate': growth_rate,
+        'ev': ev,
+        'iv': iv,
+        'gender': gender,
+        'battle_status': battle_status,
+        'battle_stats': battle_stats,
+        'tier': tier,
+        'ev_yield': ev_yield,
+        'shiny': is_shiny
+    }
+    pokemon.update_stats(**pokemon_data)
+    max_hp = pokemon.calculate_max_hp()
+    pokemon.current_hp = max_hp
+    pokemon.hp = max_hp
+    pokemon.max_hp = max_hp
+    
+    ankimon_tracker.randomize_battle_scene()
+    if test_window is not None:
+        test_window.display_first_encounter()
+    class Container(object):
+        pass
+    reviewer = Container()
+    reviewer.web = mw.reviewer.web
+    reviewer_obj.update_life_bar(reviewer, 0, 0)
+
+    return pokemon
