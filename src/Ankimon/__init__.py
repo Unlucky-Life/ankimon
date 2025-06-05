@@ -107,6 +107,7 @@ from .functions.encounter_functions import choose_random_pkmn_from_tier
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
 from .functions.drawing_utils import tooltipWithColour
 from .functions.discord_function import DiscordPresence
+from .functions.encounter_functions import generate_random_pokemon
 from .functions.pokedex_functions import (
     search_pokedex,
     search_pokedex_by_id,
@@ -413,112 +414,6 @@ aqt.gui_hooks.reviewer_will_answer_card.append(answerCard_before)
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
 
 caught_pokemon = {} #pokemon not caught
-
-# Your random Pokémon generation function using the PokeAPI
-def generate_random_pokemon(main_pokemon_level: int, ankimon_tracker_obj: AnkimonTracker):
-    """
-    Generates a random wild Pokémon with attributes scaled to the level of the player's main Pokémon.
-
-    This function resets the encounter and battle round state in the provided `AnkimonTracker` object.
-    It then selects a valid Pokémon that can appear at the current level range, computes its stats, 
-    determines its moves, ability, and other combat-relevant characteristics, and returns all necessary 
-    data required for a battle.
-
-    Args:
-        main_pokemon_level (int): The level of the player's main Pokémon. Determines the level range of 
-            the generated wild Pokémon.
-        ankimon_tracker_obj (AnkimonTracker): An object used to track battle state, such as the number 
-            of Pokémon encountered and cards used in the battle.
-
-    Returns:
-        tuple: A tuple containing the following elements:
-            - name (str): Name of the wild Pokémon.
-            - pokemon_id (int): Unique ID of the Pokémon.
-            - wild_pokemon_lvl (int): The level of the generated Pokémon.
-            - ability (str): The selected ability of the Pokémon.
-            - pokemon_type (list[str]): List of type(s) the Pokémon belongs to.
-            - base_stats (dict): Dictionary of the Pokémon's base stats.
-            - moves (list[str]): List of up to 4 moves the Pokémon can use in battle.
-            - base_experience (int): Experience points awarded for defeating the Pokémon.
-            - growth_rate (str): Growth rate category of the Pokémon (e.g., "slow", "fast").
-            - ev (dict): Effort values (EVs) for each stat, initialized to 0.
-            - iv (dict): Randomly generated individual values (IVs) for each stat.
-            - gender (str): Randomly assigned gender.
-            - battle_status (str): Current status of the Pokémon in battle, defaulted to "fighting".
-            - final_stats (dict): Final computed stats of the Pokémon.
-            - tier (str): Tier from which the Pokémon was selected (e.g., common, rare).
-            - ev_yield (dict): Effort values (EVs) awarded upon defeating the Pokémon.
-            - is_shiny (bool): Indicates whether the Pokémon is shiny.
-
-    Raises:
-        ValueError: If no valid Pokémon can be generated (highly unlikely under normal conditions).
-    """
-    lvl_variation = 3
-    lvl_range = max(1, main_pokemon_level - lvl_variation), max(1, main_pokemon_level + lvl_variation)
-    wild_pokemon_lvl = random.randint(*lvl_range)
-    wild_pokemon_lvl = max(1, wild_pokemon_lvl)  # Ensures that the wild pokemon's level is at least 1
-    if main_pokemon_level == 100:
-        wild_pokemon_lvl = 100
-
-    # First, we draw a random, valid pokemon id.
-    pokemon_id, tier = choose_random_pkmn_from_tier()
-    name = search_pokedex_by_id(pokemon_id)
-    min_allowed_pokemon_lvl = check_min_generate_level(str(name.lower()))  # Gets the minimum allowed level for that pokemon given its stage of evolution
-    while (not check_id_ok(pokemon_id)) or (wild_pokemon_lvl < min_allowed_pokemon_lvl):  # We keep drawing a random pokemon until we find a valid one
-        pokemon_id, tier = choose_random_pkmn_from_tier()
-        name = search_pokedex_by_id(pokemon_id)
-        min_allowed_pokemon_lvl = check_min_generate_level(str(name.lower()))  # Gets the minimum allowed level for that pokemon given its stage of evolution
-
-    # Now we get all necessary information about the chosen pokemon.
-    pokemon_type = search_pokedex(name, "types")
-    base_experience = search_pokeapi_db_by_id(pokemon_id, "base_experience")  # Experience that the wild pokemon will give once beaten
-    growth_rate = search_pokeapi_db_by_id(pokemon_id, "growth_rate")
-    ev_yield = search_pokeapi_db_by_id(pokemon_id, "effort_values")
-    gender = pick_random_gender(name)
-    is_shiny = shiny_chance()
-    battle_status = "fighting"
-    base_stats = search_pokedex(name, "baseStats")
-
-    all_possible_moves = get_all_pokemon_moves(name, wild_pokemon_lvl)
-    if len(all_possible_moves) <= 4:
-        moves = all_possible_moves
-    else:
-        moves = random.sample(all_possible_moves, 4)
-
-    ability = "no_ability"  # Default value for ability
-    possible_abilities = search_pokedex(name, "abilities")
-    if possible_abilities:
-        numeric_abilities = {k: v for k, v in possible_abilities.items() if k.isdigit()}
-        if numeric_abilities:
-            ability = random.choice(list(numeric_abilities.values()))
-    
-    stat_names = ["hp", "atk", "def", "spa", "spd", "spe"]
-    ev = {stat: 0 for stat in stat_names}
-    iv = {stat: random.randint(1, 32) for stat in stat_names}
-    final_stats = base_stats
-
-    ankimon_tracker_obj.pokemon_encounter = 0  # 0: Start of Battle: 1: Current Battle
-    ankimon_tracker_obj.cards_battle_round = 0  # Amount of cards in this current battle
-
-    return (
-        name,
-        pokemon_id,
-        wild_pokemon_lvl,
-        ability,
-        pokemon_type,
-        base_stats,
-        moves,
-        base_experience,
-        growth_rate,
-        ev,
-        iv,
-        gender,
-        battle_status,
-        final_stats,
-        tier,
-        ev_yield,
-        is_shiny
-    )
 
 def kill_pokemon():
     try:
