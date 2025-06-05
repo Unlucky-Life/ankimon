@@ -107,7 +107,7 @@ from .functions.encounter_functions import choose_random_pkmn_from_tier
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
 from .functions.drawing_utils import tooltipWithColour
 from .functions.discord_function import DiscordPresence
-from .functions.encounter_functions import generate_random_pokemon, new_pokemon
+from .functions.encounter_functions import generate_random_pokemon, new_pokemon, catch_pokemon
 from .functions.pokedex_functions import (
     search_pokedex,
     search_pokedex_by_id,
@@ -122,7 +122,6 @@ from .functions.pokemon_functions import (
     find_experience_for_level,
     shiny_chance,
     create_caught_pokemon,
-    check_min_generate_level,
     get_levelup_move_for_pokemon,
 )
 from .gui_entities import UpdateNotificationWindow, HelpWindow, CheckFiles
@@ -454,46 +453,46 @@ def kill_pokemon():
     except Exception as e:
         showWarning(f"Error occured in killing enemy pokemon: {e}")
 
-def save_caught_pokemon(nickname):
-    # Create a dictionary to store the Pokémon's data
-    # add all new values like hp as max_hp, evolution_data, description and growth rate
-    global achievements
-    if enemy_pokemon.tier != None:
-        if enemy_pokemon.tier == "Normal":
-            check = check_for_badge(achievements,17)
-            if check is False:
-                achievements = receive_badge(17,achievements)
-        elif enemy_pokemon.tier == "Baby":
-            check = check_for_badge(achievements,18)
-            if check is False:
-                achievements = receive_badge(18,achievements)
-        elif enemy_pokemon.tier == "Ultra":
-            check = check_for_badge(achievements,8)
-            if check is False:
-                achievements = receive_badge(8,achievements)
-        elif enemy_pokemon.tier == "Legendary":
-            check = check_for_badge(achievements,9)
-            if check is False:
-                achievements = receive_badge(9,achievements)
-        elif enemy_pokemon.tier == "Mythical":
-            check = check_for_badge(achievements,10)
-            if check is False:
-                achievements = receive_badge(10,achievements)
+# def save_caught_pokemon(nickname):
+#     # Create a dictionary to store the Pokémon's data
+#     # add all new values like hp as max_hp, evolution_data, description and growth rate
+#     global achievements
+#     if enemy_pokemon.tier != None:
+#         if enemy_pokemon.tier == "Normal":
+#             check = check_for_badge(achievements,17)
+#             if check is False:
+#                 achievements = receive_badge(17,achievements)
+#         elif enemy_pokemon.tier == "Baby":
+#             check = check_for_badge(achievements,18)
+#             if check is False:
+#                 achievements = receive_badge(18,achievements)
+#         elif enemy_pokemon.tier == "Ultra":
+#             check = check_for_badge(achievements,8)
+#             if check is False:
+#                 achievements = receive_badge(8,achievements)
+#         elif enemy_pokemon.tier == "Legendary":
+#             check = check_for_badge(achievements,9)
+#             if check is False:
+#                 achievements = receive_badge(9,achievements)
+#         elif enemy_pokemon.tier == "Mythical":
+#             check = check_for_badge(achievements,10)
+#             if check is False:
+#                 achievements = receive_badge(10,achievements)
 
-    caught_pokemon = create_caught_pokemon(enemy_pokemon, nickname)
-    # Load existing Pokémon data if it exists
-    if mypokemon_path.is_file():
-        with open(mypokemon_path, "r", encoding="utf-8") as json_file:
-            caught_pokemon_data = json.load(json_file)
-    else:
-        caught_pokemon_data = []
+#     caught_pokemon = create_caught_pokemon(enemy_pokemon, nickname)
+#     # Load existing Pokémon data if it exists
+#     if mypokemon_path.is_file():
+#         with open(mypokemon_path, "r", encoding="utf-8") as json_file:
+#             caught_pokemon_data = json.load(json_file)
+#     else:
+#         caught_pokemon_data = []
 
-    # Append the caught Pokémon's data to the list
-    caught_pokemon_data.append(caught_pokemon)
+#     # Append the caught Pokémon's data to the list
+#     caught_pokemon_data.append(caught_pokemon)
 
-    # Save the caught Pokémon's data to a JSON file
-    with open(str(mypokemon_path), "w") as json_file:
-        json.dump(caught_pokemon_data, json_file, indent=2)
+#     # Save the caught Pokémon's data to a JSON file
+#     with open(str(mypokemon_path), "w") as json_file:
+#         json.dump(caught_pokemon_data, json_file, indent=2)
 
 def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp):    
     ev_yield = enemy_pokemon.ev_yield
@@ -614,31 +613,6 @@ def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_
             json.dump(mypokemondata, output_file, indent=2)
 
     return main_pokemon.level
-
-def catch_pokemon(nickname):
-    try:
-        ankimon_tracker_obj.caught += 1
-        if ankimon_tracker_obj.caught == 1:
-            collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
-            if nickname is None or not nickname:  # Wenn None oder leer
-                save_caught_pokemon(nickname)
-            else:
-                save_caught_pokemon(enemy_pokemon.name)
-            ankimon_tracker_obj.general_card_count_for_battle = 0
-            msg = translator.translate("caught_wild_pokemon", enemy_pokemon_name=enemy_pokemon.name.capitalize())
-            if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-                logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
-            color = "#6A4DAC" #pokemon leveling info color for tooltip
-            try:
-                tooltipWithColour(msg, color)
-            except:
-                pass
-            new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
-        else:
-            if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-                logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
-    except Exception as e:
-        showWarning(f"Error occured while catching enemy Pokemon: {e}")
         
 def process_battle_data(battle_data: dict) -> str:
     """Convert raw battle instructions into human-readable format."""
@@ -928,12 +902,12 @@ def handle_enemy_faint(enemy_pokemon, collected_pokemon_ids, settings_obj):
         enemy_id = enemy_pokemon.id
         # Check cache instead of file
         if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
-            catch_pokemon("")
+            catch_pokemon(enemy_pokemon, test_window, logger, reviewer_obj, ankimon_tracker_obj, "", collected_pokemon_ids, achievements)
         else:
             kill_pokemon()
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     elif auto_battle_setting == 1:  # Existing auto-catch
-        catch_pokemon("")
+        catch_pokemon(enemy_pokemon, test_window, logger, reviewer_obj, ankimon_tracker_obj, "", collected_pokemon_ids, achievements)
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     elif auto_battle_setting == 2:  # Existing auto-defeat
         kill_pokemon()
@@ -1365,7 +1339,7 @@ def add_defeat_pokemon_hook(func):
 # Custom function that triggers the catch_pokemon hook
 def CatchPokemonHook():
     if enemy_pokemon.hp < 1:
-        catch_pokemon("")
+        catch_pokemon(enemy_pokemon, test_window, logger, reviewer_obj, ankimon_tracker_obj, "", collected_pokemon_ids, achievements)
     for hook in catch_pokemon_hooks:
         hook()
 
@@ -1391,7 +1365,7 @@ def catch_shorcut_function():
     if enemy_pokemon.hp > 1:
         tooltip("You only catch a pokemon once it's fainted !")
     else:
-        catch_pokemon("")
+        catch_pokemon(enemy_pokemon, test_window, logger, reviewer_obj, ankimon_tracker_obj, "", collected_pokemon_ids, achievements)
 
 def defeat_shortcut_function():
     if enemy_pokemon.hp > 1:
