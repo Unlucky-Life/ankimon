@@ -107,7 +107,7 @@ from .functions.encounter_functions import choose_random_pkmn_from_tier
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
 from .functions.drawing_utils import tooltipWithColour
 from .functions.discord_function import DiscordPresence
-from .functions.encounter_functions import generate_random_pokemon
+from .functions.encounter_functions import generate_random_pokemon, new_pokemon
 from .functions.pokedex_functions import (
     search_pokedex,
     search_pokedex_by_id,
@@ -450,7 +450,7 @@ def kill_pokemon():
         
         # Show a new random Pokémon if the test window is visible
         if test_window.isVisible():
-            new_pokemon()
+            new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     except Exception as e:
         showWarning(f"Error occured in killing enemy pokemon: {e}")
 
@@ -633,7 +633,7 @@ def catch_pokemon(nickname):
                 tooltipWithColour(msg, color)
             except:
                 pass
-            new_pokemon()  # Show a new random Pokémon
+            new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
         else:
             if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
                 logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
@@ -788,48 +788,6 @@ def process_battle_data(battle_data: dict) -> str:
     except Exception as e:
         error_msg = mw.translator.translate("unexpected_error", error=str(e))
         return f"Error: {error_msg}"
-
-def new_pokemon():
-    try:
-        # new pokemon
-        gender = None
-        #name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon()
-        name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon(main_pokemon.level, ankimon_tracker_obj)
-        pokemon_data = {
-            'name': name,
-            'id': id,
-            'level': level,
-            'ability': ability,
-            'type': type,
-            'stats': stats,
-            'attacks': enemy_attacks,
-            'base_experience': base_experience,
-            'growth_rate': growth_rate,
-            'ev': ev,
-            'iv': iv,
-            'gender': gender,
-            'battle_status': battle_status,
-            'battle_stats': battle_stats,
-            'tier': tier,
-            'ev_yield': ev_yield,
-            'shiny': shiny
-        }
-        enemy_pokemon.update_stats(**pokemon_data)
-        ankimon_tracker_obj.randomize_battle_scene()
-        max_hp = enemy_pokemon.calculate_max_hp()
-        enemy_pokemon.current_hp = max_hp
-        enemy_pokemon.hp = max_hp
-        enemy_pokemon.max_hp = max_hp
-        #reset mainpokemon hp
-        if test_window is not None:
-            test_window.display_first_encounter()
-        class Container(object):
-            pass
-        reviewer = Container()
-        reviewer.web = mw.reviewer.web
-        reviewer_obj.update_life_bar(reviewer, 0, 0)
-    except Exception as e:
-        showWarning(f"An error occurred while generating new Pokemon: {str(e)}") 
             
 def mainpokemon_data():
     try:
@@ -973,13 +931,13 @@ def handle_enemy_faint(enemy_pokemon, collected_pokemon_ids, settings_obj):
             catch_pokemon("")
         else:
             kill_pokemon()
-        new_pokemon()
+        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     elif auto_battle_setting == 1:  # Existing auto-catch
         catch_pokemon("")
-        new_pokemon()
+        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     elif auto_battle_setting == 2:  # Existing auto-defeat
         kill_pokemon()
-        new_pokemon()
+        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
 
     ankimon_tracker_obj.general_card_count_for_battle = 0
 
@@ -989,7 +947,7 @@ def handle_main_pokemon_faint(main_pokemon, enemy_pokemon, msg, translator, play
     """
     msg += "\n " + translator.translate("pokemon_fainted", enemy_pokemon_name=main_pokemon.name.capitalize())
     play_effect_sound("Fainted")
-    new_pokemon()
+    new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     main_pokemon.hp = main_pokemon.max_hp
     main_pokemon.current_hp = main_pokemon.max_hp
     main_pokemon.stat_stages = {'atk': 0, 'def': 0, 'spa': 0, 'spd': 0, 'spe': 0, 'accuracy': 0, 'evasion': 0}
@@ -1415,7 +1373,7 @@ def CatchPokemonHook():
 def DefeatPokemonHook():
     if enemy_pokemon.hp < 1:
         kill_pokemon()
-        new_pokemon()
+        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     for hook in defeat_pokemon_hooks:
         hook()
 
@@ -1440,7 +1398,7 @@ def defeat_shortcut_function():
         tooltip("Wild pokemon has to be fainted to defeat it !")
     else:
         kill_pokemon()
-        new_pokemon()
+        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
 
 catch_shortcut = catch_shortcut.lower()
 defeat_shortcut = defeat_shortcut.lower()
