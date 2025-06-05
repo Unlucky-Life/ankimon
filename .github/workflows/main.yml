@@ -48,6 +48,9 @@ jobs:
    #       git tag ${{ github.event.inputs.version }}
    #       git push origin tag ${{ github.event.inputs.version }}
 
+      - name: Create ankiaddon file
+        run: aab build -d ankiweb
+
       - name: Declare variables
         id: vars
         shell: bash
@@ -88,7 +91,7 @@ jobs:
           echo "notes<<EOF" >> $GITHUB_OUTPUT
           echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-
+                       
       - name: Create GitHub release
         uses: softprops/action-gh-release@v1
         with:
