@@ -55,7 +55,21 @@ jobs:
    
       - name: Create ankiaddon file
         run: aab build -d ankiweb ${{ github.event.inputs.version }}
+    
+      - name: Update manifest.json version and homepage
+        uses: restackio/update-json-file-action@2.1
+        with:
+          file: src/Ankimon/manifest.json
+          fields: '{"version": "${{ github.event.inputs.version }}", "homepage": "https://github.com/h0tp-ftw/ankimon"}'
 
+      - name: Commit and push manifest.json changes
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add src/Ankimon/manifest.json
+          git commit -m "Update manifest.json version and homepage to ${{ github.event.inputs.version }}" || echo "No changes to commit"
+          git push
+                       
       - name: Declare variables
         id: vars
         shell: bash
@@ -96,8 +110,8 @@ jobs:
           echo "notes<<EOF" >> $GITHUB_OUTPUT
           echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-                       
-      - name: Create GitHub release
+
+          - name: Create GitHub release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.version }}
