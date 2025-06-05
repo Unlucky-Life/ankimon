@@ -54,7 +54,7 @@ jobs:
           git push origin ${{ github.event.inputs.version }} || true
    
       - name: Create ankiaddon file
-        run: aab build -d ankiweb ${{ github.event.inputs.version }}
+        run: aab build -d ankiweb 
     
       - name: Update manifest.json version and homepage
         uses: restackio/update-json-file-action@2.1
