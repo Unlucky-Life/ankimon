@@ -56,22 +56,12 @@ jobs:
         with:
           fallback: '0.0.0'
 
-      - name: Generate GitHub-style release notes
-        id: notes
-        uses: RedCrafter07/release-notes-action@v1
-        with:
-          tag-name: ${{ github.ref_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Create GitHub release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
           name: "${{ steps.vars.outputs.module_name }} v${{ github.ref_name }}"
-          body: |
-            ${{ steps.notes.outputs.release-notes }}
-
-            **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ steps.previoustag.outputs.tag }}...${{ github.ref_name }}
+          generate_release_notes: true
           files: build/${{ steps.vars.outputs.build_name }}
           draft: true
         env:
