@@ -49,7 +49,7 @@ jobs:
    #       git push origin tag ${{ github.event.inputs.version }}
 
       - name: Create ankiaddon file
-        run: aab build -d ankiweb
+        run: aab build -d ankiweb ${{ github.event.inputs.version }}
 
       - name: Declare variables
         id: vars
