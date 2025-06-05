@@ -48,6 +48,11 @@ jobs:
    #       git tag ${{ github.event.inputs.version }}
    #       git push origin tag ${{ github.event.inputs.version }}
 
+      - name: Create and push tag if missing
+        run: |
+          git tag ${{ github.event.inputs.version }} || true
+          git push origin ${{ github.event.inputs.version }} || true
+   
       - name: Create ankiaddon file
         run: aab build -d ankiweb ${{ github.event.inputs.version }}
 
