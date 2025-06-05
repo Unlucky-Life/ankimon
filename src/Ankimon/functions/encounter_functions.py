@@ -1,6 +1,9 @@
 import json
 import random
+import math
 from typing import Union
+from datetime import datetime
+import uuid
 
 from aqt import mw
 from aqt.utils import showWarning
@@ -9,8 +12,15 @@ from ..pyobj.ankimon_tracker import AnkimonTracker
 from ..pyobj.pokemon_obj import PokemonObject
 from ..pyobj.reviewer_obj import Reviewer_Manager
 from ..pyobj.test_window import TestWindow
-from ..functions.pokemon_functions import check_min_generate_level, pick_random_gender, shiny_chance
+from ..pyobj.trainer_card import TrainerCard
+from ..pyobj.InfoLogger import ShowInfoLogger
+from ..pyobj.evolution_window import EvoWindow
+from ..functions.pokemon_functions import pick_random_gender, shiny_chance
 from ..functions.pokedex_functions import get_all_pokemon_moves, search_pokeapi_db_by_id, search_pokedex, search_pokedex_by_id
+from ..functions.trainer_functions import xp_share_gain_exp
+from ..functions.badges_functions import check_for_badge, receive_badge
+from ..functions.drawing_utils import tooltipWithColour
+from ..business import calc_experience
 from ..const import gen_ids
 from ..singletons import (
     main_pokemon,
@@ -25,6 +35,7 @@ from ..resources import (
     pokemon_species_mythical_path,
     pokemon_species_normal_path,
     pokemon_species_ultra_path,
+    mypokemon_path,
 )
 
 def modify_percentages(total_reviews, daily_average, player_level):
@@ -143,6 +154,20 @@ def choose_random_pkmn_from_tier():
     except Exception as e:
         showWarning(translator.translate("error_occured", error="choose_random_pkmn_from_tier"))
 
+def check_min_generate_level(name):
+    evoType = search_pokedex(name.lower(), "evoType")
+    evoLevel = search_pokedex(name.lower(), "evoLevel")
+    if evoLevel is not None:
+        return int(evoLevel)
+    elif evoType is not None:
+        min_level = 100
+        return int(min_level)
+    elif evoType and evoLevel is None:
+        min_level = 1
+        return int(min_level)
+    else:
+        min_level = 1
+        return min_level
 
 def check_id_ok(id_num: Union[int, list[int]]):
     if isinstance(id_num, list):
@@ -350,3 +375,146 @@ def new_pokemon(
     reviewer_obj.update_life_bar(reviewer, 0, 0)
 
     return pokemon
+
+# def kill_pokemon(
+#         enemy_pokemon: PokemonObject,
+#         test_window: TestWindow,
+#         evo_window: EvoWindow,
+#         logger: ShowInfoLogger,
+#         reviewer_obj: Reviewer_Manager,
+#         trainer_card: Union[TrainerCard, None]=None
+#         ):
+#     if trainer_card is not None:
+#         trainer_card.gain_xp(enemy_pokemon.tier, settings_obj.get("controls.allow_to_choose_moves", False))
+    
+#     # Calculate experience based on whether moves are chosen manually
+#     exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level)
+#     if settings_obj.get("controls.allow_to_choose_moves", False):
+#         exp *= 0.5
+    
+#     # Ensure exp is at least 1 and round up if it's a decimal
+#     exp = max(1, math.ceil(exp))
+    
+#     # Handle XP share logic
+#     xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
+#     if xp_share_individual_id:
+#         exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp, xp_share_individual_id)
+    
+#     # Save main Pokémon's progress
+#     main_pokemon.level = save_main_pokemon_progress(
+#         mainpokemon_path,
+#         main_pokemon.level,
+#         main_pokemon.name,
+#         main_pokemon.base_experience,
+#         main_pokemon.growth_rate,
+#         exp
+#     )
+    
+#     ankimon_tracker_obj.general_card_count_for_battle = 0
+    
+#     # Show a new random Pokémon if the test window is visible
+#     if test_window.isVisible():
+#         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
+
+def save_caught_pokemon(
+        enemy_pokemon: PokemonObject,
+        nickname: Union[str, None]=None,
+        achievements: Union[dict, None]=None
+        ):
+    # Create a dictionary to store the Pokémon's data
+    # add all new values like hp as max_hp, evolution_data, description and growth rate
+    if enemy_pokemon.tier is not None and achievements is not None:
+        if enemy_pokemon.tier == "Normal":
+            check = check_for_badge(achievements, 17)
+            if check is False:
+                achievements = receive_badge(17,achievements)
+        elif enemy_pokemon.tier == "Baby":
+            check = check_for_badge(achievements, 18)
+            if check is False:
+                achievements = receive_badge(18, achievements)
+        elif enemy_pokemon.tier == "Ultra":
+            check = check_for_badge(achievements, 8)
+            if check is False:
+                achievements = receive_badge(8, achievements)
+        elif enemy_pokemon.tier == "Legendary":
+            check = check_for_badge(achievements, 9)
+            if check is False:
+                achievements = receive_badge(9, achievements)
+        elif enemy_pokemon.tier == "Mythical":
+            check = check_for_badge(achievements, 10)
+            if check is False:
+                achievements = receive_badge(10, achievements)
+
+    if nickname is None:
+        nickname = enemy_pokemon.name.capitalize()
+
+    enemy_pokemon.stats["xp"] = 0
+    caught_pokemon = {
+        "name": enemy_pokemon.name.capitalize(),
+        "nickname": nickname,
+        "level": enemy_pokemon.level,
+        "gender": enemy_pokemon.gender,
+        "id": enemy_pokemon.id,
+        "ability": enemy_pokemon.ability,
+        "type": enemy_pokemon.type,
+        "stats": enemy_pokemon.stats,
+        "ev": enemy_pokemon.ev,
+        "iv": enemy_pokemon.iv,
+        "attacks": enemy_pokemon.attacks,
+        "base_experience": enemy_pokemon.base_experience,
+        "current_hp": enemy_pokemon.calculate_max_hp(),
+        "growth_rate": enemy_pokemon.growth_rate,
+        "friendship": 0,
+        "pokemon_defeated": 0,
+        "everstone": False,
+        "shiny": enemy_pokemon.shiny,
+        "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "individual_id": str(uuid.uuid4()),
+        "mega": False,
+        "special-form": None,
+    }
+
+    # Load existing Pokémon data if it exists
+    caught_pokemon_data = []
+    if mypokemon_path.is_file():
+        with open(mypokemon_path, "r", encoding="utf-8") as json_file:
+            caught_pokemon_data = json.load(json_file)
+
+    # Append the caught Pokémon's data to the list
+    caught_pokemon_data.append(caught_pokemon)
+
+    # Save the caught Pokémon's data to a JSON file
+    with open(str(mypokemon_path), "w") as json_file:
+        json.dump(caught_pokemon_data, json_file, indent=2)
+
+def catch_pokemon(
+        enemy_pokemon: PokemonObject,
+        test_window: TestWindow,
+        logger: ShowInfoLogger,
+        reviewer_obj: Reviewer_Manager,
+        ankimon_tracker_obj: AnkimonTracker,
+        nickname: Union[str, None]=None,
+        collected_pokemon_ids: Union[set, None]=None,
+        achievements: Union[dict, None]=None,
+        ):
+    ankimon_tracker_obj.caught += 1
+    if ankimon_tracker_obj.caught > 1:
+        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+            logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
+
+    # If we arrive here, this means that ankimon_tracker_obj.caught == 1
+    if nickname is not None or not nickname:
+        nickname = enemy_pokemon.name
+    if collected_pokemon_ids is not None:
+        collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
+    save_caught_pokemon(enemy_pokemon, nickname, achievements)
+    ankimon_tracker_obj.general_card_count_for_battle = 0
+    msg = translator.translate("caught_wild_pokemon", enemy_pokemon_name=enemy_pokemon.name.capitalize())
+    if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+        logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
+    color = "#6A4DAC" #pokemon leveling info color for tooltip
+    try:
+        tooltipWithColour(msg, color)
+    except Exception as e:
+        pass
+    new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
