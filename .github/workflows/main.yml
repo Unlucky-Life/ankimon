@@ -1,15 +1,13 @@
 name: Create Add-on Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: Version string (eg. 6.1)
-        required: true
+  push:
+    tags:
+      - '*'   # Run on any tag push
 
 jobs:
   create-release:
-    name: Version ${{ github.event.inputs.version }}
+    name: Version ${{ github.ref_name }}
     runs-on: ubuntu-latest
 
     permissions:
@@ -39,7 +37,7 @@ jobs:
       - name: Setup git config
         run: |
           git config user.name "GitHub Actions Bot"
-          git config user.email "<>"
+          git config user.email "actions@github.com"
 
       - name: Create ankiaddon file
         run: aab build -d ankiweb
@@ -52,47 +50,28 @@ jobs:
           echo "module_name=$(ls src)" >> $GITHUB_OUTPUT
           echo "build_name=$(ls build | grep --color=never .ankiaddon)" >> $GITHUB_OUTPUT
 
-      - name: Generate branch-aware release notes
-        id: release_notes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # ... (previous setup code remains the same)
-      
-          # Build release body with proper indentation
-          RELEASE_BODY="⚠️ **This is an EXPERIMENTAL build. You may encounter issues and bugs. Thank you for checking it out and helping us improve!**
-      
-          **Build Details**
-          - Commit SHA: ${{ steps.vars.outputs.sha_short }}
-          "
-      
-          [ -n "$FEATURES" ] && RELEASE_BODY+="
-          ## 🚀 New Features
-          $FEATURES
-          "
-      
-          [ -n "$FIXES" ] && RELEASE_BODY+="
-          ## 🐛 Bug Fixes
-          $FIXES
-          "
-      
-          [ -n "$CONTRIBUTORS" ] && RELEASE_BODY+="
-          ## 👥 Contributors
-          $CONTRIBUTORS
-          "
-      
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-                       
+      - name: Get previous tag
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        with:
+          fallback: '0.0.0'
+
+      - name: Generate GitHub-style release notes
+        id: notes
+        uses: RedCrafter07/release-notes-action@v1
+        with:
+          tag-name: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.event.inputs.version }}
-          name: "${{ steps.vars.outputs.module_name }} v${{ github.event.inputs.version }}"
+          tag_name: ${{ github.ref_name }}
+          name: "${{ steps.vars.outputs.module_name }} v${{ github.ref_name }}"
           body: |
-            ${{ steps.release_notes.outputs.notes }}
-            **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ env.PREV_TAG }}...${{ github.event.inputs.version }}
+            ${{ steps.notes.outputs.release-notes }}
+
+            **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ steps.previoustag.outputs.tag }}...${{ github.ref_name }}
           files: build/${{ steps.vars.outputs.build_name }}
           draft: true
         env:
