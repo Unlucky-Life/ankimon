@@ -23,9 +23,6 @@ from aqt import gui_hooks, mw, utils
 from aqt.qt import QDialog
 from aqt.reviewer import Reviewer
 from aqt.utils import downArrow, showWarning, tr, tooltip
-from aqt.utils import *
-from aqt.qt import *
-from PyQt6 import *
 from PyQt6.QtWidgets import QDialog
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
