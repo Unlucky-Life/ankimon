@@ -12,6 +12,7 @@ from PyQt6.QtGui import QFontDatabase, QFont
 
 from . import audios
 from .pyobj.settings import Settings
+from .pyobj.pokemon_obj import PokemonObject
 from .functions.battle_functions import calculate_hp
 from .functions.pokedex_functions import search_pokedex
 from .resources import (
@@ -31,6 +32,7 @@ from .resources import (
     ownhplow_sound_path,
     fainted_sound_path,
     mainpokemon_path,
+    addon_dir,
 )
 
 # Load move and pokemon name mapping at startup
@@ -532,3 +534,11 @@ def get_main_pokemon_data():
             _nickname
         )
 
+def play_sound(enemy_pokemon_id: int, settings_obj: Settings):
+    if settings_obj.get("audio.sounds", False):
+        file_name = f"{enemy_pokemon_id}.ogg"
+        audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
+        if audio_path.is_file():
+            audio_path = Path(audio_path)
+            audios.will_use_audio_player()
+            audios.audio(audio_path)
