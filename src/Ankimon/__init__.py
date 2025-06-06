@@ -902,12 +902,12 @@ def handle_enemy_faint(enemy_pokemon, collected_pokemon_ids, settings_obj):
         enemy_id = enemy_pokemon.id
         # Check cache instead of file
         if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
-            catch_pokemon(enemy_pokemon, test_window, logger, reviewer_obj, ankimon_tracker_obj, "", collected_pokemon_ids, achievements)
+            catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
         else:
             kill_pokemon()
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     elif auto_battle_setting == 1:  # Existing auto-catch
-        catch_pokemon(enemy_pokemon, test_window, logger, reviewer_obj, ankimon_tracker_obj, "", collected_pokemon_ids, achievements)
+        catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     elif auto_battle_setting == 2:  # Existing auto-defeat
         kill_pokemon()
@@ -1339,7 +1339,8 @@ def add_defeat_pokemon_hook(func):
 # Custom function that triggers the catch_pokemon hook
 def CatchPokemonHook():
     if enemy_pokemon.hp < 1:
-        catch_pokemon(enemy_pokemon, test_window, logger, reviewer_obj, ankimon_tracker_obj, "", collected_pokemon_ids, achievements)
+        catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
+        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     for hook in catch_pokemon_hooks:
         hook()
 
@@ -1362,10 +1363,11 @@ def on_profile_loaded():
 addHook("profileLoaded", on_profile_loaded)
 
 def catch_shorcut_function():
-    if enemy_pokemon.hp > 1:
+    if enemy_pokemon.hp >= 1:
         tooltip("You only catch a pokemon once it's fainted !")
     else:
-        catch_pokemon(enemy_pokemon, test_window, logger, reviewer_obj, ankimon_tracker_obj, "", collected_pokemon_ids, achievements)
+        catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
+        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
 
 def defeat_shortcut_function():
     if enemy_pokemon.hp > 1:
