@@ -12,7 +12,7 @@ from PyQt6.QtGui import QFontDatabase, QFont
 
 from . import audios
 from .pyobj.settings import Settings
-from .pyobj.pokemon_obj import PokemonObject
+from .pyobj.InfoLogger import ShowInfoLogger
 from .functions.battle_functions import calculate_hp
 from .functions.pokedex_functions import search_pokedex
 from .resources import (
@@ -31,6 +31,7 @@ from .resources import (
     hpheal_sound_path,
     ownhplow_sound_path,
     fainted_sound_path,
+    mypokemon_path,
     mainpokemon_path,
     addon_dir,
 )
@@ -542,3 +543,17 @@ def play_sound(enemy_pokemon_id: int, settings_obj: Settings):
             audio_path = Path(audio_path)
             audios.will_use_audio_player()
             audios.audio(audio_path)
+
+def load_collected_pokemon_ids() -> set:
+    if not mypokemon_path.is_file():
+        return set()
+    
+    collected_pokemon_ids = set()
+    try:
+        with open(mypokemon_path, "r", encoding="utf-8") as f:
+            collection = json.load(f)
+            collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
+    except Exception as e:
+        ShowInfoLogger().log("error", f"Error loading collection cache: {str(e)}")
+    
+    return collected_pokemon_ids
