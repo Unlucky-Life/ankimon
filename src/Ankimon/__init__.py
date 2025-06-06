@@ -669,7 +669,6 @@ def on_review_card(*args):
             The "results" can then be used to access battle outcomes.
             '''
 
-            #results = simulate_battle_with_poke_engine(main_pokemon, enemy_pokemon, user_attack, enemy_attack, new_state, mutator_full_reset)
             results = simulate_battle_with_poke_engine(
                 main_pokemon,
                 enemy_pokemon,
@@ -747,7 +746,7 @@ def on_review_card(*args):
                     else:
                         msg += translator.translate("dmg_dealt", dmg=dmg_from_user_move, pokemon_name=enemy_pokemon.name.capitalize())
 
-                        if enemy_pokemon.hp < 0:
+                        if enemy_pokemon.hp < 1:
                             enemy_pokemon.hp = 0
                             msg += translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize())
                             
