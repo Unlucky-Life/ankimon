@@ -5,6 +5,7 @@ from typing import Union
 from datetime import datetime
 import uuid
 
+from Ankimon.utils import play_effect_sound
 from aqt import mw
 from aqt.qt import QDialog
 from aqt.utils import showWarning
@@ -17,6 +18,7 @@ from ..pyobj.trainer_card import TrainerCard
 from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.evolution_window import EvoWindow
 from ..pyobj.attack_dialog import AttackDialog
+from ..pyobj.translator import Translator
 from ..functions.pokemon_functions import find_experience_for_level, get_levelup_move_for_pokemon, pick_random_gender, shiny_chance
 from ..functions.pokedex_functions import (
     check_evolution_for_pokemon,
@@ -654,3 +656,60 @@ def catch_pokemon(
     except Exception as e:
         if logger is not None:
             logger.log_and_showinfo("info",f"{e}") # Display a message when the Pokémon is caught
+
+def handle_enemy_faint(
+        main_pokemon: PokemonObject,
+        enemy_pokemon: PokemonObject,
+        collected_pokemon_ids: set,
+        test_window: TestWindow,
+        evo_window: EvoWindow,
+        reviewer_obj: Reviewer_Manager,
+        logger: ShowInfoLogger,
+        achievements: dict,
+        ):
+    """
+    Handles what automatically happens when the enemy Pokémon faints, based on auto-battle settings.
+    """
+    try:
+        auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))
+        if not (0 <= auto_battle_setting <= 3):
+            auto_battle_setting = 0  # fallback
+    except ValueError:
+        auto_battle_setting = 0  # fallback
+
+    if auto_battle_setting == 3:  # Catch if uncollected
+        enemy_id = enemy_pokemon.id
+        # Check cache instead of file
+        if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
+            catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
+        else:
+            kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
+        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
+    elif auto_battle_setting == 1:  # Existing auto-catch
+        catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
+        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
+    elif auto_battle_setting == 2:  # Existing auto-defeat
+        kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
+        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
+
+    ankimon_tracker_obj.general_card_count_for_battle = 0
+
+def handle_main_pokemon_faint(
+        main_pokemon: PokemonObject,
+        enemy_pokemon: PokemonObject,
+        test_window: TestWindow,
+        reviewer_obj: Reviewer_Manager,
+        translator: Translator,
+        ):
+    """
+    Handles what happens when the main Pokémon faints.
+    """
+    msg = translator.translate("pokemon_fainted", enemy_pokemon_name=main_pokemon.name.capitalize())
+    tooltipWithColour(msg, "#E12939")
+    play_effect_sound("Fainted")
+
+    main_pokemon.hp = main_pokemon.max_hp
+    main_pokemon.current_hp = main_pokemon.max_hp
+    main_pokemon.stat_stages = {'atk': 0, 'def': 0, 'spa': 0, 'spd': 0, 'spe': 0, 'accuracy': 0, 'evasion': 0}
+
+    new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon

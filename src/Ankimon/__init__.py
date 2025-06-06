@@ -98,7 +98,14 @@ from .functions.badges_functions import check_badges, handle_achievements, check
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
 from .functions.drawing_utils import tooltipWithColour
 from .functions.discord_function import DiscordPresence
-from .functions.encounter_functions import generate_random_pokemon, new_pokemon, catch_pokemon, kill_pokemon
+from .functions.encounter_functions import (
+    generate_random_pokemon,
+    new_pokemon,
+    catch_pokemon,
+    kill_pokemon,
+    handle_enemy_faint,
+    handle_main_pokemon_faint
+)
 from .functions.pokedex_functions import search_pokedex, find_details_move
 from .gui_entities import UpdateNotificationWindow, HelpWindow, CheckFiles
 from .pyobj.sync_pokemon_data import CheckPokemonData
@@ -658,49 +665,6 @@ def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpoke
                 msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
     return msg
 
-# some of the functions that are being called within the on_review_card function are below
-# for sake of tidiness ! 
-
-def handle_enemy_faint(enemy_pokemon, collected_pokemon_ids, settings_obj):
-    """
-    Handles what automatically happens when the enemy Pokémon faints, based on auto-battle settings.
-    """
-    try:
-        auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))
-        if not (0 <= auto_battle_setting <= 3):
-            auto_battle_setting = 0  # fallback
-    except ValueError:
-        auto_battle_setting = 0  # fallback
-
-    if auto_battle_setting == 3:  # Catch if uncollected
-        enemy_id = enemy_pokemon.id
-        # Check cache instead of file
-        if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
-            catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
-        else:
-            kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
-        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
-    elif auto_battle_setting == 1:  # Existing auto-catch
-        catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
-        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
-    elif auto_battle_setting == 2:  # Existing auto-defeat
-        kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
-        new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
-
-    ankimon_tracker_obj.general_card_count_for_battle = 0
-
-def handle_main_pokemon_faint(main_pokemon, enemy_pokemon, msg, translator, play_effect_sound, new_pokemon, tooltipWithColour):
-    """
-    Handles what happens when the main Pokémon faints.
-    """
-    msg += "\n " + translator.translate("pokemon_fainted", enemy_pokemon_name=main_pokemon.name.capitalize())
-    play_effect_sound("Fainted")
-    new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
-    main_pokemon.hp = main_pokemon.max_hp
-    main_pokemon.current_hp = main_pokemon.max_hp
-    main_pokemon.stat_stages = {'atk': 0, 'def': 0, 'spa': 0, 'spd': 0, 'spe': 0, 'accuracy': 0, 'evasion': 0}
-    tooltipWithColour(msg, "#E12939")
-
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
@@ -919,7 +883,16 @@ def on_review_card(*args):
             # if enemy pokemon faints, this handles AUTOMATIC BATTLE
             if enemy_pokemon.hp < 1:
                 enemy_pokemon.hp = 0
-                handle_enemy_faint(enemy_pokemon, collected_pokemon_ids, settings_obj)
+                handle_enemy_faint(
+                    main_pokemon,
+                    enemy_pokemon,
+                    collected_pokemon_ids,
+                    test_window,
+                    evo_window,
+                    reviewer_obj,
+                    logger,
+                    achievements
+                    )
 
                 mutator_full_reset = 2 # reset opponent state
 
@@ -929,7 +902,7 @@ def on_review_card(*args):
 
         # user pokemon faints
         if main_pokemon.hp < 1:
-            handle_main_pokemon_faint(main_pokemon, enemy_pokemon, msg, translator, play_effect_sound, new_pokemon, tooltipWithColour)
+            handle_main_pokemon_faint(main_pokemon, enemy_pokemon, test_window, reviewer_obj, translator)
             mutator_full_reset = 1 # fully reset battle state 
 
         class Container(object):
