@@ -1,7 +1,9 @@
 import uuid
 import json
-from ..resources import pkmnimgfolder
 import os
+
+from ..poke_engine.objects import Pokemon
+from ..resources import pkmnimgfolder
 
 
 class PokemonObject:
@@ -244,6 +246,37 @@ class PokemonObject:
             nature=engine_data.get('nature', 'serious'),
             item=engine_data.get('item', '')
         )
+    
+    def to_poke_engine_Pokemon(self) -> Pokemon:
+        _dict = self.to_engine_format()
+        pokemon = Pokemon(
+            identifier=_dict['identifier'],
+            level=_dict['level'],
+            types=_dict['types'],
+            hp=_dict['hp'],
+            maxhp=_dict['maxhp'],
+            ability=_dict['ability'],
+            item=_dict['item'],
+            attack=_dict['attack'],
+            defense=_dict['defense'],
+            special_attack=_dict['special_attack'],
+            special_defense=_dict['special_defense'],
+            speed=_dict['speed'],
+            nature=_dict.get('nature', 'serious'),
+            evs=_dict.get('evs', (85,) * 6),
+            attack_boost=_dict.get('attack_boost', 0),
+            defense_boost=_dict.get('defense_boost', 0),
+            special_attack_boost=_dict.get('special_attack_boost', 0),
+            special_defense_boost=_dict.get('special_defense_boost', 0),
+            speed_boost=_dict.get('speed_boost', 0),
+            accuracy_boost=_dict.get('accuracy_boost', 0), 
+            evasion_boost=_dict.get('evasion_boost', 0),
+            status=_dict.get('status', None),
+            terastallized=_dict.get('terastallized', False),
+            volatile_status=_dict.get('volatile_status', set()),
+            moves=_dict.get('moves', [])
+        )
+        return pokemon
 
 class PokemonEncoder(json.JSONEncoder):
     def default(self, obj):
