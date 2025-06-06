@@ -7,12 +7,13 @@ import random
 import csv
 from collections import Counter
 
-from aqt import mw
 from aqt.utils import showWarning, showInfo
 from PyQt6.QtGui import QFontDatabase, QFont
 
 from . import audios
 from .pyobj.settings import Settings
+from .functions.battle_functions import calculate_hp
+from .functions.pokedex_functions import search_pokedex
 from .resources import (
     battlescene_path,
     berries_path,
@@ -29,6 +30,7 @@ from .resources import (
     hpheal_sound_path,
     ownhplow_sound_path,
     fainted_sound_path,
+    mainpokemon_path,
 )
 
 # Load move and pokemon name mapping at startup
@@ -473,4 +475,60 @@ def save_error_code(error_code, logger=None):
 
     if logger is not None:
         logger.log_and_showinfo("info",f"{error_fix_msg}")
+
+def get_main_pokemon_data():
+    with (open(str(mainpokemon_path), "r", encoding="utf-8") as json_file):
+        main_pokemon_datalist = json.load(json_file)
+
+    main_pokemon_data = []
+    for main_pokemon_data in main_pokemon_datalist:
+        _name = main_pokemon_data["name"]
+        if not main_pokemon_data.get('nickname') or main_pokemon_data.get('nickname') is None:
+            _nickname = None
+        else:
+            _nickname = main_pokemon_data['nickname']
+        _id = main_pokemon_data["id"]
+        _ability = main_pokemon_data["ability"]
+        _type = main_pokemon_data["type"]
+        _stats = main_pokemon_data["stats"]
+        _attacks = main_pokemon_data["attacks"]
+        _level = main_pokemon_data["level"]
+        _hp_base_stat = main_pokemon_data["stats"]["hp"]
+        _evolutions = search_pokedex(main_pokemon_data["name"], "evos")
+        _xp = main_pokemon_data["stats"]["xp"]
+        _ev = main_pokemon_data["ev"]
+        _iv = main_pokemon_data["iv"]
+        #mainpokemon_battle_stats = mainpokemon_stats
+        _battle_stats = {}
+        for d in [_stats, _iv, _ev]:
+            for key, value in d.items():
+                _battle_stats[key] = value
+        #mainpokemon_battle_stats += mainpokemon_iv
+        #mainpokemon_battle_stats += mainpokemon_ev
+        _hp = calculate_hp(_hp_base_stat, _level, _ev, _iv)
+        _current_hp = _hp
+        _base_experience = main_pokemon_data["base_experience"]
+        _growth_rate = main_pokemon_data["growth_rate"]
+        _gender = main_pokemon_data["gender"]
+        
+        return (
+            _name,
+            _id,
+            _ability,
+            _type,
+            _stats,
+            _attacks,
+            _level,
+            _base_experience,
+            _xp,
+            _hp,
+            _current_hp,
+            _growth_rate,
+            _ev,
+            _iv,
+            _evolutions,
+            _battle_stats,
+            _gender,
+            _nickname
+        )
 

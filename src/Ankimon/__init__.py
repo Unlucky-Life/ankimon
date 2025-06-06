@@ -89,6 +89,7 @@ from .utils import (
     format_pokemon_name,
     format_move_name,
     play_effect_sound,
+    get_main_pokemon_data,
 )
 from .functions.battle_functions import calculate_hp, status_effect
 from .functions.reviewer_iframe import create_iframe_html, create_head_code
@@ -505,48 +506,10 @@ def process_battle_data(battle_data: dict) -> str:
         error_msg = mw.translator.translate("unexpected_error", error=str(e))
         return f"Error: {error_msg}"
             
-def mainpokemon_data():
-    try:
-        with (open(str(mainpokemon_path), "r", encoding="utf-8") as json_file):
-                main_pokemon_datalist = json.load(json_file)
-                main_pokemon_data = []
-                for main_pokemon_data in main_pokemon_datalist:
-                    mainpokemon_name = main_pokemon_data["name"]
-                    if not main_pokemon_data.get('nickname') or main_pokemon_data.get('nickname') is None:
-                            mainpokemon_nickname = None
-                    else:
-                        mainpokemon_nickname = main_pokemon_data['nickname']
-                    mainpokemon_id = main_pokemon_data["id"]
-                    mainpokemon_ability = main_pokemon_data["ability"]
-                    mainpokemon_type = main_pokemon_data["type"]
-                    mainpokemon_stats = main_pokemon_data["stats"]
-                    mainpokemon_attacks = main_pokemon_data["attacks"]
-                    mainpokemon_level = main_pokemon_data["level"]
-                    mainpokemon_hp_base_stat = mainpokemon_stats["hp"]
-                    mainpokemon_evolutions = search_pokedex(mainpokemon_name, "evos")
-                    mainpokemon_xp = mainpokemon_stats["xp"]
-                    mainpokemon_ev = main_pokemon_data["ev"]
-                    mainpokemon_iv = main_pokemon_data["iv"]
-                    #mainpokemon_battle_stats = mainpokemon_stats
-                    mainpokemon_battle_stats = {}
-                    for d in [mainpokemon_stats, mainpokemon_iv, mainpokemon_ev]:
-                        for key, value in d.items():
-                            mainpokemon_battle_stats[key] = value
-                    #mainpokemon_battle_stats += mainpokemon_iv
-                    #mainpokemon_battle_stats += mainpokemon_ev
-                    mainpokemon_hp = calculate_hp(mainpokemon_hp_base_stat,mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
-                    mainpokemon_current_hp = calculate_hp(mainpokemon_hp_base_stat,mainpokemon_level, mainpokemon_ev, mainpokemon_iv)
-                    mainpokemon_base_experience = main_pokemon_data["base_experience"]
-                    mainpokemon_growth_rate = main_pokemon_data["growth_rate"]
-                    mainpokemon_gender = main_pokemon_data["gender"]
-                    
-                    return mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname
-    except Exception as e:
-            logger.log("error", f"{e} error has come up in the main_pokemon function.")
 #get main pokemon details:
 if database_complete:
     try:
-        mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname = mainpokemon_data()
+        mainpokemon_name, mainpokemon_id, mainpokemon_ability, mainpokemon_type, mainpokemon_stats, mainpokemon_attacks, mainpokemon_level, mainpokemon_base_experience, mainpokemon_xp, mainpokemon_hp, mainpokemon_current_hp, mainpokemon_growth_rate, mainpokemon_ev, mainpokemon_iv, mainpokemon_evolutions, mainpokemon_battle_stats, mainpokemon_gender, mainpokemon_nickname = get_main_pokemon_data()
         starter = True
     except Exception:
         starter = False
