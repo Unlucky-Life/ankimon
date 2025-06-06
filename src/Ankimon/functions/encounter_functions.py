@@ -5,7 +5,6 @@ from typing import Union
 from datetime import datetime
 import uuid
 
-from Ankimon.utils import play_effect_sound
 from aqt import mw
 from aqt.qt import QDialog
 from aqt.utils import showWarning
@@ -31,6 +30,7 @@ from ..functions.pokedex_functions import (
 from ..functions.trainer_functions import xp_share_gain_exp
 from ..functions.badges_functions import check_for_badge, receive_badge
 from ..functions.drawing_utils import tooltipWithColour
+from ..utils import play_effect_sound
 from ..business import calc_experience
 from ..const import gen_ids
 from ..singletons import (
