@@ -489,10 +489,8 @@ def save_caught_pokemon(
 
 def catch_pokemon(
         enemy_pokemon: PokemonObject,
-        test_window: TestWindow,
-        logger: ShowInfoLogger,
-        reviewer_obj: Reviewer_Manager,
         ankimon_tracker_obj: AnkimonTracker,
+        logger: Union[ShowInfoLogger, None]=None,
         nickname: Union[str, None]=None,
         collected_pokemon_ids: Union[set, None]=None,
         achievements: Union[dict, None]=None,
@@ -508,13 +506,18 @@ def catch_pokemon(
     if collected_pokemon_ids is not None:
         collected_pokemon_ids.add(enemy_pokemon.id)  # Update cache
     save_caught_pokemon(enemy_pokemon, nickname, achievements)
+    
     ankimon_tracker_obj.general_card_count_for_battle = 0
+
     msg = translator.translate("caught_wild_pokemon", enemy_pokemon_name=enemy_pokemon.name.capitalize())
+    
     if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-        logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
-    color = "#6A4DAC" #pokemon leveling info color for tooltip
+        if logger is not None:
+            logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
+
+    color = "#a17cf7"#6A4DAC" #pokemon leveling info color for tooltip
     try:
         tooltipWithColour(msg, color)
     except Exception as e:
-        pass
-    new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
+        if logger is not None:
+            logger.log_and_showinfo("info",f"{e}") # Display a message when the Pokémon is caught
