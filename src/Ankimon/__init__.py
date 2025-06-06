@@ -90,6 +90,7 @@ from .utils import (
     format_move_name,
     play_effect_sound,
     get_main_pokemon_data,
+    play_sound,
 )
 from .functions.battle_functions import calculate_hp, status_effect
 from .functions.reviewer_iframe import create_iframe_html, create_head_code
@@ -316,16 +317,6 @@ def open_help_window(online_connectivity):
         help_dialog.exec()
     except:
         showWarning("Error in opening HelpGuide")
-
-def play_sound():
-    if settings_obj.get("audio.sounds", False) is True:
-        file_name = f"{enemy_pokemon.id}.ogg"
-        audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
-        if audio_path.is_file():
-            audio_path = Path(audio_path)
-            audios.will_use_audio_player()
-            audios.audio(audio_path)
-
 
 gen_config = []
 for i in range(1,10):
@@ -628,7 +619,7 @@ def on_review_card(*args):
             mutator_full_reset = 1
 
         if battle_sounds == True and ankimon_tracker_obj.general_card_count_for_battle == 1:
-            play_sound()
+            play_sound(enemy_pokemon.id, settings_obj)
 
         if ankimon_tracker_obj.cards_battle_round >= int(settings_obj.get("battle.cards_per_round", 2)):
             ankimon_tracker_obj.cards_battle_round = 0
@@ -822,7 +813,7 @@ def on_review_card(*args):
 
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
-            play_sound()
+            play_sound(enemy_pokemon.id, settings_obj)
 
         # user pokemon faints
         if main_pokemon.hp < 1:
