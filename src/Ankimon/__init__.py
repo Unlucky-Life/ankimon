@@ -20,28 +20,16 @@ import traceback
 import aqt
 from anki.hooks import addHook, wrap
 from aqt import gui_hooks, mw, utils
-from aqt.qt import (
-    QDialog,
-    QLabel,
-    QVBoxLayout,
-    )
+from aqt.qt import QDialog
 from aqt.reviewer import Reviewer
 from aqt.utils import downArrow, showWarning, tr, tooltip
 from aqt.utils import *
 from aqt.qt import *
 from PyQt6 import *
-from PyQt6.QtCore import QUrl
-from PyQt6.QtGui import QDesktopServices
-from PyQt6.QtWidgets import (
-    QDialog,
-    QLabel,
-    QPushButton,
-    QVBoxLayout,
-    )
+from PyQt6.QtWidgets import QDialog
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
 
-from . import audios
 from .config_var import (
     dmg_in_reviewer,
     no_more_news,
@@ -63,17 +51,10 @@ from .resources import (
     sound_list_path,
     badges_list_path,
     items_list_path,
-    rate_path
 )
 from .menu_buttons import create_menu_actions
 from .hooks import setupHooks
-from .texts import (
-    _bottomHTML_template,
-    button_style,
-    rate_addon_text_label,
-    thankyou_message_text,
-    dont_show_this_button_text
-)
+from .texts import _bottomHTML_template, button_style
 from .business import (
     get_multiplier_stats,
 )
@@ -85,7 +66,6 @@ from .utils import (
     compare_files,
     write_local_file,
     count_items_and_rewrite,
-    give_item,
     format_pokemon_name,
     format_move_name,
     play_effect_sound,
@@ -93,13 +73,14 @@ from .utils import (
     play_sound,
     load_collected_pokemon_ids,
 )
-from .functions.battle_functions import calculate_hp, status_effect
+from .functions.battle_functions import status_effect
 from .functions.reviewer_iframe import create_iframe_html, create_head_code
 from .functions.url_functions import open_team_builder, rate_addon_url, report_bug, join_discord_url, open_leaderboard_url
 from .functions.badges_functions import check_badges, handle_achievements, check_and_award_badges
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
 from .functions.drawing_utils import tooltipWithColour
 from .functions.discord_function import DiscordPresence
+from .functions.rate_addon_functions import rate_this_addon
 from .functions.encounter_functions import (
     generate_random_pokemon,
     new_pokemon,
@@ -108,7 +89,7 @@ from .functions.encounter_functions import (
     handle_enemy_faint,
     handle_main_pokemon_faint
 )
-from .functions.pokedex_functions import search_pokedex, find_details_move
+from .functions.pokedex_functions import find_details_move
 from .gui_entities import UpdateNotificationWindow, HelpWindow, CheckFiles
 from .pyobj.sync_pokemon_data import CheckPokemonData
 from .pyobj.backup_files import run_backup
@@ -821,83 +802,6 @@ def on_review_card(*args):
 
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
-
-#Test window
-def rate_this_addon():
-    global rate_this
-    # Load rate data
-    with open(rate_path, "r", encoding="utf-8") as file:
-        rate_data = json.load(file)
-        rate_this = rate_data.get("rate_this", False)
-    
-    # Check if rating is needed
-    if not rate_this:
-        rate_window = QDialog()
-        rate_window.setWindowTitle("Please Rate this Addon!")
-        
-        layout = QVBoxLayout(rate_window)
-        
-        text_label = QLabel(rate_addon_text_label)
-        layout.addWidget(text_label)
-        
-        # Rate button
-        rate_button = QPushButton("Rate Now")
-        dont_show_button = QPushButton("I dont want to rate this addon.")
-
-        def support_button_click():
-            support_url = "https://ko-fi.com/unlucky99"
-            QDesktopServices.openUrl(QUrl(support_url))
-        
-        def thankyou_message():
-            thankyou_window = QDialog()
-            thankyou_window.setWindowTitle("Thank you !") 
-            thx_layout = QVBoxLayout(thankyou_window)
-            thx_label = QLabel(thankyou_message_text)
-            thx_layout.addWidget(thx_label)
-            # Support button
-            support_button = QPushButton("Support the Author")
-            support_button.clicked.connect(support_button_click)
-            thx_layout.addWidget(support_button)
-            thankyou_window.setModal(True)
-            thankyou_window.exec()
-        
-        def dont_show_this_button():
-            rate_window.close()
-            rate_data["rate_this"] = True
-            # Save the updated data back to the file
-            with open(rate_path, 'w') as file:
-                json.dump(rate_data, file, indent=4)
-            logger.log_and_showinfo("info",dont_show_this_button_text)
-
-        def rate_this_button():
-            rate_window.close()
-            rate_url = "https://ankiweb.net/shared/review/1908235722"
-            QDesktopServices.openUrl(QUrl(rate_url))
-            thankyou_message()
-            rate_data["rate_this"] = True
-            # Save the updated data back to the file
-            with open(rate_path, 'w') as file:
-                json.dump(rate_data, file, indent=4)
-                test_window.rate_display_item("potion")
-                # add item to item list
-                give_item("potion")
-        rate_button.clicked.connect(rate_this_button)
-        layout.addWidget(rate_button)
-
-        dont_show_button.clicked.connect(dont_show_this_button)
-        layout.addWidget(dont_show_button)
-        
-        # Support button
-        support_button = QPushButton("Support the Author")
-        support_button.clicked.connect(support_button_click)
-        layout.addWidget(support_button)
-        
-        # Make the dialog modal to wait for user interaction
-        rate_window.setModal(True)
-        
-        # Execute the dialog
-        rate_window.exec()
-
 
 if database_complete:
     with open(badgebag_path, "r", encoding="utf-8") as json_file:
