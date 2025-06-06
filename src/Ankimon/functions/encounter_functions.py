@@ -693,6 +693,7 @@ def handle_enemy_faint(
         kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
 
+    main_pokemon.reset_bonuses()
     ankimon_tracker_obj.general_card_count_for_battle = 0
 
 def handle_main_pokemon_faint(
@@ -711,6 +712,6 @@ def handle_main_pokemon_faint(
 
     main_pokemon.hp = main_pokemon.max_hp
     main_pokemon.current_hp = main_pokemon.max_hp
-    main_pokemon.stat_stages = {'atk': 0, 'def': 0, 'spa': 0, 'spd': 0, 'spe': 0, 'accuracy': 0, 'evasion': 0}
+    main_pokemon.reset_bonuses()
 
     new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
