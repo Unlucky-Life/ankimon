@@ -368,6 +368,7 @@ def new_pokemon(
         'gender': gender,
         'battle_status': battle_status,
         'battle_stats': battle_stats,
+        'stat_stages': {'atk': 0, 'def': 0, 'spa': 0, 'spd': 0, 'spe': 0, 'accuracy': 0, 'evasion': 0},
         'tier': tier,
         'ev_yield': ev_yield,
         'shiny': is_shiny
