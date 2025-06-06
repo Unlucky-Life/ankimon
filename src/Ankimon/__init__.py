@@ -122,6 +122,7 @@ from .singletons import (
     item_window,
     version_dialog,
     pokecollection_win,
+    achievements,
 )
 
 # Load move and pokemon name mapping at startup
