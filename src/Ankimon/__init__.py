@@ -765,9 +765,15 @@ if database_complete:
             except:
                 generate_random_pokemon()
             var_level = 3
+	    scaling_factor = 3
             if main_pokemon.level or main_pokemon.level != None:
                 try:
-                    level = random.randint((main_pokemon.level - (random.randint(0, var_level))), (main_pokemon.level + (random.randint(0, var_level))))  # Random level between 1 and 100
+		    lower_bound = main_pokemon.level - (random.randint(0, var_level) * scaling_factor)
+		    upper_bound = main_pokemon.level + (random.randint(0, var_level) * scaling_factor)
+	            # Clamp values to be within valid range
+		    lower_bound = max(1, lower_bound)
+		    upper_bound = min(100, upper_bound)
+		    level = random.randint(lower_bound, upper_bound)
                     if main_pokemon.level == 100:
                         level = 100
                     if level < 0:
