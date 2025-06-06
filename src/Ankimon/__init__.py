@@ -91,6 +91,7 @@ from .utils import (
     play_effect_sound,
     get_main_pokemon_data,
     play_sound,
+    load_collected_pokemon_ids,
 )
 from .functions.battle_functions import calculate_hp, status_effect
 from .functions.reviewer_iframe import create_iframe_html, create_head_code
@@ -149,9 +150,6 @@ with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
 with open(move_names_file_path, "r", encoding="utf-8") as f:
     MOVE_NAME_LOOKUP = json.load(f)
 
-collected_pokemon_ids = set()
-_collection_loaded = False
-
 mw.settings_ankimon = settings_window
 mw.logger = logger
 mw.translator = translator
@@ -176,23 +174,12 @@ global dmg_from_enemy_move
 global dmg_from_user_move
 
 # Initialize collected IDs cache
-def load_collected_pokemon_ids():
-    global collected_pokemon_ids, _collection_loaded
-    if _collection_loaded:
-        return  # Already loaded, do nothing
-    if mypokemon_path.is_file():
-        try:
-            with open(mypokemon_path, "r", encoding="utf-8") as f:
-                collection = json.load(f)
-                collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
-            _collection_loaded = True
-        except Exception as e:
-            logger.log("error", f"Error loading collection cache: {str(e)}")
-            collected_pokemon_ids = set()
-            _collection_loaded = True  # Prevent repeated attempts if file is bad
-
 # Call this during addon initialization
-load_collected_pokemon_ids()
+collected_pokemon_ids = set()
+_collection_loaded = False
+if not _collection_loaded: # If the collection hasn't already been loaded
+    collected_pokemon_ids = load_collected_pokemon_ids()
+    _collection_loaded = True
 
 config = mw.addonManager.getConfig(__name__)
 #show config .json file
