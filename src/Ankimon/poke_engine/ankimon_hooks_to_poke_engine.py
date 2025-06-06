@@ -68,15 +68,29 @@ def reset_state(
         - If `mutator_full_reset` is set to 2, the user side will remain unchanged, but the opponent side will be reset.
         - The weather, field, and trick room conditions are reset to `None` if `mutator_full_reset` is 1.
     """
-    if mutator_full_reset == 1:
-        user_side = reset_side(main_pokemon_obj)
-    else:
-        user_side = state.user
 
-    if mutator_full_reset in (1, 2):
+    # If the opponent gets KOed, we resest the stat boosts of the main pokemon.
+    # This is to avoid having the player steamroll all wild pokemons after getting setup.
+    if mutator_full_reset == 2:
+        state.user.active.attack_boost = 0
+        state.user.active.defense_boost = 0
+        state.user.active.special_attack_boost = 0
+        state.user.active.special_defense_boost = 0
+        state.user.active.speed_boost = 0
+        state.user.active.accuracy_boost = 0
+        state.user.active.evasion_boost = 0
+
+    if mutator_full_reset == 0:
+        user_side = state.user
+        opponent_side = state.opponent
+    elif mutator_full_reset == 1:
+        user_side = reset_side(main_pokemon_obj)
+        opponent_side = reset_side(enemy_pokemon_obj)
+    elif mutator_full_reset == 2:
+        user_side = state.user
         opponent_side = reset_side(enemy_pokemon_obj)
     else:
-        opponent_side = state.opponent
+        raise ValueError(f"Wrong mutator_full_reset encountered : {mutator_full_reset}")
 
     weather = None if mutator_full_reset == 1 else state.weather
     field = None if mutator_full_reset == 1 else state.field
@@ -230,6 +244,7 @@ def simulate_battle_with_poke_engine(
 
         # In case the pokemon used a stat enhancing move or a healing move, we need to save those changes from the State into the PokemonObject so that they carry to the next round
         main_pokemon.current_hp = main_pokemon.hp = state.user.active.hp
+        #if mutator_full_reset == 0:
         main_pokemon.stat_stages = {
             'atk': state.user.active.attack_boost,
             'def': state.user.active.defense_boost,
