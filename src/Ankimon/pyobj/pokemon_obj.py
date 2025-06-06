@@ -277,6 +277,32 @@ class PokemonObject:
             moves=_dict.get('moves', [])
         )
         return pokemon
+    
+    def reset_bonuses(self):
+        """
+        This method resets various bonuses and status effects currently applied
+        to the pokemon.
+
+        This method is typically used to reset the stat boosts of the main
+        Pokemon when the opponent gets KOed, preventing the user from 
+        steamrolling every wild pokemon once the main pokemon is setup with
+        stat boosts.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        self.stat_stages = {
+            'atk': 0,
+            'def': 0,
+            'spa': 0,
+            'spd': 0,
+            'spe': 0,
+            'accuracy': 0,
+            'evasion': 0
+            }
 
 class PokemonEncoder(json.JSONEncoder):
     def default(self, obj):
