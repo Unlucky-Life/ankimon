@@ -13,7 +13,6 @@
 
 import json
 import random
-import math
 import copy
 from pathlib import Path
 import traceback
@@ -24,7 +23,6 @@ from aqt import gui_hooks, mw, utils
 from aqt.qt import (
     QDialog,
     QLabel,
-    Qt,
     QVBoxLayout,
     )
 from aqt.reviewer import Reviewer
@@ -32,25 +30,21 @@ from aqt.utils import downArrow, showWarning, tr, tooltip
 from aqt.utils import *
 from aqt.qt import *
 from PyQt6 import *
-from PyQt6.QtCore import QPoint, QTimer, QUrl
-from PyQt6.QtGui import QColor, QPalette, QDesktopServices
+from PyQt6.QtCore import QUrl
+from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtWidgets import (
-    QApplication,
     QDialog,
     QLabel,
     QPushButton,
     QVBoxLayout,
-    QFrame,
     )
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
 
 from . import audios
 from .config_var import (
-    reviewer_text_message_box,
     dmg_in_reviewer,
     no_more_news,
-    remove_levelcap,
     ssh,
     defeat_shortcut,
     catch_shortcut,
@@ -82,7 +76,6 @@ from .texts import (
 )
 from .const import gen_ids
 from .business import (
-    calc_experience,
     get_multiplier_stats,
 )
 from .utils import (
@@ -101,34 +94,15 @@ from .utils import (
 from .functions.battle_functions import calculate_hp, status_effect
 from .functions.reviewer_iframe import create_iframe_html, create_head_code
 from .functions.url_functions import open_team_builder, rate_addon_url, report_bug, join_discord_url, open_leaderboard_url
-from .functions.trainer_functions import xp_share_gain_exp
-from .functions.badges_functions import check_badges, check_for_badge, receive_badge, handle_achievements, check_and_award_badges
-from .functions.encounter_functions import choose_random_pkmn_from_tier
+from .functions.badges_functions import check_badges, handle_achievements, check_and_award_badges
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
 from .functions.drawing_utils import tooltipWithColour
 from .functions.discord_function import DiscordPresence
-from .functions.encounter_functions import generate_random_pokemon, new_pokemon, catch_pokemon
-from .functions.pokedex_functions import (
-    search_pokedex,
-    search_pokedex_by_id,
-    search_pokeapi_db_by_id,
-    get_all_pokemon_moves,
-    find_details_move,
-    check_evolution_for_pokemon,
-    return_name_for_id
-)
-from .functions.pokemon_functions import (
-    pick_random_gender,
-    find_experience_for_level,
-    shiny_chance,
-    create_caught_pokemon,
-    get_levelup_move_for_pokemon,
-)
+from .functions.encounter_functions import generate_random_pokemon, new_pokemon, catch_pokemon, kill_pokemon
+from .functions.pokedex_functions import search_pokedex, find_details_move
 from .gui_entities import UpdateNotificationWindow, HelpWindow, CheckFiles
 from .pyobj.sync_pokemon_data import CheckPokemonData
-from .pyobj.attack_dialog import AttackDialog
 from .pyobj.backup_files import run_backup
-from .pyobj.ankimon_tracker import AnkimonTracker
 from .classes.choose_move_dialog import MoveSelectionDialog
 from .poke_engine.ankimon_hooks_to_poke_engine import simulate_battle_with_poke_engine
 from .poke_engine import constants
@@ -413,165 +387,6 @@ aqt.gui_hooks.reviewer_will_answer_card.append(answerCard_before)
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
 
 caught_pokemon = {} #pokemon not caught
-
-def kill_pokemon():
-    try:
-        trainer_card.gain_xp(enemy_pokemon.tier, settings_obj.get("controls.allow_to_choose_moves", False))
-        
-        # Calculate experience based on whether moves are chosen manually
-        if settings_obj.get("controls.allow_to_choose_moves", False):
-            exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level) * 0.5
-        else:
-            exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level)
-        
-        # Ensure exp is at least 1 and round up if it's a decimal
-        if exp < 1:
-            exp = 1
-        elif isinstance(exp, float) and not exp.is_integer():
-            exp = math.ceil(exp)
-        
-        # Handle XP share logic
-        xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
-        if xp_share_individual_id:
-            exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp, xp_share_individual_id)
-        
-        # Save main Pokémon's progress
-        main_pokemon.level = save_main_pokemon_progress(
-            mainpokemon_path,
-            main_pokemon.level,
-            main_pokemon.name,
-            main_pokemon.base_experience,
-            main_pokemon.growth_rate,
-            exp
-        )
-        
-        ankimon_tracker_obj.general_card_count_for_battle = 0
-        
-        # Show a new random Pokémon if the test window is visible
-        if test_window.isVisible():
-            new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
-    except Exception as e:
-        showWarning(f"Error occured in killing enemy pokemon: {e}")
-
-def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp):    
-    ev_yield = enemy_pokemon.ev_yield
-    experience = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap", False)))
-    if remove_levelcap is True:
-        main_pokemon.xp += exp
-        level_cap = None
-    elif mainpokemon_level != 100:
-            main_pokemon.xp += exp
-            level_cap = 100
-    if mainpokemon_path.is_file():
-        with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
-            main_pokemon_data = json.load(json_file)
-    else:
-        showWarning(translator.translate("missing_mainpokemon_data"))
-    while int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap", False))) < int(main_pokemon.xp) and (level_cap is None or main_pokemon.level < level_cap):
-        main_pokemon.level += 1
-        msg = ""
-        msg += f"Your {main_pokemon.name} is now level {main_pokemon.level} !"
-        color = "#6A4DAC" #pokemon leveling info color for tooltip
-        global achievements
-        check = check_for_badge(achievements,5)
-        if check is False:
-            achievements = receive_badge(5,achievements)
-        try:
-            tooltipWithColour(msg, color)
-        except:
-            pass
-        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-            logger.log_and_showinfo("info",f"{msg}")
-        main_pokemon.xp = int(max(0, int(main_pokemon.xp) - int(experience)))
-        evo_id = check_evolution_for_pokemon(main_pokemon.individual_id, main_pokemon.id, main_pokemon.level, evo_window, main_pokemon.everstone)
-        if evo_id is not None:
-            msg += translator.translate("pokemon_about_to_evolve", main_pokemon_name=main_pokemon.name, evo_pokemon_name=return_name_for_id(evo_id).capitalize(), main_pokemon_level=main_pokemon.level)
-            logger.log_and_showinfo("info",f"{msg}")
-            color = "#6A4DAC"
-            try:
-                tooltipWithColour(msg, color)
-            except:
-                pass
-                    #evo_window.display_pokemon_evo(main_pokemon.name.lower())
-        for mainpkmndata in main_pokemon_data:
-            if mainpkmndata["name"] == main_pokemon.name.capitalize():
-                attacks = mainpkmndata["attacks"]
-                new_attacks = get_levelup_move_for_pokemon(main_pokemon.name.lower(),int(main_pokemon.level))
-                if new_attacks:
-                    msg = ""
-                    msg += translator.translate("mainpokemon_can_learn_new_attack", main_pokemon_name=main_pokemon.name.capitalize())
-                for new_attack in new_attacks:
-                    if len(attacks) < 4 and new_attack not in attacks:
-                        attacks.append(new_attack)
-                        msg += translator.translate("mainpokemon_learned_new_attack", new_attack_name=new_attack, main_pokemon_name=main_pokemon.name.capitalize())
-                        color = "#6A4DAC"
-                        tooltipWithColour(msg, color)
-                        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-                            logger.log_and_showinfo("info",f"{msg}")
-                    else:
-                        dialog = AttackDialog(attacks, new_attack)
-                        if dialog.exec() == QDialog.DialogCode.Accepted:
-                            selected_attack = dialog.selected_attack
-                            index_to_replace = None
-                            for index, attack in enumerate(attacks):
-                                if attack == selected_attack:
-                                    index_to_replace = index
-                                    pass
-                                else:
-                                    pass
-                            # If the attack is found, replace it with 'new_attack'
-                            if index_to_replace is not None:
-                                attacks[index_to_replace] = new_attack
-                                logger.log_and_showinfo("info",
-                                    f"Replaced '{selected_attack}' with '{new_attack}'")
-                            else:
-                                logger.log_and_showinfo("info",f"'{selected_attack}' not found in the list")
-                        else:
-                            # Handle the case where the user cancels the dialog
-                            logger.log_and_showinfo("info",f"{new_attack} will be discarded.")
-                mainpkmndata["attacks"] = attacks
-                break
-    msg = ""
-    msg += translator.translate("mainpokemon_gained_xp", main_pokemon_name=main_pokemon.name, exp=exp, experience_till_next_level=experience, main_pokemon_xp=main_pokemon.xp)
-    color = "#6A4DAC" #pokemon leveling info color for tooltip
-    try:
-        tooltipWithColour(msg, color)
-    except:
-        pass
-    if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
-        logger.log_and_showinfo("info",f"{msg}")
-    # Load existing Pokémon data if it exists
-
-    for mainpkmndata in main_pokemon_data:
-        mainpkmndata["stats"]["xp"] = int(main_pokemon.xp)
-        mainpkmndata["level"] = int(main_pokemon.level)
-        mainpkmndata["ev"]["hp"] += ev_yield["hp"]
-        mainpkmndata["ev"]["atk"] += ev_yield["attack"]
-        mainpkmndata["ev"]["def"] += ev_yield["defense"]
-        mainpkmndata["ev"]["spa"] += ev_yield["special-attack"]
-        mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
-        mainpkmndata["ev"]["spe"] += ev_yield["speed"]
-    mypkmndata = mainpkmndata
-    mainpkmndata = [mainpkmndata]
-    # Save the caught Pokémon's data to a JSON file
-    with open(str(mainpokemon_path), "w") as json_file:
-        json.dump(mainpkmndata, json_file, indent=2)
-
-    # Load data from the output JSON file
-    with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
-        mypokemondata = json.load(output_file)
-
-        # Find and replace the specified Pokémon's data in mypokemondata
-        for index, pokemon_data in enumerate(mypokemondata):
-            if pokemon_data.get("individual_id") == main_pokemon.individual_id:  # Match by individual_id
-                mypokemondata[index] = mypkmndata  # Replace with new data
-                break
-
-        # Save the modified data to the output JSON file
-        with open(str(mypokemon_path), "w") as output_file:
-            json.dump(mypokemondata, output_file, indent=2)
-
-    return main_pokemon.level
         
 def process_battle_data(battle_data: dict) -> str:
     """Convert raw battle instructions into human-readable format."""
@@ -863,13 +678,13 @@ def handle_enemy_faint(enemy_pokemon, collected_pokemon_ids, settings_obj):
         if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
             catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
         else:
-            kill_pokemon()
+            kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     elif auto_battle_setting == 1:  # Existing auto-catch
         catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     elif auto_battle_setting == 2:  # Existing auto-defeat
-        kill_pokemon()
+        kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
 
     ankimon_tracker_obj.general_card_count_for_battle = 0
@@ -1306,7 +1121,7 @@ def CatchPokemonHook():
 # Custom function that triggers the defeat_pokemon hook
 def DefeatPokemonHook():
     if enemy_pokemon.hp < 1:
-        kill_pokemon()
+        kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
     for hook in defeat_pokemon_hooks:
         hook()
@@ -1332,7 +1147,7 @@ def defeat_shortcut_function():
     if enemy_pokemon.hp > 1:
         tooltip("Wild pokemon has to be fainted to defeat it !")
     else:
-        kill_pokemon()
+        kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
 
 catch_shortcut = catch_shortcut.lower()
