@@ -74,7 +74,6 @@ from .texts import (
     thankyou_message_text,
     dont_show_this_button_text
 )
-from .const import gen_ids
 from .business import (
     get_multiplier_stats,
 )
@@ -256,11 +255,6 @@ if mainpokemon_path.is_file():
         else:
             mainpokemon_empty = False
 
-window = None
-gender = None
-
-
-
 check_data = CheckPokemonData(settings_obj, logger)
 
 #If reviewer showed question; start card_timer for answering card
@@ -280,8 +274,6 @@ def on_show_answer(Card):
 
 gui_hooks.reviewer_did_show_question.append(on_show_question)
 gui_hooks.reviewer_did_show_answer.append(on_show_answer)
-
-
 
 setupHooks(check_data , ankimon_tracker_obj, prepare)
 
@@ -323,7 +315,6 @@ def open_help_window(online_connectivity):
         help_dialog.exec()
     except:
         showWarning("Error in opening HelpGuide")
-        
 
 def play_sound():
     if settings_obj.get("audio.sounds", False) is True:
@@ -338,33 +329,6 @@ def play_sound():
 gen_config = []
 for i in range(1,10):
     gen_config.append(config[f"misc.gen{i}"])
-
-def check_id_ok(id_num):
-    if isinstance(id_num, int):
-        pass
-    elif isinstance(id_num, list):
-        if len(id_num) > 0:
-            id_num = id_num[0]
-        else:
-            return False
-    # Determine the generation of the given ID
-    if id_num < 898:
-        generation = 0
-        for gen, max_id in gen_ids.items():
-            if id_num <= max_id:
-                generation = int(gen.split('_')[1])
-                break
-
-        if generation == 0:
-            return False  # ID does not belong to any generation
-
-        return gen_config[generation - 1]
-    else:
-        return False
-
-def special_pokemon_names_for_pokedex_to_poke_api_db(name):
-    global pokedex_to_poke_api_db
-    return pokedex_to_poke_api_db.get(name, name)
 
 def answerCard_before(filter, reviewer, card):
 	utils.answBtnAmt = reviewer.mw.col.sched.answerButtons(card)
@@ -389,11 +353,8 @@ def answerCard_after(rev, card, ease):
         tooltip("Error in ColorConfirmation: Couldn't interpret ease")
     ankimon_tracker_obj.reset_card_timer()
 
-
 aqt.gui_hooks.reviewer_will_answer_card.append(answerCard_before)
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
-
-caught_pokemon = {} #pokemon not caught
         
 def process_battle_data(battle_data: dict) -> str:
     """Convert raw battle instructions into human-readable format."""
@@ -920,10 +881,6 @@ def on_review_card(*args):
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
 
-life_bar_injected = False
-video = False
-first_start = False
-
 #Test window
 def rate_this_addon():
     global rate_this
@@ -1012,7 +969,6 @@ with open(badges_list_path, "r", encoding="utf-8") as json_file:
     badges = json.load(json_file)
 
 achievements = {str(i): False for i in range(1, 69)}
-
 achievements = check_badges(achievements)
 
 if database_complete:
@@ -1026,13 +982,10 @@ if database_complete:
 
 count_items_and_rewrite(itembag_path)
 
-UserRole = 1000  # Define custom role
-
 #buttonlayout
-
 # Create menu actions
 # Create menu actions
-actions = create_menu_actions(
+create_menu_actions(
     database_complete,
     online_connectivity,
     pokecollection_win,
