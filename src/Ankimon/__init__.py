@@ -453,47 +453,6 @@ def kill_pokemon():
     except Exception as e:
         showWarning(f"Error occured in killing enemy pokemon: {e}")
 
-# def save_caught_pokemon(nickname):
-#     # Create a dictionary to store the Pokémon's data
-#     # add all new values like hp as max_hp, evolution_data, description and growth rate
-#     global achievements
-#     if enemy_pokemon.tier != None:
-#         if enemy_pokemon.tier == "Normal":
-#             check = check_for_badge(achievements,17)
-#             if check is False:
-#                 achievements = receive_badge(17,achievements)
-#         elif enemy_pokemon.tier == "Baby":
-#             check = check_for_badge(achievements,18)
-#             if check is False:
-#                 achievements = receive_badge(18,achievements)
-#         elif enemy_pokemon.tier == "Ultra":
-#             check = check_for_badge(achievements,8)
-#             if check is False:
-#                 achievements = receive_badge(8,achievements)
-#         elif enemy_pokemon.tier == "Legendary":
-#             check = check_for_badge(achievements,9)
-#             if check is False:
-#                 achievements = receive_badge(9,achievements)
-#         elif enemy_pokemon.tier == "Mythical":
-#             check = check_for_badge(achievements,10)
-#             if check is False:
-#                 achievements = receive_badge(10,achievements)
-
-#     caught_pokemon = create_caught_pokemon(enemy_pokemon, nickname)
-#     # Load existing Pokémon data if it exists
-#     if mypokemon_path.is_file():
-#         with open(mypokemon_path, "r", encoding="utf-8") as json_file:
-#             caught_pokemon_data = json.load(json_file)
-#     else:
-#         caught_pokemon_data = []
-
-#     # Append the caught Pokémon's data to the list
-#     caught_pokemon_data.append(caught_pokemon)
-
-#     # Save the caught Pokémon's data to a JSON file
-#     with open(str(mypokemon_path), "w") as json_file:
-#         json.dump(caught_pokemon_data, json_file, indent=2)
-
 def save_main_pokemon_progress(mainpokemon_path, mainpokemon_level, mainpokemon_name, mainpokemon_base_experience, mainpokemon_growth_rate, exp):    
     ev_yield = enemy_pokemon.ev_yield
     experience = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap", False)))
