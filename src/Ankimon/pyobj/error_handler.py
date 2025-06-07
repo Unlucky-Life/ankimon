@@ -133,7 +133,7 @@ def build_dialog_ui(dialog: QDialog, message: str, exception: Exception, chosen_
     left_layout.addWidget(create_error_label(message, exception))
     
     # Friendly message
-    friendly_label = QLabel("<i>But no worries, just stay cool! 😎</i>")
+    friendly_label = QLabel("<i>But no worries, just stay cool!</i> 😎")
     friendly_label.setStyleSheet("color: #a6dcef; font-size: 13px; margin-bottom: 2px;")
     friendly_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
     friendly_label.setWordWrap(True)
