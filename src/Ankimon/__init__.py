@@ -335,7 +335,7 @@ from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
 
 # Set up web exports for static files
-# mw.addonManager.setWebExports(__name__, r"user_files/.*\.(css|js|jpg|gif|html|ttf|png|mp3)")
+mw.addonManager.setWebExports(__name__, r"user_files/.*\.(css|js|jpg|gif|html|ttf|png|mp3)")
 
 def on_webview_will_set_content(web_content: WebContent, context) -> None:
     ankimon_package = mw.addonManager.addonFromModule(__name__)
