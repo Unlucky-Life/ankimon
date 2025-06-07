@@ -15,10 +15,12 @@ jobs:
       pull-requests: read
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
-          submodules: recursive
           fetch-depth: 0
+          fetch-tags: true
+          ref: ${{ github.ref }}
 
       - name: Setup Python
         uses: actions/setup-python@v2.2.1
@@ -27,19 +29,17 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           python -m pip install git+https://github.com/glutanimate/anki-addon-builder.git@4039b5bb743773a18cb2911e6dd38fa1e3f65982
           python -m pip install pyqt5
-          sudo apt-get install -y jq
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt update && sudo apt install -y gh
+          sudo apt-get update && sudo apt-get install -y jq gh
 
       - name: Setup git config
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
 
-      - name: Create ankiaddon file
+      - name: Create .ankiaddon package
         run: aab build -d ankiweb
 
       - name: Declare variables
@@ -47,8 +47,8 @@ jobs:
         shell: bash
         run: |
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "module_name=$(ls src)" >> $GITHUB_OUTPUT
-          echo "build_name=$(ls build | grep --color=never .ankiaddon)" >> $GITHUB_OUTPUT
+          echo "module_name=$(ls src)"           >> $GITHUB_OUTPUT
+          echo "build_name=$(ls build/*.ankiaddon)" >> $GITHUB_OUTPUT
 
       - name: Get previous tag
         id: previoustag
@@ -62,7 +62,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: "${{ steps.vars.outputs.module_name }} v${{ github.ref_name }}"
           generate_release_notes: true
-          files: build/${{ steps.vars.outputs.build_name }}
+          files: build/*.ankiaddon
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
