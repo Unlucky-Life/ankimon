@@ -43,6 +43,12 @@ class DataHandler:
             file_path = os.path.join(self.path, file)  # Construct full file path
             attr_name = os.path.splitext(file)[0]      # Use the filename without extension as the attribute name
 
+            # Create file with empty array if it doesn't exist
+            if not os.path.exists(file_path):
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)  # Ensure directory exists
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump([], f, indent=2)
+                
             try:
                 with open(file_path, "r", encoding="utf-8") as f:
                     content = json.load(f)
