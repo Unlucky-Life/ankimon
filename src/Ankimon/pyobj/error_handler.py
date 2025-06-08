@@ -240,7 +240,7 @@ def show_warning_with_traceback(
     
     def copy_debug_info():
         # Wrap in triple backticks for markdown code block formatting
-        full_debug = f"```\n{env_info}\n\n{tb_text}\n```"
+        full_debug = f"```python\n{env_info}\n\n{tb_text}\n```"
         mw.app.clipboard().setText(full_debug)
         
         # Update dialog to show copy confirmation (without env_info)
