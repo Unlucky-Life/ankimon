@@ -10,3 +10,4 @@ src/Ankimon/user_files/backups
 *.log
 *.pyc
 .vscode
+debug_console.py
