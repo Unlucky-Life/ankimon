@@ -12,10 +12,40 @@ from ..pyobj.InfoLogger import ShowInfoLogger
 
 #logger = ShowInfoLogger()
 
-def reset_side(
-        pokemon: Pokemon,
-        side_conditions: Union[dict, None]=None,
-    ):
+def reset_stat_boosts(pokemon: Pokemon) -> Pokemon:
+    """
+    Resets all stat boosts of a given Pokemon to zero.
+
+    Args:
+        pokemon (Pokemon): The Pokemon whose stat boosts will be reset.
+
+    Returns:
+        Pokemon: The same Pokemon object with all stat boosts reset to zero.
+    """
+    pokemon.attack_boost = 0
+    pokemon.defense_boost = 0
+    pokemon.special_attack_boost = 0
+    pokemon.special_defense_boost = 0
+    pokemon.speed_boost = 0
+    pokemon.accuracy_boost = 0
+    pokemon.evasion_boost = 0
+    return pokemon
+
+def reset_side(pokemon: Pokemon, side_conditions: Union[dict, None]=None) -> Side:
+    """
+    Resets and returns a new Side object for the given Pokemon with default or provided side conditions.
+
+    If no side conditions are provided, a default set with all conditions initialized to zero is used.
+
+    Args:
+        pokemon (Pokemon): The active Pokemon for the side.
+        side_conditions (Union[dict, None], optional): A dictionary of side conditions to apply. 
+            If None, defaults to all conditions set to zero.
+
+    Returns:
+        Side: A new Side object with the specified active Pokemon, an empty reserve, 
+              default wish and future sight settings, and the given or default side conditions.
+    """
     if side_conditions is None:
         side_conditions = defaultdict(int, {
             'stealthrock': 0,
@@ -31,88 +61,18 @@ def reset_side(
         active=pokemon,
         reserve={},
         wish=(0, 0),
-        side_conditions=side_conditions.copy(),
+        side_conditions=side_conditions,
         future_sight=(0, 0),
     )
     return side
-
-def reset_state(
-    state: State,
-    mutator_full_reset: int,
-    main_pokemon_obj: Pokemon,
-    enemy_pokemon_obj: Pokemon,
-    side_conditions: dict,
-    ):
-    """
-    Resets the battle state for both the user's and opponent's Pokémon based on the value of 
-    `mutator_full_reset`. The function creates new `Side` objects for both the user and the opponent, 
-    adjusting their active Pokémon, reserves, wishes, side conditions, and future sight. 
-    It also updates the weather, field, and trick room conditions if necessary.
-
-    Args:
-        state (State): The current battle state, including user and opponent sides, and battle conditions.
-        mutator_full_reset (int): A flag that determines how the battle state is reset:
-            - 0: Keep both user and opponent sides unchanged.
-            - 1: Reset both user and opponent sides.
-            - 2: Keep the user side unchanged, reset the opponent side.
-        main_pokemon_obj (Pokemon): The user's active Pokémon object used in the reset.
-        enemy_pokemon_obj (Pokemon): The opponent's active Pokémon object used in the reset.
-        side_conditions (dict): A dictionary containing any active side conditions (e.g., Stealth Rock, Spikes).
-
-    Returns:
-        State: A new `State` object with the updated user and opponent sides, weather, field, and trick room conditions.
-
-    Notes:
-        - The `mutator_full_reset` value determines whether the user, the opponent, or both sides are reset.
-        - If `mutator_full_reset` is set to 1, both the user and opponent sides will be reset.
-        - If `mutator_full_reset` is set to 2, the user side will remain unchanged, but the opponent side will be reset.
-        - The weather, field, and trick room conditions are reset to `None` if `mutator_full_reset` is 1.
-    """
-
-    # If the opponent gets KOed, we resest the stat boosts of the main pokemon.
-    # This is to avoid having the player steamroll all wild pokemons after getting setup.
-    if mutator_full_reset == 2:
-        state.user.active.attack_boost = 0
-        state.user.active.defense_boost = 0
-        state.user.active.special_attack_boost = 0
-        state.user.active.special_defense_boost = 0
-        state.user.active.speed_boost = 0
-        state.user.active.accuracy_boost = 0
-        state.user.active.evasion_boost = 0
-
-    if mutator_full_reset == 0:
-        user_side = state.user
-        opponent_side = state.opponent
-    elif mutator_full_reset == 1:
-        user_side = reset_side(main_pokemon_obj)
-        opponent_side = reset_side(enemy_pokemon_obj)
-    elif mutator_full_reset == 2:
-        user_side = state.user
-        opponent_side = reset_side(enemy_pokemon_obj)
-    else:
-        raise ValueError(f"Wrong mutator_full_reset encountered : {mutator_full_reset}")
-
-    weather = None if mutator_full_reset == 1 else state.weather
-    field = None if mutator_full_reset == 1 else state.field
-    trick_room = None if mutator_full_reset == 1 else state.trick_room
-
-    new_state = State(
-        user=user_side,
-        opponent=opponent_side,
-        weather=weather,
-        field=field,
-        trick_room=trick_room
-    )
-
-    return new_state
 
 def simulate_battle_with_poke_engine(
     main_pokemon: Pokemon,
     enemy_pokemon: Pokemon,
     main_move: str,
     enemy_move: str,
-    new_state: State,
     mutator_full_reset: int,
+    state: Union[State, None]=None,
     ):
     """
     Simulates a battle between two Pokémon using the poke-engine if available. 
@@ -157,13 +117,10 @@ def simulate_battle_with_poke_engine(
     if not enemy_move:
         enemy_move = "Struggle"
     
-    try:
-        if main_pokemon.name.lower() != new_state.user.active.id:
-            mutator_full_reset = 1 # reset AFTER Pokemon is changed !
-        new_state.weather
-        new_state.field
-        new_state.trick_room
-    except Exception as e:
+
+    if (state is not None) and (state.user.active.id != main_pokemon.name.lower()):
+        mutator_full_reset = 1 # reset AFTER Pokemon is changed !
+    if mutator_full_reset not in (0, 1, 2):
         mutator_full_reset = 1
 
     try:
@@ -201,27 +158,31 @@ def simulate_battle_with_poke_engine(
             'protect': 0,
         })
 
-        try:
-            if mutator_full_reset not in (0, 1, 2):
-                mutator_full_reset = 1
-        except Exception as e:
-            mutator_full_reset = 1
+        if state is None:
+            state = State(
+                user=reset_side(main_pokemon_poke_engine),
+                opponent=reset_side(enemy_pokemon_poke_engine),
+                weather=None,
+                field=None,
+                trick_room=None,
+                )
+        else:
+            if mutator_full_reset == 0:  # Combat is ongoing
+                pass
+            elif mutator_full_reset == 1:  # Reset both sides of the fight
+                state.user.active = reset_stat_boosts(state.user.active)
+                state.user = reset_side(main_pokemon_poke_engine)
+                state.opponent = reset_side(enemy_pokemon_poke_engine)
+            elif mutator_full_reset == 2: # Opponent got KOed, reset the opponent's side
+                state.user.active = reset_stat_boosts(state.user.active)  # reseting the user's stat boosts to avoid snowballing
+                state.opponent = reset_side(enemy_pokemon_poke_engine)
+            else:
+                raise ValueError(f"Wrong mutator_full_reset encountered : {mutator_full_reset}")
 
-        state = reset_state(
-            new_state,
-            mutator_full_reset,
-            main_pokemon_poke_engine,
-            enemy_pokemon_poke_engine,
-            side_conditions
-            )
                 
         mutator = StateMutator(state)
 
-        try:
-            if state.opponent.active.hp == 0:
-                main_move = "Splash"
-                enemy_move = "Splash"
-        except Exception as e:
+        if state.opponent.active.hp == 0:
             main_move = "Splash"
             enemy_move = "Splash"
 
@@ -244,7 +205,6 @@ def simulate_battle_with_poke_engine(
 
         # In case the pokemon used a stat enhancing move or a healing move, we need to save those changes from the State into the PokemonObject so that they carry to the next round
         main_pokemon.current_hp = main_pokemon.hp = state.user.active.hp
-        #if mutator_full_reset == 0:
         main_pokemon.stat_stages = {
             'atk': state.user.active.attack_boost,
             'def': state.user.active.defense_boost,

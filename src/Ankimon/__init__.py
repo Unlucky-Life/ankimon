@@ -658,7 +658,7 @@ def on_review_card(*args):
                 dmg_from_enemy_move
                 dmg_from_user_move
             except:
-                new_state = []
+                new_state = None
                 mutator_full_reset = 1
                 user_hp_after = 0 
                 opponent_hp_after = 0 
@@ -677,8 +677,8 @@ def on_review_card(*args):
                 enemy_pokemon,
                 user_attack,
                 enemy_attack,
-                new_state,
                 mutator_full_reset,
+                new_state,
                 )
           
             '''
