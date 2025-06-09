@@ -11,6 +11,12 @@
 # Important - If you redistribute it and/or modify this addon - must give contribution in Title and Code
 # aswell as ask for permission to modify / redistribute this addon or the code itself
 
+try:
+    from .debug_console import show_ankimon_dev_console
+except ModuleNotFoundError:
+    # Debug console should not be available to non devs, so it's fine if this import doesn't succeed
+    pass
+
 import json
 import random
 import copy
