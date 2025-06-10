@@ -15,7 +15,7 @@ class PokemonObject:
         level=3,
         ability=None,
         type=None,
-        stats=None,
+        base_stats=None,
         attacks=None,
         base_experience=0,
         growth_rate="medium",
@@ -55,7 +55,7 @@ class PokemonObject:
             self.ability = ability
 
         # Stats
-        self.stats = {k: int(v) for k, v in (stats or {"hp": 1, "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1, "xp": 0}).items()}
+        self.base_stats = base_stats or {"hp": 1, "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1}
         self.ev = {k: int(v) for k, v in (ev or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}).items()}
         self.iv = {k: int(v) for k, v in (iv or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}).items()}
         self.ev_yield = {k: int(v) for k, v in (ev_yield or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}).items()}
@@ -86,6 +86,70 @@ class PokemonObject:
         self.hp = int(kwargs.get('hp', self.max_hp))
         self.current_hp = self.hp  # to be removed later
 
+    @classmethod
+    def calc_stat(
+        cls,
+        stat_name: str,
+        base_stat_val: int,
+        level: int,
+        iv: int,
+        ev: int,
+        nature: str
+        ) -> int:
+        if stat_name == "hp":
+            hp = 10 + level + int((2 * base_stat_val + iv + int(ev / 4)) * level / 100)  # Formula found on bulbapedia
+            return int(hp)
+        elif stat_name in ("atk", "def", "spa", "spd", "spe"):
+            nature_mult = PokemonObject.get_nature_stat_mult(stat_name, nature)  # Formula found on bulbapedia
+            stat = (5 + int((2 * base_stat_val + iv + int(ev / 4)) * level / 100)) * nature_mult
+            return int(stat)
+        raise ValueError(f"Received an unknown stat_name : {stat_name}")
+
+    @property
+    def stats(self) -> dict:
+        _dict = {}
+        for key, val in self.base_stats.items():
+            if key not in ("hp", "atk", "def", "spa", "spd", "spe"):
+                continue
+            _dict[key] = PokemonObject.calc_stat(
+                key, val, self.level, self.iv[key], self.ev[key], self.nature
+                )
+        return _dict
+
+    @stats.setter
+    def stats(self, value):
+        raise AttributeError("Setting the value of the stats of a Pokemon is forbidden as they are automatically calculated using their base stats. You can instead set the base_stats of the Pokemon.")
+
+    @classmethod
+    def get_nature_stat_mult(cls, stat_name: str, nature: str) -> float:
+        if stat_name == "atk":
+            if nature.lower() in ("lonely", "brave", "adamant", "naughty"):
+                return 1.1
+            if nature.lower() in ("bold", "timid", "modest", "calm"):
+                return 0.9
+        elif stat_name == "def":
+            if nature.lower() in ("bold", "relaxed", "impish", "lax"):
+                return 1.1
+            if nature.lower() in ("lonely", "hasty", "mild", "gentle"):
+                return 0.9
+        elif stat_name == "spa":
+            if nature.lower() in ("modest", "mild", "quiet", "rash"):
+                return 1.1
+            if nature.lower() in ("adamant", "impish", "jolly", "careful"):
+                return 0.9
+        elif stat_name == "spd":
+            if nature.lower() in ("calm", "gentle", "sassy", "careful"):
+                return 1.1
+            if nature.lower() in ("naughty", "lax", "naive", "rash"):
+                return 0.9
+        elif stat_name == "spe":
+            if nature.lower() in ("timid", "hasty", "jolly", "naive"):
+                return 1.1
+            if nature.lower() in ("brave", "relaxed", "quiet", "sassy"):
+                return 0.9
+        return 1.0
+
+
     def to_dict(self):
         return {
             "name": self.name,
@@ -95,6 +159,7 @@ class PokemonObject:
             "id": self.id,
             "ability": self.ability,
             "type": self.type,
+            "base_stats": self.base_stats,
             "stats": self.stats,
             "ev": self.ev,
             "iv": self.iv,
@@ -139,10 +204,9 @@ class PokemonObject:
                 self._battle_stats[key] = value
 
     def calculate_max_hp(self):
-        ev_value = self.ev["hp"] / 4
-        iv_value = self.iv["hp"]
-        # hp = int(((iv + 2 * (base_stat_hp + ev) + 100) * level) / 100 + 10)
-        hp = int((((((self.stats["hp"] + iv_value) * 2 ) + ev_value) * self.level) / 100) + self.level + 10)
+        ev, iv = self.ev["hp"], self.iv["hp"]
+        hp = 10 + self.level + int((2 * self.base_stats["hp"] + iv + int(ev / 4)) * self.level / 100)
+        hp = int(hp)
         return hp
     
     def get_sprite_path(self, side, sprite_type):
@@ -221,7 +285,7 @@ class PokemonObject:
             name=engine_data['identifier'].capitalize(),
             level=engine_data['level'],
             hp=engine_data['hp'],
-            stats={
+            base_stats={
                 'hp': engine_data.get('maxhp', 0),
                 'atk': engine_data['attack'],
                 'def': engine_data['defense'],
