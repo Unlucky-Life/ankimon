@@ -266,10 +266,12 @@ class EvoWindow(QWidget):
                                                 # Handle the case where the user cancels the dialog
                                                 self.logger.log_and_showinfo("info", self.translator.translate("no_attack_selected"))
                                 pokemon["attacks"] = attacks
-                                stats = search_pokedex(evo_name.lower(), "baseStats")
-                                pokemon["stats"] = stats
+                                base_stats = search_pokedex(evo_name.lower(), "baseStats")
+                                pokemon["base_stats"] = base_stats
+                                pokemon["stats"] = base_stats
                                 pokemon["stats"]["xp"] = 0
-                                hp_stat = int(stats['hp'])
+                                pokemon["xp"] = 0
+                                hp_stat = int(base_stats['hp'])
                                 iv = pokemon["iv"]
                                 ev = pokemon["ev"]
                                 level = pokemon["level"]
@@ -368,6 +370,7 @@ class EvoWindow(QWidget):
                         break
                 for mainpkmndata in main_pokemon_data:
                     mainpkmndata["stats"]["xp"] = int(self.main_pokemon.xp)
+                    mainpkmndata["base_stats"] = self.main_pokemon.base_stats
                     mainpkmndata["level"] = int(self.main_pokemon.level)
                     mainpkmndata["current_hp"] = int(self.main_pokemon.hp)
                     mainpkmndata["ev"]["hp"] += ev_yield["hp"]
