@@ -30,7 +30,7 @@ from ..functions.pokedex_functions import (
 from ..functions.trainer_functions import xp_share_gain_exp
 from ..functions.badges_functions import check_for_badge, receive_badge
 from ..functions.drawing_utils import tooltipWithColour
-from ..utils import play_effect_sound
+from ..utils import limit_ev_yield, play_effect_sound
 from ..business import calc_experience
 from ..const import gen_ids
 from ..singletons import (
@@ -397,8 +397,7 @@ def save_main_pokemon_progress(
         achievements: dict,
         logger: ShowInfoLogger,
         evo_window: EvoWindow,
-        ):    
-    ev_yield = enemy_pokemon.ev_yield
+        ):
     experience = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap", False)))
     if remove_levelcap is True:
         main_pokemon.xp += exp
@@ -490,6 +489,7 @@ def save_main_pokemon_progress(
         mainpkmndata["xp"] = main_pokemon.xp
         mainpkmndata["stats"]["xp"] = int(main_pokemon.xp)
         mainpkmndata["level"] = int(main_pokemon.level)
+        ev_yield = limit_ev_yield(mainpkmndata["ev"], enemy_pokemon.ev_yield)
         mainpkmndata["ev"]["hp"] += ev_yield["hp"]
         mainpkmndata["ev"]["atk"] += ev_yield["attack"]
         mainpkmndata["ev"]["def"] += ev_yield["defense"]
