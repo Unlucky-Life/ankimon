@@ -1,7 +1,7 @@
 import json
-
 from typing import Optional
 
+from ..functions.pokedex_functions import search_pokedex, search_pokedex_by_id
 from ..resources import mainpokemon_path
 from ..pyobj.pokemon_obj import PokemonObject
 
@@ -13,15 +13,15 @@ MAIN_POKEMON_DEFAULT = {
     "id": 1,
     "ability": "Static",
     "type": ["Electric"],
-    "stats": {
+    "base_stats": {
         "hp": 20,
         "atk": 30,
         "def": 15,
         "spa": 50,
         "spd": 40,
         "spe": 60,
-        "xp": 0
     },
+    "xp": 0,
     "ev": {
         "hp": 0,
         "atk": 1,
@@ -81,13 +81,15 @@ def update_main_pokemon(main_pokemon: Optional[PokemonObject] = None):
                 # if main pokemon is successfully loaded make empty false
                 if main_pokemon_data:
                     mainpokemon_empty = False
+                    pokemon_name = search_pokedex_by_id(main_pokemon_data[0]["id"])
+                    main_pokemon_data[0]["base_stats"] = search_pokedex(pokemon_name, "baseStats")
+                    del main_pokemon_data[0]["stats"]  # For legacy code, i.e. for when "stats" in the JSON actually meant "base_stat"
                     main_pokemon.update_stats(**main_pokemon_data[0])
                 # if file does load or is empty use default value
                 else:
                     main_pokemon = PokemonObject(**MAIN_POKEMON_DEFAULT)
                 max_hp = main_pokemon.calculate_max_hp()
                 main_pokemon.max_hp = max_hp
-                main_pokemon.xp = main_pokemon.stats["xp"]
                 # if main_pokemon_data[0].get("current_hp", max_hp) > max_hp:
                 # main_pokemon_data[0]["current_hp"] = max_hp
                 if main_pokemon_data:

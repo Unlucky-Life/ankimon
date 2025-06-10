@@ -340,7 +340,7 @@ def new_pokemon(
         level,
         ability,
         pkmn_type,
-        stats,
+        base_stats,
         enemy_attacks,
         base_experience,
         growth_rate,
@@ -359,7 +359,7 @@ def new_pokemon(
         'level': level,
         'ability': ability,
         'type': pkmn_type,
-        'stats': stats,
+        'base_stats': base_stats,
         'attacks': enemy_attacks,
         'base_experience': base_experience,
         'growth_rate': growth_rate,
@@ -486,6 +486,8 @@ def save_main_pokemon_progress(
     # Load existing Pokémon data if it exists
 
     for mainpkmndata in main_pokemon_data:
+        mainpkmndata["stats"] = main_pokemon.base_stats
+        mainpkmndata["xp"] = main_pokemon.xp
         mainpkmndata["stats"]["xp"] = int(main_pokemon.xp)
         mainpkmndata["level"] = int(main_pokemon.level)
         mainpkmndata["ev"]["hp"] += ev_yield["hp"]
@@ -584,7 +586,8 @@ def save_caught_pokemon(
     if nickname is None:
         nickname = enemy_pokemon.name.capitalize()
 
-    enemy_pokemon.stats["xp"] = 0
+    #enemy_pokemon.stats["xp"] = 0
+    enemy_pokemon.xp = 0
     caught_pokemon = {
         "name": enemy_pokemon.name.capitalize(),
         "nickname": nickname,
@@ -593,7 +596,7 @@ def save_caught_pokemon(
         "id": enemy_pokemon.id,
         "ability": enemy_pokemon.ability,
         "type": enemy_pokemon.type,
-        "stats": enemy_pokemon.stats,
+        "stats": enemy_pokemon.base_stats,
         "ev": enemy_pokemon.ev,
         "iv": enemy_pokemon.iv,
         "attacks": enemy_pokemon.attacks,
@@ -602,6 +605,7 @@ def save_caught_pokemon(
         "growth_rate": enemy_pokemon.growth_rate,
         "friendship": 0,
         "pokemon_defeated": 0,
+        "xp": 0,
         "everstone": False,
         "shiny": enemy_pokemon.shiny,
         "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

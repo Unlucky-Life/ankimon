@@ -1,24 +1,26 @@
-from ..functions.pokedex_functions import get_pokemon_diff_lang_name, get_pokemon_descriptions, get_all_pokemon_moves
-from ..functions.pokemon_functions import find_experience_for_level
-from aqt import mw
+from math import exp
+import json
+
+from aqt import mw, qconnect
 from aqt.utils import showWarning
-from ..resources import (frontdefault, user_path_sprites, icon_path, addon_dir, mainpokemon_path, mypokemon_path)
-from ..texts import attack_details_window_template, attack_details_window_template_end, remember_attack_details_window_template, remember_attack_details_window_template_end
 from PyQt6.QtGui import QPixmap, QPainter, QIcon
-from ..gui_entities import MovieSplashLabel
-from ..business import split_string_by_length
-from ..utils import load_custom_font
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QScrollArea
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget
-from aqt import qconnect
-from ..functions.pokedex_functions import find_details_move
-from ..functions.gui_functions import type_icon_path, move_category_path
-import json
+
 from ..pyobj.attack_dialog import AttackDialog
 from ..pyobj.pokemon_trade import PokemonTrade
+from ..pyobj.pokemon_obj import PokemonObject
+from ..functions.pokedex_functions import get_pokemon_diff_lang_name, get_pokemon_descriptions, get_all_pokemon_moves, find_details_move
+from ..functions.pokemon_functions import find_experience_for_level
+from ..functions.gui_functions import type_icon_path, move_category_path
 from ..functions.sprite_functions import get_sprite_path
+from ..gui_entities import MovieSplashLabel
+from ..business import split_string_by_length
+from ..utils import load_custom_font
+from ..resources import icon_path, addon_dir, mainpokemon_path, mypokemon_path
+from ..texts import attack_details_window_template, attack_details_window_template_end, remember_attack_details_window_template, remember_attack_details_window_template_end
 
 def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats, attacks, base_experience, growth_rate, ev, iv, gender, nickname, individual_id, pokemon_defeated, everstone, captured_date, language, gif_in_collection, remove_levelcap, logger, refresh_callback):
     # Create the dialog
@@ -97,15 +99,13 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         lvl = (f" Level: {level}")
         ability_txt = (f" Ability: {ability.capitalize()}")
         type_txt = (f" Type:")
-        stats_list = [
-            detail_stats["hp"],
-            detail_stats["atk"],
-            detail_stats["def"],
-            detail_stats["spa"],
-            detail_stats["spd"],
-            detail_stats["spe"],
-            detail_stats["xp"]
-        ]
+        stats_list = []
+        for key, val in detail_stats.items():
+            if key not in ("hp", "atk", "def", "spa", "spd", "spe"):
+                continue
+            stat = PokemonObject.calc_stat(key, val, level, iv[key], ev[key], "serious")
+            stats_list.append(stat)
+        stats_list.append(detail_stats.get("xp", 0))
         stats_txt = f"Stats:\n\
             Hp: {stats_list[0]}\n\
             Attack: {stats_list[1]}\n\
@@ -118,7 +118,16 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         for attack in attacks:
             attacks_txt += f"\n{attack.capitalize()}"
 
-        CompleteTable_layout = PokemonDetailsStats(detail_stats, growth_rate, level, remove_levelcap, language)
+        _stats_dict = {
+            "hp": stats_list[0],
+            "atk": stats_list[1],
+            "def": stats_list[2],
+            "spa": stats_list[3],
+            "spd": stats_list[4],
+            "spe": stats_list[5],
+            "xp": stats_list[6]
+            }
+        CompleteTable_layout = PokemonDetailsStats(_stats_dict, growth_rate, level, remove_levelcap, language)
 
         # Properties of the text of the image
         # custom font
@@ -318,16 +327,15 @@ def PokemonDetailsStats(detail_stats, growth_rate, level, remove_levelcap, langu
         stat_item2 = QLabel(stat.capitalize())
         max_width_stat_item = 200
         stat_item2.setFixedWidth(max_width_stat_item)
-        if stat == "xp":
-            xp = value
-            value = int((int(value) / int(experience)) * max_width_stat_item)
         value_item2 = QLabel(str(value))
-        if stat == "xp":
-            value_item2 = QLabel(str(xp))
         stat_item2.setFont(custom_font)
         value_item2.setFont(custom_font)
         # Create a bar item
         bar_item2 = QLabel()
+        if stat == "xp":
+            value = int((int(value) / int(experience)) * max_width_stat_item)
+        else:
+            value = int(max_width_stat_item * (1 - exp(-value / max_width_stat_item)))  # Small function to ensure that the length of the colored bar doesn't exceed max_width_stat_item
         pixmap2 = createStatBar(stat_colors.get(stat), value)
         # Convert the QPixmap to an QIcon
         icon = QIcon(pixmap2)
