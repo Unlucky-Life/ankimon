@@ -557,3 +557,34 @@ def load_collected_pokemon_ids() -> set:
         ShowInfoLogger().log("error", f"Error loading collection cache: {str(e)}")
     
     return collected_pokemon_ids
+
+def limit_ev_yield(current_pokemon_ev: dict[str, int], ev_yield: dict[str, int]) -> dict[str, int]:
+    # The sum of EVs of a Pokemon can only add up to 510. With a limit of 252 EVs in a single stat.
+    for stat in current_pokemon_ev.keys():
+        if stat not in ("hp", "atk", "def", "spa", "spd", "spe"):
+            raise ValueError(f"Unknown EV : {stat}")
+        
+    for stat in ev_yield.keys():
+        if stat not in ("hp", "attack", "defense", "special-attack", "special-defense", "speed"):
+            raise ValueError(f"Unknown EV : {stat}")
+        
+    zipped_keys = zip(
+        ["hp", "atk", "def", "spa", "spd", "spe"],
+        ["hp", "attack", "defense", "special-attack", "special-defense", "speed"]
+    )
+        
+    new_ev_yield = {"hp": 0, "attack": 0, "defense": 0, "special-attack": 0, "special-defense": 0, "speed": 0}
+    
+    for key_1, key_2 in zipped_keys:
+        # For each stat, we yield an amount of EVs that will not exceed the value of 252
+        new_ev_yield[key_2] = min(ev_yield[key_2], 252 - current_pokemon_ev[key_1])
+
+    # To ensure that we won't go above 510 EVs after yielding the EVs, we randomly reduce the EV yield until we drop below the 510 limit
+    while (sum(current_pokemon_ev.values()) + sum(new_ev_yield.values())) > 510:
+        rand_key = [key for key, val in new_ev_yield.items() if val > 0]
+        if len(rand_key) == 0:
+            break
+        rand_key = random.choice(rand_key)
+        new_ev_yield[rand_key] -= 1
+
+    return new_ev_yield
