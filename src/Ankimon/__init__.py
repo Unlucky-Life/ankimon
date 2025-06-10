@@ -478,14 +478,14 @@ if database_complete:
         starter = False
         mainpokemon_level = 5
     #name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon()
-    name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon(main_pokemon.level, ankimon_tracker_obj)
+    name, id, level, ability, type, base_stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon(main_pokemon.level, ankimon_tracker_obj)
     pokemon_data = {
         'name': name,
         'id': id,
         'level': level,
         'ability': ability,
         'type': type,
-        'stats': stats,
+        'base_stats': base_stats,
         'attacks': enemy_attacks,
         'base_experience': base_experience,
         'growth_rate': growth_rate,
