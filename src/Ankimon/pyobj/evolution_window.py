@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
     QWidget,
     )
 
-from ..utils import load_custom_font
+from ..utils import limit_ev_yield, load_custom_font
 from ..functions.pokedex_functions import return_name_for_id, search_pokeapi_db_by_id, search_pokedex
 from ..functions.pokemon_functions import get_random_moves_for_pokemon
 from ..functions.battle_functions import calculate_hp
@@ -335,7 +335,6 @@ class EvoWindow(QWidget):
             receive_badge(16, self.achievements)
 
     def cancel_evolution(self, individual_id, prevo_name):
-        ev_yield = self.enemy_pokemon.ev_yield
         # Load existing Pokémon data if it exists
         if mainpokemon_path.is_file():
             with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
@@ -373,6 +372,7 @@ class EvoWindow(QWidget):
                     mainpkmndata["base_stats"] = self.main_pokemon.base_stats
                     mainpkmndata["level"] = int(self.main_pokemon.level)
                     mainpkmndata["current_hp"] = int(self.main_pokemon.hp)
+                    ev_yield = limit_ev_yield(mainpkmndata["ev"], self.enemy_pokemon.ev_yield)
                     mainpkmndata["ev"]["hp"] += ev_yield["hp"]
                     mainpkmndata["ev"]["atk"] += ev_yield["attack"]
                     mainpkmndata["ev"]["def"] += ev_yield["defense"]
