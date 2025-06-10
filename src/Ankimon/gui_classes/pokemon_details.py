@@ -303,7 +303,6 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
 
 def PokemonDetailsStats(detail_stats, growth_rate, level, remove_levelcap, language):
     CompleteTable_layout = QVBoxLayout()
-    experience = int(find_experience_for_level(growth_rate, level, remove_levelcap))
     # Stat colors
     stat_colors = {
         "hp": QColor(255, 0, 0),  # Red
@@ -333,6 +332,7 @@ def PokemonDetailsStats(detail_stats, growth_rate, level, remove_levelcap, langu
         # Create a bar item
         bar_item2 = QLabel()
         if stat == "xp":
+            experience = int(find_experience_for_level(growth_rate, level, True))
             value = int((int(value) / int(experience)) * max_width_stat_item)
         else:
             value = int(max_width_stat_item * (1 - exp(-value / max_width_stat_item)))  # Small function to ensure that the length of the colored bar doesn't exceed max_width_stat_item
