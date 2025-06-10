@@ -250,7 +250,7 @@ def save_fossil_pokemon(pokemon_id):
     description= search_pokeapi_db_by_id(id, "description")
     level = 5
     attacks = get_random_moves_for_pokemon(name, level)
-    stats["xp"] = 0
+    #stats["xp"] = 0
     ev = {
         "hp": 0,
         "atk": 0,
@@ -274,7 +274,8 @@ def save_fossil_pokemon(pokemon_id):
         "id": id,
         "ability": ability,
         "type": type,
-        "stats": stats,
+        "base_stats": stats,
+        "xp": 0,
         "ev": ev,
         "iv": iv,
         "attacks": attacks,

@@ -636,7 +636,7 @@ def MainPokemon(
         level=pokemon_data.get('level', 5),
         ability=pokemon_data.get('ability', ['none']),
         type=pokemon_data.get('type', ['Normal']),
-        stats=pokemon_data.get('stats', {'hp': 1, 'atk': 1, 'def': 1, 'spa': 1, 'spd': 1, 'spe': 1}),
+        base_stats=pokemon_data.get('stats', {'hp': 1, 'atk': 1, 'def': 1, 'spa': 1, 'spd': 1, 'spe': 1}),
         ev=pokemon_data.get('ev', defaultdict(int)),
         iv=pokemon_data.get('iv', defaultdict(int)),
         attacks=pokemon_data.get('attacks', ['Struggle']),
