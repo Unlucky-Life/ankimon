@@ -615,3 +615,58 @@ def limit_ev_yield(current_pokemon_ev: dict[str, int], ev_yield: dict[str, int])
         new_ev_yield[rand_key] -= 1
 
     return new_ev_yield
+
+def iv_rand_gauss(mu: float=15, sigma: float=5) -> int:
+    """
+    Generates a random individual value (IV) using a Gaussian distribution,
+    clamped to the range [0, 31].
+
+    Args:
+        mu (float, optional): The mean of the Gaussian distribution. Defaults to 15.
+        sigma (float, optional): The standard deviation of the Gaussian distribution. Defaults to 5.
+
+    Returns:
+        int: An integer IV value between 0 and 31 inclusive.
+    """
+    rand = random.gauss(mu, sigma)
+    rand = max(0, rand)  # ensures that rand >= 0
+    rand = min(31, rand)  # ensures that rand <= 31
+    return int(rand)
+
+def get_ev_spread(mode: str="random") -> dict[str, int]:
+    """
+    Generate an EV (Effort Value) spread for Pokémon stats based on the specified mode.
+
+    Args:
+        mode (str): The mode of EV distribution. Supported modes are:
+            - "random": Randomly distributes up to 510 EVs across stats using a uniform distribution,
+                        with each stat capped at 252 EVs.
+            - "pair": Assigns 252 EVs to two random stats and 4 EVs to a third random stat.
+            - "defense": Returns a predefined defensive spread with 252 EVs in Defense and Special Defense,
+                         and 4 EVs in HP.
+            - "uniform": Distributes EVs evenly (84 EVs) across all stats.
+
+    Returns:
+        dict[str, int]: A dictionary mapping each stat ("hp", "atk", "def", "spa", "spd", "spe")
+                        to its corresponding EV value according to the selected mode.
+    """
+    stat_names = ["hp", "atk", "def", "spa", "spd", "spe"]
+    if mode == "random":  # Draws each EV following a uniform probability distribution
+        cuts = sorted(random.sample(range(510 + 1), 6 - 1))
+        parts = [a - b for a, b in zip(cuts + [510], [0] + cuts)]
+        parts = [min(252, part) for part in parts]
+        evs = {stat: val for stat, val in zip(stat_names, parts)}
+        return evs
+    elif mode == "pair":  # Draws 2 stats at 252 EVs, and a 3rd at 4 EVs
+        ev = {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}
+        stats = random.sample(stat_names, 3)
+        ev[stats[0]] = 252
+        ev[stats[1]] = 252
+        ev[stats[2]] = 4
+        return ev
+    elif mode == "defense":
+        return {"hp": 4, "atk": 0, "def": 252, "spa": 0, "spd": 252, "spe": 0}
+    elif mode == "uniform":
+        return {"hp": 84, "atk": 84, "def": 84, "spa": 84, "spd": 84, "spe": 84}
+    
+    raise ValueError(f"Received unknown value for 'mode': {mode}")
