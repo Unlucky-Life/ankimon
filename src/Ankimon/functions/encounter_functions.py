@@ -486,8 +486,8 @@ def save_main_pokemon_progress(
 
     for mainpkmndata in main_pokemon_data:
         mainpkmndata["stats"] = main_pokemon.base_stats
-        mainpkmndata["xp"] = main_pokemon.xp
-        mainpkmndata["stats"]["xp"] = int(main_pokemon.xp)
+        mainpkmndata["xp"] = int(main_pokemon.xp)
+        #mainpkmndata["stats"]["xp"] = int(main_pokemon.xp)
         mainpkmndata["level"] = int(main_pokemon.level)
         ev_yield = limit_ev_yield(mainpkmndata["ev"], enemy_pokemon.ev_yield)
         mainpkmndata["ev"]["hp"] += ev_yield["hp"]
