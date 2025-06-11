@@ -559,6 +559,26 @@ def load_collected_pokemon_ids() -> set:
     return collected_pokemon_ids
 
 def limit_ev_yield(current_pokemon_ev: dict[str, int], ev_yield: dict[str, int]) -> dict[str, int]:
+    """
+    Limits the EV (Effort Value) yield for a Pokémon based on current EVs and Pokémon game rules.
+
+    Ensures that the total EVs after applying the yield do not exceed 510, and that no single
+    stat exceeds 252 EVs. Adjusts the EV yield to comply with these constraints by capping individual
+    stats and reducing EVs randomly if the total would exceed the maximum allowed.
+
+    Args:
+        current_pokemon_ev (dict[str, int]): Current EVs of the Pokémon, with keys as stat abbreviations 
+            ("hp", "atk", "def", "spa", "spd", "spe") and values as their EV amounts.
+        ev_yield (dict[str, int]): Proposed EV yields from a defeated Pokémon, with keys as full stat names 
+            ("hp", "attack", "defense", "special-attack", "special-defense", "speed") and values as EV amounts.
+
+    Raises:
+        ValueError: If any key in `current_pokemon_ev` or `ev_yield` is not a recognized stat.
+
+    Returns:
+        dict[str, int]: Adjusted EV yields that do not cause the Pokémon's total EVs to exceed 510 or any
+        single stat to exceed 252. The keys correspond to full stat names.
+    """
     # The sum of EVs of a Pokemon can only add up to 510. With a limit of 252 EVs in a single stat.
     for stat in current_pokemon_ev.keys():
         if stat not in ("hp", "atk", "def", "spa", "spd", "spe"):
@@ -581,10 +601,17 @@ def limit_ev_yield(current_pokemon_ev: dict[str, int], ev_yield: dict[str, int])
 
     # To ensure that we won't go above 510 EVs after yielding the EVs, we randomly reduce the EV yield until we drop below the 510 limit
     while (sum(current_pokemon_ev.values()) + sum(new_ev_yield.values())) > 510:
-        rand_key = [key for key, val in new_ev_yield.items() if val > 0]
+        rand_key = [key for key, val in new_ev_yield.items() if val > 0]  # We only reduce the positive EV yield values. In other words : We don't give out negative EV yields
         if len(rand_key) == 0:
             break
         rand_key = random.choice(rand_key)
+        new_ev_yield[rand_key] -= 1
+
+    # This final block here is specifically made to give out negative EV yields
+    # This might be necessary if, for any reason, the user's pokemon has a total EV sum already above 510
+    # In that case, we randomly give out negative EV yields to bring down the EVs of the user's pokemon below 510
+    while (sum(current_pokemon_ev.values()) + sum(new_ev_yield.values())) > 510:
+        rand_key = random.choice(list(new_ev_yield.keys()))  # This time, we choose any EV yields, including those that could already have a negative EV yield
         new_ev_yield[rand_key] -= 1
 
     return new_ev_yield
