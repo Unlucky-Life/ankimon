@@ -140,7 +140,7 @@ def create_caught_pokemon(enemy_pokemon, nickname):
         "ability": enemy_pokemon.ability,
         "type": enemy_pokemon.type,
         "stats": enemy_pokemon.stats,
-        "ev": enemy_pokemon.ev,
+        "ev": {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0},
         "iv": enemy_pokemon.iv,
         "attacks": enemy_pokemon.attacks,
         "base_experience": enemy_pokemon.base_experience,
