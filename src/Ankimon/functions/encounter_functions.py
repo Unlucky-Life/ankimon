@@ -30,7 +30,7 @@ from ..functions.pokedex_functions import (
 from ..functions.trainer_functions import xp_share_gain_exp
 from ..functions.badges_functions import check_for_badge, receive_badge
 from ..functions.drawing_utils import tooltipWithColour
-from ..utils import limit_ev_yield, play_effect_sound
+from ..utils import limit_ev_yield, play_effect_sound, iv_rand_gauss, get_ev_spread
 from ..business import calc_experience
 from ..const import gen_ids
 from ..singletons import (
@@ -283,8 +283,12 @@ def generate_random_pokemon(main_pokemon_level: int, ankimon_tracker_obj: Ankimo
             ability = random.choice(list(numeric_abilities.values()))
     
     stat_names = ["hp", "atk", "def", "spa", "spd", "spe"]
-    ev = {stat: 0 for stat in stat_names}
-    iv = {stat: random.randint(1, 32) for stat in stat_names}
+    # ev = {stat: 0 for stat in stat_names}
+    ev = get_ev_spread(random.choice(["random", "pair", "defense", "uniform"]))
+    # tau = 200
+    # mu = 31 * (1 - math.exp(-ankimon_tracker_obj.total_reviews / tau))  # At total reviews > 3 * tau, we get mu ~= 31
+    # iv = {stat: iv_rand_gauss(mu=mu, sigma=5) for stat in stat_names}  # The higher the number of reviews, the higher the IVs
+    iv = {stat: random.randint(0, 31) for stat in stat_names}
     final_stats = base_stats
 
     ankimon_tracker_obj.pokemon_encounter = 0  # 0: Start of Battle: 1: Current Battle
@@ -597,7 +601,7 @@ def save_caught_pokemon(
         "ability": enemy_pokemon.ability,
         "type": enemy_pokemon.type,
         "stats": enemy_pokemon.base_stats,
-        "ev": enemy_pokemon.ev,
+        "ev": {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0},
         "iv": enemy_pokemon.iv,
         "attacks": enemy_pokemon.attacks,
         "base_experience": enemy_pokemon.base_experience,
