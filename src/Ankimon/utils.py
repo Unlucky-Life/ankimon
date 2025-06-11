@@ -498,7 +498,7 @@ def get_main_pokemon_data():
         _level = main_pokemon_data["level"]
         _hp_base_stat = main_pokemon_data["stats"]["hp"]
         _evolutions = search_pokedex(main_pokemon_data["name"], "evos")
-        _xp = main_pokemon_data["stats"]["xp"]
+        _xp = main_pokemon_data.get("xp") or main_pokemon_data["stats"].get("xp", 0)
         _ev = main_pokemon_data["ev"]
         _iv = main_pokemon_data["iv"]
         #mainpokemon_battle_stats = mainpokemon_stats
