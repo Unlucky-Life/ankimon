@@ -310,7 +310,7 @@ class PokemonCollectionDialog(QDialog):
             shiny=pokemon.get("shiny", False),
             ability=pokemon['ability'],
             type=pokemon['type'],
-            detail_stats=pokemon['stats'],
+            detail_stats={**pokemon['stats'], "xp": pokemon.get("xp", 0)},
             attacks=pokemon['attacks'],
             base_experience=pokemon['base_experience'],
             growth_rate=pokemon['growth_rate'],
@@ -648,7 +648,8 @@ def MainPokemon(
         individual_id=pokemon_data.get('individual_id', str(uuid.uuid4())),
         id=pokemon_data.get('id', 133),
         status=pokemon_data.get('status', None),
-        volatile_status=set(pokemon_data.get('volatile_status', []))
+        volatile_status=set(pokemon_data.get('volatile_status', [])),
+        xp=pokemon_data.get("xp", 0),
     )
     
     # Update existing reference

@@ -172,7 +172,8 @@ class PokemonObject:
             "individual_id": self.individual_id,
             "mega": getattr(self, "mega", False),
             "special-form": getattr(self, "special_form", None),
-            "evos": self.evos
+            "evos": self.evos,
+            "xp": self.xp
         }    
     @classmethod
     def from_dict(cls, data):

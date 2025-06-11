@@ -81,14 +81,16 @@ def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp, xp
                             # Initialize the message string
                             # Increase the xp of the matched Pokémon
                             current_level = int(pokemon['level'])  # MODIFIED: Use local variable for level
-                            current_xp = int(pokemon['stats']['xp'])  # MODIFIED: Use local variable for XP
+                            #current_xp = int(pokemon['stats']['xp'])  # MODIFIED: Use local variable for XP
+                            current_xp = pokemon.get("xp") or pokemon["stats"].get("xp", 0)
                             growth_rate = pokemon['growth_rate']  # MODIFIED: Use local variable for growth rate
                             experience_needed = int(find_experience_for_level(growth_rate, current_level, level_cap))  # MODIFIED: Pre-calculate needed XP
                             evo_id = None # Initialize variable
 
                             logger.log("info", "Running XP share function")
                             if experience_needed > exp + current_xp:
-                                pokemon['stats']['xp'] += exp
+                                #pokemon['stats']['xp'] += exp
+                                pokemon["xp"] = current_xp + exp
                                 
                             else:
                                 while exp + current_xp > experience_needed:
@@ -98,11 +100,12 @@ def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp, xp
                                         exp = exp + current_xp - experience_needed
                                         current_xp = 0
                                         experience_needed = int(find_experience_for_level(growth_rate, current_level, level_cap))  # MODIFIED: Recalculate needed XP
-                                        msg += f"XP increased for {pokemon['name']} with {pokemon['level']} {pokemon['stats']['xp']}"
+                                        msg += f"XP increased for {pokemon['name']} with {pokemon['level']} {pokemon.get('xp', 0)}"
                                     else:
                                         break    
                                 pokemon['level'] = current_level
-                                pokemon['stats']['xp'] = 0 if exp < 0 else exp
+                                #pokemon['stats']['xp'] = 0 if exp < 0 else exp
+                                pokemon['xp'] = 0 if exp < 0 else exp
                                 evo_id = check_evolution_for_pokemon(
                                     pokemon['individual_id'],
                                     pokemon['id'],
