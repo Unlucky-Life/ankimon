@@ -1,4 +1,4 @@
-from ..resources import mypokemon_path, frontdefault, user_path_sprites, frontdefault
+from ..resources import mypokemon_path, frontdefault, user_path_sprites
 from ..gui_entities import MovieSplashLabel
 from ..functions.pokedex_functions import search_pokeapi_db_by_id, get_pokemon_diff_lang_name
 import json
@@ -7,30 +7,32 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from ..gui_classes.pokemon_details import PokemonCollectionDetails
 from aqt import mw
-from aqt.utils import showInfo
+from aqt.utils import showInfo, showWarning
 from ..functions.sprite_functions import get_sprite_path
+
+class ClickableWidget(QWidget):
+    clicked = pyqtSignal()
+
+    def mousePressEvent(self, event):
+        self.clicked.emit()
 
 class PokemonCollectionDialog(QDialog):
     def __init__(self, logger, settings_obj, mainpokemon_function, main_pokemon, parent=mw):
         super().__init__(parent)
 
-        #logger and settings object
+        # Logger and settings object
         self.logger = logger
         self.settings = settings_obj
         self.language = int(self.settings.get("misc.language", 11))
         self.remove_levelcap = settings_obj.get("remove_levelcap", False)
         self.main_pokemon_function_callback = mainpokemon_function
         self.main_pokemon = main_pokemon
-        #mypokemon file path
         self.mypokemon_path = mypokemon_path
-
         self.gif_in_collection = self.settings.get("gui.gif_in_collection", 11)
 
-        #paginator variables
+        # Paginator variables
         self.current_page = 0
-        self.items_per_page = 9  # Display 9 Pokémon per page
-
-        # Initialize the Pokémon list as an empty list
+        self.items_per_page = 9
         self.pokemon_list = []
 
         self.setWindowTitle("Captured Pokemon")
@@ -38,14 +40,13 @@ class PokemonCollectionDialog(QDialog):
         self.setMinimumHeight(400)
         self.layout = QVBoxLayout(self)
 
-        #add Widget to sort by ID
+        # Add Widget to sort by ID
         self.sort_checkbox = QCheckBox("Sort by ID")
         self.sort_checkbox.stateChanged.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
 
         # Search Filter
         self.search_edit = QLineEdit()
         self.search_edit.setPlaceholderText("Search Pokémon (by nickname, name)")
-        #self.search_edit.textChanged.connect(self.filter_pokemon)
         self.search_button = QPushButton("Search")
         self.search_button.clicked.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
 
@@ -55,13 +56,13 @@ class PokemonCollectionDialog(QDialog):
         self.generation_combo.addItems(["Generation 1", "Generation 2", "Generation 3", "Generation 4", "Generation 5", "Generation 6", "Generation 7", "Generation 8"])
         self.generation_combo.currentIndexChanged.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
 
-        # Add dropdown menu for generation filtering
+        # Add dropdown menu for type filtering
         self.type_combo = QComboBox()
         self.type_combo.addItem("All")
         self.type_combo.addItems(["Normal", "Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"])
         self.type_combo.currentIndexChanged.connect(lambda: self.sort_pokemon() if self.sort_checkbox.isChecked() else self.filter_pokemon())
 
-        # Add widgets to layout
+        # Add widgets to filter layout
         filter_layout = QHBoxLayout()
         filter_layout.addWidget(self.search_edit)
         filter_layout.addWidget(self.search_button)
@@ -70,22 +71,44 @@ class PokemonCollectionDialog(QDialog):
         filter_layout.addWidget(self.sort_checkbox)
         self.layout.addLayout(filter_layout)
 
+        # Content layout for grid and details
+        self.content_layout = QHBoxLayout()
+
+        # Scroll area for Pokémon grid
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-
         self.container = QWidget()
         self.scroll_layout = QGridLayout(self.container)
+        self.scroll_area.setWidget(self.container)
+        self.content_layout.addWidget(self.scroll_area, stretch=3)
 
+        # Details scroll area
+        self.details_scroll = QScrollArea()
+        self.details_scroll.setWidgetResizable(True)
+        self.details_scroll.setMinimumWidth(500)
+        self.default_widget = QWidget()
+        self.default_layout = QVBoxLayout(self.default_widget)
+        self.default_label = QLabel("Select a Pokémon to view details")
+        self.default_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.default_layout.addWidget(self.default_label)
+        self.details_scroll.setWidget(self.default_widget)
+        self.content_layout.addWidget(self.details_scroll, stretch=1)
+
+        # Add content layout to main layout
+        self.layout.addLayout(self.content_layout)
+
+        # Paginator
         self.paginator = QWidget()
-        self.pagination_layout = QHBoxLayout(self.paginator) #generate paginationlayout to delete later
+        self.pagination_layout = QHBoxLayout(self.paginator)
+        self.layout.addWidget(self.paginator)
+
+        # Track selected container
+        self.selected_container = None
 
     def showEvent(self, event):
-        # Call refresh_pokemon_collection when the dialog is shown
-        self.refresh_pokemon_collection()
-        self.refresh_paginator_layout()
-        self.current_page=0
+        self.current_page = 0
         pokemon_list = self.load_pokemon_data()
-        self.setup_ui(pokemon_list)
+        self.refresh_collection(pokemon_list)
 
     def load_pokemon_data(self):
         """Reads the mypokemon.json file and loads Pokémon data into self.pokemon_list."""
@@ -94,9 +117,9 @@ class PokemonCollectionDialog(QDialog):
                 self.pokemon_list = json.load(file)
                 return self.pokemon_list
         except FileNotFoundError:
-            self.logger.log("error","mypokemon.json file not found.")
+            self.logger.log("error", "mypokemon.json file not found.")
         except json.JSONDecodeError:
-            self.logger.log("error","mypokemon.json file not found.")
+            self.logger.log("error", "mypokemon.json file not found.")
 
     def refresh_pokemon_collection(self):
         """Clear all items from the scroll layout that display Pokémon."""
@@ -111,57 +134,52 @@ class PokemonCollectionDialog(QDialog):
             item = self.pagination_layout.takeAt(0)
             if widget := item.widget():
                 widget.deleteLater()
-
-    def move_paginator_to_bottom(self):
-        # Temporary list to store all widgets except the paginator
-        widgets = []
-        
-        # Loop through the layout to collect all widgets
-        for i in reversed(range(self.layout.count())):
-            item = self.layout.itemAt(i)
-            if item.layout() == self.paginator_layout:
-                # Remove the paginator layout
-                self.layout.takeAt(i)
-            else:
-                # Save the widget or layout for re-adding
-                widgets.append(self.layout.takeAt(i))
-        
-        # Add back all other widgets in the correct order
-        for widget in reversed(widgets):
-            if widget.widget():
-                self.layout.addWidget(widget.widget())
-            elif widget.layout():
-                self.layout.addLayout(widget.layout())
-        
-        # Add the paginator layout at the bottom
-        self.layout.addLayout(self.paginator_layout)
-
-    def refresh_collection(self, pokemon_list=[]):
-        if not pokemon_list:  # If pokemon_list is empty or None
+                
+    def _make_default_widget(self) -> QWidget:
+        """Return a new ‘nothing-selected’ placeholder widget."""
+        w = QWidget()
+        lay = QVBoxLayout(w)
+        lbl = QLabel("Select a Pokémon to view details")
+        lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lay.addWidget(lbl)
+        return w
+    
+    def refresh_collection(self, pokemon_list=None):
+        """
+        Clear the grid + paginator and rebuild them.
+        A *new* placeholder widget is created every time to avoid using
+        a QWidget that Qt has already deleted.
+        """
+        if pokemon_list is None:
             pokemon_list = self.pokemon_list
-        """Refresh the Pokémon collection and pagination layout."""
-        # Clear existing Pokémon and paginator
+
+        # wipe the old grid and paginator
         self.refresh_pokemon_collection()
         self.refresh_paginator_layout()
 
-        # Reload Pokémon data and setup the UI
-        self.load_pokemon_data()
-        self.setup_ui(pokemon_list)
+        # reset selection border
+        if self.selected_container:
+            self.selected_container.setStyleSheet("")
+            self.selected_container = None
 
+        # --- create a brand-new placeholder and show it ----------------
+        self.default_widget = self._make_default_widget()
+        self.details_scroll.setWidget(self.default_widget)
+
+        # rebuild the grid and paginator
+        self.setup_ui(pokemon_list)
+        
     def setup_ui(self, pokemon_list=[]):
         try:
-            # Calculate pagination
             start_index = self.current_page * self.items_per_page
             end_index = start_index + self.items_per_page
             paginated_pokemon = pokemon_list[start_index:end_index]
 
             row, column = 0, 0
             for pokemon in paginated_pokemon:
-                # Extract Pokemon data (same as your existing logic)
                 pokemon_id = pokemon['id']
                 pokemon_name = pokemon['name']
                 pokemon_shiny = pokemon.get("shiny", False)
-                # Ensure nickname is always a string, even if None
                 pokemon_nickname = pokemon.get('nickname') or ''
                 if pokemon_shiny:
                     pokemon_nickname += " ⭐ "
@@ -170,7 +188,6 @@ class PokemonCollectionDialog(QDialog):
                 pokemon_ability = pokemon['ability']
                 pokemon_type = pokemon['type']
                 pokemon_stats = pokemon['stats']
-                pokemon_hp = pokemon_stats["hp"]
                 if pokemon_shiny:
                     pokemon_name += " ⭐ "
                 pkmn_image_path = get_sprite_path(
@@ -183,9 +200,13 @@ class PokemonCollectionDialog(QDialog):
 
                 if self.gif_in_collection:
                     splash_label = MovieSplashLabel(pkmn_image_path)
-
-                pixmap = QPixmap(pkmn_image_path)
-                pixmap = self.adjust_pixmap_size(pixmap, max_width=300, max_height=230)
+                    splash_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                else:
+                    pixmap = QPixmap(pkmn_image_path)
+                    pixmap = self.adjust_pixmap_size(pixmap, max_width=300, max_height=230)
+                    image_label = QLabel()
+                    image_label.setPixmap(pixmap)
+                    image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
                 name_label = self.create_label(
                     pokemon_nickname or f"{pokemon_name.capitalize()} {self.get_gender_symbol(pokemon_gender)}", 12
@@ -194,17 +215,11 @@ class PokemonCollectionDialog(QDialog):
                 type_label = self.create_label("Type: " + " ".join([t.capitalize() for t in pokemon_type]), 8)
                 ability_label = self.create_label(f"Ability: {pokemon_ability.capitalize()}", 8)
 
-                image_label = QLabel()
-                image_label.setPixmap(pixmap)
-                image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-                pokemon_button = self.create_button("Show me Details", pokemon, "Show Details")
                 choose_pokemon_button = self.create_button("Pick as main Pokemon", pokemon, "Pick As Main")
 
                 container_layout = QVBoxLayout()
                 if self.gif_in_collection:
                     container_layout.addWidget(splash_label)
-                    splash_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 else:
                     container_layout.addWidget(image_label)
 
@@ -212,11 +227,11 @@ class PokemonCollectionDialog(QDialog):
                 container_layout.addWidget(level_label)
                 container_layout.addWidget(type_label)
                 container_layout.addWidget(ability_label)
-                container_layout.addWidget(pokemon_button)
                 container_layout.addWidget(choose_pokemon_button)
 
-                pokemon_container = QWidget()
+                pokemon_container = ClickableWidget()
                 pokemon_container.setLayout(container_layout)
+                pokemon_container.clicked.connect(lambda p=pokemon, c=pokemon_container: self.show_pokemon_details_on_panel(p, c))
 
                 self.scroll_layout.addWidget(pokemon_container, row, column)
                 column += 1
@@ -224,27 +239,51 @@ class PokemonCollectionDialog(QDialog):
                     column = 0
                     row += 1
 
-            self.container.setLayout(self.scroll_layout)
-            self.scroll_area.setWidget(self.container)
-            # Add pagination controls (at the bottom)
             self.add_pagination_controls(pokemon_list)
-            # Add Pokémon grid to the main layout
-            self.layout.addWidget(self.scroll_area)
-            self.layout.addWidget(self.paginator)
 
-            self.setLayout(self.layout)
         except FileNotFoundError:
             self.layout.addWidget(QLabel(f"Can't open the Saving File. {mypokemon_path}"))
+
+    def show_pokemon_details_on_panel(self, pokemon, container):
+        if self.selected_container:
+            self.selected_container.setStyleSheet("")
+        self.selected_container = container
+        self.selected_container.setStyleSheet("border: 3px solid #00BFFF; background-color: rgba(0, 191, 255, 0.1);")
+
+        details_widget = PokemonCollectionDetails(
+            name=pokemon['name'],
+            level=pokemon['level'],
+            id=pokemon['id'],
+            shiny=pokemon.get("shiny", False),
+            ability=pokemon['ability'],
+            type=pokemon['type'],
+            detail_stats=pokemon['stats'],
+            attacks=pokemon['attacks'],
+            base_experience=pokemon.get('base_experience', 'Unknown'),
+            growth_rate=pokemon.get('growth_rate', 'Unknown'),
+            ev=pokemon.get('ev', {}),
+            iv=pokemon.get('iv', {}),
+            gender=pokemon['gender'],
+            nickname=pokemon.get('nickname', 'None'),
+            individual_id=pokemon.get('individual_id', 'Unknown'),
+            pokemon_defeated=pokemon.get('pokemon_defeated', 0),
+            everstone=pokemon.get('everstone', False),
+            captured_date=pokemon.get('captured_date', 'Missing'),
+            language=self.language,
+            gif_in_collection=self.gif_in_collection,
+            remove_levelcap=self.remove_levelcap,
+            logger=self.logger,
+            refresh_callback=self.refresh_collection,
+        )
+        self.details_scroll.setWidget(details_widget)
 
     def adjust_pixmap_size(self, pixmap, max_width, max_height):
         original_width = pixmap.width()
         original_height = pixmap.height()
-
         if original_width > max_width:
             new_width = max_width
             new_height = (original_height * max_width) // original_width
             pixmap = pixmap.scaled(new_width, new_height)
-
         return pixmap
 
     def create_label(self, text, font_size):
@@ -257,53 +296,17 @@ class PokemonCollectionDialog(QDialog):
 
     def create_button(self, text, pokemon_data, button_type):
         pkmn_image_path = frontdefault / f"{pokemon_data['id']}.png"
-        
-        # Ensure the image path exists, else fallback
         if not pkmn_image_path.exists():
             pkmn_image_path = frontdefault / "placeholder.png"
-
         button = QPushButton(text)
-
-        # Set button action
-        if button_type == "Show Details":
-            button.clicked.connect(lambda state: self.show_pokemon_details(pokemon_data))
-        elif button_type == "Pick As Main":
+        if button_type == "Pick As Main":
             pixmap = QPixmap(str(pkmn_image_path))
             if not pixmap.isNull():
                 button.setIcon(QIcon(pixmap))
-                # Set a smaller custom size for the icon (e.g., 32x32 pixels)
-                small_icon_size = QSize(32, 32)  # Change 32 to your preferred size
+                small_icon_size = QSize(32, 32)
                 button.setIconSize(small_icon_size)
             button.clicked.connect(lambda state: self.main_pokemon_function_callback(pokemon_data))
-        
         return button
-
-    def show_pokemon_details(self, pokemon, **kwargs):
-        PokemonCollectionDetails(
-            name=pokemon['name'],
-            level=pokemon['level'],
-            id=pokemon['id'],
-            shiny=pokemon.get("shiny", False),
-            ability=pokemon['ability'],
-            type=pokemon['type'],
-            detail_stats=pokemon['stats'],
-            attacks=pokemon['attacks'],
-            base_experience=pokemon['base_experience'],
-            growth_rate=pokemon['growth_rate'],
-            ev=pokemon['ev'],
-            iv=pokemon['iv'],
-            gender=pokemon['gender'],
-            nickname=pokemon.get('nickname'),
-            individual_id=pokemon.get('individual_id'),
-            pokemon_defeated=pokemon.get('pokemon_defeated', 0),
-            everstone=pokemon.get('everstone', False),
-            captured_date=pokemon.get('captured_date', 'Missing'),
-            language=self.language,
-            gif_in_collection=self.gif_in_collection,
-            remove_levelcap=self.remove_levelcap,
-            logger=self.logger,
-            refresh_callback=self.refresh_collection,
-        )
 
     def get_gender_symbol(self, gender):
         if gender == "M":
@@ -312,7 +315,7 @@ class PokemonCollectionDialog(QDialog):
             return "♀"
         else:
             return ""
-        
+
     def filter_pokemon(self):
         filtered_pokemon = []
         pokemon_list = self.pokemon_list
@@ -321,8 +324,7 @@ class PokemonCollectionDialog(QDialog):
             type_text = self.type_combo.currentText()
             search_text = self.search_edit.text().lower()
             generation_index = self.generation_combo.currentIndex()
-            
-            try:                  
+            try:
                 if pokemon_list:
                     for position, pokemon in enumerate(pokemon_list):
                         pokemon_id = pokemon['id']
@@ -333,11 +335,9 @@ class PokemonCollectionDialog(QDialog):
                         if pokemon.get("shiny", False):
                             pokemon_nickname += " (shiny) "
                         pokemon_type = pokemon.get("type", " ")
-                        
-                        # Check if the Pokémon matches the search text and generation filter
                         if (
-                            search_text.lower() in pokemon_name.lower() or 
-                            (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower())
+                            (search_text.lower() in pokemon_name.lower() or 
+                            (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower()))
                         ) and \
                         0 <= generation_index <= 8 and \
                         (
@@ -358,12 +358,12 @@ class PokemonCollectionDialog(QDialog):
                     self.refresh_collection(filtered_pokemon)
                     if not filtered_pokemon:
                         showInfo("No Pokemon for the desired filter options!")
-                    self.current_page=0
+                    self.current_page = 0
             except FileNotFoundError:
                 self.layout.addWidget(QLabel(f"Can't open the Saving File. {mypokemon_path}"))
         else:
             self.sort_pokemon()
-    
+
     def sort_pokemon(self):
         filtered_pokemon = []
         pokemon_list = self.pokemon_list
@@ -372,10 +372,6 @@ class PokemonCollectionDialog(QDialog):
         type_index = self.type_combo.currentIndex()
         type_text = self.type_combo.currentText()
         sorted_pokemon_list = sorted(pokemon_list, key=lambda x: x['id'])
-        for i in reversed(range(self.scroll_layout.count())):
-            widget = self.scroll_layout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
         try:
             if sorted_pokemon_list:
                 for position, pokemon in enumerate(sorted_pokemon_list):
@@ -387,10 +383,9 @@ class PokemonCollectionDialog(QDialog):
                     if pokemon.get("shiny", False):
                         pokemon_nickname += " (shiny) "
                     pokemon_type = pokemon.get("type", " ")
-                    # Check if the Pokémon matches the search text and generation filter
                     if (
-                        search_text.lower() in pokemon_name.lower() or 
-                        (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower())
+                        (search_text.lower() in pokemon_name.lower() or 
+                        (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower()))
                     ) and \
                     0 <= generation_index <= 8 and \
                     (
@@ -407,31 +402,26 @@ class PokemonCollectionDialog(QDialog):
                     (
                         type_index == 0 or type_text in pokemon_type
                     ):
-
                         filtered_pokemon.append(pokemon)
                 self.refresh_collection(filtered_pokemon)
                 if not filtered_pokemon:
                     showInfo("No Pokemon for the desired filter options!")
-                self.current_page=0
+                self.current_page = 0
         except FileNotFoundError:
             self.layout.addWidget(QLabel(f"Can't open the Saving File. {mypokemon_path}"))
-        
 
     def add_pagination_controls(self, pokemon_list=[]):
         self.pagination_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
         total_pages = (len(pokemon_list) + self.items_per_page - 1) // self.items_per_page
-
         if self.current_page > 0:
             prev_button = QPushButton("Previous")
-            prev_button.clicked.connect(lambda: self.previous_page(pokemon_list))  # Passing pokemon_list to previous_page
+            prev_button.clicked.connect(lambda: self.previous_page(pokemon_list))
             self.pagination_layout.addWidget(prev_button)
-
         if self.current_page < total_pages - 1:
             next_button = QPushButton("Next")
-            next_button.clicked.connect(lambda: self.next_page(pokemon_list))  # Passing pokemon_list to next_page
+            next_button.clicked.connect(lambda: self.next_page(pokemon_list))
             self.pagination_layout.addWidget(next_button)
-    
+
     def next_page(self, pokemon_list):
         self.current_page += 1
         self.refresh_collection(pokemon_list)
@@ -439,7 +429,6 @@ class PokemonCollectionDialog(QDialog):
     def previous_page(self, pokemon_list):
         self.current_page -= 1
         self.refresh_collection(pokemon_list)
-
 
 from aqt.utils import showWarning
 from ..resources import mainpokemon_path
