@@ -715,6 +715,7 @@ def on_review_card(*args):
                         reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
                         msg += translator.translate("dmg_dealt", dmg=dmg_from_enemy_move, pokemon_name=main_pokemon.name.capitalize())
                         msg += "\n"
+                        tooltipWithColour(f" -{dmg_from_enemy_move} HP ", "#F06060", x=-200)
                         if multiplier < 1:
                             play_effect_sound("HurtNormal")
                         else:
@@ -757,6 +758,7 @@ def on_review_card(*args):
                     
                     if dmg_from_user_move > 0:
                         reviewer_obj.seconds = int(settings_obj.compute_special_variable("animate_time"))
+                        tooltipWithColour(f" -{dmg_from_user_move} HP ", "#F06060", x=200)
                         if multiplier == 1:
                             play_effect_sound("HurtNormal")
                         elif multiplier < 1:
