@@ -8,6 +8,7 @@
   "targets": [
     "anki21"
   ],
+  "version": "1.3955",
   "min_point_version": "2.1.66",
   "max_tested_anki_version": "23.10.12",
   "ankiweb_conflicts_with_local": false
