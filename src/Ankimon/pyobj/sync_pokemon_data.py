@@ -72,9 +72,7 @@ class CheckPokemonData(QDialog):
         try:
             for pokelist in [
                 self.pokemon_collection_sync_data,
-                self.pokemon_collection_web_data,
                 self.mainpokemon_sync_data,
-                self.mainpokemon_web_data,
             ]:
                 for p in pokelist:
                     if not isinstance(p.get("evos"), list):
