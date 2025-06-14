@@ -80,41 +80,41 @@ def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp, xp
                             #logger.log_and_showinfo("info", "Pokémon found for XP share")
                             # Initialize the message string
                             # Increase the xp of the matched Pokémon
-                            try:
-                                current_level = int(pokemon['level'])  # MODIFIED: Use local variable for level
-                                current_xp = int(pokemon['stats']['xp'])  # MODIFIED: Use local variable for XP
-                                growth_rate = pokemon['growth_rate']  # MODIFIED: Use local variable for growth rate
-                                experience_needed = int(find_experience_for_level(growth_rate, current_level, level_cap))  # MODIFIED: Pre-calculate needed XP
-                                evo_id = None # Initialize variable
+                            current_level = int(pokemon['level'])  # MODIFIED: Use local variable for level
+                            #current_xp = int(pokemon['stats']['xp'])  # MODIFIED: Use local variable for XP
+                            current_xp = pokemon.get("xp") or pokemon["stats"].get("xp", 0)
+                            growth_rate = pokemon['growth_rate']  # MODIFIED: Use local variable for growth rate
+                            experience_needed = int(find_experience_for_level(growth_rate, current_level, level_cap))  # MODIFIED: Pre-calculate needed XP
+                            evo_id = None # Initialize variable
 
-                                logger.log("info", "Running XP share function")
-                                if experience_needed > exp + current_xp:
-                                    pokemon['stats']['xp'] += exp
-                                    
-                                else:
-                                    while exp + current_xp > experience_needed:
-                                        if (not level_cap or current_level < 100):  
-                                            experience = int(find_experience_for_level(pokemon['growth_rate'], pokemon['level'], level_cap))
-                                            current_level += 1
-                                            exp = exp + current_xp - experience_needed
-                                            current_xp = 0
-                                            experience_needed = int(find_experience_for_level(growth_rate, current_level, level_cap))  # MODIFIED: Recalculate needed XP
-                                            msg += f"XP increased for {pokemon['name']} with {pokemon['level']} {pokemon['stats']['xp']}"
-                                        else:
-                                            break    
-                                    pokemon['level'] = current_level
-                                    pokemon['stats']['xp'] = 0 if exp < 0 else exp
-                                    evo_id = check_evolution_for_pokemon(
-                                        pokemon['individual_id'],
-                                        pokemon['id'],
-                                        pokemon['level'],
-                                        evo_window,
-                                        pokemon['everstone']
-                                    )
-                                if evo_id is not None:
-                                    msg += f"{pokemon['name']} is about to evolve to {return_name_for_id(evo_id).capitalize()} at level {pokemon['level']}"
-                            except Exception as e:
-                                logger.log_and_showinfo("error", f"Error during XP share function: {e}")
+                            logger.log("info", "Running XP share function")
+                            if experience_needed > exp + current_xp:
+                                #pokemon['stats']['xp'] += exp
+                                pokemon["xp"] = current_xp + exp
+                                
+                            else:
+                                while exp + current_xp > experience_needed:
+                                    if (not level_cap or current_level < 100):  
+                                        experience = int(find_experience_for_level(pokemon['growth_rate'], pokemon['level'], level_cap))
+                                        current_level += 1
+                                        exp = exp + current_xp - experience_needed
+                                        current_xp = 0
+                                        experience_needed = int(find_experience_for_level(growth_rate, current_level, level_cap))  # MODIFIED: Recalculate needed XP
+                                        msg += f"XP increased for {pokemon['name']} with {pokemon['level']} {pokemon.get('xp', 0)}"
+                                    else:
+                                        break    
+                                pokemon['level'] = current_level
+                                #pokemon['stats']['xp'] = 0 if exp < 0 else exp
+                                pokemon['xp'] = 0 if exp < 0 else exp
+                                evo_id = check_evolution_for_pokemon(
+                                    pokemon['individual_id'],
+                                    pokemon['id'],
+                                    pokemon['level'],
+                                    evo_window,
+                                    pokemon['everstone']
+                                )
+                            if evo_id is not None:
+                                msg += f"{pokemon['name']} is about to evolve to {return_name_for_id(evo_id).capitalize()} at level {pokemon['level']}"
 
                 # Write the updated Pokémon data back to the file
                 with open(mypokemon_path, "w", encoding="utf-8") as json_file:
