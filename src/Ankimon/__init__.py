@@ -128,6 +128,9 @@ from .singletons import (
     achievements,
 )
 
+from .pyobj.error_handler import show_warning_with_traceback
+from .functions.drawing_utils import draw_gender_symbols, draw_stat_boosts
+
 # Load move and pokemon name mapping at startup
 with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
     POKEMON_NAME_LOOKUP = json.load(f)
@@ -184,7 +187,7 @@ get web exports ready for special reviewer look
 
 
 # Set up web exports for static files
-# mw.addonManager.setWebExports(__name__, r"user_files/.*\.(css|js|jpg|gif|html|ttf|png|mp3)")
+mw.addonManager.setWebExports(__name__, r"user_files/.*\.(css|js|jpg|gif|html|ttf|png|mp3)")
 
 def on_webview_will_set_content(web_content: WebContent, context) -> None:
     ankimon_package = mw.addonManager.addonFromModule(__name__)
