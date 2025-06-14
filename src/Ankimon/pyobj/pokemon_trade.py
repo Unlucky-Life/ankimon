@@ -143,7 +143,8 @@ class PokemonTrade:
             "individual_id": str(uuid.uuid4())
         }
 
-        new_pokemon["stats"]["xp"] = 0
+        #new_pokemon["stats"]["xp"] = 0
+        new_pokemon["xp"] = 0
 
         self.replace_pokemon(new_pokemon)
 
