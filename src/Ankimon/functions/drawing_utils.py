@@ -1,10 +1,62 @@
 from typing import Optional
 
-from aqt.qt import QPainter
-from PyQt6.QtGui import QColor, QFont
-from PyQt6.QtCore import Qt, QRect, QPoint, QSize
+from aqt.qt import QPainter, QLabel, Qt
+from PyQt6.QtGui import QColor, QFont, QColor, QPalette
+from PyQt6.QtCore import Qt, QRect, QPoint, QSize, QPoint, QTimer
+from PyQt6.QtWidgets import QApplication, QLabel, QFrame
 
 from ..pyobj.pokemon_obj import PokemonObject
+from ..config_var import reviewer_text_message_box
+from ..pyobj.InfoLogger import ShowInfoLogger
+from ..pyobj.settings import Settings
+
+def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, height=0, centered=False):
+    period = int(Settings().get("gui.reviewer_text_message_box_time", 3) * 1000) #time for pop up message
+    class CustomLabel(QLabel):
+        def mousePressEvent(self, evt):
+            evt.accept()
+            self.hide()
+    aw = parent or QApplication.activeWindow()
+    if aw is None:
+        return
+    
+    if color == "#6A4DAC":
+        y_offset = 40
+    elif color == "#F7DC6F":
+        y_offset = -40
+    elif color == "#F0B27A":
+        y_offset = -40
+    elif color == "#D2B4DE":
+        y_offset = -40
+    else:
+        y_offset = 0
+
+    if reviewer_text_message_box != False:
+        x = aw.mapToGlobal(QPoint(x + round(aw.width() / 2), 0)).x()
+        y = aw.mapToGlobal(QPoint(0, aw.height() - (180 + y_offset))).y()
+        lab = CustomLabel(aw)
+        lab.setFrameShape(QFrame.Shape.StyledPanel)
+        lab.setLineWidth(2)
+        lab.setWindowFlags(Qt.WindowType.ToolTip)
+        lab.setText(msg)
+        lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
+        
+        if width > 0:
+            lab.setFixedWidth(width)
+        if height > 0:
+            lab.setFixedHeight(height)
+        
+        p = QPalette()
+        p.setColor(QPalette.ColorRole.Window, QColor(color))
+        p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
+        lab.setPalette(p)
+        lab.show()
+        lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))    
+        try:
+            QTimer.singleShot(period, lambda: lab.hide())
+        except:
+            QTimer.singleShot(3000, lambda: lab.hide())
+        ShowInfoLogger().log_and_showinfo("game", msg)
 
 def draw_gender_symbols(
     main_pokemon: PokemonObject,
