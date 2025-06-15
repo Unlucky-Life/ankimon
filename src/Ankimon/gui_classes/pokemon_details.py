@@ -394,14 +394,16 @@ def attack_details_window(attacks):
     html_content = attack_details_window_template
     # Loop through the list of attacks and add them to the HTML content
     for attack in attacks:
-        move = find_details_move(attack)
+        move = find_details_move(format_move_name(attack))
         if move is None:
             attack = attack.replace(" ", "")
             try:
-                move = find_details_move(attack)
+                move = find_details_move(format_move_name(attack))
             except:
                 logger.log_and_showinfo("info",f"Can't find the attack {attack} in the database.")
                 move = find_details_move("tackle")
+        if move is None:
+            continue
         html_content += f"""
         <tr>
           <td class="move-name">{move['name']}</td>
@@ -518,7 +520,9 @@ def forget_attack_details_window(id: int, attack_set: list[str], logger: "InfoLo
     html_content = remember_attack_details_window_template
     # Loop through the list of attacks and add them to the HTML content
     for attack in attack_set:
-        move = find_details_move(attack)
+        move = find_details_move(format_move_name(attack))
+        if move is None:
+            continue
 
         html_content += f"""
         <tr>
