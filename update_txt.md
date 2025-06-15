@@ -1,3 +1,6 @@
+![GIF](https://c.tenor.com/ByVXH9V1VRIAAAAd/tenor.gif)
+
+
 ## Ankimon News:
 
 ## Update Notification
