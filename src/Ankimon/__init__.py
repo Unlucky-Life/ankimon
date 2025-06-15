@@ -512,7 +512,7 @@ cry_counter = 0
 
 def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpokemon_name):
     global battle_status
-    move = find_details_move(move_name)
+    move = find_details_move(format_move_name(move_name))
     target = move.get("target")
     boosts = move.get("boosts", {})
     stat_boost_value = {
@@ -608,7 +608,10 @@ def on_review_card(*args):
             if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:               
                
                 enemy_attack = random.choice(enemy_pokemon.attacks) # triggered IF enemy will attack                                  
-                enemy_move = find_details_move(enemy_attack)
+                enemy_move = find_details_move(format_move_name(enemy_attack))
+                if enemy_move is None:
+                    logger.log_and_showinfo("info", f"Could not find : {enemy_attack} when formatted to {format_move_name(enemy_attack)}")
+                    enemy_attack = "splash"
                 enemy_move_category = enemy_move.get("category")
              
                 if enemy_move_category == "Status":
@@ -624,10 +627,10 @@ def on_review_card(*args):
             try:
                 enemy_move
             except:
-                enemy_move = find_details_move(enemy_attack)
+                enemy_move = find_details_move(format_move_name(enemy_attack))
                 enemy_move_category = enemy_move.get("category")
 
-            move = find_details_move(user_attack)
+            move = find_details_move(format_move_name(user_attack))
             category = move.get("category")
             
             if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
