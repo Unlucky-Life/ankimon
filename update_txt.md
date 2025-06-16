@@ -9,7 +9,7 @@ Although you'll still be in the server, I'll miss your calming presence in the l
 
 I wish you nothing but success going forward! You are going to be an amazing physician, Doc. Please keep us updated and pop in from time to time. Best of luck on your specialization exams and the start of your work. I'll always be rooting you on!
 
-Your Ankimon buddy,  
+Your Ankimon buddy,,  
 vi :))
 
 PS: DOC SO GOATED HE SAVED THE ENTIRE WORLD WITH HIS AMAZING PRESENCE AND FRIENDSHIPS  
