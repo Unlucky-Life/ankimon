@@ -608,10 +608,10 @@ def on_review_card(*args):
             if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:               
                
                 enemy_attack = random.choice(enemy_pokemon.attacks) # triggered IF enemy will attack                                  
-                enemy_move = find_details_move(format_move_name(enemy_attack))
+                enemy_move = find_details_move(enemy_attack) or find_details_move(format_move_name(enemy_attack))
                 if enemy_move is None:
-                    logger.log_and_showinfo("info", f"Could not find : {enemy_attack} when formatted to {format_move_name(enemy_attack)}")
-                    enemy_attack = "splash"
+                    #logger.log_and_showinfo("info", f"Could not find : {enemy_attack} when formatted to {format_move_name(enemy_attack)}")
+                    enemy_move = find_details_move(format_move_name("splash"))
                 enemy_move_category = enemy_move.get("category")
              
                 if enemy_move_category == "Status":
