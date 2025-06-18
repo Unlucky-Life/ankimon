@@ -126,6 +126,7 @@ from .singletons import (
     version_dialog,
     pokecollection_win,
     achievements,
+    pokemon_pc
 )
 
 from .pyobj.error_handler import show_warning_with_traceback
@@ -869,7 +870,8 @@ create_menu_actions(
     open_leaderboard_url,
     settings_obj,
     addon_dir,          
-    data_handler_obj    
+    data_handler_obj,
+    pokemon_pc,
 )
 
     #https://goo.gl/uhAxsg
