@@ -59,7 +59,8 @@ def create_menu_actions(
     open_leaderboard_url,
     settings_obj,
     addon_dir,           
-    data_handler_obj     
+    data_handler_obj,
+    pokemon_pc
 ):
     actions = []
 
@@ -69,6 +70,12 @@ def create_menu_actions(
         pokecol_action.setMenuRole(QAction.MenuRole.NoRole)
         collection_menu.addAction(pokecol_action)
         qconnect(pokecol_action.triggered, pokecollection_win.show)
+
+        # Pokémon PC
+        pokemon_pc_action = QAction("Pokémon PC", mw)
+        pokemon_pc_action.setMenuRole(QAction.MenuRole.NoRole)
+        collection_menu.addAction(pokemon_pc_action)
+        qconnect(pokemon_pc_action.triggered, pokemon_pc.show)
 
         # Ankimon Window
         ankimon_window_action = QAction(mw.translator.translate("open_ankimon_window_button"), mw)
