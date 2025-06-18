@@ -2,6 +2,7 @@ import uuid
 import json
 import os
 
+from ..poke_engine.helpers import normalize_name
 from ..poke_engine.objects import Pokemon
 from ..resources import pkmnimgfolder
 
@@ -236,7 +237,6 @@ class PokemonObject:
                 return default_path
     
     def to_engine_format(self):
-        from ..poke_engine.helpers import normalize_name
         return {
             'identifier': normalize_name(self.name),
             'level': self.level,
@@ -252,7 +252,7 @@ class PokemonObject:
             'types': [normalize_name(t) for t in self.type],
             'hp': self.hp,
             'maxhp': self.max_hp,
-            'ability': normalize_name(self.ability[0]) if self.ability else 'none',
+            'ability': normalize_name(self.ability) if self.ability else 'none',
             'item': None,
             'attack': self.stats.get('atk', 0),
             'defense': self.stats.get('def', 0),
