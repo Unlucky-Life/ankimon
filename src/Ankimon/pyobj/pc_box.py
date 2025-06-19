@@ -24,6 +24,7 @@ from ..gui_classes.pokemon_details import PokemonCollectionDetails
 from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.settings import Settings
 from ..functions.sprite_functions import get_sprite_path
+from ..utils import load_custom_font
 from ..resources import mypokemon_path
 
 def transpose_grid_layout(grid_layout):
@@ -78,7 +79,7 @@ class PokemonPC(QDialog):
         self.current_box_idx = 0  # Index of current displayed box
         self.gif_in_collection = settings.get("gui.gif_in_collection", 11)
 
-        self.size = (450, 590)
+        self.size = (450, 610)
         self.slot_size = 75 # Side length in pixels of a PC slot
         self.main_layout = QVBoxLayout()
 
@@ -107,11 +108,15 @@ class PokemonPC(QDialog):
         next_box_button = QPushButton(f"▶")
         prev_box_button.setFixedSize(70, 50)
         next_box_button.setFixedSize(70, 50)
-        prev_box_button.setFont(QFont('Times', 25))
-        next_box_button.setFont(QFont('Times', 25))
+        prev_box_button.setFont(QFont('System', 50))
+        next_box_button.setFont(QFont('System', 50))
         prev_box_button.clicked.connect(lambda: self.looparound_go_to_box(self.current_box_idx - 1, max_box_idx))
         next_box_button.clicked.connect(lambda: self.looparound_go_to_box(self.current_box_idx + 1, max_box_idx))
         curr_box_label = QLabel(f"Box {self.current_box_idx + 1}")
+        curr_box_label.setFixedSize(150, 50)
+        curr_box_label.setFont(load_custom_font(20, int(self.settings.get("misc.language", 11))))
+        curr_box_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        curr_box_label.setStyleSheet("border: 1px solid gray;")
         box_selector_layout.addWidget(prev_box_button, alignment=Qt.AlignmentFlag.AlignCenter)
         box_selector_layout.addWidget(curr_box_label, alignment=Qt.AlignmentFlag.AlignCenter)
         box_selector_layout.addWidget(next_box_button, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -145,6 +150,11 @@ class PokemonPC(QDialog):
                     pokemon_button.setFixedSize(self.slot_size, self.slot_size)
                     pokemon_button.setIcon(QIcon(pkmn_image_path))
                     pokemon_button.setIconSize(QSize(self.slot_size - 10, self.slot_size - 10))
+                    pokemon_button.setStyleSheet("""
+                        QPushButton:hover {
+                            background-color: lightblue;
+                        }
+                    """)
                     pokemon_button.clicked.connect(
                         lambda checked, pb=pokemon_button, pkmn=pokemon: self.show_actions_submenu(pb, pkmn)
                         )
