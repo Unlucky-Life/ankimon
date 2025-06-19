@@ -63,6 +63,7 @@ from .business import (
 )
 from .utils import (
     check_folders_exist,
+    safe_get_random_move,
     test_online_connectivity,
     read_local_file,
     read_github_file,
@@ -603,17 +604,8 @@ def on_review_card(*args):
             ankimon_tracker_obj.pokemon_encouter += 1
             multiplier = int(ankimon_tracker_obj.multiplier)
 
-            user_attack = random.choice(main_pokemon.attacks)
-
             if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:               
-               
-                for _ in range(5):  # 5 Attempts to find a move in the pokemon's moveset that can be parsed
-                    enemy_attack = random.choice(enemy_pokemon.attacks) # triggered IF enemy will attack
-                    enemy_move = find_details_move(enemy_attack) or find_details_move(format_move_name(enemy_attack))
-                    if enemy_move is not None:
-                        break
-                else:
-                    enemy_move = find_details_move(format_move_name("splash"))
+                enemy_move = safe_get_random_move(enemy_pokemon.attacks, logger=logger)
                 enemy_move_category = enemy_move.get("category")
              
                 if enemy_move_category == "Status":
@@ -625,14 +617,8 @@ def on_review_card(*args):
 
             else:
                 enemy_attack = "splash" # if enemy will NOT attack, it uses SPLASH
-            
-            try:
-                enemy_move
-            except:
-                enemy_move = find_details_move(format_move_name(enemy_attack))
-                enemy_move_category = enemy_move.get("category")
 
-            move = find_details_move(format_move_name(user_attack))
+            move = safe_get_random_move(main_pokemon.attacks, logger=logger)
             category = move.get("category")
             
             if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
