@@ -174,7 +174,7 @@ class PokemonPC(QDialog):
         self.search_edit.setPlaceholderText("Search Pokémon (by nickname, name)")
         self.search_edit.setText(prev_text)
         search_button = QPushButton("Search")
-        search_button.clicked.connect(self.refresh_gui)
+        search_button.clicked.connect(lambda: self.go_to_box(0))
         # Type filtering
         prev_idx = self.type_combo.currentIndex() if self.type_combo is not None else 0
         self.type_combo = QComboBox()
