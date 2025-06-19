@@ -208,4 +208,11 @@ pokecollection_win = PokemonCollectionDialog(
     main_pokemon=main_pokemon,
 )
 
-pokemon_pc = PokemonPC(settings=settings_obj)
+pokemon_pc = PokemonPC(
+    logger=logger,
+    translator=translator,
+    reviewer_obj=reviewer_obj,
+    test_window=test_window,
+    settings=settings_obj,
+    main_pokemon=main_pokemon,
+    )
