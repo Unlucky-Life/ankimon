@@ -84,8 +84,8 @@ class PokemonPC(QDialog):
         next_box_button.setFixedSize(70, 50)
         prev_box_button.setFont(QFont('Times', 25))
         next_box_button.setFont(QFont('Times', 25))
-        prev_box_button.clicked.connect(lambda: self.go_to_box(max(0, self.current_box_idx - 1)))
-        next_box_button.clicked.connect(lambda: self.go_to_box(min(max_box_idx, self.current_box_idx + 1)))
+        prev_box_button.clicked.connect(lambda: self.looparound_go_to_box(self.current_box_idx - 1, max_box_idx))
+        next_box_button.clicked.connect(lambda: self.looparound_go_to_box(self.current_box_idx + 1, max_box_idx))
         curr_box_label = QLabel(f"Box {self.current_box_idx + 1}")
         box_selector_layout.addWidget(prev_box_button, alignment=Qt.AlignmentFlag.AlignCenter)
         box_selector_layout.addWidget(curr_box_label, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -166,6 +166,13 @@ class PokemonPC(QDialog):
     def go_to_box(self, idx: int):
         self.current_box_idx = idx
         self.refresh_gui()
+
+    def looparound_go_to_box(self, idx: int, max_idx: int):
+        if idx < 0:
+            idx = max_idx
+        elif idx > max_idx:
+            idx = 0
+        self.go_to_box(idx)
 
     def adjust_pixmap_size(self, pixmap, max_width, max_height):
         original_width = pixmap.width()
