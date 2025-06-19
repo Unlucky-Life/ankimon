@@ -199,16 +199,15 @@ class PokemonPC(QDialog):
         return []
     
     def filter_pokemon_list(self, pokemon_list: list) -> list:
-        idx_to_remove = []
-        for i, pokemon in enumerate(pokemon_list):
+        def filtering_func(pokemon: dict) -> bool:
             if self.search_edit is not None:
                 if self.search_edit.text().lower() not in pokemon.get("name").lower():
-                    idx_to_remove.append(i)
-
+                    return False
+                
             if self.type_combo is not None:
                 if self.type_combo.currentIndex() != 0 and self.type_combo.currentText() not in pokemon.get("type", ""):
-                    idx_to_remove.append(i)
-            
+                    return False
+                
             if self.generation_combo is not None:
                 gen_idx = self.generation_combo.currentIndex()
                 if gen_idx != 0 and (
@@ -221,12 +220,9 @@ class PokemonPC(QDialog):
                     (722 <= pokemon["id"] <= 809 and gen_idx != 7) or
                     (810 <= pokemon["id"] <= 898 and gen_idx != 8)
                 ):
-                    idx_to_remove.append(i)
-        
-        # Now we create a list of Pokemon that have not been filtered out
-        result = []
-        for i, pokemon in enumerate(pokemon_list):
-            if i not in idx_to_remove:
-                result.append(pokemon)
+                    return False
+            
+            return True
 
-        return result
+        return filter(filtering_func, pokemon_list.copy())
+
