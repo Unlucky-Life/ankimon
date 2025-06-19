@@ -15,7 +15,7 @@ from aqt.qt import (
 )
 from PyQt6.QtWidgets import QLineEdit, QComboBox
 from PyQt6.QtCore import QSize
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QFont
 
 from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.settings import Settings
@@ -58,7 +58,8 @@ class PokemonPC(QDialog):
         self.current_box_idx = 0  # Index of current displayed box
         self.gif_in_collection = settings.get("gui.gif_in_collection", 11)
 
-        self.size = (800, 600)
+        self.size = (400, 570)
+        self.slot_size = 75 # Side length in pixels of a PC slot
         self.main_layout = QVBoxLayout()
 
         # These are widgets that will need to hold data through refreshes
@@ -70,8 +71,6 @@ class PokemonPC(QDialog):
 
     def create_gui(self):
         self.setWindowTitle("Axil's PC")
-        self.setMinimumWidth(750)
-        self.setMinimumHeight(400)
 
         pokemon_list = self.load_pokemon_data()
         pokemon_list = self.filter_pokemon_list(pokemon_list)  # Apply all the selected filters
@@ -81,8 +80,10 @@ class PokemonPC(QDialog):
         box_selector_layout = QHBoxLayout()
         prev_box_button = QPushButton(f"◀")
         next_box_button = QPushButton(f"▶")
-        prev_box_button.setFixedSize(50, 50)
-        next_box_button.setFixedSize(50, 50)
+        prev_box_button.setFixedSize(70, 50)
+        next_box_button.setFixedSize(70, 50)
+        prev_box_button.setFont(QFont('Times', 25))
+        next_box_button.setFont(QFont('Times', 25))
         prev_box_button.clicked.connect(lambda: self.go_to_box(max(0, self.current_box_idx - 1)))
         next_box_button.clicked.connect(lambda: self.go_to_box(min(max_box_idx, self.current_box_idx + 1)))
         curr_box_label = QLabel(f"Box {self.current_box_idx + 1}")
@@ -101,7 +102,7 @@ class PokemonPC(QDialog):
                 pokemon_idx = col * self.n_rows + row
                 if pokemon_idx >= len(pokemon_list_slice):  # This happens on the last box, where there isn't enough pokemon to fill the box
                     empty_label = QLabel()
-                    empty_label.setFixedSize(75, 75)
+                    empty_label.setFixedSize(self.slot_size, self.slot_size)
                     pokemon_grid.addWidget(empty_label, row, col, alignment=Qt.AlignmentFlag.AlignCenter)
                 else:
                     pokemon = pokemon_list_slice[pokemon_idx]
@@ -116,9 +117,9 @@ class PokemonPC(QDialog):
                     pixmap = QPixmap(pkmn_image_path)
                     pixmap = self.adjust_pixmap_size(pixmap, max_width=300, max_height=230)
                     pokemon_button = QPushButton("")
-                    pokemon_button.setFixedSize(75, 75)
+                    pokemon_button.setFixedSize(self.slot_size, self.slot_size)
                     pokemon_button.setIcon(QIcon(pkmn_image_path))
-                    pokemon_button.setIconSize(QSize(60, 60))
+                    pokemon_button.setIconSize(QSize(self.slot_size - 10, self.slot_size - 10))
                     pokemon_grid.addWidget(pokemon_button, row, col, alignment=Qt.AlignmentFlag.AlignCenter)
         pokemon_grid = transpose_grid_layout(pokemon_grid)
         self.main_layout.addLayout(pokemon_grid)
