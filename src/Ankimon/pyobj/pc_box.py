@@ -9,14 +9,18 @@ from aqt.qt import (
     QLabel,
     QPushButton,
     QGridLayout,
-    QFrame,
     QPixmap,
-    QMessageBox,
 )
-from PyQt6.QtWidgets import QLineEdit, QComboBox
+from PyQt6.QtWidgets import QLineEdit, QComboBox, QCheckBox, QMenu
 from PyQt6.QtCore import QSize
-from PyQt6.QtGui import QIcon, QFont
+from PyQt6.QtGui import QIcon, QFont, QAction
 
+from ..pyobj.pokemon_obj import PokemonObject
+from ..pyobj.reviewer_obj import Reviewer_Manager
+from ..pyobj.test_window import TestWindow
+from ..pyobj.translator import Translator
+from ..pyobj.collection_dialog import MainPokemon
+from ..gui_classes.pokemon_details import PokemonCollectionDetails
 from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.settings import Settings
 from ..functions.sprite_functions import get_sprite_path
@@ -50,22 +54,42 @@ def clear_layout(layout):
             clear_layout(item.layout())
 
 class PokemonPC(QDialog):
-    def __init__(self, settings: Settings, parent=mw):
+    def __init__(
+            self,
+            logger: ShowInfoLogger,
+            translator: Translator,
+            reviewer_obj: Reviewer_Manager,
+            test_window: TestWindow,
+            settings: Settings,
+            main_pokemon: PokemonObject,
+            parent=mw,
+            ):
         super().__init__(parent)
+
+        self.logger = logger
+        self.translator = translator
+        self.reviewer_obj = reviewer_obj
+        self.test_window = test_window
+        self.settings = settings
+        self.main_pokemon_function_callback = lambda _pokemon_data: MainPokemon(_pokemon_data, main_pokemon, logger, translator, reviewer_obj, test_window)
 
         self.n_cols = 6
         self.n_rows = 5
         self.current_box_idx = 0  # Index of current displayed box
         self.gif_in_collection = settings.get("gui.gif_in_collection", 11)
 
-        self.size = (400, 570)
+        self.size = (450, 590)
         self.slot_size = 75 # Side length in pixels of a PC slot
         self.main_layout = QVBoxLayout()
 
-        # These are widgets that will need to hold data through refreshes
+        # These are widgets that will need to hold data through refreshes. Typically, those are the widgets used for filtering and sorting
         self.search_edit = None
         self.type_combo = None
         self.generation_combo = None
+        self.sort_by_id = None
+        self.sort_by_name = None
+        self.sort_by_level = None
+        self.desc_sort = None  # Sort by descending order
 
         self.create_gui()
 
@@ -74,6 +98,7 @@ class PokemonPC(QDialog):
 
         pokemon_list = self.load_pokemon_data()
         pokemon_list = self.filter_pokemon_list(pokemon_list)  # Apply all the selected filters
+        pokemon_list = self.sort_pokemon_list(pokemon_list)  # Sort the list with the chosen sorting keys
         max_box_idx = len(pokemon_list) // (self.n_rows * self.n_cols)
 
         # Top part of the box that allows you to navigate between boses
@@ -120,12 +145,15 @@ class PokemonPC(QDialog):
                     pokemon_button.setFixedSize(self.slot_size, self.slot_size)
                     pokemon_button.setIcon(QIcon(pkmn_image_path))
                     pokemon_button.setIconSize(QSize(self.slot_size - 10, self.slot_size - 10))
+                    pokemon_button.clicked.connect(
+                        lambda checked, pb=pokemon_button, pkmn=pokemon: self.show_actions_submenu(pb, pkmn)
+                        )
                     pokemon_grid.addWidget(pokemon_button, row, col, alignment=Qt.AlignmentFlag.AlignCenter)
         pokemon_grid = transpose_grid_layout(pokemon_grid)
         self.main_layout.addLayout(pokemon_grid)
 
         # We add a bottom part to the box. This part allows the user to filter the Pokémon displayed
-        filters_layout = QHBoxLayout()
+        filters_layout = QGridLayout()
         # Name filtering filtering
         prev_text = self.search_edit.text() if self.search_edit is not None else ""
         self.search_edit = QLineEdit()
@@ -136,22 +164,46 @@ class PokemonPC(QDialog):
         # Type filtering
         prev_idx = self.type_combo.currentIndex() if self.type_combo is not None else 0
         self.type_combo = QComboBox()
-        self.type_combo.addItem("All")
+        self.type_combo.addItem("All types")
         self.type_combo.addItems(["Normal", "Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"])
         self.type_combo.setCurrentIndex(prev_idx)
         self.type_combo.currentIndexChanged.connect(self.refresh_gui)
         # Generation filtering
         prev_idx = self.generation_combo.currentIndex() if self.generation_combo is not None else 0
         self.generation_combo = QComboBox()
-        self.generation_combo.addItem("All")
+        self.generation_combo.addItem("All gens")
         self.generation_combo.addItems([f"Gen {i}" for i in range(1, 9, 1)])
         self.generation_combo.setCurrentIndex(prev_idx)
         self.generation_combo.currentIndexChanged.connect(self.refresh_gui)
+        # Sorting by ID
+        is_checked = self.sort_by_id.isChecked() if self.sort_by_id is not None else False
+        self.sort_by_id = QCheckBox("Sort by ID")
+        self.sort_by_id.setChecked(is_checked)
+        self.sort_by_id.stateChanged.connect(self.refresh_gui)
+        # Sorting by name
+        is_checked = self.sort_by_name.isChecked() if self.sort_by_name is not None else False
+        self.sort_by_name = QCheckBox("Sort by name")
+        self.sort_by_name.setChecked(is_checked)
+        self.sort_by_name.stateChanged.connect(self.refresh_gui)
+        # Sorting by level
+        is_checked = self.sort_by_level.isChecked() if self.sort_by_level is not None else False
+        self.sort_by_level = QCheckBox("Sort by level")
+        self.sort_by_level.setChecked(is_checked)
+        self.sort_by_level.stateChanged.connect(self.refresh_gui)
+        # Whether to sort by ascending order or descending order
+        is_checked = self.desc_sort.isChecked() if self.desc_sort is not None else False
+        self.desc_sort = QCheckBox("Sort by descending order")
+        self.desc_sort.setChecked(is_checked)
+        self.desc_sort.stateChanged.connect(self.refresh_gui)
         # Adding the widgets to the layout
-        filters_layout.addWidget(self.search_edit)
-        filters_layout.addWidget(search_button)
-        filters_layout.addWidget(self.type_combo)
-        filters_layout.addWidget(self.generation_combo)
+        filters_layout.addWidget(self.search_edit, 0, 0)
+        filters_layout.addWidget(search_button, 0, 1)
+        filters_layout.addWidget(self.type_combo, 0, 2)
+        filters_layout.addWidget(self.generation_combo, 0, 3)
+        filters_layout.addWidget(self.sort_by_id, 1, 0)
+        filters_layout.addWidget(self.sort_by_name, 1, 1)
+        filters_layout.addWidget(self.sort_by_level, 1, 2)
+        filters_layout.addWidget(self.desc_sort, 1, 3)
         self.main_layout.addLayout(filters_layout)
 
         self.setLayout(self.main_layout)
@@ -224,5 +276,91 @@ class PokemonPC(QDialog):
             
             return True
 
-        return filter(filtering_func, pokemon_list.copy())
+        return list(filter(filtering_func, pokemon_list.copy()))
+    
+    def sort_pokemon_list(self, pokemon_list: list) -> list:
+        reverse = self.desc_sort is not None and self.desc_sort.isChecked()
+        filters = []
+        if self.sort_by_id is not None and self.sort_by_id.isChecked():
+            filters.append("id")
+        if self.sort_by_name is not None and self.sort_by_name.isChecked():
+            filters.append("name")
+            filters.append("nickname")
+        if self.sort_by_level is not None and self.sort_by_level.isChecked():
+            filters.append("level")
+
+        if not filters:
+            return pokemon_list
+
+        return sorted(
+            pokemon_list,
+            reverse=reverse,
+            key=lambda x: tuple(x[key] for key in filters)
+            )
+    
+    def show_actions_submenu(self, button: QPushButton, pokemon: dict):
+        menu = QMenu(self)
+
+        # QMenu doesn't have a "window name" property or the like. So let's emulate one.
+        if pokemon.get("gender") == "M":
+            gender_symbol = "♂"
+        elif pokemon.get("gender") == "F":
+            gender_symbol = "♀"
+        else:
+            gender_symbol = ""
+        if pokemon.get("nickname"):
+            title = f'{pokemon["nickname"]} ({pokemon["name"]}) {gender_symbol} - lvl {pokemon["level"]}'
+        else:
+            title = f'{pokemon["name"]} {gender_symbol} - lvl {pokemon["level"]}'
+        title_action = QAction(title, menu)
+        title_action.setEnabled(False)  # Disabled, so it can't be clicked
+        menu.addAction(title_action)
+        menu.addSeparator()
+
+        pokemon_details_action = QAction("Pokémon details", self)
+        main_pokemon_action = QAction("Pick as main Pokémon", self)
+
+        # Connect actions to methods or lambda functions
+        pokemon_details_action.triggered.connect(lambda: self.show_pokemon_details(pokemon))
+        main_pokemon_action.triggered.connect(lambda: self.main_pokemon_function_callback(pokemon))
+        
+        menu.addAction(pokemon_details_action)
+        menu.addAction(main_pokemon_action)
+
+        # Show the menu at the button's position, aligned below the button
+        menu.exec(button.mapToGlobal(button.rect().topRight()))
+
+    def show_pokemon_details(self, pokemon):
+        if pokemon.get('base_stats'):
+            detail_stats = {**pokemon['base_stats'], "xp": pokemon.get("xp", 0)}
+        elif pokemon.get('stats'):
+            detail_stats = {**pokemon['stats'], "xp": pokemon.get("xp", 0)}
+        else:
+            raise ValueError("Could not get the stats information of the Pokémon")
+        PokemonCollectionDetails(
+            name=pokemon['name'],
+            level=pokemon['level'],
+            id=pokemon['id'],
+            shiny=pokemon.get("shiny", False),
+            ability=pokemon['ability'],
+            type=pokemon['type'],
+            detail_stats=detail_stats,
+            attacks=pokemon['attacks'],
+            base_experience=pokemon['base_experience'],
+            growth_rate=pokemon['growth_rate'],
+            ev=pokemon['ev'],
+            iv=pokemon['iv'],
+            gender=pokemon['gender'],
+            nickname=pokemon.get('nickname'),
+            individual_id=pokemon.get('individual_id'),
+            pokemon_defeated=pokemon.get('pokemon_defeated', 0),
+            everstone=pokemon.get('everstone', False),
+            captured_date=pokemon.get('captured_date', 'Missing'),
+            language=int(self.settings.get("misc.language", 11)),
+            gif_in_collection=self.gif_in_collection,
+            remove_levelcap=self.settings.get("remove_levelcap", False),
+            logger=self.logger,
+            refresh_callback=lambda: None,
+        )
+
 
