@@ -13,7 +13,7 @@ from aqt.qt import (
 )
 from PyQt6.QtWidgets import QLineEdit, QComboBox, QCheckBox, QMenu
 from PyQt6.QtCore import QSize
-from PyQt6.QtGui import QIcon, QFont, QAction
+from PyQt6.QtGui import QIcon, QFont, QAction, QMovie
 
 from ..pyobj.pokemon_obj import PokemonObject
 from ..pyobj.reviewer_obj import Reviewer_Manager
@@ -27,23 +27,6 @@ from ..functions.sprite_functions import get_sprite_path
 from ..utils import load_custom_font
 from ..resources import mypokemon_path
 
-def transpose_grid_layout(grid_layout):
-    items = []
-    # Step 1: Extract all items with their positions
-    for i in reversed(range(grid_layout.count())):
-        item = grid_layout.itemAt(i)
-        row, col, rowspan, colspan = grid_layout.getItemPosition(i)
-        widget = item.widget()
-        if widget:
-            items.append((widget, row, col, rowspan, colspan))
-            grid_layout.removeWidget(widget)
-
-    # Step 2: Add them back transposed
-    for widget, row, col, rowspan, colspan in items:
-        grid_layout.addWidget(widget, col, row, colspan, rowspan)
-
-    return grid_layout
-
 def clear_layout(layout):
     while layout.count():
         item = layout.takeAt(0)
@@ -53,6 +36,25 @@ def clear_layout(layout):
             widget.deleteLater()
         elif item.layout():
             clear_layout(item.layout())
+
+class ScaledMovieLabel(QLabel):
+    def __init__(self, gif_path, width, height):
+        super().__init__()
+        self.target_width = width
+        self.target_height = height
+        self.movie = QMovie(gif_path)
+        self.movie.frameChanged.connect(self.on_frame_changed)
+        self.movie.start()
+        self.setFixedSize(width, height)
+
+    def on_frame_changed(self, frame_number):
+        # Get current frame pixmap
+        pixmap = self.movie.currentPixmap()
+
+        # Scale pixmap to target size (keep aspect ratio if you want)
+        scaled_pixmap = pixmap.scaled(self.target_width, self.target_height, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+
+        self.setPixmap(scaled_pixmap)
 
 class PokemonPC(QDialog):
     def __init__(
@@ -74,12 +76,12 @@ class PokemonPC(QDialog):
         self.settings = settings
         self.main_pokemon_function_callback = lambda _pokemon_data: MainPokemon(_pokemon_data, main_pokemon, logger, translator, reviewer_obj, test_window)
 
-        self.n_cols = 6
-        self.n_rows = 5
+        self.n_cols = 5
+        self.n_rows = 6
         self.current_box_idx = 0  # Index of current displayed box
         self.gif_in_collection = settings.get("gui.gif_in_collection", 11)
 
-        self.size = (450, 610)
+        self.size = (500, 610)
         self.slot_size = 75 # Side length in pixels of a PC slot
         self.main_layout = QVBoxLayout()
 
@@ -133,33 +135,35 @@ class PokemonPC(QDialog):
                 if pokemon_idx >= len(pokemon_list_slice):  # This happens on the last box, where there isn't enough pokemon to fill the box
                     empty_label = QLabel()
                     empty_label.setFixedSize(self.slot_size, self.slot_size)
-                    pokemon_grid.addWidget(empty_label, row, col, alignment=Qt.AlignmentFlag.AlignCenter)
-                else:
-                    pokemon = pokemon_list_slice[pokemon_idx]
-                    pkmn_image_path = get_sprite_path(
-                        "front",
-                        "gif" if self.gif_in_collection else "png",
-                        pokemon['id'],
-                        pokemon.get("shiny", False),
-                        pokemon["gender"]
-                    )
+                    pokemon_grid.addWidget(empty_label, col, row, alignment=Qt.AlignmentFlag.AlignCenter)
+                    continue
 
+                pokemon = pokemon_list_slice[pokemon_idx]
+                pkmn_image_path = get_sprite_path(
+                    "front",
+                    "gif" if self.gif_in_collection else "png",
+                    pokemon['id'],
+                    pokemon.get("shiny", False),
+                    pokemon["gender"]
+                )
+
+                pokemon_button = QPushButton("")
+                pokemon_button.setFixedSize(self.slot_size, self.slot_size)
+                pokemon_button.setStyleSheet("QPushButton:hover {background-color: lightblue;}")
+                pokemon_button.clicked.connect(
+                    lambda checked, pb=pokemon_button, pkmn=pokemon: self.show_actions_submenu(pb, pkmn)
+                    )
+                if self.gif_in_collection:
+                    scaled_movie_label = ScaledMovieLabel(pkmn_image_path, self.slot_size - 10, self.slot_size - 10)
+                    scaled_movie_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+                    pokemon_grid.addWidget(pokemon_button, col, row, alignment=Qt.AlignmentFlag.AlignCenter)
+                    pokemon_grid.addWidget(scaled_movie_label, col, row, alignment=Qt.AlignmentFlag.AlignCenter)
+                else:
                     pixmap = QPixmap(pkmn_image_path)
                     pixmap = self.adjust_pixmap_size(pixmap, max_width=300, max_height=230)
-                    pokemon_button = QPushButton("")
-                    pokemon_button.setFixedSize(self.slot_size, self.slot_size)
                     pokemon_button.setIcon(QIcon(pkmn_image_path))
                     pokemon_button.setIconSize(QSize(self.slot_size - 10, self.slot_size - 10))
-                    pokemon_button.setStyleSheet("""
-                        QPushButton:hover {
-                            background-color: lightblue;
-                        }
-                    """)
-                    pokemon_button.clicked.connect(
-                        lambda checked, pb=pokemon_button, pkmn=pokemon: self.show_actions_submenu(pb, pkmn)
-                        )
-                    pokemon_grid.addWidget(pokemon_button, row, col, alignment=Qt.AlignmentFlag.AlignCenter)
-        pokemon_grid = transpose_grid_layout(pokemon_grid)
+                    pokemon_grid.addWidget(pokemon_button, col, row, alignment=Qt.AlignmentFlag.AlignCenter)
         self.main_layout.addLayout(pokemon_grid)
 
         # We add a bottom part to the box. This part allows the user to filter the Pokémon displayed
