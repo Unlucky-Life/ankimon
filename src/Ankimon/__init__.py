@@ -842,7 +842,7 @@ count_items_and_rewrite(itembag_path)
 create_menu_actions(
     database_complete,
     online_connectivity,
-    pokecollection_win,
+    None,#pokecollection_win,
     item_window,
     test_window,
     achievement_bag,
