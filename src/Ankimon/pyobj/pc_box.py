@@ -286,8 +286,8 @@ class PokemonPC(QDialog):
 
         collection_widget = QWidget()
         collection_widget.setLayout(collection_layout)
-        collection_widget.setFixedWidth(self.n_cols * (self.slot_size + 20))  # Adjusted for grid + padding
-        collection_widget.setFixedHeight(self.n_rows * (self.slot_size + 20))  # Adjusted for grid + padding
+        collection_widget.setFixedWidth(self.n_cols * (self.slot_size + 20) + 50)  # Adjusted for grid + padding
+        collection_widget.setFixedHeight(self.n_rows * (self.slot_size + 20) + 100)  # Adjusted for grid + padding
 
         self.main_layout.addWidget(collection_widget, 1)  # Collection gets fixed space
 
@@ -295,8 +295,8 @@ class PokemonPC(QDialog):
         if self.pokemon_details_layout is not None:
             self.details_widget = QWidget()
             self.details_widget.setLayout(self.pokemon_details_layout)
-            self.details_widget.setFixedWidth(self.n_cols * (self.slot_size + 20))
-            self.details_widget.setFixedHeight(self.n_rows * (self.slot_size + 20))  # Adjusted for grid + padding
+            self.details_widget.setFixedWidth(self.n_cols * (self.slot_size + 20) + 50)
+            self.details_widget.setFixedHeight(self.n_rows * (self.slot_size + 20) + 100)  # Adjusted for grid + padding
             self.main_layout.addWidget(self.details_widget, 2)  # Details gets more flexible space
         self.setLayout(self.main_layout)
 
