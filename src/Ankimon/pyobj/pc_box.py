@@ -91,7 +91,7 @@ class PokemonPC(QDialog):
         self.current_box_idx = 0  # Index of current displayed box
         self.gif_in_collection = settings.get("gui.gif_in_collection", 11)
 
-        self.size = (500, 650)
+        self.size = (530, 650)
         self.slot_size = 75 # Side length in pixels of a PC slot
         self.main_layout = QVBoxLayout()
 
