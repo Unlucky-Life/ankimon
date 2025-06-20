@@ -104,6 +104,8 @@ class PokemonPC(QDialog):
     def create_gui(self):
         self.setWindowTitle("Axil's PC")
 
+        self.gif_in_collection = self.settings.get("gui.gif_in_collection", 11)  # In case the settings changed
+
         pokemon_list = self.load_pokemon_data()
         pokemon_list = self.filter_pokemon_list(pokemon_list)  # Apply all the selected filters
         pokemon_list = self.sort_pokemon_list(pokemon_list)  # Sort the list with the chosen sorting keys
