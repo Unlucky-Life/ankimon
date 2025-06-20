@@ -17,6 +17,7 @@ from ..pyobj.translator import Translator
 from ..pyobj.test_window import TestWindow
 from ..pyobj.reviewer_obj import Reviewer_Manager
 from ..functions.sprite_functions import get_sprite_path
+from ..functions.pokedex_functions import search_pokedex, search_pokedex_by_id
 from ..gui_classes.pokemon_details import PokemonCollectionDetails
 from ..gui_entities import MovieSplashLabel
 from ..resources import mypokemon_path, frontdefault, frontdefault, mainpokemon_path
@@ -630,19 +631,30 @@ def MainPokemon(
         reviewer_obj: Reviewer_Manager,
         test_window: TestWindow,
         ):
+    pokemon_id = pokemon_data.get("id")
+    pokemon_name = search_pokedex_by_id(pokemon_id)
+    base_stats = search_pokedex(pokemon_name, "baseStats")
+    current_hp = PokemonObject.calc_stat(
+        "hp",
+        base_stats["hp"],
+        pokemon_data['level'],
+        pokemon_data['iv']['hp'],
+        pokemon_data['ev']['hp'],
+        pokemon_data.get("nature", "serious")
+        )
     # Create NEW PokemonObject instance using class constructor
     new_main_pokemon = PokemonObject(
-        name=pokemon_data.get('name', 'Missingno'),
+        name=pokemon_name,
         level=pokemon_data.get('level', 5),
         ability=pokemon_data.get('ability', ['none']),
         type=pokemon_data.get('type', ['Normal']),
-        base_stats=pokemon_data.get('stats', {'hp': 1, 'atk': 1, 'def': 1, 'spa': 1, 'spd': 1, 'spe': 1}),
+        base_stats=base_stats,
         ev=pokemon_data.get('ev', defaultdict(int)),
         iv=pokemon_data.get('iv', defaultdict(int)),
         attacks=pokemon_data.get('attacks', ['Struggle']),
         base_experience=pokemon_data.get('base_experience', 0),
         growth_rate=pokemon_data.get('growth_rate', 'medium'),
-        current_hp = int((((2 * pokemon_data['stats']['hp'] + pokemon_data['iv']['hp'] + (pokemon_data['ev']['hp'] // 4)) * pokemon_data['level']) // 100) + pokemon_data['level'] + 10),
+        current_hp=current_hp,
         gender=pokemon_data.get('gender', 'N'),
         shiny=pokemon_data.get('shiny', False),
         individual_id=pokemon_data.get('individual_id', str(uuid.uuid4())),
