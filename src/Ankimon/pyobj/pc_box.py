@@ -24,7 +24,7 @@ from ..gui_classes.pokemon_details import PokemonCollectionDetails
 from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.settings import Settings
 from ..functions.sprite_functions import get_sprite_path
-from ..utils import load_custom_font
+from ..utils import load_custom_font, get_tier_by_id
 from ..resources import mypokemon_path
 
 def clear_layout(layout):
@@ -81,7 +81,7 @@ class PokemonPC(QDialog):
         self.current_box_idx = 0  # Index of current displayed box
         self.gif_in_collection = settings.get("gui.gif_in_collection", 11)
 
-        self.size = (500, 610)
+        self.size = (500, 650)
         self.slot_size = 75 # Side length in pixels of a PC slot
         self.main_layout = QVBoxLayout()
 
@@ -89,10 +89,13 @@ class PokemonPC(QDialog):
         self.search_edit = None
         self.type_combo = None
         self.generation_combo = None
+        self.tier_combo = None
         self.sort_by_id = None
         self.sort_by_name = None
         self.sort_by_level = None
         self.desc_sort = None  # Sort by descending order
+
+        self.ensure_all_pokemon_have_tier_info()  # Necessary for legacy reasons
 
         self.create_gui()
 
@@ -189,6 +192,13 @@ class PokemonPC(QDialog):
         self.generation_combo.addItems([f"Gen {i}" for i in range(1, 9, 1)])
         self.generation_combo.setCurrentIndex(prev_idx)
         self.generation_combo.currentIndexChanged.connect(lambda: self.go_to_box(0))
+        # Tier filtering
+        prev_idx = self.tier_combo.currentIndex() if self.tier_combo is not None else 0
+        self.tier_combo = QComboBox()
+        self.tier_combo.addItem("All tiers")
+        self.tier_combo.addItems(["Normal", "Legendary", "Mythical", "Baby", "Ultra"])
+        self.tier_combo.setCurrentIndex(prev_idx)
+        self.tier_combo.currentIndexChanged.connect(lambda: self.go_to_box(0))
         # Sorting by ID
         is_checked = self.sort_by_id.isChecked() if self.sort_by_id is not None else False
         self.sort_by_id = QCheckBox("Sort by ID")
@@ -210,14 +220,15 @@ class PokemonPC(QDialog):
         self.desc_sort.setChecked(is_checked)
         self.desc_sort.stateChanged.connect(lambda: self.go_to_box(0))
         # Adding the widgets to the layout
-        filters_layout.addWidget(self.search_edit, 0, 0)
-        filters_layout.addWidget(search_button, 0, 1)
-        filters_layout.addWidget(self.type_combo, 0, 2)
-        filters_layout.addWidget(self.generation_combo, 0, 3)
-        filters_layout.addWidget(self.sort_by_id, 1, 0)
-        filters_layout.addWidget(self.sort_by_name, 1, 1)
-        filters_layout.addWidget(self.sort_by_level, 1, 2)
-        filters_layout.addWidget(self.desc_sort, 1, 3)
+        filters_layout.addWidget(self.search_edit, 0, 0, 1, 3)
+        filters_layout.addWidget(search_button, 0, 3, 1, 1)
+        filters_layout.addWidget(self.type_combo, 1, 0)
+        filters_layout.addWidget(self.generation_combo, 1, 1)
+        filters_layout.addWidget(self.tier_combo, 1, 2)
+        filters_layout.addWidget(self.sort_by_id, 2, 0)
+        filters_layout.addWidget(self.sort_by_name, 2, 1)
+        filters_layout.addWidget(self.sort_by_level, 2, 2)
+        filters_layout.addWidget(self.desc_sort, 2, 3)
         self.main_layout.addLayout(filters_layout)
 
         self.setLayout(self.main_layout)
@@ -272,6 +283,14 @@ class PokemonPC(QDialog):
                 
             if self.type_combo is not None:
                 if self.type_combo.currentIndex() != 0 and self.type_combo.currentText() not in pokemon.get("type", ""):
+                    return False
+                
+            if self.tier_combo is not None:
+                if (
+                    self.tier_combo.currentIndex() != 0 
+                    and pokemon.get("tier") is not None
+                    and self.tier_combo.currentText() != pokemon.get("tier") 
+                ):
                     return False
                 
             if self.generation_combo is not None:
@@ -376,5 +395,25 @@ class PokemonPC(QDialog):
             logger=self.logger,
             refresh_callback=lambda: None,
         )
+
+    def ensure_all_pokemon_have_tier_info(self):
+        """
+        At the time this PokémonPC class was implemented, tier data for caught Pokemon wasn't saved.
+        This means that filtering by tier is impossible.
+        To address this issue, I made this method that "fixes" the file where caught pokemon are saved.
+        """
+        pokemon_list = self.load_pokemon_data()
+        pokemon_tiers = [p.get("tier") for p in pokemon_list]
+        if None in pokemon_tiers:  # If at least 1 pokémon does not have tier information
+            for i, pokemon in enumerate(pokemon_list):
+                if pokemon.get("tier") is not None:
+                    continue
+                tier = get_tier_by_id(pokemon["id"])
+                if tier is None:
+                    self.logger.log("warning", f"Could not find the tier information of {pokemon['name']}")
+                pokemon_list[i]["tier"] = tier
+
+            with open(str(mypokemon_path), "w", encoding="utf-8") as json_file:
+                json.dump(pokemon_list, json_file, indent=2)
 
 
