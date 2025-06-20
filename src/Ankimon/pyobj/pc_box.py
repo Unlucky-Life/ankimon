@@ -105,7 +105,7 @@ class PokemonPC(QDialog):
         pokemon_list = self.load_pokemon_data()
         pokemon_list = self.filter_pokemon_list(pokemon_list)  # Apply all the selected filters
         pokemon_list = self.sort_pokemon_list(pokemon_list)  # Sort the list with the chosen sorting keys
-        max_box_idx = len(pokemon_list) // (self.n_rows * self.n_cols)
+        max_box_idx = (len(pokemon_list) - 1) // (self.n_rows * self.n_cols)
 
         # Top part of the box that allows you to navigate between boses
         box_selector_layout = QHBoxLayout()
