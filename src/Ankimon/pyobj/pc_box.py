@@ -14,7 +14,7 @@ from aqt.qt import (
 )
 from PyQt6.QtWidgets import QLineEdit, QComboBox, QCheckBox, QMenu, QWidget
 from PyQt6.QtCore import QSize
-from PyQt6.QtGui import QIcon, QFont, QAction, QMovie
+from PyQt6.QtGui import QIcon, QFont, QAction, QMovie, QCloseEvent
 
 from ..pyobj.pokemon_obj import PokemonObject
 from ..pyobj.reviewer_obj import Reviewer_Manager
@@ -95,6 +95,7 @@ class PokemonPC(QDialog):
         self.main_layout = QHBoxLayout()  # Main horizontal layout for split panels
         self.details_layout = QVBoxLayout()  # Layout for details panel
         self.details_widget = QWidget()  # Widget to hold details
+        self.pokemon_details_layout = None
 
         # These are widgets that will need to hold data through refreshes. Typically, those are the widgets used for filtering and sorting
         self.search_edit = None
@@ -285,23 +286,19 @@ class PokemonPC(QDialog):
 
         collection_widget = QWidget()
         collection_widget.setLayout(collection_layout)
-        collection_widget.setFixedWidth(self.n_cols * self.slot_size + 80)  # Adjusted for grid + padding
+        collection_widget.setFixedWidth(self.n_cols * (self.slot_size + 20))  # Adjusted for grid + padding
+        collection_widget.setFixedHeight(self.n_rows * (self.slot_size + 20))  # Adjusted for grid + padding
 
-        # Right side: Details panel with flexible width
-        self.details_widget = QWidget()
-        self.details_layout = QVBoxLayout()
-        placeholder_label = QLabel("Select a Pokémon to view details")
-        placeholder_label.setFont(load_custom_font(20, int(self.settings.get("misc.language", 11))))
-        placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.details_layout.addWidget(placeholder_label)
-        self.details_widget.setLayout(self.details_layout)
-        self.details_widget.setMinimumWidth(400)  # Minimum width for details panel
-
-        # Combine layouts with stretch factor
         self.main_layout.addWidget(collection_widget, 1)  # Collection gets fixed space
-        self.main_layout.addWidget(self.details_widget, 2)  # Details gets more flexible space
+
+        #self.details_layout = QVBoxLayout()
+        if self.pokemon_details_layout is not None:
+            self.details_widget = QWidget()
+            self.details_widget.setLayout(self.pokemon_details_layout)
+            self.details_widget.setFixedWidth(self.n_cols * (self.slot_size + 20))
+            self.details_widget.setFixedHeight(self.n_rows * (self.slot_size + 20))  # Adjusted for grid + padding
+            self.main_layout.addWidget(self.details_widget, 2)  # Details gets more flexible space
         self.setLayout(self.main_layout)
-        self.setMinimumSize(1000, 650)  # Set minimum size to accommodate both panels
 
     def refresh_gui(self):
         """
@@ -567,8 +564,8 @@ class PokemonPC(QDialog):
             detail_stats = {**pokemon['stats'], "xp": pokemon.get("xp", 0)}
         else:
             raise ValueError("Could not get the stats information of the Pokémon")
-        clear_layout(self.details_layout)
-        layout = PokemonCollectionDetails(
+
+        self.pokemon_details_layout = PokemonCollectionDetails(
             name=pokemon['name'],
             level=pokemon['level'],
             id=pokemon['id'],
@@ -593,10 +590,7 @@ class PokemonPC(QDialog):
             logger=self.logger,
             refresh_callback=self.refresh_gui
         )
-        self.details_layout.addLayout(layout)
-        self.details_widget.setLayout(self.details_layout)
-        self.layout().invalidate()
-        self.layout().activate()
+        self.refresh_gui()
 
     def toggle_favorite(self, pokemon: dict[list, Any]):
         """
@@ -657,3 +651,19 @@ class PokemonPC(QDialog):
 
             with open(str(mypokemon_path), "w", encoding="utf-8") as json_file:
                 json.dump(pokemon_list, json_file, indent=2)
+
+    def on_window_close(self):
+        if self.pokemon_details_layout is not None:
+            clear_layout(self.pokemon_details_layout)
+            self.details_widget.setFixedSize(0, 0)
+            self.pokemon_details_layout = None
+            
+    def closeEvent(self, event: QCloseEvent):
+        self.on_window_close()
+        event.accept()  # Accept the close event
+
+    def reject(self):  # Called when pressing Escape
+        self.on_window_close()
+        super().reject()
+
+    
