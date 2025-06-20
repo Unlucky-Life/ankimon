@@ -181,34 +181,34 @@ class PokemonPC(QDialog):
         self.type_combo.addItem("All types")
         self.type_combo.addItems(["Normal", "Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"])
         self.type_combo.setCurrentIndex(prev_idx)
-        self.type_combo.currentIndexChanged.connect(self.refresh_gui)
+        self.type_combo.currentIndexChanged.connect(lambda: self.go_to_box(0))
         # Generation filtering
         prev_idx = self.generation_combo.currentIndex() if self.generation_combo is not None else 0
         self.generation_combo = QComboBox()
         self.generation_combo.addItem("All gens")
         self.generation_combo.addItems([f"Gen {i}" for i in range(1, 9, 1)])
         self.generation_combo.setCurrentIndex(prev_idx)
-        self.generation_combo.currentIndexChanged.connect(self.refresh_gui)
+        self.generation_combo.currentIndexChanged.connect(lambda: self.go_to_box(0))
         # Sorting by ID
         is_checked = self.sort_by_id.isChecked() if self.sort_by_id is not None else False
         self.sort_by_id = QCheckBox("Sort by ID")
         self.sort_by_id.setChecked(is_checked)
-        self.sort_by_id.stateChanged.connect(self.refresh_gui)
+        self.sort_by_id.stateChanged.connect(lambda: self.go_to_box(0))
         # Sorting by name
         is_checked = self.sort_by_name.isChecked() if self.sort_by_name is not None else False
         self.sort_by_name = QCheckBox("Sort by name")
         self.sort_by_name.setChecked(is_checked)
-        self.sort_by_name.stateChanged.connect(self.refresh_gui)
+        self.sort_by_name.stateChanged.connect(lambda: self.go_to_box(0))
         # Sorting by level
         is_checked = self.sort_by_level.isChecked() if self.sort_by_level is not None else False
         self.sort_by_level = QCheckBox("Sort by level")
         self.sort_by_level.setChecked(is_checked)
-        self.sort_by_level.stateChanged.connect(self.refresh_gui)
+        self.sort_by_level.stateChanged.connect(lambda: self.go_to_box(0))
         # Whether to sort by ascending order or descending order
         is_checked = self.desc_sort.isChecked() if self.desc_sort is not None else False
         self.desc_sort = QCheckBox("Sort by descending order")
         self.desc_sort.setChecked(is_checked)
-        self.desc_sort.stateChanged.connect(self.refresh_gui)
+        self.desc_sort.stateChanged.connect(lambda: self.go_to_box(0))
         # Adding the widgets to the layout
         filters_layout.addWidget(self.search_edit, 0, 0)
         filters_layout.addWidget(search_button, 0, 1)
