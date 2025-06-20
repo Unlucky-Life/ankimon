@@ -616,6 +616,7 @@ def save_caught_pokemon(
         "individual_id": str(uuid.uuid4()),
         "mega": False,
         "special-form": None,
+        "tier": enemy_pokemon.tier,
     }
 
     # Load existing Pokémon data if it exists
