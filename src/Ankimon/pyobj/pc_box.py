@@ -12,7 +12,7 @@ from aqt.qt import (
     QGridLayout,
     QPixmap,
 )
-from PyQt6.QtWidgets import QLineEdit, QComboBox, QCheckBox, QMenu
+from PyQt6.QtWidgets import QLineEdit, QComboBox, QCheckBox, QMenu, QWidget
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QIcon, QFont, QAction, QMovie
 
@@ -91,9 +91,10 @@ class PokemonPC(QDialog):
         self.current_box_idx = 0  # Index of current displayed box
         self.gif_in_collection = settings.get("gui.gif_in_collection", 11)
 
-        self.size = (530, 650)
-        self.slot_size = 75 # Side length in pixels of a PC slot
-        self.main_layout = QVBoxLayout()
+        self.slot_size = 75  # Side length in pixels of a PC slot
+        self.main_layout = QHBoxLayout()  # Main horizontal layout for split panels
+        self.details_layout = QVBoxLayout()  # Layout for details panel
+        self.details_widget = QWidget()  # Widget to hold details
 
         # These are widgets that will need to hold data through refreshes. Typically, those are the widgets used for filtering and sorting
         self.search_edit = None
@@ -119,14 +120,16 @@ class PokemonPC(QDialog):
         - A grid display for showing Pokémon in the current box
         - Filters and sorting options to refine the displayed Pokémon
         - Optional animated sprites or static images based on user settings
+        - A right-hand details panel with flexible width
 
         The GUI components include:
         - Navigation buttons and current box label
         - A dynamically populated grid of Pokémon buttons with sprite icons
         - Filtering options (search by name, type, generation, tier, favorites)
         - Sorting options (by ID, name, level, ascending/descending)
+        - A flexible-width details panel on the right
 
-        All components are added to the main layout and displayed within a fixed-size window.
+        All components are added to the main layout and displayed within a resizable window.
 
         Side Effects:
             - Modifies the instance's layout and widget properties.
@@ -141,7 +144,9 @@ class PokemonPC(QDialog):
         pokemon_list = self.sort_pokemon_list(pokemon_list)  # Sort the list with the chosen sorting keys
         max_box_idx = (len(pokemon_list) - 1) // (self.n_rows * self.n_cols)
 
-        # Top part of the box that allows you to navigate between boses
+        # Left side: Collection panel with fixed width based on grid
+        collection_layout = QVBoxLayout()
+        # Top part of the box that allows you to navigate between boxes
         box_selector_layout = QHBoxLayout()
         prev_box_button = QPushButton(f"◀")
         next_box_button = QPushButton(f"▶")
@@ -159,7 +164,7 @@ class PokemonPC(QDialog):
         box_selector_layout.addWidget(prev_box_button, alignment=Qt.AlignmentFlag.AlignCenter)
         box_selector_layout.addWidget(curr_box_label, alignment=Qt.AlignmentFlag.AlignCenter)
         box_selector_layout.addWidget(next_box_button, alignment=Qt.AlignmentFlag.AlignCenter)
-        self.main_layout.addLayout(box_selector_layout)
+        collection_layout.addLayout(box_selector_layout)
         
         # Central part of the box that displays the Pokémon
         start_index = self.current_box_idx * self.n_cols * self.n_rows
@@ -204,11 +209,11 @@ class PokemonPC(QDialog):
                     pokemon_button.setIcon(QIcon(pkmn_image_path))
                     pokemon_button.setIconSize(QSize(self.slot_size - 10, self.slot_size - 10))
                     pokemon_grid.addWidget(pokemon_button, col, row, alignment=Qt.AlignmentFlag.AlignCenter)
-        self.main_layout.addLayout(pokemon_grid)
+        collection_layout.addLayout(pokemon_grid)
 
-        # We add a bottom part to the box. This part allows the user to filter the Pokémon displayed
+        # Bottom part to filter the Pokémon displayed
         filters_layout = QGridLayout()
-        # Name filtering filtering
+        # Name filtering
         prev_text = self.search_edit.text() if self.search_edit is not None else ""
         self.search_edit = QLineEdit()
         self.search_edit.setPlaceholderText("Search Pokémon (by nickname, name)")
@@ -237,31 +242,36 @@ class PokemonPC(QDialog):
         self.tier_combo.addItems(["Normal", "Legendary", "Mythical", "Baby", "Ultra"])
         self.tier_combo.setCurrentIndex(prev_idx)
         self.tier_combo.currentIndexChanged.connect(lambda: self.go_to_box(0))
-        # Sorting by ID
+        # Sorting by favorites
         is_checked = self.filter_favorites.isChecked() if self.filter_favorites is not None else False
-        self.filter_favorites = QCheckBox("Only favorites")
+        self.filter_favorites = QCheckBox("Favorites")
         self.filter_favorites.setChecked(is_checked)
         self.filter_favorites.stateChanged.connect(lambda: self.go_to_box(0))
-        # Sorting by ID
+        # Sorting options
+        sort_label = QLabel("Sort by:")
+        sort_layout = QHBoxLayout()
         is_checked = self.sort_by_id.isChecked() if self.sort_by_id is not None else False
-        self.sort_by_id = QCheckBox("Sort by ID")
+        self.sort_by_id = QCheckBox("ID")
         self.sort_by_id.setChecked(is_checked)
         self.sort_by_id.stateChanged.connect(lambda: self.go_to_box(0))
-        # Sorting by name
         is_checked = self.sort_by_name.isChecked() if self.sort_by_name is not None else False
-        self.sort_by_name = QCheckBox("Sort by name")
+        self.sort_by_name = QCheckBox("Name")
         self.sort_by_name.setChecked(is_checked)
         self.sort_by_name.stateChanged.connect(lambda: self.go_to_box(0))
-        # Sorting by level
         is_checked = self.sort_by_level.isChecked() if self.sort_by_level is not None else False
-        self.sort_by_level = QCheckBox("Sort by level")
+        self.sort_by_level = QCheckBox("Level")
         self.sort_by_level.setChecked(is_checked)
         self.sort_by_level.stateChanged.connect(lambda: self.go_to_box(0))
-        # Whether to sort by ascending order or descending order
         is_checked = self.desc_sort.isChecked() if self.desc_sort is not None else False
-        self.desc_sort = QCheckBox("Sort by descending order")
+        self.desc_sort = QCheckBox("Descending")
         self.desc_sort.setChecked(is_checked)
         self.desc_sort.stateChanged.connect(lambda: self.go_to_box(0))
+        sort_layout.addWidget(self.sort_by_id)
+        sort_layout.addWidget(self.sort_by_name)
+        sort_layout.addWidget(self.sort_by_level)
+        sort_layout.addWidget(self.desc_sort)
+        sort_widget = QWidget()
+        sort_widget.setLayout(sort_layout)
         # Adding the widgets to the layout
         filters_layout.addWidget(self.search_edit, 0, 0, 1, 3)
         filters_layout.addWidget(search_button, 0, 3, 1, 1)
@@ -269,14 +279,29 @@ class PokemonPC(QDialog):
         filters_layout.addWidget(self.generation_combo, 1, 1)
         filters_layout.addWidget(self.tier_combo, 1, 2)
         filters_layout.addWidget(self.filter_favorites, 1, 3)
-        filters_layout.addWidget(self.sort_by_id, 2, 0)
-        filters_layout.addWidget(self.sort_by_name, 2, 1)
-        filters_layout.addWidget(self.sort_by_level, 2, 2)
-        filters_layout.addWidget(self.desc_sort, 2, 3)
-        self.main_layout.addLayout(filters_layout)
+        filters_layout.addWidget(sort_label, 2, 0)
+        filters_layout.addWidget(sort_widget, 2, 1, 1, 3)
+        collection_layout.addLayout(filters_layout)
 
+        collection_widget = QWidget()
+        collection_widget.setLayout(collection_layout)
+        collection_widget.setFixedWidth(self.n_cols * self.slot_size + 80)  # Adjusted for grid + padding
+
+        # Right side: Details panel with flexible width
+        self.details_widget = QWidget()
+        self.details_layout = QVBoxLayout()
+        placeholder_label = QLabel("Select a Pokémon to view details")
+        placeholder_label.setFont(load_custom_font(20, int(self.settings.get("misc.language", 11))))
+        placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.details_layout.addWidget(placeholder_label)
+        self.details_widget.setLayout(self.details_layout)
+        self.details_widget.setMinimumWidth(400)  # Minimum width for details panel
+
+        # Combine layouts with stretch factor
+        self.main_layout.addWidget(collection_widget, 1)  # Collection gets fixed space
+        self.main_layout.addWidget(self.details_widget, 2)  # Details gets more flexible space
         self.setLayout(self.main_layout)
-        self.setFixedSize(*self.size)
+        self.setMinimumSize(1000, 650)  # Set minimum size to accommodate both panels
 
     def refresh_gui(self):
         """
@@ -521,10 +546,10 @@ class PokemonPC(QDialog):
 
     def show_pokemon_details(self, pokemon):
         """
-        Opens a detailed view window displaying comprehensive information about a specific Pokémon.
+        Displays detailed information about a specific Pokémon in the right-hand details panel.
 
         The method prepares detailed stats by merging base stats or stats with experience points,
-        then instantiates a `PokemonCollectionDetails` dialog with various Pokémon attributes.
+        then updates the `self.details_layout` with a `PokemonCollectionDetails` layout.
 
         Args:
             pokemon (dict): A dictionary containing Pokémon data with expected keys such as:
@@ -542,7 +567,8 @@ class PokemonPC(QDialog):
             detail_stats = {**pokemon['stats'], "xp": pokemon.get("xp", 0)}
         else:
             raise ValueError("Could not get the stats information of the Pokémon")
-        PokemonCollectionDetails(
+        clear_layout(self.details_layout)
+        layout = PokemonCollectionDetails(
             name=pokemon['name'],
             level=pokemon['level'],
             id=pokemon['id'],
@@ -565,8 +591,12 @@ class PokemonPC(QDialog):
             gif_in_collection=self.gif_in_collection,
             remove_levelcap=self.settings.get("remove_levelcap", False),
             logger=self.logger,
-            refresh_callback=lambda: None,
+            refresh_callback=self.refresh_gui
         )
+        self.details_layout.addLayout(layout)
+        self.details_widget.setLayout(self.details_layout)
+        self.layout().invalidate()
+        self.layout().activate()
 
     def toggle_favorite(self, pokemon: dict[list, Any]):
         """
@@ -627,5 +657,3 @@ class PokemonPC(QDialog):
 
             with open(str(mypokemon_path), "w", encoding="utf-8") as json_file:
                 json.dump(pokemon_list, json_file, indent=2)
-
-
