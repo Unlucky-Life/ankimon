@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 from aqt import mw
 from aqt.qt import (
@@ -90,6 +91,7 @@ class PokemonPC(QDialog):
         self.type_combo = None
         self.generation_combo = None
         self.tier_combo = None
+        self.filter_favorites = None
         self.sort_by_id = None
         self.sort_by_name = None
         self.sort_by_level = None
@@ -152,7 +154,10 @@ class PokemonPC(QDialog):
 
                 pokemon_button = QPushButton("")
                 pokemon_button.setFixedSize(self.slot_size, self.slot_size)
-                pokemon_button.setStyleSheet("QPushButton:hover {background-color: lightblue;}")
+                style_sheet_str = "QPushButton:hover {background-color: lightblue;}"
+                if pokemon.get("is_favorite", False):
+                    style_sheet_str += " QPushButton {background-color: #FFEB7A;}"
+                pokemon_button.setStyleSheet(style_sheet_str)
                 pokemon_button.clicked.connect(
                     lambda checked, pb=pokemon_button, pkmn=pokemon: self.show_actions_submenu(pb, pkmn)
                     )
@@ -200,6 +205,11 @@ class PokemonPC(QDialog):
         self.tier_combo.setCurrentIndex(prev_idx)
         self.tier_combo.currentIndexChanged.connect(lambda: self.go_to_box(0))
         # Sorting by ID
+        is_checked = self.filter_favorites.isChecked() if self.filter_favorites is not None else False
+        self.filter_favorites = QCheckBox("Only favorites")
+        self.filter_favorites.setChecked(is_checked)
+        self.filter_favorites.stateChanged.connect(lambda: self.go_to_box(0))
+        # Sorting by ID
         is_checked = self.sort_by_id.isChecked() if self.sort_by_id is not None else False
         self.sort_by_id = QCheckBox("Sort by ID")
         self.sort_by_id.setChecked(is_checked)
@@ -225,6 +235,7 @@ class PokemonPC(QDialog):
         filters_layout.addWidget(self.type_combo, 1, 0)
         filters_layout.addWidget(self.generation_combo, 1, 1)
         filters_layout.addWidget(self.tier_combo, 1, 2)
+        filters_layout.addWidget(self.filter_favorites, 1, 3)
         filters_layout.addWidget(self.sort_by_id, 2, 0)
         filters_layout.addWidget(self.sort_by_name, 2, 1)
         filters_layout.addWidget(self.sort_by_level, 2, 2)
@@ -293,6 +304,10 @@ class PokemonPC(QDialog):
                 ):
                     return False
                 
+            if self.filter_favorites is not None:
+                if self.filter_favorites.isChecked() and not pokemon.get("is_favorite", False):
+                    return False
+                
             if self.generation_combo is not None:
                 gen_idx = self.generation_combo.currentIndex()
                 if gen_idx != 0 and (
@@ -331,7 +346,7 @@ class PokemonPC(QDialog):
             key=lambda x: tuple(x[key] for key in filters)
             )
     
-    def show_actions_submenu(self, button: QPushButton, pokemon: dict):
+    def show_actions_submenu(self, button: QPushButton, pokemon: dict[str, Any]):
         menu = QMenu(self)
 
         # QMenu doesn't have a "window name" property or the like. So let's emulate one.
@@ -352,13 +367,18 @@ class PokemonPC(QDialog):
 
         pokemon_details_action = QAction("Pokémon details", self)
         main_pokemon_action = QAction("Pick as main Pokémon", self)
+        make_favorite_action = QAction(
+            "Unmake favorite" if pokemon.get("is_favorite", False) else "Make favorite"
+            )
 
         # Connect actions to methods or lambda functions
         pokemon_details_action.triggered.connect(lambda: self.show_pokemon_details(pokemon))
         main_pokemon_action.triggered.connect(lambda: self.main_pokemon_function_callback(pokemon))
+        make_favorite_action.triggered.connect(lambda: self.toggle_favorite(pokemon))
         
         menu.addAction(pokemon_details_action)
         menu.addAction(main_pokemon_action)
+        menu.addAction(make_favorite_action)
 
         # Show the menu at the button's position, aligned below the button
         menu.exec(button.mapToGlobal(button.rect().topRight()))
@@ -395,6 +415,22 @@ class PokemonPC(QDialog):
             logger=self.logger,
             refresh_callback=lambda: None,
         )
+
+    def toggle_favorite(self, pokemon: dict[list, Any]):
+        pokemon_list = self.load_pokemon_data()
+        for i in range(len(pokemon_list)):
+            if pokemon_list[i].get("individual_id") == pokemon["individual_id"]:
+                is_currently_favorite = pokemon_list[i].get("is_favorite", False)
+                pokemon_list[i]["is_favorite"] = not is_currently_favorite
+
+                with open(str(mypokemon_path), "w", encoding="utf-8") as json_file:
+                    json.dump(pokemon_list, json_file, indent=2)
+
+                self.refresh_gui()
+                return
+        
+        if self.logger is not None:
+            self.logger.log("info", f"Could not make/unmake {pokemon['name']} favorite")
 
     def ensure_all_pokemon_have_tier_info(self):
         """
