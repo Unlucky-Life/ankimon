@@ -2,6 +2,7 @@ from math import exp
 import json
 
 from aqt import mw, qconnect
+from aqt.qt import QDialog
 from aqt.utils import showWarning
 from PyQt6.QtGui import QPixmap, QPainter, QIcon
 from PyQt6.QtCore import Qt
@@ -123,7 +124,10 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         ability_label = QLabel(ability_txt)
         attacks_label = QLabel(attacks_txt)
         pokemon_defeated_label = QLabel(f"Pokemon Defeated: {pokemon_defeated}")
-        captured_date_label = QLabel(f"Captured: {captured_date.split()[0]}")
+        if captured_date is not None :
+            captured_date_label = QLabel(f"Captured: {captured_date.split()[0]}")
+        else:
+            captured_date_label = QLabel(f"Captured: no date available")
 
         level_label.setFont(custom_font)
         type_label = QLabel("Type:")
