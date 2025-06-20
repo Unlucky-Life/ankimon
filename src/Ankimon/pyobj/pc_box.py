@@ -29,6 +29,15 @@ from ..utils import load_custom_font, get_tier_by_id
 from ..resources import mypokemon_path
 
 def clear_layout(layout):
+    """
+    Recursively removes all widgets and nested layouts from a given layout.
+
+    This function iterates through all items in the provided layout, removes 
+    each widget or sub-layout, and ensures proper deletion and memory cleanup.
+
+    Args:
+        layout (QLayout): The layout to be cleared. Can contain widgets and/or nested layouts.
+    """
     while layout.count():
         item = layout.takeAt(0)
         widget = item.widget()
@@ -102,6 +111,27 @@ class PokemonPC(QDialog):
         self.create_gui()
 
     def create_gui(self):
+        """
+        Builds and sets up the main graphical user interface for displaying and managing Pokémon.
+
+        This method initializes the GUI layout, including:
+        - Navigation controls to switch between Pokémon storage boxes
+        - A grid display for showing Pokémon in the current box
+        - Filters and sorting options to refine the displayed Pokémon
+        - Optional animated sprites or static images based on user settings
+
+        The GUI components include:
+        - Navigation buttons and current box label
+        - A dynamically populated grid of Pokémon buttons with sprite icons
+        - Filtering options (search by name, type, generation, tier, favorites)
+        - Sorting options (by ID, name, level, ascending/descending)
+
+        All components are added to the main layout and displayed within a fixed-size window.
+
+        Side Effects:
+            - Modifies the instance's layout and widget properties.
+            - Connects UI elements to their corresponding interaction handlers.
+        """
         self.setWindowTitle("Axil's PC")
 
         self.gif_in_collection = self.settings.get("gui.gif_in_collection", 11)  # In case the settings changed
@@ -248,16 +278,52 @@ class PokemonPC(QDialog):
         self.setFixedSize(*self.size)
 
     def refresh_gui(self):
+        """
+        Refreshes the entire graphical user interface by rebuilding its layout.
+
+        This method clears the current main layout, reconstructs it by calling `create_gui()`,
+        and then invalidates and reactivates the layout to ensure proper rendering.
+
+        Side Effects:
+            - Removes all widgets from the main layout.
+            - Recreates and re-adds all GUI elements.
+            - Forces layout recalculation and update.
+        """
         clear_layout(self.main_layout)
         self.create_gui()
         self.layout().invalidate()
         self.layout().activate()
 
     def go_to_box(self, idx: int):
+        """
+        Navigates to the specified Pokémon storage box and updates the GUI accordingly.
+
+        Args:
+            idx (int): The index of the box to navigate to.
+
+        Side Effects:
+            - Updates the current box index.
+            - Triggers a full GUI refresh to display the selected box's contents.
+        """
         self.current_box_idx = idx
         self.refresh_gui()
 
     def looparound_go_to_box(self, idx: int, max_idx: int):
+        """
+        Navigates to a box index with wrap-around behavior.
+
+        If the provided index is less than 0, wraps around to the maximum index.
+        If the index exceeds the maximum, wraps around to 0.
+        Then updates the GUI to show the selected box.
+
+        Args:
+            idx (int): The target box index to navigate to.
+            max_idx (int): The maximum valid box index.
+
+        Side Effects:
+            - Updates the current box index with wrapping.
+            - Triggers a GUI refresh to display the selected box.
+        """
         if idx < 0:
             idx = max_idx
         elif idx > max_idx:
@@ -265,6 +331,20 @@ class PokemonPC(QDialog):
         self.go_to_box(idx)
 
     def adjust_pixmap_size(self, pixmap, max_width, max_height):
+        """
+        Scales a QPixmap to fit within the specified maximum width and height while maintaining aspect ratio.
+
+        If the pixmap's width exceeds `max_width`, it is scaled down proportionally.
+        Note: This implementation currently only scales based on width and does not consider `max_height`.
+
+        Args:
+            pixmap (QPixmap): The original pixmap to be resized.
+            max_width (int): The maximum allowed width.
+            max_height (int): The maximum allowed height (currently unused).
+
+        Returns:
+            QPixmap: The scaled pixmap, or the original if no scaling was needed.
+        """
         original_width = pixmap.width()
         original_height = pixmap.height()
 
@@ -289,6 +369,23 @@ class PokemonPC(QDialog):
         return []
     
     def filter_pokemon_list(self, pokemon_list: list) -> list:
+        """
+        Filters a list of Pokémon dictionaries based on multiple UI-selected criteria.
+
+        The filtering considers:
+        - Search text matching Pokémon name (case-insensitive).
+        - Selected Pokémon type from a dropdown.
+        - Selected tier category from a dropdown.
+        - Whether only favorites should be shown.
+        - Selected generation range based on Pokémon ID.
+
+        Args:
+            pokemon_list (list): List of Pokémon dictionaries to filter. Each dictionary should
+                contain keys like "name", "type", "tier", "is_favorite", and "id".
+
+        Returns:
+            list: A new list containing only Pokémon that match all the active filter criteria.
+        """
         def filtering_func(pokemon: dict) -> bool:
             if self.search_edit is not None:
                 if self.search_edit.text().lower() not in pokemon.get("name").lower():
@@ -329,6 +426,24 @@ class PokemonPC(QDialog):
         return list(filter(filtering_func, pokemon_list.copy()))
     
     def sort_pokemon_list(self, pokemon_list: list) -> list:
+        """
+        Sorts a list of Pokémon dictionaries based on selected sorting criteria and order.
+
+        Sorting criteria are determined by UI checkboxes and can include:
+        - Sorting by Pokémon ID
+        - Sorting by name and nickname
+        - Sorting by level
+
+        The sort order (ascending or descending) is controlled by a separate checkbox.
+
+        Args:
+            pokemon_list (list): List of Pokémon dictionaries to sort. Each dictionary should
+                contain keys such as "id", "name", "nickname", and "level" depending on sorting.
+
+        Returns:
+            list: The sorted list of Pokémon dictionaries according to the selected criteria and order.
+                If no sorting criteria are selected, returns the original list unchanged.
+        """
         reverse = self.desc_sort is not None and self.desc_sort.isChecked()
         filters = []
         if self.sort_by_id is not None and self.sort_by_id.isChecked():
@@ -349,6 +464,24 @@ class PokemonPC(QDialog):
             )
     
     def show_actions_submenu(self, button: QPushButton, pokemon: dict[str, Any]):
+        """
+        Displays a context menu with actions related to a specific Pokémon.
+
+        The menu includes:
+        - A non-interactive title showing the Pokémon's nickname, name, gender symbol, and level.
+        - An option to view detailed information about the Pokémon.
+        - An option to select the Pokémon as the main Pokémon.
+        - An option to toggle the Pokémon's favorite status.
+
+        Args:
+            button (QPushButton): The button widget where the menu will be displayed.
+            pokemon (dict[str, Any]): A dictionary containing Pokémon data, expected to include keys
+                like "name", "nickname", "gender", "level", and "is_favorite".
+
+        Side Effects:
+            - Displays a popup menu aligned below the specified button.
+            - Connects menu actions to respective handlers in the parent class.
+        """
         menu = QMenu(self)
 
         # QMenu doesn't have a "window name" property or the like. So let's emulate one.
@@ -386,6 +519,22 @@ class PokemonPC(QDialog):
         menu.exec(button.mapToGlobal(button.rect().topRight()))
 
     def show_pokemon_details(self, pokemon):
+        """
+        Opens a detailed view window displaying comprehensive information about a specific Pokémon.
+
+        The method prepares detailed stats by merging base stats or stats with experience points,
+        then instantiates a `PokemonCollectionDetails` dialog with various Pokémon attributes.
+
+        Args:
+            pokemon (dict): A dictionary containing Pokémon data with expected keys such as:
+                - 'name', 'level', 'id', 'ability', 'type', 'attacks', 'base_experience',
+                'growth_rate', 'ev', 'iv', 'gender'
+                - Optional keys include 'shiny', 'nickname', 'individual_id', 'pokemon_defeated',
+                'everstone', 'captured_date', and 'xp'.
+
+        Raises:
+            ValueError: If neither 'base_stats' nor 'stats' are available in the Pokémon dictionary.
+        """
         if pokemon.get('base_stats'):
             detail_stats = {**pokemon['base_stats'], "xp": pokemon.get("xp", 0)}
         elif pokemon.get('stats'):
@@ -419,6 +568,21 @@ class PokemonPC(QDialog):
         )
 
     def toggle_favorite(self, pokemon: dict[list, Any]):
+        """
+        Toggles the favorite status of a specific Pokémon in the saved Pokémon data.
+
+        This method loads the current Pokémon list, finds the Pokémon by its unique individual ID,
+        switches its "is_favorite" status, saves the updated list back to file, and refreshes the GUI.
+
+        Args:
+            pokemon (dict[list, Any]): A dictionary representing the Pokémon, expected to contain
+                a unique "individual_id" key and a "name" key.
+
+        Side Effects:
+            - Updates the "is_favorite" status of the Pokémon in persistent storage.
+            - Refreshes the GUI to reflect the change.
+            - Logs an info message if the Pokémon is not found in the list.
+        """
         pokemon_list = self.load_pokemon_data()
         for i in range(len(pokemon_list)):
             if pokemon_list[i].get("individual_id") == pokemon["individual_id"]:
@@ -436,9 +600,18 @@ class PokemonPC(QDialog):
 
     def ensure_all_pokemon_have_tier_info(self):
         """
-        At the time this PokémonPC class was implemented, tier data for caught Pokemon wasn't saved.
-        This means that filtering by tier is impossible.
-        To address this issue, I made this method that "fixes" the file where caught pokemon are saved.
+        Ensures all Pokémon in the saved collection have tier information.
+
+        Since tier data was not saved for caught Pokémon when this class was first implemented,
+        filtering by tier would be impossible. This method updates the saved Pokémon data
+        file to include missing tier information by looking up each Pokémon’s tier based on its ID.
+
+        It updates the persistent storage file with corrected tier data and logs warnings
+        if tier information cannot be found for any Pokémon.
+
+        Side Effects:
+            - Modifies the saved Pokémon data file to include tier information where missing.
+            - Logs warnings for Pokémon whose tier information is unavailable.
         """
         pokemon_list = self.load_pokemon_data()
         pokemon_tiers = [p.get("tier") for p in pokemon_list]
