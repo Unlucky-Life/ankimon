@@ -213,6 +213,7 @@ class PokemonPC(QDialog):
         self.search_edit = QLineEdit()
         self.search_edit.setPlaceholderText("Search Pokémon (by nickname, name)")
         self.search_edit.setText(prev_text)
+        self.search_edit.returnPressed.connect(lambda: self.go_to_box(0))
         search_button = QPushButton("Search")
         search_button.clicked.connect(lambda: self.go_to_box(0))
         # Type filtering
