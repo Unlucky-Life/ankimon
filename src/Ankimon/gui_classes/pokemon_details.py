@@ -20,7 +20,7 @@ from ..functions.sprite_functions import get_sprite_path
 from ..gui_entities import MovieSplashLabel
 from ..business import split_string_by_length
 from ..utils import format_move_name, load_custom_font
-from ..resources import icon_path, addon_dir, mainpokemon_path, mypokemon_path
+from ..resources import icon_path, addon_dir, mainpokemon_path, mypokemon_path, pokemon_tm_learnset_path
 from ..texts import attack_details_window_template, attack_details_window_template_end, remember_attack_details_window_template, remember_attack_details_window_template_end
 
 def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats, attacks, base_experience, growth_rate, ev, iv, gender, nickname, individual_id, pokemon_defeated, everstone, captured_date, language, gif_in_collection, remove_levelcap, logger, refresh_callback):
@@ -713,7 +713,7 @@ def tm_attack_details_window(id: int, current_pokemon_moveset: list[str], logger
     # HTML content
     html_content = remember_attack_details_window_template
     from pathlib import Path
-    with open(Path(addon_dir) / "user_files" / "data_files" / "pokemon_tm_learnset.json", "r") as f:
+    with open(pokemon_tm_learnset_path, "r") as f:
         pokemon_tm_learnset = json.load(f)
     
     pokemon_name = search_pokedex_by_id(id)
