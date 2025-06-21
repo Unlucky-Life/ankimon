@@ -77,7 +77,6 @@ from .utils import (
     play_sound,
     load_collected_pokemon_ids,
 )
-from .functions.battle_functions import status_effect
 from .functions.reviewer_iframe import create_iframe_html, create_head_code
 from .functions.url_functions import open_team_builder, rate_addon_url, report_bug, join_discord_url, open_leaderboard_url
 from .functions.badges_functions import check_badges, handle_achievements, check_and_award_badges
