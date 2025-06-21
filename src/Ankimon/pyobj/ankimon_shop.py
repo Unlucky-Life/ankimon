@@ -44,6 +44,10 @@ class PokemonShopManager:
         self.todays_daily_tms = []
         self.shop_save_file = user_path / "todays_shop.json"
 
+        # Height and width of the frames containing the displayed items
+        self.frame_h = 120
+        self.frame_w = 400
+
         self.tm_price = 1000
 
     def toggle_window(self):
@@ -75,18 +79,9 @@ class PokemonShopManager:
 
         # --- Left Side for Daily Items ---
         daily_layout = QVBoxLayout()  # Vertical layout for daily items
-        daily_layout_title_and_button = QHBoxLayout()
         daily_label = QLabel("<h1>Daily Items</h1>")
         daily_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        daily_layout_title_and_button.addWidget(daily_label)
-
-        # Reroll button to reroll daily items
-        daily_items_reroll_button = QPushButton(f"Reroll daily items  ${self.daily_items_reroll_cost}")
-        daily_items_reroll_button.setFixedSize(180, 25)
-        daily_items_reroll_button.clicked.connect(lambda: self.reroll_daily_items(cost=self.daily_items_reroll_cost))
-        daily_layout_title_and_button.addWidget(daily_items_reroll_button, alignment=Qt.AlignmentFlag.AlignCenter)
-
-        daily_layout.addLayout(daily_layout_title_and_button, stretch=1)  # Left side
+        daily_layout.addWidget(daily_label)
 
         # Create a grid layout for displaying daily items
         daily_grid = QGridLayout()
@@ -100,12 +95,8 @@ class PokemonShopManager:
 
             # Create a QFrame to wrap the row content
             frame = QFrame()
-            frame.setStyleSheet("""
-                QFrame {
-                    border: 1px solid #FFFFFF;
-                    padding: 5px;
-                }
-            """)
+            frame.setFixedHeight(self.frame_h)
+            frame.setFixedWidth(self.frame_w)
 
             # Create a layout inside the frame for the row content
             frame_layout = QHBoxLayout(frame)
@@ -166,12 +157,8 @@ class PokemonShopManager:
 
             # Create a QFrame to wrap the row content
             frame = QFrame()
-            frame.setStyleSheet("""
-                QFrame {
-                    border: 1px solid #FFFFFF;
-                    padding: 5px;
-                }
-            """)
+            frame.setFixedHeight(self.frame_h)
+            frame.setFixedWidth(self.frame_w)
 
             # Create a layout inside the frame for the row content
             frame_layout = QHBoxLayout(frame)
@@ -229,12 +216,8 @@ class PokemonShopManager:
 
             # Create a QFrame to wrap the row content
             frame = QFrame()
-            frame.setStyleSheet("""
-                QFrame {
-                    border: 1px solid #FFFFFF;
-                    padding: 5px;
-                }
-            """)
+            frame.setFixedHeight(self.frame_h)
+            frame.setFixedWidth(self.frame_w)
 
             # Create a layout inside the frame for the row content
             frame_layout = QHBoxLayout(frame)
@@ -282,9 +265,13 @@ class PokemonShopManager:
         main_layout.addLayout(daily_tms_layout, stretch=1)  # Middle
         main_layout.addLayout(standard_layout, stretch=1)  # Right side
 
-        top_layout = QVBoxLayout()
         self.currency_qlabel = QLabel(f"<h2>Current Cash: ${self.settings_obj.get('trainer.cash', 0)}</h2>")
+        daily_items_reroll_button = QPushButton(f"Reroll daily items  ${self.daily_items_reroll_cost}")
+        daily_items_reroll_button.setFixedSize(180, 25)
+        daily_items_reroll_button.clicked.connect(lambda: self.reroll_daily_items(cost=self.daily_items_reroll_cost))
+        top_layout = QVBoxLayout()
         top_layout.addWidget(self.currency_qlabel)
+        top_layout.addWidget(daily_items_reroll_button)
 
         # Create a vertical layout for the complete window
         complete_layout = QVBoxLayout(self.window)
