@@ -44,7 +44,7 @@ class PokemonShopManager:
         self.todays_daily_tms = []
         self.shop_save_file = user_path / "todays_shop.json"
 
-        self.tm_price = 10
+        self.tm_price = 1000
 
     def toggle_window(self):
         """Toggles the visibility of the Pokémon shop window."""
