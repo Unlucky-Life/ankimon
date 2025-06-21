@@ -20,7 +20,7 @@ from ..functions.sprite_functions import get_sprite_path
 from ..gui_entities import MovieSplashLabel
 from ..business import split_string_by_length
 from ..utils import format_move_name, load_custom_font
-from ..resources import icon_path, addon_dir, mainpokemon_path, mypokemon_path, pokemon_tm_learnset_path
+from ..resources import icon_path, addon_dir, mainpokemon_path, mypokemon_path, pokemon_tm_learnset_path, itembag_path
 from ..texts import attack_details_window_template, attack_details_window_template_end, remember_attack_details_window_template, remember_attack_details_window_template_end
 
 def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats, attacks, base_experience, growth_rate, ev, iv, gender, nickname, individual_id, pokemon_defeated, everstone, captured_date, language, gif_in_collection, remove_levelcap, logger, refresh_callback):
@@ -717,11 +717,17 @@ def tm_attack_details_window(id: int, current_pokemon_moveset: list[str], logger
         pokemon_tm_learnset = json.load(f)
     
     pokemon_name = search_pokedex_by_id(id)
-    attack_set = pokemon_tm_learnset[pokemon_name]
+    tm_learnset = pokemon_tm_learnset[pokemon_name]  # TMs that can be learnt by the Pokemon
+    with open(itembag_path, "r", encoding="utf-8") as json_file:
+        itembag_list = json.load(json_file)
+    owned_tms = [item["item"] for item in itembag_list if item.get("type") == "TM"]
+    attack_set = [tm for tm in tm_learnset if tm in owned_tms]
 
     # Loop through the list of attacks and add them to the HTML content
     for attack in attack_set:
-        move = find_details_move(format_move_name(attack))
+        move = find_details_move(attack) or find_details_move(
+            format_move_name(attack)
+        )
 
         if move is None:
             continue
