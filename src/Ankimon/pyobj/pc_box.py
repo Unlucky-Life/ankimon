@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-from aqt import mw
+from aqt import mw, gui_hooks
 from aqt.qt import (
     Qt,
     QDialog,
@@ -12,6 +12,9 @@ from aqt.qt import (
     QGridLayout,
     QPixmap,
 )
+
+from aqt.theme import theme_manager # Check if light / dark mode in Anki
+
 from PyQt6.QtWidgets import QLineEdit, QComboBox, QCheckBox, QMenu, QWidget
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QIcon, QFont, QAction, QMovie, QCloseEvent
@@ -76,7 +79,7 @@ class PokemonPC(QDialog):
             settings: Settings,
             main_pokemon: PokemonObject,
             parent=mw,
-            ):
+    ):
         super().__init__(parent)
 
         self.logger = logger
@@ -97,7 +100,7 @@ class PokemonPC(QDialog):
         self.details_widget = QWidget()  # Widget to hold details
         self.pokemon_details_layout = None
 
-        # These are widgets that will need to hold data through refreshes. Typically, those are the widgets used for filtering and sorting
+        # Widgets for filtering and sorting
         self.search_edit = None
         self.type_combo = None
         self.generation_combo = None
@@ -108,9 +111,19 @@ class PokemonPC(QDialog):
         self.sort_by_level = None
         self.desc_sort = None  # Sort by descending order
 
-        self.ensure_all_pokemon_have_tier_info()  # Necessary for legacy reasons
+        # Subscribe to theme change hook to update UI dynamically
+        gui_hooks.theme_did_change.append(self.on_theme_change)
 
+        self.ensure_all_pokemon_have_tier_info()  # Necessary for legacy reasons
         self.create_gui()
+    
+    def on_theme_change(self):
+        """
+        Callback function triggered when Anki's theme changes (light to dark or vice versa).
+        Refreshes the GUI to apply the new theme settings.
+        """
+        self.refresh_gui()
+
 
     def create_gui(self):
         """
@@ -138,19 +151,73 @@ class PokemonPC(QDialog):
         """
         self.setWindowTitle("Axil's PC")
 
-        self.gif_in_collection = self.settings.get("gui.gif_in_collection", 11)  # In case the settings changed
+        # Determine theme based on Anki's night mode
+        is_dark_mode = theme_manager.night_mode # Correctly checks Anki's theme
+
+        # Define authentic Pokémon-themed color palettes
+        if is_dark_mode:
+            # Dark Mode: Inspired by modern, sleek game UIs
+            background_color = "#003A70"
+            text_color = "#E0E0E0"
+            button_bg = "#3B4CCA"
+            button_border = "#6A73D9"
+            hover_color = "#6A73D9"
+            favorite_color = "#B3A125"
+            input_bg = "#002B5A" # Slightly lighter than background for input fields
+            slot_bg_color = "#002B5A"
+        else:
+            # Light Mode: Inspired by classic PC Box / Pokédex
+            background_color = "#E6F3FF"
+            text_color = "#003A70"
+            button_bg = "#3D7DCA"
+            button_border = "#003A70"
+            hover_color = "#A8D8FF"
+            favorite_color = "#FFDE00"
+            input_bg = "#FFFFFF" # White background for input fields
+            slot_bg_color = "#CCE5FF"
+
+        # Set stylesheet for the entire dialog, now correctly using all theme variables
+        self.setStyleSheet(f"""
+            QDialog {{
+                background-color: {background_color};
+            }}
+            QWidget {{
+                color: {text_color};
+            }}
+            QPushButton {{
+                background-color: {button_bg};
+                border: 1px solid {button_border};
+                border-radius: 5px;
+                padding: 5px;
+                color: {text_color};
+            }}
+            QPushButton:hover {{
+                background-color: {hover_color};
+            }}
+            QLineEdit, QComboBox {{
+                background-color: {input_bg};
+                border: 1px solid {button_border};
+                border-radius: 3px;
+                padding: 3px;
+                color: {text_color};
+            }}
+            QLabel {{
+                color: {text_color};
+            }}
+        """)
+
+        self.gif_in_collection = self.settings.get("gui.gif_in_collection", 11)
 
         pokemon_list = self.load_pokemon_data()
-        pokemon_list = self.filter_pokemon_list(pokemon_list)  # Apply all the selected filters
-        pokemon_list = self.sort_pokemon_list(pokemon_list)  # Sort the list with the chosen sorting keys
+        pokemon_list = self.filter_pokemon_list(pokemon_list)
+        pokemon_list = self.sort_pokemon_list(pokemon_list)
         max_box_idx = (len(pokemon_list) - 1) // (self.n_rows * self.n_cols)
 
-        # Left side: Collection panel with fixed width based on grid
+        # Collection panel
         collection_layout = QVBoxLayout()
-        # Top part of the box that allows you to navigate between boxes
         box_selector_layout = QHBoxLayout()
-        prev_box_button = QPushButton(f"◀")
-        next_box_button = QPushButton(f"▶")
+        prev_box_button = QPushButton("◀")
+        next_box_button = QPushButton("▶")
         prev_box_button.setFixedSize(70, 50)
         next_box_button.setFixedSize(70, 50)
         prev_box_button.setFont(QFont('System', 25))
@@ -161,13 +228,13 @@ class PokemonPC(QDialog):
         curr_box_label.setFixedSize(150, 50)
         curr_box_label.setFont(load_custom_font(20, int(self.settings.get("misc.language", 11))))
         curr_box_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        curr_box_label.setStyleSheet("border: 1px solid gray;")
+        curr_box_label.setStyleSheet(f"border: 1px solid {button_border}; background-color: {background_color};")
         box_selector_layout.addWidget(prev_box_button, alignment=Qt.AlignmentFlag.AlignCenter)
         box_selector_layout.addWidget(curr_box_label, alignment=Qt.AlignmentFlag.AlignCenter)
         box_selector_layout.addWidget(next_box_button, alignment=Qt.AlignmentFlag.AlignCenter)
         collection_layout.addLayout(box_selector_layout)
-        
-        # Central part of the box that displays the Pokémon
+
+        # Pokémon grid
         start_index = self.current_box_idx * self.n_cols * self.n_rows
         end_index = (self.current_box_idx + 1) * self.n_cols * self.n_rows
         pokemon_list_slice = pokemon_list[start_index:end_index]
@@ -175,30 +242,39 @@ class PokemonPC(QDialog):
         for row in range(self.n_rows):
             for col in range(self.n_cols):
                 pokemon_idx = col * self.n_rows + row
-                if pokemon_idx >= len(pokemon_list_slice):  # This happens on the last box, where there isn't enough pokemon to fill the box
+                if pokemon_idx >= len(pokemon_list_slice):
                     empty_label = QLabel()
                     empty_label.setFixedSize(self.slot_size, self.slot_size)
                     pokemon_grid.addWidget(empty_label, col, row, alignment=Qt.AlignmentFlag.AlignCenter)
                     continue
 
                 pokemon = pokemon_list_slice[pokemon_idx]
-                pkmn_image_path = get_sprite_path(
-                    "front",
-                    "gif" if self.gif_in_collection else "png",
-                    pokemon['id'],
-                    pokemon.get("shiny", False),
-                    pokemon["gender"]
-                )
-
+                pkmn_image_path = get_sprite_path("front", "gif" if self.gif_in_collection else "png", pokemon['id'], pokemon.get("shiny", False), pokemon["gender"])
                 pokemon_button = QPushButton("")
                 pokemon_button.setFixedSize(self.slot_size, self.slot_size)
-                style_sheet_str = "QPushButton:hover {background-color: lightblue;}"
+                
                 if pokemon.get("is_favorite", False):
-                    style_sheet_str += " QPushButton {background-color: #FFEB7A;}"
-                pokemon_button.setStyleSheet(style_sheet_str)
-                pokemon_button.clicked.connect(
-                    lambda checked, pb=pokemon_button, pkmn=pokemon: self.show_actions_submenu(pb, pkmn)
-                    )
+                    slot_style_bg = favorite_color
+                    slot_style_hover_bg = favorite_color # Favorite color doesn't change on hover
+                else:
+                    slot_style_bg = slot_bg_color
+                    slot_style_hover_bg = hover_color
+
+                # Apply the style
+                style_sheet_str = f"""
+                    QPushButton {{
+                        background-color: {slot_style_bg};
+                        border: 1px solid {button_border};
+                        border-radius: 5px;
+                    }}
+                    QPushButton:hover {{
+                        background-color: {slot_style_hover_bg};
+                    }}
+                """
+                pokemon_button.setStyleSheet(style_sheet_str)     
+                           
+                pokemon_button.clicked.connect(lambda checked, pb=pokemon_button, pkmn=pokemon: self.show_actions_submenu(pb, pkmn))
+                
                 if self.gif_in_collection:
                     scaled_movie_label = ScaledMovieLabel(pkmn_image_path, self.slot_size - 10, self.slot_size - 10)
                     scaled_movie_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
@@ -284,22 +360,39 @@ class PokemonPC(QDialog):
         filters_layout.addWidget(sort_widget, 2, 1, 1, 3)
         collection_layout.addLayout(filters_layout)
 
+        # Finalizing layout
         collection_widget = QWidget()
         collection_widget.setLayout(collection_layout)
-        collection_widget.setFixedWidth(self.n_cols * (self.slot_size + 20) + 50)  # Adjusted for grid + padding
-        collection_widget.setFixedHeight(self.n_rows * (self.slot_size + 20) + 100)  # Adjusted for grid + padding
+        collection_widget.setFixedWidth(self.n_cols * (self.slot_size + 20) + 50)
+        collection_widget.setFixedHeight(self.n_rows * (self.slot_size + 20) + 100)
+        collection_widget.setStyleSheet(f"background-color: {background_color};")
 
-        self.main_layout.addWidget(collection_widget, 1)  # Collection gets fixed space
+        self.main_layout.addWidget(collection_widget, 1)
 
-        #self.details_layout = QVBoxLayout()
+        # Check for existing details panel and apply styles
         if self.pokemon_details_layout is not None:
             self.details_widget = QWidget()
             self.details_widget.setLayout(self.pokemon_details_layout)
-            self.details_widget.setFixedWidth(self.n_cols * (self.slot_size + 20) + 50)
-            self.details_widget.setFixedHeight(self.n_rows * (self.slot_size + 20) + 100)  # Adjusted for grid + padding
-            self.main_layout.addWidget(self.details_widget, 2)  # Details gets more flexible space
-        self.setLayout(self.main_layout)
+            self.details_widget.setMinimumWidth(400) # Ensure it's visible
+            self.details_widget.setStyleSheet(f"background-color: {background_color};")
+            self.main_layout.addWidget(self.details_widget, 2)
+        else:
+            # Ensure the panel is collapsed if no pokemon is selected
+            self.details_widget = QWidget()
+            self.details_widget.setLayout(QVBoxLayout()) # Placeholder layout
+            self.details_widget.setMinimumWidth(0)
+            self.details_widget.setMaximumWidth(0)
+            self.main_layout.addWidget(self.details_widget, 2)
 
+        self.setLayout(self.main_layout)
+    
+    def on_theme_change(self):
+        """
+        Callback function triggered when Anki's theme changes (light to dark or vice versa).
+        Refreshes the GUI to apply the new theme settings.
+        """
+        self.refresh_gui()
+        
     def refresh_gui(self):
         """
         Refreshes the entire graphical user interface by rebuilding its layout.
