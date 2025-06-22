@@ -1,12 +1,51 @@
 import json
 import os
+
+# PyQt imports
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from PyQt6.QtWidgets import QRadioButton, QHBoxLayout, QMainWindow, QScrollArea, QButtonGroup
 from PyQt6.QtWidgets import QMessageBox
+
+#Anki imports
 from aqt.utils import showWarning, showInfo
 from aqt import mw
 
 class SettingsWindow(QMainWindow):
+    """
+    A window for displaying and editing application settings.
+    This class provides a graphical interface for users to view and modify configuration settings.
+    It supports boolean, integer, and string settings, displaying friendly names and descriptions
+    loaded from external JSON files. Changes are tracked and can be saved via provided callbacks.
+    Args:
+        config (dict): The current configuration dictionary.
+        set_config_callback (callable): Function to call when a setting is updated.
+        save_config_callback (callable): Function to call when saving the configuration.
+        load_config_callback (callable): Function to call to reload the configuration.
+    Attributes:
+        config (dict): The current (possibly modified) configuration.
+        original_config (dict): A copy of the original configuration for change detection.
+        set_config_callback (callable): Callback for updating individual settings.
+        save_config_callback (callable): Callback for saving the configuration.
+        load_config (callable): Callback for loading the configuration.
+        descriptions (dict): Setting descriptions loaded from JSON.
+        friendly_names (dict): Friendly setting names loaded from JSON.
+        label_settings (dict): Mapping of setting labels to their values.
+    Methods:
+        show_window():
+            Loads the latest configuration and displays the settings window.
+        update_config(key, value):
+            Updates a setting in the configuration and calls the update callback.
+        load_descriptions():
+            Loads setting descriptions from a JSON file.
+        load_friendly_names():
+            Loads friendly setting names from a JSON file.
+        setup_ui():
+            Sets up the user interface for the settings window.
+        handle_radio_selection(checked, key, value):
+            Handles changes to boolean settings via radio buttons.
+        on_save():
+            Saves the configuration, displays changed settings, and shows confirmation dialogs.
+    """
     def __init__(self, config, set_config_callback, save_config_callback, load_config_callback):
         super().__init__()
         self.config = config
