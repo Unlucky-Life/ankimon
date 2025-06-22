@@ -1,5 +1,7 @@
 import random
 import json
+import uuid
+from datetime import datetime
 
 from aqt.utils import showWarning
 from aqt.qt import (
@@ -67,6 +69,7 @@ class StarterWindow(QWidget):
             widget = item.widget()
             if widget:
                 widget.deleteLater()
+
     def keyPressEvent(self, event):
         # Close the main window when the spacebar is pressed
         if event.key() == Qt.Key.Key_G:  # Updated to Key_G for PyQt 6
@@ -136,8 +139,17 @@ class StarterWindow(QWidget):
             "base_experience": base_experience,
             "current_hp": calculate_hp(int(stats["hp"]), level, ev, iv),
             "growth_rate": growth_rate,
-            "evos": evos
+            "evos": evos,
+            "individual_id":  str(uuid.uuid4()),
+            "friendship": 0,
+            "pokemon_defeated": 0,
+            "captured_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "everstone": False,
+            "shiny": False,
+            "mega": False,
+            "special-form": None,
         }
+
         # Load existing Pokémon data if it exists
         if mypokemon_path.is_file():
             with open(mypokemon_path, "r", encoding="utf-8") as json_file:
@@ -167,8 +179,6 @@ class StarterWindow(QWidget):
             # Reload the JSON data from the file
             with open(str(starters_path), "r", encoding="utf-8") as file:
                 pokemon_in_tier = json.load(file)
-                # Convert the input to lowercase to match the values in our JSON data
-                category_name = category.lower()
                 # Filter the Pokémon data to only include those in the given tier
                 water_starter = []
                 fire_starter = []
