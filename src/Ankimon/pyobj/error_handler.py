@@ -18,7 +18,7 @@ from anki.buildinfo import version as anki_version
 
 # Path configurations
 addon_dir = Path(__file__).parents[1]
-user_path = addon_dir / "user_files"
+pyobj_path = addon_dir / "pyobj"
 manifest_path = addon_dir / "manifest.json"
 
 def get_environment_info() -> str:
@@ -222,7 +222,7 @@ def show_warning_with_traceback(
     mw.logger.log("error", f"{message}: {exception}\n{env_info}\n{tb_text}")
 
     # Load error images
-    error_json_path = user_path / 'error_images.json'
+    error_json_path = pyobj_path / 'error_images.json'
     chosen_image = load_error_images(error_json_path)
 
     # Create and configure dialog
