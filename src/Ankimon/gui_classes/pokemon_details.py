@@ -698,7 +698,7 @@ def tm_attack_details_window(id: int, current_pokemon_moveset: list[str], logger
     window = QDialog()
     window.setWindowIcon(QIcon(str(icon_path)))
     layout = QHBoxLayout()
-    window.setWindowTitle("Forget Attacks")  # Optional: Set a window title
+    window.setWindowTitle("Learn TM Move")  # Optional: Set a window title
     # Outer layout contains everything
     outer_layout = QVBoxLayout(window)
 
