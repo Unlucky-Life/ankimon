@@ -57,6 +57,8 @@ class SettingsWindow(QMainWindow):
         self.setMaximumWidth(600)
         self.setMaximumHeight(900)
         self.parent = mw
+        #use anki's addonmanager to open this window when trying to open settings
+        #through Anki -> Tools -> Addons - Ankimon - Settings
         mw.addonManager.setConfigAction(__name__, self.show_window)
 
         # Load settings descriptions and friendly names
