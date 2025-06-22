@@ -238,7 +238,7 @@ class ItemWindow(QWidget):
     def ItemLabel(self, item_name, quantity, **kwargs):
         item_file_path = items_path / f"{item_name}.png"
         if kwargs.get("item_type") == "TM":
-            item_file_path = "TODO"
+            item_file_path = items_path / "Bag_TM_Normal_SV_Sprite.png"
         item_frame = QVBoxLayout()  # itemframe
         info_item_button = QPushButton("More Info")
         info_item_button.clicked.connect(lambda: self.more_info_button_act(item_name))
