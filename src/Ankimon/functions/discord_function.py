@@ -3,20 +3,112 @@ import random
 import time
 from ..addon_files.lib.pypresence import Presence
 from aqt.utils import showWarning, tooltip
-from aqt import mw
+from aqt import mw, gui_hooks
+
+# Discord Rich Presence client ID and large image URL
+client_id = '1319014423876075541'  # Replace with your actual client ID
+large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
+
+def initialize_discord_presence(parent=mw):
+    """
+    Initialize Discord Rich Presence for Ankimon.
+    Args:
+        ankimon_tracker: Tracker object for Ankimon game state.
+        logger: Logger object for logging.
+        mw.settings_obj: Settings object for user preferences.
+        parent: Parent object, defaults to mw from anki (main window).
+    Returns:
+        DiscordPresence instance if successful, None otherwise.
+    """
+    try:
+        if mw.settings_obj.get("misc.discord_rich_presence",False) == True:
+            mw.ankimon_presence = DiscordPresence(client_id, large_image_url)  # Establish connection and get the presence instance
+
+            # Register the hook functions with Anki's GUI hooks
+            gui_hooks.reviewer_did_answer_card.append(on_reviewer_initialized)
+            gui_hooks.reviewer_will_end.append(mw.ankimon_presence.stop_presence)
+            gui_hooks.sync_did_finish.append(mw.ankimon_presence.stop)
+    except Exception as e:
+        mw.logger.log("info",f"Error with Discord setup: {e}")
+        return None
+
+# Hook functions for Anki
+def on_reviewer_initialized(rev, card, ease):
+    client_id = '1319014423876075541'  # Replace with your actual client ID
+    large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
+    # if user opens the reviewer, check if the Discord presence is already initialized
+    # else 
+    if mw.ankimon_presence:
+        # if the presence is already initialized, start the loop if not set yet
+        if mw.ankimon_presence.loop is False:
+            mw.ankimon_presence.loop = True
+            mw.ankimon_presence.start()
+    else:
+        # if the presence is not initialized, create a new instance
+        mw.ankimon_presence = DiscordPresence(client_id, large_image_url)  # Establish connection and get the presence instance
+        mw.ankimon_presence.loop = True
+        mw.ankimon_presence.start()
+            
+def on_reviewer_will_end(*args):
+    # if the user closes the reviewer, stop the Discord presence loop
+    mw.ankimon_presence.loop = False
+    mw.ankimon_presence.stop_presence()
 
 class DiscordPresence:
-    def __init__(self, client_id, large_image_url, ankimon_tracker, logger, settings_obj, parent=mw):
+    """
+    Manages Discord Rich Presence integration for Ankimon.
+    This class handles connecting to Discord, updating the user's Rich Presence status with motivational or context-aware messages,
+    and managing the lifecycle of the presence updates in a background thread.
+    Attributes:
+        RPC: The Discord Rich Presence client instance.
+        large_image_url (str): URL for the large image to display in the presence.
+        ankimon_tracker: Object tracking Ankimon game state and statistics.
+        logger_obj: Logger object for logging events and errors.
+        settings: Settings object for retrieving user preferences.
+        loop (bool): Controls the update loop for presence.
+        start_time (float): Timestamp when presence started.
+        thread (threading.Thread): Background thread for updating presence.
+        quotes (list): List of general motivational quotes for presence.
+        special_quotes (list): List of dynamic, context-aware quotes based on Ankimon state.
+        state (str): Current state message for presence.
+    Args:
+        client_id (str): Discord application client ID.
+        large_image_url (str): URL for the large image in presence.
+        ankimon_tracker: Tracker object for Ankimon game state.
+        logger: Logger object for logging.
+        settings_obj: Settings object for user preferences.
+        parent: Parent object, defaults to mw (main window).
+    Methods:
+        update_presence():
+            Periodically updates Discord Rich Presence with a new state message, alternating between general and special quotes
+            based on user settings.
+        start():
+            Starts the background thread to continuously update Discord Rich Presence.
+        stop():
+            Stops the background thread and clears the Discord Rich Presence.
+        stop_presence():
+            Updates the Discord Rich Presence to indicate a break when stopping.
+    """
+    def __init__(self, client_id, large_image_url, parent=mw):
         try:
+            # Initialize Discord Rich Presence
             self.RPC = Presence(client_id)
+            # Connect to Discord
             self.RPC.connect()
             self.large_image_url = large_image_url
-            self.ankimon_tracker = ankimon_tracker
-            self.logger_obj = mw.logger
-            self.settings = settings_obj
+            self.ankimon_tracker = mw.ankimon_tracker
+            self.settings = mw.settings_obj
+            self.client_id = client_id
+            self.large_image_url = large_image_url
+            
+            #start loop to update presence
             self.loop = True
+
+            #get the start time of study session
             self.start_time = time.time()
             self.thread = None
+
+            # Initialize quotes and special quotes
             self.quotes = [
                 "Study hard, your Ankimon is watching!",
                 "Ankimon, I choose you—let’s master this deck!",
@@ -48,6 +140,7 @@ class DiscordPresence:
                 f"Great job! {self.ankimon_tracker.easy_count} cards rated 'Easy'!",
                 f"{self.ankimon_tracker.hard_count} cards rated 'Hard'—you're tackling the tough ones!",
             ]
+            # Set random intial quote
             self.state = random.choice(self.quotes)
         except Exception as e:
             mw.logger.log("info",f"Error with Discord setup: {e}")
@@ -57,6 +150,7 @@ class DiscordPresence:
         Update the Discord Rich Presence with a new state message.
         """
         try:
+            # while loop is True, update the presence every 30 seconds
             while self.loop:
                 self.RPC.update(
                     state = random.choice(self.quotes) if int(self.settings.get("misc.discord_rich_presence_text", 1)) == 1 else random.choice(self.special_quotes),
@@ -84,6 +178,7 @@ class DiscordPresence:
         Stop updating the Discord Rich Presence.
         """
         try:
+            # Stop the loop and clear the presence when loop is set to false
             self.loop = False
             if hasattr(self, 'thread') and self.thread and self.thread.is_alive():
                 self.thread.join() # Wait for the thread to finish
@@ -97,6 +192,7 @@ class DiscordPresence:
         Update the Discord Rich Presence to indicate a break when stopping.
         """
         try:
+            # when user moves to deck overview set loop to False and update presence to break state
             self.loop = False
             if not self.loop:
                 self.RPC.update(

@@ -83,7 +83,7 @@ from .functions.url_functions import open_team_builder, rate_addon_url, report_b
 from .functions.badges_functions import check_badges, handle_achievements, check_and_award_badges
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
 from .functions.drawing_utils import tooltipWithColour
-from .functions.discord_function import DiscordPresence
+from .functions.discord_function import initialize_discord_presence
 from .functions.rate_addon_functions import rate_this_addon
 from .functions.encounter_functions import (
     generate_random_pokemon,
@@ -964,29 +964,4 @@ if reviewer_buttons is True:
     # Replace the original link handler function with the modified one
     Reviewer._linkHandler = linkHandler_wrap
 
-if settings_obj.get("misc.discord_rich_presence",False) == True:
-    client_id = '1319014423876075541'  # Replace with your actual client ID
-    large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
-    mw.ankimon_presence = DiscordPresence(client_id, large_image_url, ankimon_tracker_obj, logger, settings_obj)  # Establish connection and get the presence instance
-
-    # Hook functions for Anki
-    def on_reviewer_initialized(rev, card, ease):
-        if mw.ankimon_presence:
-            if mw.ankimon_presence.loop is False:
-                mw.ankimon_presence.loop = True
-                mw.ankimon_presence.start()
-        else:
-            client_id = '1319014423876075541'  # Replace with your actual client ID
-            large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
-            mw.ankimon_presence = DiscordPresence(client_id, large_image_url, ankimon_tracker_obj, logger, settings_obj)  # Establish connection and get the presence instance
-            mw.ankimon_presence.loop = True
-            mw.ankimon_presence.start()
-            
-    def on_reviewer_will_end(*args):
-        mw.ankimon_presence.loop = False
-        mw.ankimon_presence.stop_presence()
-
-    # Register the hook functions with Anki's GUI hooks
-    gui_hooks.reviewer_did_answer_card.append(on_reviewer_initialized)
-    gui_hooks.reviewer_will_end.append(mw.ankimon_presence.stop_presence)
-    gui_hooks.sync_did_finish.append(mw.ankimon_presence.stop)
+initialize_discord_presence()
