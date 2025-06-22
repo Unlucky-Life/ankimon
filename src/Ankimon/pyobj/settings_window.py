@@ -18,6 +18,7 @@ class SettingsWindow(QMainWindow):
         self.setMaximumWidth(600)
         self.setMaximumHeight(900)
         self.parent = mw
+        mw.addonManager.setConfigAction(__name__, self.show_window)
 
         # Load settings descriptions and friendly names
         self.descriptions = self.load_descriptions()
@@ -28,7 +29,7 @@ class SettingsWindow(QMainWindow):
     def show_window(self):
         self.config = self.load_config()
         self.show()
-        self.raise_()  # Bring the window to the front
+        #self.raise_()  # Bring the window to the front
 
     def update_config(self, key, value):
         self.config[key] = value  # Directly update self.config
