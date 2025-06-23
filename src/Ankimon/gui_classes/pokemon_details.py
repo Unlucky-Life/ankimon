@@ -154,7 +154,7 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         level_label.setFixedWidth(230)
         ability_label.setFixedWidth(230)
         attacks_label.setFixedWidth(230)
-        attacks_label.setFixedHeight(150)
+        attacks_label.setFixedHeight(70)
 
         first_layout = QHBoxLayout()
         TopL_layout_Box = QVBoxLayout()
@@ -190,7 +190,6 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         qconnect(tm_attacks_details_button.clicked, lambda: tm_attack_details_window(id, attacks, logger))
         
         #free_pokemon_button = QPushButton("Release Pokemon") #add Details to Moves unneeded button
-        attacks_label.setFixedHeight(150)
         TopR_layout_Box.addWidget(attacks_label)
         TopR_layout_Box.addWidget(attacks_details_button)
         TopR_layout_Box.addWidget(remember_attacks_details_button)
@@ -198,7 +197,6 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         TopR_layout_Box.addWidget(tm_attacks_details_button)
         TopR_layout_Box.addWidget(captured_date_label)
         TopR_layout_Box.addWidget(pokemon_defeated_label)
-        TopR_layout_Box.addWidget(everstone_label)
 
         first_layout.addLayout(TopL_layout_Box)
         first_layout.addLayout(TopR_layout_Box)
@@ -208,7 +206,7 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         layout.addWidget(description_label)
         statstablelayout = QWidget()
         statstablelayout.setLayout(CompleteTable_layout)
-        statstablelayout.setFixedHeight(200)
+        statstablelayout.setFixedHeight(190)
         layout.addWidget(statstablelayout)
 
         free_pokemon_button = QPushButton("Release Pokemon")
