@@ -13,3 +13,4 @@ src/Ankimon/user_files/backups
 *.pyc
 .vscode
 debug_console.py
+src/Ankimon/user_files/todays_shop.json
