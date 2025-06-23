@@ -386,13 +386,6 @@ class PokemonPC(QDialog):
             self.main_layout.addWidget(self.details_widget, 2)
 
         self.setLayout(self.main_layout)
-    
-    def on_theme_change(self):
-        """
-        Callback function triggered when Anki's theme changes (light to dark or vice versa).
-        Refreshes the GUI to apply the new theme settings.
-        """
-        self.refresh_gui()
         
     def refresh_gui(self):
         """
