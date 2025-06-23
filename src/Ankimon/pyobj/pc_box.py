@@ -149,7 +149,7 @@ class PokemonPC(QDialog):
             - Modifies the instance's layout and widget properties.
             - Connects UI elements to their corresponding interaction handlers.
         """
-        self.setWindowTitle("Axil's PC")
+        self.setWindowTitle("Pokémon PC")
 
         # Determine theme based on Anki's night mode
         is_dark_mode = theme_manager.night_mode # Correctly checks Anki's theme
