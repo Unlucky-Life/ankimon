@@ -13,7 +13,7 @@ from .gui_classes.choose_trainer_sprite import TrainerSpriteDialog
 from .pyobj.trainer_card_window import TrainerCardGUI
 from .gui_classes.pokemon_team_window import PokemonTeamDialog
 from .gui_classes.check_files import FileCheckerApp
-from .user_files.download_sprites import show_agreement_and_download_dialog
+from .pyobj.download_sprites import show_agreement_and_download_dialog
 from .pyobj.ankimon_leaderboard import show_api_key_dialog
 from .pyobj.settings import Settings
 from .pyobj.translator import Translator
