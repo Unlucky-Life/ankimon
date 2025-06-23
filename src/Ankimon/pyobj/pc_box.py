@@ -163,6 +163,7 @@ class PokemonPC(QDialog):
             button_border = "#6A73D9"
             hover_color = "#6A73D9"
             favorite_color = "#B3A125"
+            favorite_hover_color = "#AF8308"
             input_bg = "#002B5A" # Slightly lighter than background for input fields
             slot_bg_color = "#002B5A"
         else:
@@ -173,6 +174,7 @@ class PokemonPC(QDialog):
             button_border = "#003A70"
             hover_color = "#A8D8FF"
             favorite_color = "#FFDE00"
+            favorite_hover_color = "#FFA600"
             input_bg = "#FFFFFF" # White background for input fields
             slot_bg_color = "#CCE5FF"
 
@@ -255,7 +257,7 @@ class PokemonPC(QDialog):
                 
                 if pokemon.get("is_favorite", False):
                     slot_style_bg = favorite_color
-                    slot_style_hover_bg = favorite_color # Favorite color doesn't change on hover
+                    slot_style_hover_bg = favorite_hover_color # Favorite color doesn't change on hover
                 else:
                     slot_style_bg = slot_bg_color
                     slot_style_hover_bg = hover_color
@@ -365,7 +367,6 @@ class PokemonPC(QDialog):
         collection_widget.setLayout(collection_layout)
         collection_widget.setFixedWidth(self.n_cols * (self.slot_size + 20) + 50)
         collection_widget.setFixedHeight(self.n_rows * (self.slot_size + 20) + 100)
-        collection_widget.setStyleSheet(f"background-color: {background_color};")
 
         self.main_layout.addWidget(collection_widget, 1)
 
@@ -373,7 +374,7 @@ class PokemonPC(QDialog):
         if self.pokemon_details_layout is not None:
             self.details_widget = QWidget()
             self.details_widget.setLayout(self.pokemon_details_layout)
-            self.details_widget.setMinimumWidth(400) # Ensure it's visible
+            self.details_widget.setMinimumWidth(470) # Ensure it's visible
             self.details_widget.setStyleSheet(f"background-color: {background_color};")
             self.main_layout.addWidget(self.details_widget, 2)
         else:
