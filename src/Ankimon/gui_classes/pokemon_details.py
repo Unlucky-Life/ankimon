@@ -8,18 +8,19 @@ from PyQt6.QtGui import QPixmap, QPainter, QIcon
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QScrollArea
-from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget
+from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget, QMessageBox
 
 from ..pyobj.attack_dialog import AttackDialog
 from ..pyobj.pokemon_trade import PokemonTrade
 from ..pyobj.pokemon_obj import PokemonObject
-from ..functions.pokedex_functions import get_pokemon_diff_lang_name, get_pokemon_descriptions, get_all_pokemon_moves, find_details_move
+from ..pyobj.InfoLogger import ShowInfoLogger
+from ..functions.pokedex_functions import get_pokemon_diff_lang_name, get_pokemon_descriptions, get_all_pokemon_moves, find_details_move, search_pokedex_by_id
 from ..functions.pokemon_functions import find_experience_for_level
 from ..functions.gui_functions import type_icon_path, move_category_path
 from ..functions.sprite_functions import get_sprite_path
 from ..gui_entities import MovieSplashLabel
 from ..business import split_string_by_length
-from ..utils import load_custom_font
+from ..utils import format_move_name, load_custom_font
 from ..resources import icon_path, addon_dir, mainpokemon_path, mypokemon_path
 from ..texts import attack_details_window_template, attack_details_window_template_end, remember_attack_details_window_template, remember_attack_details_window_template_end
 
@@ -185,11 +186,19 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         forget_attacks_details_button = QPushButton("Forget Attacks")
         qconnect(forget_attacks_details_button.clicked, lambda: forget_attack_details_window(id, attacks, logger))
 
-        # Stack buttons vertically and center "MOVES:" above the center of the buttons
+        tm_attacks_details_button = QPushButton("Learn attacks from TMs") 
+        qconnect(tm_attacks_details_button.clicked, lambda: tm_attack_details_window(id, attacks, logger))
+        
+        #free_pokemon_button = QPushButton("Release Pokemon") #add Details to Moves unneeded button
+        attacks_label.setFixedHeight(150)
+        TopR_layout_Box.addWidget(attacks_label)
         TopR_layout_Box.addWidget(attacks_details_button)
         TopR_layout_Box.addWidget(remember_attacks_details_button)
         TopR_layout_Box.addWidget(forget_attacks_details_button)
-        attacks_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)  # Ensure "MOVES:" is horizontally centered
+        TopR_layout_Box.addWidget(tm_attacks_details_button)
+        TopR_layout_Box.addWidget(captured_date_label)
+        TopR_layout_Box.addWidget(pokemon_defeated_label)
+        TopR_layout_Box.addWidget(everstone_label)
 
         first_layout.addLayout(TopL_layout_Box)
         first_layout.addLayout(TopR_layout_Box)
@@ -306,10 +315,16 @@ def attack_details_window(attacks):
     html_content = attack_details_window_template
     # Loop through the list of attacks and add them to the HTML content
     for attack in attacks:
-        move = find_details_move(attack)
+        move = find_details_move(format_move_name(attack))
         if move is None:
             attack = attack.replace(" ", "")
-            move = find_details_move(attack) or find_details_move("tackle")
+            try:
+                move = find_details_move(format_move_name(attack))
+            except:
+                logger.log_and_showinfo("info",f"Can't find the attack {attack} in the database.")
+                move = find_details_move("tackle")
+        if move is None:
+            continue
         html_content += f"""
         <tr>
           <td class="move-name">{move['name']}</td>
@@ -393,7 +408,9 @@ def forget_attack_details_window(id: int, attack_set: list[str], logger: "InfoLo
     layout = QHBoxLayout(content_widget)
     html_content = remember_attack_details_window_template
     for attack in attack_set:
-        move = find_details_move(attack)
+        move = find_details_move(format_move_name(attack))
+        if move is None:
+            continue
         html_content += f"""
         <tr>
           <td class="move-name">{move['name']}</td>
@@ -472,7 +489,7 @@ def remember_attack(id, attacks, new_attack, logger):
         else:
             logger.log_and_showinfo("info","Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
 
-def forget_attack(id: int, attacks: list[str], attack_to_forget: str, logger: "InfoLogger.ShowInfoLogger") -> None:
+def forget_attack(id: int, attacks: list[str], attack_to_forget: str, logger: ShowInfoLogger) -> None:
     """
     Forgets a Pokemon's move. This is done by erasing the chosen move from the list
     of attacks known by the Pokemon and then saving that new Pokemon data in the main
@@ -524,10 +541,88 @@ def forget_attack(id: int, attacks: list[str], attack_to_forget: str, logger: "I
         else:
             logger.log_and_showinfo("info","Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can forget attacks!")
 
-from PyQt6.QtWidgets import QMessageBox
-from aqt.utils import showWarning
-import json
-from ..resources import mainpokemon_path, mypokemon_path
+def tm_attack_details_window(id: int, current_pokemon_moveset: list[str], logger: ShowInfoLogger) -> None:
+    """
+    Creates a window that will allow the user to learn TM moves.
+
+    Args:
+        id (int): The Pokemon's identifier.
+        current_pokemon_moveset (list[str]): The moves that the Pokemon currently knows.
+        logger: Logger object that can log info and display windows containing messages.
+
+    Returns:
+        None
+    """
+    window = QDialog()
+    window.setWindowIcon(QIcon(str(icon_path)))
+    layout = QHBoxLayout()
+    window.setWindowTitle("Forget Attacks")  # Optional: Set a window title
+    # Outer layout contains everything
+    outer_layout = QVBoxLayout(window)
+
+    # Create a scroll area that will contain our main layout
+    scroll_area = QScrollArea()
+    scroll_area.setWidgetResizable(True)
+
+    # Main widget that contains the content
+    content_widget = QWidget()
+    layout = QHBoxLayout(content_widget)  # The main layout is now set on this widget
+
+    # HTML content
+    html_content = remember_attack_details_window_template
+    from pathlib import Path
+    with open(Path(addon_dir) / "user_files" / "data_files" / "pokemon_tm_learnset.json", "r") as f:
+        pokemon_tm_learnset = json.load(f)
+    
+    pokemon_name = search_pokedex_by_id(id)
+    attack_set = pokemon_tm_learnset[pokemon_name]
+
+    # Loop through the list of attacks and add them to the HTML content
+    for attack in attack_set:
+        move = find_details_move(format_move_name(attack))
+
+        if move is None:
+            continue
+
+        html_content += f"""
+        <tr>
+          <td class="move-name">{move['name']}</td>
+          <td><img src="{type_icon_path(move['type'])}" alt="{move['type']}"/></td>
+          <td><img src="{move_category_path(move['category'].lower())}" alt="{move['category']}"/></td>
+          <td class="basePower">{move['basePower']}</td>
+          <td class="no-accuracy">{move['accuracy']}</td>
+          <td>{move['pp']}</td>
+          <td>{move['shortDesc']}</td>
+        </tr>
+        """
+
+    html_content += remember_attack_details_window_template_end
+
+    # Create a QLabel to display the HTML content
+    label = QLabel(html_content)
+    label.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align the label's content to the top
+    label.setScaledContents(True)  # Enable scaling of the pixmap
+    attack_layout = QVBoxLayout()
+    for attack in attack_set:
+        move = find_details_move(attack)
+        forget_attack_button = QPushButton(f"Learn {attack}") #add Details to Moves
+        forget_attack_button.clicked.connect(lambda checked, a=attack: remember_attack(id, current_pokemon_moveset, a, logger))  # We can use "remember_attack()" because the process is the same
+        attack_layout.addWidget(forget_attack_button)
+    attack_layout_widget = QWidget()
+    attack_layout_widget.setLayout(attack_layout)
+    # Add the label and button layout widget to the main layout
+    layout.addWidget(label)
+    layout.addWidget(attack_layout_widget)
+
+    # Set the main widget with content as the scroll area's widget
+    scroll_area.setWidget(content_widget)
+
+    # Add the scroll area to the outer layout
+    outer_layout.addWidget(scroll_area)
+
+    window.setLayout(outer_layout)
+    window.resize(1000, 400)  # Optional: Set a default size for the window
+    window.exec()
 
 def rename_pkmn(nickname, pkmn_name, individual_id, logger, refresh_callback):
     try:
