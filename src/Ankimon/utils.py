@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Union
 import requests
 import json
 import markdown
@@ -15,7 +16,7 @@ from . import audios
 from .pyobj.settings import Settings
 from .pyobj.InfoLogger import ShowInfoLogger
 from .functions.battle_functions import calculate_hp
-from .functions.pokedex_functions import search_pokedex
+from .functions.pokedex_functions import find_details_move, search_pokedex
 from .resources import (
     battlescene_path,
     berries_path,
@@ -707,3 +708,48 @@ def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
             return tier
         
     return None
+
+def safe_get_random_move(
+    pokemon_moves: list[str],
+    logger: Union[ShowInfoLogger, None] = None
+) -> dict:
+    """
+    Attempts to retrieve details of a randomly selected move from a list of Pokémon moves.
+
+    This function shuffles the provided list of move names and tries to find the first
+    move for which details can be successfully retrieved using `find_details_move`. If no
+    valid move is found, it logs a warning (if a logger is provided) and defaults to
+    returning the details for the move "Splash".
+
+    Args:
+        pokemon_moves (list[str]): A list of move names to select from.
+        logger (Union[ShowInfoLogger, None], optional): An optional logger instance for
+            logging warnings if no valid move is found. Defaults to None.
+
+    Returns:
+        dict: A dictionary containing the details of a valid move if found;
+            otherwise, the details for the move "Splash".
+    """
+    rand_moves = pokemon_moves.copy()
+    random.shuffle(rand_moves)
+    # We go through the shuffled list to find the first move that gets successfully parsed
+    for move in rand_moves:
+        move_details = find_details_move(move) or find_details_move(
+            format_move_name(move)
+        )
+        if move_details is not None:
+            return move_details
+        else:
+            if logger is not None:
+                logger.log(
+                    "warning",
+                    f"Could not parse the following move : {str(move)}",
+                )
+
+    # If we fail to successfully parse a single move, we just return Splash
+    if logger is not None:
+        logger.log(
+            "warning",
+            f"Could not parse a single move in the following moveset : {str(pokemon_moves)}",
+        )
+    return find_details_move(format_move_name("splash"))
