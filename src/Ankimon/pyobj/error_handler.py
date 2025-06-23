@@ -4,28 +4,37 @@ import json
 import random
 import traceback
 import requests
+import platform
+import sys
 from pathlib import Path
 from typing import Optional, Dict
-
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSizePolicy
 )
 from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtCore import Qt
 from aqt import mw
+from anki.buildinfo import version as anki_version
 
+# Path configurations
 addon_dir = Path(__file__).parents[1]
-user_path = addon_dir / "user_files"
+pyobj_path = addon_dir / "pyobj"
+manifest_path = addon_dir / "manifest.json"
+
+def get_environment_info() -> str:
+    """Collect add-on, Anki, Python, and OS version information."""
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        addon_ver = manifest.get("version", "unknown")
+    except Exception:
+        addon_ver = "unknown"
+    
+    py_ver = sys.version.split()[0]
+    os_info = platform.platform()
+    return f"Ankimon v{addon_ver} | Anki {anki_version} | Python {py_ver} | {os_info}"
 
 def set_image_from_url(label: QLabel, url: str, width: int = 140) -> None:
-    """
-    Loads an image from a URL and displays it in a QLabel.
-    
-    Args:
-        label: The QLabel to display the image in
-        url: URL of the image to load
-        width: Desired width of the image (maintains aspect ratio)
-    """
+    """Load and display an image from URL in a QLabel."""
     try:
         response = requests.get(url, timeout=5)
         response.raise_for_status()
@@ -42,15 +51,7 @@ def set_image_from_url(label: QLabel, url: str, width: int = 140) -> None:
         label.setText("Image failed to load")
 
 def scrub_traceback(tb_text: str) -> str:
-    """
-    Removes sensitive user information from traceback text.
-    
-    Args:
-        tb_text: Original traceback text
-        
-    Returns:
-        Sanitized traceback text with user paths replaced
-    """
+    """Sanitize traceback text by removing user paths."""
     username = os.path.expanduser("~").split(os.sep)[-1]
     patterns = [
         rf"/home/{username}",
@@ -65,16 +66,7 @@ def scrub_traceback(tb_text: str) -> str:
     return tb_text
 
 def load_error_images(json_path: Path) -> Dict[str, str]:
-    """
-    Loads error image metadata from a JSON file and returns a randomly selected image entry.
-    
-    Args:
-        json_path (Path): Path to the JSON file containing image metadata.
-        
-    Returns:
-        dict: Dictionary with 'path', 'credit', and 'url' keys for the selected image.
-              If loading fails, returns a default dictionary with empty values.
-    """
+    """Load and select random error image metadata."""
     default_image = {"path": "", "credit": "", "url": ""}
     try:
         with open(json_path, 'r', encoding='utf-8') as f:
@@ -85,18 +77,21 @@ def load_error_images(json_path: Path) -> Dict[str, str]:
         return default_image
 
 def create_error_label(message: str, exception: Exception) -> QLabel:
-    """Creates the main error message label with formatted text."""
-    label = QLabel(
+    """Create error label with just the message and exception (no environment info)."""
+    html = (
         f"<span style='font-size:32px; color:#ffcc00; vertical-align:middle;'>&#9888;</span> "
         f"<span style='font-size:15px; font-weight:600; vertical-align:middle;'>{message}</span><br>"
-        f"<pre style='font-size:12px; margin-top:6px; color:#e0e0e0;'>{str(exception)}</pre>"
+        f"<pre style='font-size:12px; margin-top:6px; color:#a0a0a0;'>"
+        f"{str(exception)}"
+        "</pre>"
     )
+    label = QLabel(html)
     label.setTextFormat(Qt.TextFormat.RichText)
     label.setWordWrap(True)
     return label
 
 def create_credit_label(chosen_image: Dict[str, str]) -> Optional[QLabel]:
-    """Creates and formats the credit label with optional link."""
+    """Create image credit label with optional link."""
     if not chosen_image.get("credit") or not chosen_image.get("url"):
         return None
         
@@ -110,17 +105,9 @@ def create_credit_label(chosen_image: Dict[str, str]) -> Optional[QLabel]:
     label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding)
     return label
 
-def build_dialog_ui(dialog: QDialog, message: str, exception: Exception, chosen_image: Dict[str, str]) -> None:
-    """
-    Constructs the dialog UI layout and components.
-    
-    Args:
-        dialog: The QDialog instance to build
-        message: Main error message
-        exception: Exception being handled
-        chosen_image: Selected image metadata
-    """
-    # Main layout setup
+def build_dialog_ui(dialog: QDialog, message: str, exception: Exception, 
+                   chosen_image: Dict[str, str]) -> None:
+    """Construct dialog UI layout without environment info display."""
     main_layout = QHBoxLayout(dialog)
     main_layout.setContentsMargins(24, 18, 24, 18)
     main_layout.setSpacing(18)
@@ -128,8 +115,6 @@ def build_dialog_ui(dialog: QDialog, message: str, exception: Exception, chosen_
     # Left panel (error information)
     left_layout = QVBoxLayout()
     left_layout.setSpacing(10)
-
-    # Error message components
     left_layout.addWidget(create_error_label(message, exception))
     
     # Friendly message
@@ -192,7 +177,7 @@ def build_dialog_ui(dialog: QDialog, message: str, exception: Exception, chosen_
     dialog.setLayout(main_layout)
 
 def setup_dialog_style(dialog: QDialog) -> None:
-    """Applies consistent styling to the dialog."""
+    """Apply consistent visual styling to the dialog."""
     dialog.setStyleSheet("""
         QDialog {
             background: #23272e;
@@ -227,26 +212,17 @@ def show_warning_with_traceback(
     exception: Optional[Exception] = None,
     message: str = "An error occurred during execution."
 ) -> None:
-    """
-    Displays an error dialog with traceback details and support options.
-    
-    Args:
-        parent: Parent widget for the dialog
-        exception: Exception that triggered the error
-        message: Custom message to display
-        
-    Raises:
-        ValueError: If no exception is provided
-    """
+    """Display error dialog with environment info only in debug clipboard."""
     if not exception:
         raise ValueError("An exception must be provided.")
 
     # Generate and sanitize traceback
     tb_text = scrub_traceback(traceback.format_exc())
-    mw.logger.log("error", f"{message}: {str(exception)}\n{tb_text}")
+    env_info = get_environment_info()
+    mw.logger.log("error", f"{message}: {exception}\n{env_info}\n{tb_text}")
 
     # Load error images
-    error_json_path = user_path / 'error_images.json'
+    error_json_path = pyobj_path / 'error_images.json'
     chosen_image = load_error_images(error_json_path)
 
     # Create and configure dialog
@@ -254,7 +230,7 @@ def show_warning_with_traceback(
     dialog.setWindowTitle("Ankimon Error")
     dialog.setModal(True)
     
-    # Build UI components
+    # Build UI components (without env_info parameter)
     build_dialog_ui(dialog, message, exception, chosen_image)
     setup_dialog_style(dialog)
     
@@ -263,11 +239,15 @@ def show_warning_with_traceback(
     ok_button = dialog.findChild(QPushButton, "ok")
     
     def copy_debug_info():
-        mw.app.clipboard().setText(tb_text)
-        dialog.findChild(QLabel).setText(  # Update error label
+        # Wrap in triple backticks for markdown code block formatting
+        full_debug = f"```python\n{env_info}\n\n{tb_text}\n```"
+        mw.app.clipboard().setText(full_debug)
+        
+        # Update dialog to show copy confirmation (without env_info)
+        dialog.findChild(QLabel).setText(
             f"<span style='font-size:32px; color:#ffcc00; vertical-align:middle;'>&#9888;</span> "
             f"<span style='font-size:15px; font-weight:600; vertical-align:middle;'>{message}</span><br>"
-            f"<pre style='font-size:12px; margin-top:6px; color:#e0e0e0;'>{str(exception)}</pre>"
+            f"<pre style='font-size:12px; margin-top:6px; color:#a0a0a0;'>{str(exception)}</pre>"
             "<br><span style='color:#43d675; font-size:12px;'>Debug info copied!</span>"
         )
     
