@@ -228,7 +228,7 @@ def daily_item_list():
     return item_names
 
 # Function to give an item to the player
-def give_item(item_name):
+def give_item(item_name, item_type: Union[str, None]=None):
     with open(itembag_path, "r", encoding="utf-8") as json_file:
         itembag_list = json.load(json_file)
         # Check if the item exists and update quantity, otherwise append
@@ -238,9 +238,12 @@ def give_item(item_name):
                 break
         else:
             # Add a new item if not found
-            itembag_list.append({"item": item_name, "quantity": 1})
+            item_dict = {"item": item_name, "quantity": 1}
+            if item_type is not None:
+                item_dict["type"] = item_type
+            itembag_list.append(item_dict)
     with open(itembag_path, 'w', encoding="utf-8") as json_file:
-        json.dump(itembag_list, json_file)
+        json.dump(itembag_list, json_file, indent=4)
     #logger.log_and_showinfo('game', f"Player bought item {item_name.capitalize()}")
 
 #Function to return a cost of an item
