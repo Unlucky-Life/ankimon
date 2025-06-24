@@ -9,6 +9,7 @@ from .objects import Pokemon, State, StateMutator, Side
 from .helpers import normalize_name
 from .find_state_instructions import get_all_state_instructions
 from ..pyobj.InfoLogger import ShowInfoLogger
+from ..pyobj.error_handler import show_warning_with_traceback
 
 #logger = ShowInfoLogger()
 
@@ -284,4 +285,4 @@ def simulate_battle_with_poke_engine(
         return battle_info, copy.deepcopy(new_state), dmg_from_enemy_move, dmg_from_user_move, mutator_full_reset
     
     except Exception as e:
-        traceback.print_exc()
+        show_warning_with_traceback(exception=e, message="Error simulating battle:")
