@@ -360,7 +360,8 @@ class PokemonShopManager:
         buy_font = QFont(self.early_gameboy_font)
         buy_font.setPointSize(8)
         buy_button.setFont(buy_font)
-        buy_button.setFixedSize(60, 35)
+        buy_button.setFixedHeight(35)
+        buy_button.setFixedWidth(buy_button.sizeHint().width())
 
         buy_button.setStyleSheet(f"""
             QPushButton {{
