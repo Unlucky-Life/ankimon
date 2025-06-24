@@ -3,53 +3,114 @@
 
 ---
 
+<style>
+.contributor-card {
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  padding: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  text-align: center;
+}
+.contributor-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+.contributor-card img {
+  border-radius: 50%; /* Makes avatars circular */
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+.contributor-name {
+  font-size: 1.15em;
+  font-weight: bold;
+  display: block; /* Ensures it's on its own line */
+}
+.contributor-role {
+  font-size: 0.9em;
+  color: #57606a;
+  display: block;
+}
+.contributor-handle {
+  font-size: 0.8em;
+  color: #8b949e;
+  display: block;
+}
+</style>
+
 ### Current Contributors
 
 <table>
   <tr>
-    <td align="center">
+    <td class="contributor-card">
       <a href="https://github.com/h0tp-ftw">
-        <img src="https://avatars.githubusercontent.com/u/141889580?v=4" width="80"><br>
-        <span style="font-size:1.15em; font-weight:bold;">h0tp</span>
-      </a><br>
-      <span style="font-size:0.9em; color:#888;">Owner</span><br>
-      <span style="font-size:0.8em; color:gray;">@h0tp-ftw</span>
+        <img src="https://github.com/h0tp-ftw.png">
+        <span class="contributor-name">h0tp</span>
+      </a>
+      <span class="contributor-role">Owner</span>
+      <span class="contributor-handle">@h0tp-ftw</span>
     </td>
-    <td align="center">
+    <td class="contributor-card">
       <a href="https://github.com/thepeacemonk">
-        <img src="https://avatars.githubusercontent.com/u/105552060?v=4" width="80"><br>
-        <span style="font-size:1.15em; font-weight:bold;">Peace</span>
-      </a><br>
-      <span style="font-size:0.9em; color:#888;">Contributor</span><br>
-      <span style="font-size:0.8em; color:gray;">@thepeacemonk</span>
+        <img src="https://github.com/thepeacemonk.png">
+        <span class="contributor-name">Peace</span>
+      </a>
+      <span class="contributor-role">Contributor</span>
+      <span class="contributor-handle">@thepeacemonk</span>
     </td>
-    <td align="center">
+    <td class="contributor-card">
+      <a href="https://github.com/Axil12">
+        <img src="https://github.com/Axil12.png">
+        <span class="contributor-name">Axil</span>
+      </a>
+      <span class="contributor-role">Contributor</span>
+      <span class="contributor-handle">@Axil12</span>
+    </td>
+    <td class="contributor-card">
       <a href="https://github.com/gykoh">
-        <img src="https://avatars.githubusercontent.com/u/105884770?v=4" width="80"><br>
-        <span style="font-size:1.15em; font-weight:bold;">Gill</span>
-      </a><br>
-      <span style="font-size:0.9em; color:#888;">Contributor</span><br>
-      <span style="font-size:0.8em; color:gray;">@gykoh</span>
-    </td>
-    <td align="center">
-      <a href="https://github.com/richy431">
-        <img src="https://avatars.githubusercontent.com/u/207916526?v=4" width="80"><br>
-        <span style="font-size:1.15em; font-weight:bold;">richy</span>
-      </a><br>
-      <span style="font-size:0.9em; color:#888;">Contributor</span><br>
-      <span style="font-size:0.8em; color:gray;">@richy431</span>
-    </td>
-    <td align="center">
-      <a href="https://github.com/unlucky-life">
-        <img src="https://avatars.githubusercontent.com/u/77027147?v=4" width="80"><br>
-        <span style="font-size:1.15em; font-weight:bold;">Unlucky</span>
-      </a><br>
-      <span style="font-size:0.9em; color:#888;">Ankimon creator</span><br>
-      <span style="font-size:0.8em; color:gray;">@unlucky-life</span>
+        <img src="https://github.com/gykoh.png">
+        <span class="contributor-name">Gill</span>
+      </a>
+      <span class="contributor-role">Contributor</span>
+      <span class="contributor-handle">@gykoh</span>
     </td>
   </tr>
+  <tr>
+    <td class="contributor-card">
+      <a href="https://github.com/richy431">
+        <img src="https://github.com/richy431.png">
+        <span class="contributor-name">richy</span>
+      </a>
+      <span class="contributor-role">Contributor</span>
+      <span class="contributor-handle">@richy431</span>
+    </td>
+    <td class="contributor-card">
+      <a href="https://github.com/MORGANlTE">
+        <img src="https://github.com/MORGANlTE.png">
+        <span class="contributor-name">Morganite</span>
+      </a>
+      <span class="contributor-role">Contributor</span>
+      <span class="contributor-handle">@MORGANlTE</span>
+    </td>
+    <td class="contributor-card">
+      <a href="https://github.com/unlucky-life">
+        <img src="https://github.com/unlucky-life.png">
+        <span class="contributor-name">Unlucky</span>
+      </a>
+      <span class="contributor-role">Ankimon creator</span>
+      <span class="contributor-handle">@unlucky-life</span>
+    </td>
+  <td class="contributor-card" style="border: 1px dashed #d0d7de; background-color: #f6f8fa;">
+    <a href="#i-dont-know-how-to-code-where-do-i-start">
+      <img src="https://github.com/primer.png">
+      <span class="contributor-name">You?</span>
+    </a>
+    <span class="contributor-role">Join us!</span>
+    <span class="contributor-handle">Be a Contributor!</span>
+  </td>
+  </tr>
 </table>
-
 
 Want to join us? Read below!
 
@@ -102,6 +163,7 @@ It is made 100% by volunteers that help in their spare time. Having more people 
 
 To get started:
 
+- Join our [Discord server](https://discord.gg/eY8jPHZw4z) and get the New Contributors role, so that we can help you out!
 - Download [VS Code](https://code.visualstudio.com/) for coding
 - Go through the [W3schools Python tutorial](https://www.w3schools.com/python/default.asp) - no need to learn and memorize every single topic in detail. Have a general understanding of what code looks like and how it works! 
 - Make some simple code for practice! For example, you could try making a calculator, or coding some new changes for Ankimon.
