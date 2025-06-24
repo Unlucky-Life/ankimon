@@ -20,5 +20,7 @@ jobs:
 
       - name: Update Contributors List
         uses: akhilmhdh/contributors-readme-action@v2.3.10
+        with:
+          config: '.github/contributor-list.yml'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
