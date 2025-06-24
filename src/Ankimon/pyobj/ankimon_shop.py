@@ -267,7 +267,9 @@ class PokemonShopManager:
 
         self.currency_qlabel = QLabel(f"<h2>Current Cash: ${self.settings_obj.get('trainer.cash', 0)}</h2>")
         daily_items_reroll_button = QPushButton(f"Reroll daily items  ${self.daily_items_reroll_cost}")
-        daily_items_reroll_button.setFixedSize(180, 25)
+        daily_items_reroll_button.setFixedHeight(25)
+        hint = daily_items_reroll_button.sizeHint()         # Get optimal size
+        daily_items_reroll_button.setFixedWidth(hint.width())        
         daily_items_reroll_button.clicked.connect(lambda: self.reroll_daily_items(cost=self.daily_items_reroll_cost))
         top_layout = QVBoxLayout()
         top_layout.addWidget(self.currency_qlabel)
