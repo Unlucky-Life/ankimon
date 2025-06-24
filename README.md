@@ -43,74 +43,75 @@
 
 <table>
   <tr>
-    <td class="contributor-card">
+    <td align="center" width="120">
       <a href="https://github.com/h0tp-ftw">
-        <img src="https://github.com/h0tp-ftw.png">
-        <span class="contributor-name">h0tp</span>
+        <img src="https://github.com/h0tp-ftw.png" width="80"><br>
+        <b>h0tp</b><br>
+        Owner<br>
+        <span style="color:gray">@h0tp-ftw</span>
       </a>
-      <span class="contributor-role">Owner</span>
-      <span class="contributor-handle">@h0tp-ftw</span>
     </td>
-    <td class="contributor-card">
+    <td align="center" width="120">
       <a href="https://github.com/thepeacemonk">
-        <img src="https://github.com/thepeacemonk.png">
-        <span class="contributor-name">Peace</span>
+        <img src="https://github.com/thepeacemonk.png" width="80"><br>
+        <b>Peace</b><br>
+        Contributor<br>
+        <span style="color:gray">@thepeacemonk</span>
       </a>
-      <span class="contributor-role">Contributor</span>
-      <span class="contributor-handle">@thepeacemonk</span>
     </td>
-    <td class="contributor-card">
+    <td align="center" width="120">
       <a href="https://github.com/Axil12">
-        <img src="https://github.com/Axil12.png">
-        <span class="contributor-name">Axil</span>
+        <img src="https://github.com/Axil12.png" width="80"><br>
+        <b>Axil</b><br>
+        Contributor<br>
+        <span style="color:gray">@Axil12</span>
       </a>
-      <span class="contributor-role">Contributor</span>
-      <span class="contributor-handle">@Axil12</span>
     </td>
-    <td class="contributor-card">
+    <td align="center" width="120">
       <a href="https://github.com/gykoh">
-        <img src="https://github.com/gykoh.png">
-        <span class="contributor-name">Gill</span>
+        <img src="https://github.com/gykoh.png" width="80"><br>
+        <b>Gill</b><br>
+        Contributor<br>
+        <span style="color:gray">@gykoh</span>
       </a>
-      <span class="contributor-role">Contributor</span>
-      <span class="contributor-handle">@gykoh</span>
     </td>
   </tr>
   <tr>
-    <td class="contributor-card">
+    <td align="center" width="120">
       <a href="https://github.com/richy431">
-        <img src="https://github.com/richy431.png">
-        <span class="contributor-name">richy</span>
+        <img src="https://github.com/richy431.png" width="80"><br>
+        <b>richy</b><br>
+        Contributor<br>
+        <span style="color:gray">@richy431</span>
       </a>
-      <span class="contributor-role">Contributor</span>
-      <span class="contributor-handle">@richy431</span>
     </td>
-    <td class="contributor-card">
+    <td align="center" width="120">
       <a href="https://github.com/MORGANlTE">
-        <img src="https://github.com/MORGANlTE.png">
-        <span class="contributor-name">Morganite</span>
+        <img src="https://github.com/MORGANlTE.png" width="80"><br>
+        <b>Morganite</b><br>
+        Contributor<br>
+        <span style="color:gray">@MORGANlTE</span>
       </a>
-      <span class="contributor-role">Contributor</span>
-      <span class="contributor-handle">@MORGANlTE</span>
     </td>
-    <td class="contributor-card">
+    <td align="center" width="120">
       <a href="https://github.com/unlucky-life">
-        <img src="https://github.com/unlucky-life.png">
-        <span class="contributor-name">Unlucky</span>
+        <img src="https://github.com/unlucky-life.png" width="80"><br>
+        <b>Unlucky</b><br>
+        Ankimon creator<br>
+        <span style="color:gray">@unlucky-life</span>
       </a>
-      <span class="contributor-role">Ankimon creator</span>
-      <span class="contributor-handle">@unlucky-life</span>
     </td>
-  <td class="contributor-card" style="border: 1px dashed #d0d7de; background-color: #f6f8fa;">
-    <a href="#i-dont-know-how-to-code-where-do-i-start">
-      <img src="https://github.com/primer.png">
-      <span class="contributor-name">You?</span>
-    </a>
-    <span class="contributor-role">Join us!</span>
-    <span class="contributor-handle">Be a Contributor!</span>
-  </td>
+    <td align="center" width="120">
+      <a href="#i-dont-know-how-to-code-where-do-i-start">
+        <img src="https://github.com/primer.png" width="80"><br>
+        <b>You?</b><br>
+        Join us!<br>
+        <span style="color:gray">Be a Contributor!</span>
+      </a>
+    </td>
   </tr>
 </table>
+
 
 Want to join us? Read below!
 
