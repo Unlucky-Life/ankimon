@@ -435,13 +435,6 @@ def process_battle_data(battle_data: dict) -> str:
                         weather=weather
                     ))
                               
-                elif action == constants.MUTATOR_FAIL:
-                    reason = instr[2] if len(instr) > 2 else "unknown"
-                    output.append(mw.translator.translate(
-                        "move_failed",
-                        reason=reason
-                    ))
-
                 elif action == constants.MUTATOR_APPLY_VOLATILE_STATUS:
                     status = format_move_name(instr[2])
                     output.append(mw.translator.translate(
