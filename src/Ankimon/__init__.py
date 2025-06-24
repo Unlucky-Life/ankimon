@@ -127,6 +127,7 @@ from .singletons import (
     version_dialog,
     pokecollection_win,
     achievements,
+    pokemon_pc
 )
 
 from .pyobj.error_handler import show_warning_with_traceback
@@ -832,7 +833,7 @@ count_items_and_rewrite(itembag_path)
 create_menu_actions(
     database_complete,
     online_connectivity,
-    pokecollection_win,
+    None,#pokecollection_win,
     item_window,
     test_window,
     achievement_bag,
@@ -860,7 +861,8 @@ create_menu_actions(
     open_leaderboard_url,
     settings_obj,
     addon_dir,          
-    data_handler_obj    
+    data_handler_obj,
+    pokemon_pc,
 )
 
     #https://goo.gl/uhAxsg
