@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButt
 
 from ..pyobj.attack_dialog import AttackDialog
 from ..pyobj.pokemon_trade import PokemonTrade
+from ..pyobj.error_handler import show_warning_with_traceback
 from ..pyobj.pokemon_obj import PokemonObject
 from ..pyobj.InfoLogger import ShowInfoLogger
 from ..functions.pokedex_functions import get_pokemon_diff_lang_name, get_pokemon_descriptions, get_all_pokemon_moves, find_details_move, search_pokedex_by_id
@@ -302,7 +303,7 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         # Show the dialog
         wpkmn_details.exec()
     except Exception as e:
-        showWarning(f"Error occured in Pokemon Details Button: {e}")
+        show_warning_with_traceback(exception=e, message="Error occured in Pokemon Details Button:")
 
 
 def PokemonDetailsStats(detail_stats, growth_rate, level, remove_levelcap, language):

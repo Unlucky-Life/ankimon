@@ -151,8 +151,8 @@ logger.log_and_showinfo('game', translator.translate("backing_up_files"))
 #backup_files
 try:
     run_backup()
-except:
-    logger.log("error", translator.translate("backup_error"))
+except Exception as e:
+    show_warning_with_traceback(parent=mw, exception=e, message="Backup error:")
 
 # Initialize mutator and mutator_full_reset
 global new_state
@@ -283,7 +283,7 @@ try:
                 showWarning("Failed to retrieve Ankimon content from GitHub.")
 except Exception as e:
     if ssh != False:
-        logger.log_and_showinfo("info",f"Error in try connect to GitHub: {e}")
+        show_warning_with_traceback(parent=mw, exception=e, message="Error connecting to GitHub:")
 
 def open_help_window(online_connectivity):
     try:
@@ -291,8 +291,8 @@ def open_help_window(online_connectivity):
         # TODO: HelpWindow constructor must be empty?
         help_dialog = HelpWindow(online_connectivity)
         help_dialog.exec()
-    except:
-        showWarning("Error in opening HelpGuide")
+    except Exception as e:
+        show_warning_with_traceback(parent=mw, exception=e, message="Error in opening Help Guide:")
 
 gen_config = []
 for i in range(1,10):
@@ -447,7 +447,7 @@ def process_battle_data(battle_data: dict) -> str:
                     output.append(f"Unhandled action: {action}")
 
             except Exception as e:
-                logger.log("error", f"Error processing instruction {instr}: {str(e)}")
+                show_warning_with_traceback(parent=mw, exception=e, message="Error processing instruction:")
                 continue
 
         # Add missed move information
@@ -460,11 +460,9 @@ def process_battle_data(battle_data: dict) -> str:
         return "\n".join(output)
 
     except KeyError as e:
-        error_msg = mw.translator.translate("missing_key_in_data", key=str(e))
-        return f"Error: {error_msg}"
+        show_warning_with_traceback(parent=mw, exception=e, message="Missing key in data:")
     except Exception as e:
-        error_msg = mw.translator.translate("unexpected_error", error=str(e))
-        return f"Error: {error_msg}"
+        show_warning_with_traceback(parent=mw, exception=e, message="Unexpected error:")
             
 #get main pokemon details:
 if database_complete:
@@ -713,7 +711,7 @@ def on_review_card(*args):
                             msg += "\n" + translator.translate("move_has_missed")'''
                     
                 except Exception as e:
-                    showWarning(f"Error rendering enemy attack: {str(e)}")
+                    show_warning_with_traceback(parent=mw, exception=e, message="Error rendering enemy attack:")
 
             # if enemy pokemon hp > 0, attack enemy pokemon
             if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
@@ -789,8 +787,7 @@ def on_review_card(*args):
         if test_window is not None:
             test_window.display_battle()
     except Exception as e:
-        showWarning(f"An error occurred in reviewer: {str(e)}")
-        traceback.print_exc()
+        show_warning_with_traceback(parent=mw, exception=e, message="An error occurred in reviewer:")
 
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
