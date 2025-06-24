@@ -195,12 +195,17 @@ class PokemonShopManager:
             }}
         """)
 
-        # Reroll button
+        # Create the reroll button with the desired text
         reroll_button = QPushButton(f"REROLL SHOP\n${self.daily_items_reroll_cost}")
+
         button_font = QFont(self.early_gameboy_font)
         button_font.setPointSize(10)
         reroll_button.setFont(button_font)
-        reroll_button.setFixedSize(120, 50)
+
+        reroll_button.setFixedWidth(reroll_button.sizeHint().width())
+
+        reroll_button.setMinimumHeight(50)
+
         reroll_button.setStyleSheet(f"""
             QPushButton {{
                 background-color: {colors['accent_red']};
@@ -279,30 +284,27 @@ class PokemonShopManager:
         return section_frame
 
     def _create_retro_item_frame(self, item, section_color, is_tm=False):
-        """Create a theme-aware retro-styled item frame without boundaries and with hover tooltips."""
+        """Create a theme-aware retro-styled item frame with tooltip for description."""
         colors = self._get_theme_colors()
-        
+
         if is_tm:
             item['UI_NAME'] = item.get('name', '').replace('-', ' ').title()
             item['price'] = self.tm_price
-            item['description'] = item.get('description', f"Allows a Pokemon to be taught the move {item.get('name', 'Unknown')} (if able).")
+            # Description for TMs: fixed string
+            description_text = f"Allows a Pokémon to be taught the move {item['UI_NAME']} (if able)"
         else:
             item['UI_NAME'] = item.get('name', 'poke-ball').replace('-', ' ').title()
             item['price'] = get_item_price(item.get('name', 'poke-ball'))
-            # Fixed: Added language_id parameter (using 'en' for English)
-            try:
-                item['description'] = get_item_description(item.get('name', 'poke-ball'), 'en')
-            except:
-                # Fallback if get_item_description fails
-                item['description'] = f"A useful item: {item.get('UI_NAME', 'Unknown')}"
+            # Description for regular items: use get_item_description with language from settings
+            description_text = get_item_description(item['name'], self.settings_obj.get('misc.language', '9'))
+            if not description_text:
+                description_text = f"A useful item: {item['UI_NAME']}"
 
         frame = QFrame()
         frame.setFixedHeight(90)
-        
-        # Add tooltip with item description for hover popup
-        frame.setToolTip(item.get('description', 'No description available'))
-        
-        # Removed border styles to remove boundaries
+        # Tooltip with item description for hover popup
+        frame.setToolTip(description_text)
+
         frame.setStyleSheet(f"""
             QFrame {{
                 background-color: {colors['frame_bg']};
@@ -324,7 +326,7 @@ class PokemonShopManager:
             image_path = items_path / "Bag_TM_Normal_SV_Sprite.png"
         else:
             image_path = f"{items_path}/{item.get('name', 'poke-ball')}.png"
-        
+
         pixmap = QPixmap(str(image_path))
         image_label.setPixmap(pixmap.scaled(48, 48, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -335,7 +337,7 @@ class PokemonShopManager:
         info_layout.setSpacing(2)
 
         # Item name
-        name_label = QLabel(item.get('UI_NAME', 'Unknown'))
+        name_label = QLabel(item['UI_NAME'])
         name_font = QFont(self.early_gameboy_font)
         name_font.setPointSize(10)
         name_label.setFont(name_font)
@@ -359,7 +361,7 @@ class PokemonShopManager:
         buy_font.setPointSize(8)
         buy_button.setFont(buy_font)
         buy_button.setFixedSize(60, 35)
-        
+
         buy_button.setStyleSheet(f"""
             QPushButton {{
                 background-color: {section_color};
