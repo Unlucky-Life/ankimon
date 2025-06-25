@@ -503,8 +503,8 @@ def save_main_pokemon_progress(
         mainpkmndata["current_hp"] = int(main_pokemon.hp)
         if main_pokemon.friendship > 255:
             main_pokemon.friendship = 255
-        mainpkmndata["friendship"] = main_pokemon.friendship 
-        mainpkmndata["pokemon_defeated"] += 1
+        mainpkmndata["friendship"] = main_pokemon.get("friendship", 0)
+        mainpkmndata["pokemon_defeated"] = main_pokemon.get("pokemon_defeated", 0) + 1
     mypkmndata = mainpkmndata
     mainpkmndata = [mainpkmndata]
     # Save the caught Pokémon's data to a JSON file
