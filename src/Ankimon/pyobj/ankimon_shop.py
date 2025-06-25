@@ -15,13 +15,8 @@ from aqt.qt import (
     QGridLayout,
     QFrame,
     QPixmap,
-    QMessageBox,
-    QSizePolicy,
-    QFont,
-    QFontDatabase,
-    QToolTip
+    QMessageBox
 )
-from aqt.theme import theme_manager
 
 from ..utils import give_item, daily_item_list, get_item_price, get_item_description
 from ..resources import items_path, user_path, pokemon_tm_learnset_path
@@ -49,423 +44,269 @@ class PokemonShopManager:
         self.todays_daily_tms = []
         self.shop_save_file = user_path / "todays_shop.json"
 
-        # Retro Pokemon styling dimensions
+        # Height and width of the frames containing the displayed items
         self.frame_h = 120
-        self.frame_w = 340
+        self.frame_w = 400
 
         self.tm_price = 1000
 
-        # Load Early GameBoy font
-        self.early_gameboy_font = self._load_early_gameboy_font()
-
-    def _load_early_gameboy_font(self):
-        """Load the Early GameBoy font for retro styling exclusively."""
-        font = QFont("Early GameBoy", 14)
-        return font
-
-    def _is_night_mode(self):
-        """Check if Anki is in night mode."""
-        return theme_manager.night_mode
-
-    def _get_theme_colors(self):
-        """Get color scheme based on current theme using Anki's actual theme colors."""
-        # Use Anki's built-in color variables that work with both themes
-        if self._is_night_mode():
-            return {
-                'background': 'var(--window-bg)',
-                'border': 'var(--border)',
-                'text_primary': 'var(--text)',
-                'text_secondary': 'var(--text-fg)',
-                'accent_red': '#FD4F49',  # Red for Daily Items
-                'accent_teal': "#1A99DD",  # Blue for Daily TMs
-                'accent_yellow': '#84D437',  # Green for Standard Items
-                'button_bg': 'var(--button-bg)',
-                'button_hover': 'var(--button-hover-bg)',
-                'frame_bg': 'var(--frame-bg)',
-                'frame_hover': 'var(--button-hover-bg)',
-                'success': '#66BB6A',
-                'warning': '#FF7043'
-            }
-        else:
-            return {
-                'background': 'var(--window-bg)',
-                'border': 'var(--border)',
-                'text_primary': 'var(--text)',
-                'text_secondary': 'var(--text-fg)',
-                'accent_red': '#FD4F49',  # Red for Daily Items
-                'accent_teal': '#1A99DD',  # Blue for Daily TMs
-                'accent_yellow': '#84D437',  # Green for Standard Items
-                'button_bg': 'var(--button-bg)',
-                'button_hover': 'var(--button-hover-bg)',
-                'frame_bg': 'var(--frame-bg)',
-                'frame_hover': 'var(--button-hover-bg)',
-                'success': '#4CAF50',
-                'warning': '#FF6B6B'
-            }
-
-    def _create_custom_message_box(self, title, text, message_type="info"):
-        """Create a custom message box with ankimonmart.png icon."""
-        colors = self._get_theme_colors()
-        
-        msg = QMessageBox(mw)
-        msg.setWindowTitle(title)
-        msg.setText(text)
-        
-        # Remove standard icon and set custom image
-        msg.setIconPixmap(QPixmap())  # Clear any standard icon
-        
-        # Load and set custom ankimonmart.png image
-        try:
-            custom_icon_path = items_path / "ankimonmart.png"
-            if os.path.exists(custom_icon_path):
-                pixmap = QPixmap(str(custom_icon_path))
-                # Scale the image to appropriate size for message box
-                scaled_pixmap = pixmap.scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                msg.setIconPixmap(scaled_pixmap)
-            else:
-                # Fallback to standard icon if custom image not found
-                if message_type == "warning":
-                    msg.setIcon(QMessageBox.Icon.Warning)
-                else:
-                    msg.setIcon(QMessageBox.Icon.Information)
-        except:
-            # Fallback to standard icon if there's any error loading custom image
-            if message_type == "warning":
-                msg.setIcon(QMessageBox.Icon.Warning)
-            else:
-                msg.setIcon(QMessageBox.Icon.Information)
-        
-        # Apply theme-aware styling
-        if message_type == "warning":
-            button_color = colors['warning']
-        else:
-            button_color = colors['success']
-            
-        msg.setStyleSheet(f"""
-            QMessageBox {{
-                background-color: {colors['background']};
-                color: {colors['text_primary']};
-            }}
-            QMessageBox QPushButton {{
-                background-color: {button_color};
-                color: {colors['text_primary']};
-                border: 2px solid {colors['text_primary']};
-                border-radius: 4px;
-                padding: 4px 8px;
-                font-weight: bold;
-                min-width: 60px;
-            }}
-        """)
-        
-        return msg
-
     def toggle_window(self):
-        """Toggles the visibility of the Pokemon shop window."""
+        """Toggles the visibility of the Pokémon shop window."""
         if self.window and self.window.isVisible():
+            # Close the window if it is visible
             self.window.close()
         else:
+            # Always recreate the window if it's closed
             if not self.window or not self.window.isVisible():
                 self.create_gui()
+
+            # Show the window
             self.window.show()
 
+    
     def create_gui(self):
-        """Create the retro Pokemon-style shop GUI with theme support."""
+        """Create and configure the Ankimon shop GUI."""
+        # Create the dialog window with the Anki main window as its parent
         self.window = QDialog(parent=mw)
-        self.window.setWindowTitle("Ankimon Mart")
-        self.window.setGeometry(100, 100, 1050, 450)
+        self.window.setWindowTitle("Ankimon Shop")
+        self.window.setGeometry(100, 100, 1000, 400)  # Adjust window size as needed
 
-        colors = self._get_theme_colors()
-
-        # Apply Anki's theme class to inherit theme colors
-        self.window.setProperty("class", "ankimon-shop")
-        
-        # Theme-aware background using Anki's CSS variables
-        self.window.setStyleSheet(f"""
-            QDialog {{
-                background-color: {colors['background']};
-                border: 4px solid {colors['border']};
-            }}
-        """)
-
+        # Make the window behave like a tool window (not modal)
         self.window.setWindowFlag(Qt.WindowType.Tool)
 
-        # Main layout with Pokemon-style spacing
-        main_layout = QVBoxLayout(self.window)
-        main_layout.setContentsMargins(12, 12, 12, 12)
-        main_layout.setSpacing(10)
+        # Set up the main horizontal layout for the window
+        main_layout = QHBoxLayout()
 
-        # Header section with theme-aware styling
-        header_layout = self._create_header()
-        main_layout.addLayout(header_layout)
+        # --- Left Side for Daily Items ---
+        daily_layout = QVBoxLayout()  # Vertical layout for daily items
+        daily_label = QLabel("<h1>Daily Items</h1>")
+        daily_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        daily_layout.addWidget(daily_label)
 
-        # Shop sections layout
-        shop_layout = QHBoxLayout()
-        shop_layout.setSpacing(15)
+        # Create a grid layout for displaying daily items
+        daily_grid = QGridLayout()
 
-        # Create the three shop sections with theme colors
-        daily_section = self._create_shop_section("Daily Items", self.get_daily_items(), colors['accent_red'])
-        tm_section = self._create_shop_section("Daily TMs", self.get_daily_tms(), colors['accent_teal'], is_tm=True)
-        standard_section = self._create_shop_section("Standard Items", STANDARD_ITEMS, colors['accent_yellow'])
-
-        shop_layout.addWidget(daily_section)
-        shop_layout.addWidget(tm_section)
-        shop_layout.addWidget(standard_section)
-
-        main_layout.addLayout(shop_layout)
-
-    def _create_header(self):
-        """Create the theme-aware Ankimon Mart header in a single horizontal line."""
-        colors = self._get_theme_colors()
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(20)
-
-        # Ankimon Mart title
-        title_label = QLabel("ANKIMON MART")
-        title_font = QFont(self.early_gameboy_font)
-        title_font.setPointSize(18)
-        title_label.setFont(title_font)
-        title_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        title_label.setStyleSheet(f"""
-            QLabel {{
-                color: {colors['text_primary']};
-                background-color: {colors['border']};
-                border: 3px solid {colors['text_primary']};
-                border-radius: 8px;
-                padding: 8px 16px;
-                margin: 4px;
-            }}
-        """)
-
-        # Money display
-        self.currency_qlabel = QLabel(f"MONEY: ${self.settings_obj.get('trainer.cash', 0)}")
-        money_font = QFont(self.early_gameboy_font)
-        money_font.setPointSize(12)
-        self.currency_qlabel.setFont(money_font)
-        self.currency_qlabel.setStyleSheet(f"""
-            QLabel {{
-                color: {colors['text_primary']};
-                background-color: {colors['button_bg']};
-                border: 2px solid {colors['text_primary']};
-                border-radius: 6px;
-                padding: 6px 12px;
-            }}
-        """)
-
-        # Create the reroll button with the desired text
-        reroll_button = QPushButton(f" REROLL SHOP\n${self.daily_items_reroll_cost}")
-
-        button_font = QFont(self.early_gameboy_font)
-        button_font.setPointSize(9.5)
-        reroll_button.setFont(button_font)
-
-        reroll_button.setFixedWidth(reroll_button.sizeHint().width())
-
-        reroll_button.setMinimumHeight(50)
-
-        reroll_button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {colors['accent_red']};
-                color: {colors['text_primary']};
-                border: 3px solid {colors['text_primary']};
-                border-radius: 8px;
-                font-weight: bold;
-            }}
-            QPushButton:hover {{
-                background-color: {colors['button_hover']};
-                border: 3px solid {colors['accent_yellow']};
-            }}
-            QPushButton:pressed {{
-                background-color: {colors['border']};
-            }}
-        """)
-        reroll_button.clicked.connect(lambda: self.reroll_daily_items(cost=self.daily_items_reroll_cost))
-
-        header_layout.addWidget(title_label)
-        header_layout.addStretch()
-        header_layout.addWidget(self.currency_qlabel)
-        header_layout.addWidget(reroll_button)
-
-        return header_layout
-
-    def _create_shop_section(self, title, items, color, is_tm=False):
-        """Create a theme-aware shop section without boundaries."""
-        colors = self._get_theme_colors()
-        section_frame = QFrame()
-        section_frame.setFixedWidth(340)
-        # Removed border styles to remove boundaries
-        section_frame.setStyleSheet(f"""
-            QFrame {{
-                background-color: {colors['frame_bg']};
-                border-radius: 12px;
-                margin: 4px;
-            }}
-        """)
-
-        section_layout = QVBoxLayout(section_frame)
-        section_layout.setContentsMargins(8, 8, 8, 8)
-        section_layout.setSpacing(8)
-
-        # Section title with Early GameBoy font
-        title_label = QLabel(title.upper())
-        title_label.setFont(self.early_gameboy_font)
-        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title_label.setStyleSheet(f"""
-            QLabel {{
-                color: {colors['text_primary']};
-                background-color: {color};
-                border-radius: 6px;
-                padding: 6px;
-                font-weight: bold;
-            }}
-        """)
-        section_layout.addWidget(title_label)
-
-        # Items grid
-        items_layout = QVBoxLayout()
-        items_layout.setSpacing(6)
-
-        # Get items based on type
-        if title == "Daily Items" and not self.todays_daily_items:
-            self.todays_daily_items = items
-        elif title == "Daily TMs" and not self.todays_daily_tms:
-            self.todays_daily_tms = items
-
-        for item in items:
-            item_frame = self._create_retro_item_frame(item, color, is_tm)
-            items_layout.addWidget(item_frame)
-
-        section_layout.addLayout(items_layout)
-        section_layout.addStretch()
-
-        return section_frame
-
-    def _create_retro_item_frame(self, item, section_color, is_tm=False):
-        """Create a theme-aware retro-styled item frame with tooltip for description."""
-        colors = self._get_theme_colors()
-
-        if is_tm:
-            item['UI_NAME'] = item.get('name', '').replace('-', ' ').title()
-            item['price'] = self.tm_price
-            # Description for TMs: fixed string
-            description_text = f"Allows a Pokémon to be taught the move {item['UI_NAME']} (if able)"
-        else:
-            item['UI_NAME'] = item.get('name', 'poke-ball').replace('-', ' ').title()
+        # Daily items
+        if not self.todays_daily_items:  # If the list of daily items is empty
+            self.todays_daily_items = self.get_daily_items()
+        for row, item in enumerate(self.todays_daily_items):
+            item['UI_NAME'] = item.get('name', 'poke-ball').replace('-', ' ').capitalize()
             item['price'] = get_item_price(item.get('name', 'poke-ball'))
-            # Description for regular items: use get_item_description with language from settings
-            description_text = get_item_description(item['name'], self.settings_obj.get('misc.language', '9'))
-            if not description_text:
-                description_text = f"A useful item: {item['UI_NAME']}"
 
-        frame = QFrame()
-        frame.setFixedHeight(90)
-        # Tooltip with item description for hover popup
-        frame.setToolTip(description_text)
+            # Create a QFrame to wrap the row content
+            frame = QFrame()
+            frame.setFixedHeight(self.frame_h)
+            frame.setFixedWidth(self.frame_w)
 
-        frame.setStyleSheet(f"""
-            QFrame {{
-                background-color: {colors['frame_bg']};
-                border-radius: 8px;
-                margin: 2px;
-            }}
-            QFrame:hover {{
-                background-color: {colors['frame_hover']};
-            }}
-        """)
+            # Create a layout inside the frame for the row content
+            frame_layout = QHBoxLayout(frame)
 
-        layout = QHBoxLayout(frame)
-        layout.setContentsMargins(8, 6, 8, 6)
-        layout.setSpacing(10)
-
-        # Item image
-        image_label = QLabel()
-        if is_tm:
-            image_path = items_path / "Bag_TM_Normal_SV_Sprite.png"
-        else:
+            # Image
             image_path = f"{items_path}/{item.get('name', 'poke-ball')}.png"
+            pixmap = QPixmap(image_path)
+            image_label = QLabel()
+            image_label.setPixmap(pixmap.scaled(50, 50, Qt.AspectRatioMode.KeepAspectRatio))
+            image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        pixmap = QPixmap(str(image_path))
-        image_label.setPixmap(pixmap.scaled(48, 48, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
-        image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(image_label)
+            # Name
+            name_label = QLabel(f"<h3>{item.get('UI_NAME', 'poke-ball')}</h3>")
+            name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Item info
-        info_layout = QVBoxLayout()
-        info_layout.setSpacing(2)
+            # Description
+            description_text = get_item_description(item['name'], self.settings_obj.get('misc.language', '9'))
+            description_label = QLabel(f"<em>{description_text}</em>")
+            description_label.setWordWrap(True)
+            description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            description_label.setToolTip(description_text)
 
-        # Item name
-        name_label = QLabel(item['UI_NAME'])
-        name_font = QFont(self.early_gameboy_font)
-        name_font.setPointSize(10)
-        name_label.setFont(name_font)
-        name_label.setStyleSheet(f"QLabel {{ color: {colors['text_secondary']}; font-weight: bold; }}")
-        info_layout.addWidget(name_label)
+            # Price
+            price_label = QLabel(f"<b>${item.get('price', 1000)}</b>")
+            price_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Price
-        price_label = QLabel(f"${item.get('price', 1000)}")
-        price_font = QFont(self.early_gameboy_font)
-        price_font.setPointSize(9)
-        price_label.setFont(price_font)
-        price_label.setStyleSheet(f"QLabel {{ color: {colors['success']}; font-weight: bold; }}")
-        info_layout.addWidget(price_label)
-
-        layout.addLayout(info_layout)
-        layout.addStretch()
-
-        # Buy button with theme-aware styling
-        buy_button = QPushButton("BUY")
-        buy_font = QFont(self.early_gameboy_font)
-        buy_font.setPointSize(8)
-        buy_button.setFont(buy_font)
-        buy_button.setFixedHeight(35)
-        buy_button.setFixedWidth(buy_button.sizeHint().width())
-
-        buy_button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {section_color};
-                color: {colors['text_primary']};
-                border: 2px solid {colors['text_primary']};
-                border-radius: 6px;
-                font-weight: bold;
-            }}
-            QPushButton:hover {{
-                background-color: {colors['button_hover']};
-                color: {section_color};
-                border: 2px solid {section_color};
-            }}
-            QPushButton:pressed {{
-                background-color: {colors['border']};
-            }}
-        """)
-
-        if is_tm:
-            buy_button.clicked.connect(lambda checked, item=item: self.buy_item(item, item.get("item_type")))
-        else:
+            # Buy button
+            buy_button = QPushButton("Buy")
             buy_button.clicked.connect(lambda checked, item=item: self.buy_item(item))
 
-        layout.addWidget(buy_button)
+            # Add widgets to the frame layout
+            frame_layout.addWidget(image_label)  # Add Image label
+            frame_layout.addWidget(name_label)  # Add Name label
+            frame_layout.addWidget(description_label)  # Add Description label
+            frame_layout.addWidget(price_label)  # Add Price label
+            frame_layout.addWidget(buy_button)  # Add Buy button
 
-        return frame
+            # Add the frame to the grid layout
+            daily_grid.addWidget(frame, row, 0, 1, 4)
+
+        daily_layout.addLayout(daily_grid)
+
+
+        # --- Middle column for daily TMs ---
+        daily_tms_layout = QVBoxLayout()  # Vertical layout for daily items
+        daily_tms_label = QLabel("<h1>Daily TMs</h1>")
+        daily_tms_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        daily_tms_layout.addWidget(daily_tms_label)
+
+        daily_tms_grid = QGridLayout()
+
+        # Daily TMs
+        if not self.todays_daily_tms:  # If the list of daily items is empty
+            self.todays_daily_tms = self.get_daily_tms()
+        for row, item in enumerate(self.todays_daily_tms):
+            item['UI_NAME'] = item.get('name', '').replace('-', ' ').capitalize()
+            item['price'] = self.tm_price
+
+            # Create a QFrame to wrap the row content
+            frame = QFrame()
+            frame.setFixedHeight(self.frame_h)
+            frame.setFixedWidth(self.frame_w)
+
+            # Create a layout inside the frame for the row content
+            frame_layout = QHBoxLayout(frame)
+
+            # Image
+            image_path = items_path / "Bag_TM_Normal_SV_Sprite.png"
+            pixmap = QPixmap(str(image_path))
+            image_label = QLabel()
+            image_label.setPixmap(pixmap.scaled(50, 50, Qt.AspectRatioMode.KeepAspectRatio))
+            image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            # Name
+            name_label = QLabel(f"<h3>{item.get('UI_NAME', 'poke-ball')}</h3>")
+            name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            # Description
+            #description_text = get_item_description(item['name'], self.settings_obj.get('misc.language', '9'))
+            description_text = f"Allows a Pokémon to be taught the move {item['UI_NAME']} (if able)"
+            description_label = QLabel(f"<em>{description_text}</em>")
+            description_label.setWordWrap(True)
+            description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            description_label.setToolTip(description_text)
+
+            # Price
+            price_label = QLabel(f"<b>${item.get('price')}</b>")
+            price_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            # Buy button
+            buy_button = QPushButton("Buy")
+            buy_button.clicked.connect(lambda checked, item=item: self.buy_item(item, item.get("item_type")))
+
+            # Add widgets to the frame layout
+            frame_layout.addWidget(image_label)  # Add Image label
+            frame_layout.addWidget(name_label)  # Add Name label
+            frame_layout.addWidget(description_label)  # Add Description label
+            frame_layout.addWidget(price_label)  # Add Price label
+            frame_layout.addWidget(buy_button)  # Add Buy button
+
+            # Add the frame to the grid layout
+            daily_tms_grid.addWidget(frame, row, 0, 1, 4)
+        daily_tms_layout.addLayout(daily_tms_grid)
+
+        # --- Right Side for Standard Items ---
+        standard_layout = QVBoxLayout()  # Vertical layout for standard items
+        standard_label = QLabel("<h1>Standard Items</h1>")
+        standard_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        standard_layout.addWidget(standard_label)
+
+        # Create a grid layout for displaying standard items
+        standard_grid = QGridLayout()
+
+        for row, item in enumerate(STANDARD_ITEMS):
+            item['UI_NAME'] = item.get('name', 'poke-ball').replace('-', ' ').capitalize()
+            item['price'] = get_item_price(item.get('name', 'poke-ball'))
+
+            # Create a QFrame to wrap the row content
+            frame = QFrame()
+            frame.setFixedHeight(self.frame_h)
+            frame.setFixedWidth(self.frame_w)
+
+            # Create a layout inside the frame for the row content
+            frame_layout = QHBoxLayout(frame)
+
+            # Image
+            image_path = f"{items_path}/{item.get('name', 'poke-ball')}.png"
+            pixmap = QPixmap(image_path)
+            image_label = QLabel()
+            image_label.setPixmap(pixmap.scaled(50, 50, Qt.AspectRatioMode.KeepAspectRatio))
+            image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            # Name
+            name_label = QLabel(f"<h3>{item.get('UI_NAME', 'poke-ball')}</h3>")
+            name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            # Description
+            description_text = get_item_description(item['name'], self.settings_obj.get('misc.language', '9'))
+            description_label = QLabel(f"<em>{description_text}</em>")
+            description_label.setWordWrap(True)
+            description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            description_label.setToolTip(description_text)
+
+            # Price
+            price_label = QLabel(f"<b>${item.get('price', 1000)}</b>")
+            price_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            # Buy button
+            buy_button = QPushButton("Buy")
+            buy_button.clicked.connect(lambda checked, item=item: self.buy_item(item))
+
+            # Add widgets to the frame layout
+            frame_layout.addWidget(image_label)  # Add Image label
+            frame_layout.addWidget(name_label)  # Add Name label
+            frame_layout.addWidget(description_label)  # Add Description label
+            frame_layout.addWidget(price_label)  # Add Price label
+            frame_layout.addWidget(buy_button)  # Add Buy button
+
+            # Add the frame to the grid layout
+            standard_grid.addWidget(frame, row, 0, 1, 4)
+
+        standard_layout.addLayout(standard_grid)
+
+        # Add both layouts to the main horizontal layout
+        main_layout.addLayout(daily_layout, stretch=1)  # Left side
+        main_layout.addLayout(daily_tms_layout, stretch=1)  # Middle
+        main_layout.addLayout(standard_layout, stretch=1)  # Right side
+
+        self.currency_qlabel = QLabel(f"<h2>Current Cash: ${self.settings_obj.get('trainer.cash', 0)}</h2>")
+        daily_items_reroll_button = QPushButton(f"Reroll daily items  ${self.daily_items_reroll_cost}")
+        daily_items_reroll_button.setFixedSize(180, 25)
+        daily_items_reroll_button.clicked.connect(lambda: self.reroll_daily_items(cost=self.daily_items_reroll_cost))
+        top_layout = QVBoxLayout()
+        top_layout.addWidget(self.currency_qlabel)
+        top_layout.addWidget(daily_items_reroll_button)
+
+        # Create a vertical layout for the complete window
+        complete_layout = QVBoxLayout(self.window)
+        complete_layout.addLayout(top_layout)
+        complete_layout.addLayout(main_layout)
+        # Apply the main layout to the window
+        self.window.setLayout(complete_layout)
 
     def get_daily_items(self):
         """Generate daily items based on the current date."""
+
+        # In case the shop has been reset today, we need to load the latest reroll
         if os.path.isfile(self.shop_save_file):
             with open(self.shop_save_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 if data.get("items") and data.get("date") == datetime.now().strftime("%Y-%m-%d"):
                     return data.get("items")
 
+        # If there was no reroll today (i.e. it's a new day), we generate a whole new shop
         seed = datetime.now().strftime("%Y-%m-%d")
         random.seed(seed)
         return random.sample(DAILY_ITEMS_POOL, self.number_of_daily_items)
     
     def get_daily_tms(self):
-        """Works like get_daily_items, but for TMs"""
+        """
+        Works like get_daily_items, but for TMs
+        """
+        # In case the shop has been reset today, we need to load the latest reroll
         if os.path.isfile(self.shop_save_file):
             with open(self.shop_save_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 if data.get("technical_machines") and data.get("date") == datetime.now().strftime("%Y-%m-%d"):
                     return data.get("technical_machines")
         
+        # If there was no reroll today (i.e. it's a new day), we generate a whole new shop
         tm_pool = self.get_tm_pool()
         seed = datetime.now().strftime("%Y-%m-%d")
         random.seed(seed)
@@ -475,67 +316,63 @@ class PokemonShopManager:
         with open(pokemon_tm_learnset_path, "r") as f:
             pokemon_tm_learnset = json.load(f)
 
+        # Reminder : pokemon_tm_learnset is a dict in the format {"pokemon_name": list[str]}
         def flatten(xss):
             return [x for xs in xss for x in xs]
         all_tms = flatten(list(pokemon_tm_learnset.values()))
-        all_tms = list(set(all_tms))
+        all_tms = list(set(all_tms))  # getting rid of duplicates
         all_tms = [
             {
             "name": tm,
-            "description": f"Allows a Pokemon to be taught the move {tm} (if able).",
+            "description": f"Allows a Pokémon to be taught the move {tm} (if able).",
             "price": self.tm_price,
             "item_type": "TM",
             } for tm in all_tms]
         return list(all_tms)
 
     def buy_item(self, item, item_type: Union[str, None]=None):
-        """Handle item purchase with custom ankimonmart.png icon."""
         try:
+            """Handle item purchase."""
             if self.settings_obj.get('trainer.cash', 0) < item['price']:
-                msg = self._create_custom_message_box(
-                    "Ankimon Mart", 
-                    "You don't have enough money!", 
-                    "warning"
-                )
-                msg.exec()
+                QMessageBox.critical(mw, "Purchase Failed", "You do not have enough cash to purchase this item.")
                 return
-                
             self.set_callback('trainer.cash', int(self.get_callback('trainer.cash', 0) - item['price']))
-            self.currency_qlabel.setText(f"MONEY: ${self.settings_obj.get('trainer.cash', 0)}")
-            
-            msg = self._create_custom_message_box(
-                "Ankimon Mart", 
-                f"Thank you!\nYou bought {item.get('UI_NAME', 'Unknown')} for ${item['price']}!", 
-                "info"
-            )
-            msg.exec()
-            
+            self.currency_qlabel.setText(f"<h2>Current Cash: ${self.settings_obj.get('trainer.cash', 0)}</h2>")
+            QMessageBox.information(mw, "Purchase Successful", f"You purchased {item.get('name', 'poke-ball').replace('-', ' ').capitalize()} for ${item['price']}! \n {self.get_callback('trainer.cash', 0)} cash remaining.")
             give_item(item['name'], item_type)
         except Exception as e:
             self.logger.log_and_showinfo("error", f"Failed to purchase item: {e}")
+            QMessageBox.critical(mw, "Purchase Failed", "An error occurred while purchasing the item.")
 
     def reroll_daily_items(self, cost: int = 0) -> None:
-        """Rerolls the daily items in the shop with custom ankimonmart.png icon"""
+        """
+        Rerolls the daily items in the shop
+
+        Args:
+            cost (int): The cost in Pokedollars to reroll the shop. Defaults to 0.
+
+        Returns:
+            None
+        """
+        # First, we check if the user actually has enough money to pay for the reroll
         if self.settings_obj.get('trainer.cash', 0) < cost:
-            msg = self._create_custom_message_box(
-                "Ankimon Mart", 
-                "You don't have enough money to reroll!", 
-                "warning"
-            )
-            msg.exec()
+            QMessageBox.critical(mw, "Purchase Failed", "You do not have enough money to reroll the shop.")
             return
         
+        # We substract the cost of the reroll to the amount of money the user has
         self.set_callback('trainer.cash', int(self.get_callback('trainer.cash', 0) - cost))
-        self.currency_qlabel.setText(f"MONEY: ${self.settings_obj.get('trainer.cash', 0)}")
+        self.currency_qlabel.setText(f"<h2>Current Cash: ${self.settings_obj.get('trainer.cash', 0)}</h2>")
 
+        # Rerolling the list of today's items
         random.seed()
         self.todays_daily_items = random.sample(DAILY_ITEMS_POOL, self.number_of_daily_items)
         self.todays_daily_tms = random.sample(self.get_tm_pool(), self.number_of_daily_items)
 
-        # Refresh the window to apply new theme
-        self.toggle_window()
-        self.toggle_window()
+        # Refreshing the window by closing and reopening it
+        self.toggle_window() # Closing the window
+        self.toggle_window() # Opening the window
 
+        # After the reroll, we save the items currently present in the shop. That way, if Anki is reopened, the new items are still there
         with open(self.shop_save_file, 'w', encoding='utf-8') as f:
             data = {
                 "items": self.todays_daily_items,
