@@ -116,3 +116,14 @@ def generate_startup_files(base_path):  # Add base_path parameter
         if not os.path.exists(file_path):
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump([], f, indent=2)
+
+    # Default data for the file
+    default_rating_data = {"rate_this": False}
+    rate_path = os.path.join(base_path, 'rate_this.json')
+
+    # Create the file with default contents if it doesn't exist
+    if not os.path.exists(rate_path):
+        os.makedirs(os.path.dirname(rate_path), exist_ok=True)
+        with open(rate_path, "w", encoding="utf-8") as f:
+            json.dump(default_rating_data, f, indent=4)
+
