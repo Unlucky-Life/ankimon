@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import json
 
 addon_dir = Path(__file__).parents[0]
 
@@ -98,3 +99,20 @@ backup_root = addon_dir / "user_files" / "backups"
 backup_folder_1 = backup_root / "backup_1"
 backup_folder_2 = backup_root / "backup_2"
 backup_folders = [os.path.join(backup_root, f"backup_{i}") for i in range(1, 4)]
+
+def generate_startup_files(base_path):  # Add base_path parameter
+    """
+    Generates blank personal files at startup with the value [].
+    Introduced as a workaround to gitignore personal files.
+    """
+    files = ['mypokemon.json', 'mainpokemon.json', 'items.json', 
+             'team.json', 'data.json', 'badges.json']
+    
+    for file in files:
+        file_path = os.path.join(base_path, file)  # Use base_path parameter
+        # Create parent directory if needed
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        if not os.path.exists(file_path):
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump([], f, indent=2)
