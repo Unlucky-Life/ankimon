@@ -3,6 +3,7 @@ import json
 from aqt import QDialog, QVBoxLayout, QWebEngineView, mw
 from aqt.qt import QPushButton, QCheckBox, QFrame, Qt
 from PyQt6.QtCore import QUrl, QUrlQuery
+from PyQt6.QtGui import QGuiApplication
 from pathlib import Path
 
 class AchievementsDialog(QDialog):
@@ -11,8 +12,13 @@ class AchievementsDialog(QDialog):
         self.addon_dir = addon_dir
         self.data_handler = data_handler
         self.setWindowTitle("Achievements & Badges")
-        self.setMinimumSize(800, 600)  # Set minimum window size
-
+        
+        screen = QGuiApplication.primaryScreen()
+        avail_geom = screen.availableGeometry()
+        avail_height = avail_geom.height()
+        target_height = min(900, avail_height)
+        self.setMinimumSize(800, target_height)
+        
         # Remove window frame (commented out for now as it might cause issues)
         # self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint)
         
