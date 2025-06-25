@@ -168,9 +168,9 @@ class CheckPokemonData(QDialog):
             f"Individual ID: {pokemon_data['individual_id']}\n"
             f"Everstone: {pokemon_data['everstone']}\n"
             f"Shiny: {pokemon_data['shiny']}\n"
-            # f"Friendship: {pokemon_data['friendship']}\n"
-            # f"Pokémon Defeated: {pokemon_data['pokemon_defeated']}\n"
-            # f"Captured Date: {pokemon_data['captured_date']}"
+            f"Friendship: {pokemon_data['friendship']}\n"
+            f"Pokémon Defeated: {pokemon_data['pokemon_defeated']}\n"
+            f"Captured Date: {pokemon_data['captured_date']}"
         )
 
         return pokemon_info
