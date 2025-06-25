@@ -1,110 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Ankimon Achievements</title>
     <style>
-        body {
-            background: #f0f0f0;
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
             font-family: Arial, sans-serif;
-            padding: 20px;
+            overflow: hidden;
         }
-        .achievement-card {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+        body {
+            background: url('wood_texture.png') no-repeat center center fixed;
+            background-size: cover;
             display: flex;
+            flex-direction: column; 
+            justify-content: flex-start;
             align-items: center;
-            transition: transform 0.2s;
+            height: 100vh;
+            width: 100vw;
         }
-        .achievement-card:hover {
-            transform: translateY(-3px);
+        .velvet-container {
+            position: relative;
+            background: radial-gradient(ellipse at center, rgba(19,27,68,1) 80%, rgba(19,27,68,0.96) 92%, rgba(0,0,0,0.5) 100%);
+            box-shadow: 0 0 20px 20px rgba(0,0,0,0.4) inset;
+            border: 30px solid; 
+            border-image: url('wood_border.png') 50 stretch;
+            padding: 40px;
+            margin-bottom: 20px; 
+            max-width: 750px;
+            height: 100vh;
+            max-height: 800px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            image-rendering: pixelated;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .badge-icon {
-            width: 64px;
-            height: 64px;
-            margin-right: 15px;
-        }
-        .grayscale {
-            filter: grayscale(100%);
-        }
-        .badge-info {
-            flex-grow: 1;
-        }
+
         #achievements-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(4, 110px); /* 4 columns, adjust as needed */
+            gap: 32px;
+            justify-items: center;
+            align-items: center;
+            width: auto;
+            height: auto;
+        }
+        
+        .badge-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #1e2a6b;
+            border-radius: 18px;
+            box-shadow: 
+                0 6px 18px 0 rgba(0,0,0,0.55),
+                0 2px 8px 0 rgba(40,50,100,0.18) inset,
+                0 0 0 4px #162050 inset;
+            border: 2px solid #1f2549;
+            image-rendering: pixelated;
+            transition: box-shadow 0.2s;
+        }
+
+        .badge-wrapper:hover {
+            box-shadow: 
+                0 12px 24px 0 rgba(0,0,0,0.7),
+                0 2px 8px 0 rgba(40,50,100,0.22) inset,
+                0 0 0 4px #162050 inset;
+        }
+
+        .badge-icon {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            transition: transform 0.2s ease-in-out;
+            z-index: 1;
+            position: relative;
+        }
+
+        .badge-wrapper:hover .badge-icon {
+            transform: scale(1.1);
+        }
+
+        .grayscale {
+            filter: grayscale(100%) brightness(0.7);
+        }
+
+        .tooltip {
+            visibility: hidden;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 8px;
+            position: absolute;
+            z-index: 2;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        .badge-wrapper:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            #achievements-container {
+                grid-template-columns: repeat(2, 110px);
+                gap: 20px;
+            }
+            .velvet-container {
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="achievements-container"></div>
-    <script>
-        // Helper to get the add-on ID from the current path
-        function getAddonIdFromPath() {
-            // Handles both file:// and /_addons/ URLs
-            // Example: file:///.../addons21/1908235722/achievements.html
-            // or      /_addons/1908235722/achievements/achievements.html
-            let match = window.location.pathname.match(/(?:addons21|_addons)\/([^\/]+)/);
-            return match ? match[1] : null;
-        }
+    <div style="position: relative; width: 100%; display: flex; justify-content: center; z-index: 2; margin-top: 32px; margin-bottom: -60px;">
+        <img src="achievements.png" style="max-width: 200px; height: auto; box-shadow: 0 4px 16px rgba(0,0,0,0.18); background: transparent;">
+    </div>
+    <div class="velvet-container">
+        <div id="achievements-container"></div>
+    </div>
 
+    <script>
         const urlParams = new URLSearchParams(window.location.search);
         const badgeDefinitions = JSON.parse(urlParams.get('badge_definitions') || '{}');
         const unlockedBadges = JSON.parse(urlParams.get('unlocked_badges') || '[]');
-        const showAll = urlParams.get('show_all') === "1";
-        const addonId = urlParams.get('addon_name') || getAddonIdFromPath();
+        const addonName = urlParams.get('addon_name');
 
-        // If we have an addonId, use the Anki webserver path for images.
-        // Otherwise, fallback to a relative path (for file:// debugging).
         function badgeImgPath(badgeId) {
-            if (addonId) {
-                return `../user_files/sprites/badges/${badgeId}.png`;;
-            } else {
-                return `../user_files/sprites/badges/${badgeId}.png`;
-            }
+            return `../user_files/sprites/badges/${badgeId}.png`;
         }
 
         function badgeDefaultImgPath() {
-            if (addonId) {
-                return `../user_files/sprites/badges/default.png`;
-            } else {
-                return `../user_files/sprites/badges/default.png`;
-            }
+            return `../user_files/sprites/badges/default.png`;
         }
 
         const container = document.getElementById('achievements-container');
 
-        // If showAll, show all badges; otherwise, only unlocked
-        const badgeIds = showAll
-            ? Object.keys(badgeDefinitions).map(Number)
-            : unlockedBadges;
-
-        badgeIds.forEach(badgeId => {
-            const name = badgeDefinitions[badgeId.toString()];
+        // Display all badges, grayscaling the locked ones
+        Object.keys(badgeDefinitions).forEach(badgeId => {
+            const name = badgeDefinitions[badgeId];
             if (!name || name.toLowerCase() === "changed" || name.toLowerCase() === "add") return;
-            const isUnlocked = unlockedBadges.includes(badgeId);
-            const displayName = isUnlocked ? name : "????";
+
+            // Ensure badgeId is a valid integer
+            const badgeIdInt = Number(badgeId);
+            if (isNaN(badgeIdInt)) return;
+
+            const isUnlocked = unlockedBadges.includes(badgeIdInt);
+            const displayName = name;
             const grayscaleClass = isUnlocked ? "" : "grayscale";
             const imgSrc = badgeImgPath(badgeId);
             const defaultImgSrc = badgeDefaultImgPath();
+
             const badgeHtml = `
-                <div class="achievement-card">
-                    <img src="${imgSrc}"
+                <div class="badge-wrapper">
+                    <img src="${imgSrc}" 
                          class="badge-icon ${grayscaleClass}" 
                          alt="${displayName}"
                          onerror="this.onerror=null;this.src='${defaultImgSrc}';">
-                    <div class="badge-info">
-                        <h3>${displayName}</h3>
-                    </div>
+                    <div class="tooltip">${displayName}</div>
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', badgeHtml);
         });
-    </script>    
+    </script>
 </body>
 </html>
