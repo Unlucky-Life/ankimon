@@ -15,6 +15,7 @@ class PokemonObject:
         level=3,
         ability=None,
         type=None,
+        current_hp=15,
         base_stats=None,
         attacks=None,
         base_experience=0,
@@ -84,8 +85,8 @@ class PokemonObject:
         # HP calculation
         self.max_hp = self.calculate_max_hp()
         self.hp = int(kwargs.get('hp', self.max_hp))
-        self.current_hp = self.hp  # to be removed later
-
+        self.current_hp = current_hp or 15 
+        
     @classmethod
     def calc_stat(
         cls,
