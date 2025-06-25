@@ -500,6 +500,11 @@ def save_main_pokemon_progress(
         mainpkmndata["ev"]["spa"] += ev_yield["special-attack"]
         mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
         mainpkmndata["ev"]["spe"] += ev_yield["speed"]
+        mainpkmndata["current_hp"] = int(main_pokemon.hp)
+        if main_pokemon.friendship > 255:
+            main_pokemon.friendship = 255
+        mainpkmndata["friendship"] = main_pokemon.friendship 
+        mainpkmndata["pokemon_defeated"] += 1
     mypkmndata = mainpkmndata
     mainpkmndata = [mainpkmndata]
     # Save the caught Pokémon's data to a JSON file
