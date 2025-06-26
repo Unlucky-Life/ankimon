@@ -3,7 +3,7 @@
 
 ---
 
-### Current Contributors
+### GitHub Contributors
 #### Ankimon: `Unlucky-Life/ankimon`
 
 <a href="https://github.com/unlucky-life/ankimon/graphs/contributors">
