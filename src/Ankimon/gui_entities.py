@@ -194,49 +194,6 @@ class Credits(QWidget):
     def show_window(self):
         self.show()
 
-class HelpWindow(QDialog):
-    def __init__(self, online_connectivity):
-        super().__init__()
-        html_content = " "
-        help_local_file_path = addon_dir / "HelpInfos.html"
-        try:
-            if online_connectivity != False:
-                # URL of the file on GitHub
-                help_local_file_path = addon_dir / "HelpInfos.html"
-                help_github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/HelpInfos.html"
-                # Path to the local file
-                local_content = read_local_file(help_local_file_path)
-                # Read content from GitHub
-                github_content, github_html_content = read_github_file(help_github_url)
-                if local_content is not None and compare_files(local_content, github_content):
-                    html_content = github_html_content
-                else: 
-                    # Download new content from GitHub
-                    if github_content is not None:
-                        # Write new content to the local file
-                        write_local_file(help_local_file_path, github_content)
-                        html_content = github_html_content
-            else:
-                help_local_file_path = addon_dir / "HelpInfos.html"
-                local_content = read_local_file(help_local_file_path)
-                html_content = local_content
-        except:
-            showWarning("Failed to retrieve Ankimon HelpGuide from GitHub.")
-            local_content = read_local_file(help_local_file_path)
-            html_content = local_content
-        self.setWindowTitle("Ankimon HelpGuide")
-        self.setGeometry(100, 100, 600, 400)
-
-        layout = QVBoxLayout()
-        self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)
-        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.text_edit.setHtml(html_content)
-        layout.addWidget(self.text_edit)
-        self.setWindowIcon(QIcon(str(icon_path)))
-        self.setLayout(layout)
-
 class TableWidget(QWidget):
     def __init__(self):
         super().__init__()
