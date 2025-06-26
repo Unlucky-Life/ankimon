@@ -98,7 +98,8 @@ from .functions.encounter_functions import (
     handle_main_pokemon_faint
 )
 from .functions.pokedex_functions import find_details_move
-from .gui_entities import UpdateNotificationWindow, HelpWindow, CheckFiles
+from .gui_entities import UpdateNotificationWindow, CheckFiles
+from .pyobj.help_window import HelpWindow
 from .pyobj.sync_pokemon_data import CheckPokemonData
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
