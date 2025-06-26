@@ -7,6 +7,7 @@ import markdown
 import random
 import csv
 from collections import Counter
+from typing import Union
 
 from aqt.utils import showWarning, showInfo
 from PyQt6.QtGui import QFontDatabase, QFont
@@ -36,6 +37,11 @@ from .resources import (
     mypokemon_path,
     mainpokemon_path,
     addon_dir,
+    pokemon_species_baby_path,
+    pokemon_species_legendary_path,
+    pokemon_species_mythical_path,
+    pokemon_species_normal_path,
+    pokemon_species_ultra_path,
 )
 
 # Load move and pokemon name mapping at startup
@@ -223,7 +229,7 @@ def daily_item_list():
     return item_names
 
 # Function to give an item to the player
-def give_item(item_name):
+def give_item(item_name, item_type: Union[str, None]=None):
     with open(itembag_path, "r", encoding="utf-8") as json_file:
         itembag_list = json.load(json_file)
         # Check if the item exists and update quantity, otherwise append
@@ -233,9 +239,12 @@ def give_item(item_name):
                 break
         else:
             # Add a new item if not found
-            itembag_list.append({"item": item_name, "quantity": 1})
+            item_dict = {"item": item_name, "quantity": 1}
+            if item_type is not None:
+                item_dict["type"] = item_type
+            itembag_list.append(item_dict)
     with open(itembag_path, 'w', encoding="utf-8") as json_file:
-        json.dump(itembag_list, json_file)
+        json.dump(itembag_list, json_file, indent=4)
     #logger.log_and_showinfo('game', f"Player bought item {item_name.capitalize()}")
 
 #Function to return a cost of an item
@@ -661,6 +670,37 @@ def get_ev_spread(mode: str="random") -> dict[str, int]:
         return {"hp": 84, "atk": 84, "def": 84, "spa": 84, "spd": 84, "spe": 84}
     
     raise ValueError(f"Received unknown value for 'mode': {mode}")
+
+def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
+    """
+    Determines the tier category of a Pokémon based on its ID.
+
+    Searches through predefined JSON files representing different Pokémon tiers
+    (Normal, Legendary, Mythical, Baby, Ultra) to find the tier corresponding
+    to the given Pokémon ID.
+
+    Args:
+        pokemon_id (int): The unique identifier of the Pokémon.
+
+    Returns:
+        Union[str, None]: The tier name as a string if the Pokémon ID is found
+        in one of the tier lists; otherwise, None.
+    """
+    paths = {
+        "Normal": pokemon_species_normal_path,
+        "Legendary": pokemon_species_legendary_path,
+        "Mythical": pokemon_species_mythical_path,
+        "Baby": pokemon_species_baby_path,
+        "Ultra": pokemon_species_ultra_path,
+    }
+
+    for tier, path in paths.items():
+        with open(path, "r", encoding="utf-8") as f:
+            id_list = json.load(f)
+        if pokemon_id in id_list:
+            return tier
+        
+    return None
 
 def safe_get_random_move(
     pokemon_moves: list[str],
