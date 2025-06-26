@@ -3,304 +3,544 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Ankimon Welcome Guide</title>
+  <title>Ankimon Guide</title>
   <style>
-    /* Base reset */
-    * { margin:0; padding:0; box-sizing:border-box; }
+    /* Core styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #1a1a3a;
-      color: #fff;
-      overflow:hidden;
+      font-family: 'Segoe UI', 'Open Sans', sans-serif;
+      background: linear-gradient(135deg, #1a1a3a 0%, #2d1b69 100%);
+      color: #ffffff;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-rendering: optimizeLegibility;
     }
+    
     #container {
-      position:absolute;
-      top:50%;
-      left:50%;
-      transform:translate(-50%,-50%);
-      width:90vw;
-      max-width:900px;
-      height:90vh;
-      background:rgba(0,0,0,0.6);
-      border-radius:12px;
-      display:flex;
-      flex-direction:column;
-      box-shadow:0 0 20px rgba(0,0,0,0.8);
+      width: 90%;
+      max-width: 1000px;
+      height: 90vh;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3), 
+                  0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+      transition: transform 0.3s ease;
     }
+    
+    /* Header styles */
     header {
-      padding:20px;
-      text-align:center;
-      border-bottom:1px solid rgba(255,215,0,0.3);
+      padding: 25px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.3);
     }
+    
     header h1 {
-      font-size:2rem;
-      background:linear-gradient(45deg,#FFD700,#FFA500);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
+      font-size: 2.4rem;
+      background: linear-gradient(45deg, #FFD700, #FFA500);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
-    section {
-      flex:1;
-      display:flex;
-      padding:20px;
-      overflow:hidden;
+    
+    /* Main content area */
+    .content-area {
+      flex: 1;
+      display: flex;
+      padding: 25px;
+      overflow: hidden;
+      gap: 25px;
     }
-    #image {
-      flex:1;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border:2px dashed rgba(255,215,0,0.3);
-      border-radius:8px;
-      margin-right:20px;
-      overflow:hidden;
+    
+    /* Image container */
+    .image-container {
+      flex: 0.8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 15px;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
     }
-    #image img {
-      max-width:100%;
-      max-height:100%;
+    
+    .image-container:hover {
+      transform: scale(1.02);
     }
-    #image .placeholder {
-      color:#FFD700;
-      font-size:1rem;
-      text-align:center;
+    
+    .image-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 5px;
+      transition: transform 0.5s ease;
     }
-    #content {
-      flex:1.2;
-      display:flex;
-      flex-direction:column;
+    
+    .image-container .placeholder {
+      color: #FFD700;
+      text-align: center;
+      padding: 20px;
+      font-size: 1.1rem;
     }
-    #content h2 {
-      margin-bottom:10px;
-      color:#FFD700;
+    
+    /* Text content */
+    .text-content {
+      flex: 1.2;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding-right: 5px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 215, 0, 0.3) rgba(0, 0, 0, 0.1);
     }
-    #content p {
-      margin-bottom:15px;
-      line-height:1.5;
-      color:#DDD;
+    
+    .text-content::-webkit-scrollbar {
+      width: 6px;
     }
-    .features {
-      list-style:none;
-      padding-left:0;
-      margin-bottom:auto;
+    
+    .text-content::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 215, 0, 0.3);
+      border-radius: 3px;
     }
-    .features li {
-      margin:8px 0;
-      display:flex;
-      align-items:center;
+    
+    .text-content::-webkit-scrollbar-track {
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 3px;
     }
-    .features li::before {
-      content:'⚡';
-      margin-right:8px;
-      color:#FFA500;
+    
+    .subtitle {
+      margin-bottom: 15px;
+      color: #FFA500;
+      font-size: 1.5rem;
+      font-weight: 600;
     }
+    
+    .description {
+      margin-bottom: 20px;
+      line-height: 1.6;
+      font-size: 1.1rem;
+      color: #e0e0e0;
+    }
+    
+    /* Feature list */
+    .feature-list {
+      list-style: none;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 15px 20px;
+      border: 1px solid rgba(255, 215, 0, 0.1);
+      margin-top: auto;
+    }
+    
+    .feature-item {
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      transition: transform 0.2s ease;
+    }
+    
+    .feature-item:hover {
+      transform: translateX(5px);
+    }
+    
+    .feature-item::before {
+      content: '⚡';
+      margin-right: 10px;
+      color: #FFA500;
+      font-size: 1.1rem;
+    }
+    
+    /* Footer with navigation */
     footer {
-      padding:15px 20px;
-      border-top:1px solid rgba(255,215,0,0.3);
-      display:flex;
-      align-items:center;
+      padding: 20px 25px;
+      border-top: 1px solid rgba(255, 215, 0, 0.2);
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
     }
-    footer button {
-      background:linear-gradient(45deg,#FFD700,#FFA500);
-      border:none;
-      color:#1a1a3a;
-      font-weight:600;
-      padding:10px 20px;
-      border-radius:20px;
-      cursor:pointer;
-      margin-right:10px;
-      transition:transform .2s;
+    
+    .btn {
+      background: linear-gradient(45deg, #FFD700, #FFA500);
+      border: none;
+      color: #1a1a3a;
+      font-weight: 700;
+      padding: 12px 22px;
+      border-radius: 25px;
+      cursor: pointer;
+      margin-right: 15px;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
-    footer button:disabled {
-      background:rgba(255,255,255,0.1);
-      color:rgba(255,255,255,0.3);
-      cursor:default;
+    
+    .btn:disabled {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.3);
+      cursor: not-allowed;
+      box-shadow: none;
     }
-    footer button:hover:not(:disabled) {
-      transform:translateY(-2px);
+    
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
     }
-    #pager {
-      margin-left:auto;
-      color:#DDD;
+    
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
     }
-    @media(max-width:768px) {
-      #container { width:95vw; height:95vh; }
-      section { flex-direction:column; }
-      #image { margin-right:0; margin-bottom:15px; height:40%; }
+    
+    .dots-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 6px;
+    }
+    
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .dot.active {
+      background: #FFD700;
+      transform: scale(1.2);
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    }
+    
+    .page-counter {
+      font-size: 0.95rem;
+      color: #BBB;
+      margin-left: auto;
+      font-weight: 500;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+      .content-area {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .image-container {
+        height: 250px;
+      }
+      
+      header h1 {
+        font-size: 1.9rem;
+      }
+    }
+    
+    /* Animation effects */
+    .fade-transition {
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    
+    .fade-in {
+      opacity: 1;
+    }
+
+    /* Skip button */
+    .skip-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-left: 10px;
+      font-weight: normal;
+    }
+    
+    .skip-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
     }
   </style>
 </head>
 <body>
   <div id="container">
     <header>
-      <h1 id="title"></h1>
+      <h1 id="page-title" class="fade-transition">Welcome to Ankimon</h1>
     </header>
-    <section>
-      <div id="image"><div class="placeholder">Loading…</div></div>
-      <div id="content">
-        <h2 id="subtitle"></h2>
-        <p id="description"></p>
-        <ul class="features" id="features"></ul>
+
+    <div class="content-area">
+      <div class="image-container fade-transition" id="page-image">
+        <div class="placeholder">Loading image...</div>
       </div>
-    </section>
+
+      <div class="text-content">
+        <h2 class="subtitle fade-transition" id="page-subtitle"></h2>
+        <p class="description fade-transition" id="page-description"></p>
+        <ul class="feature-list fade-transition" id="page-features"></ul>
+      </div>
+    </div>
+
     <footer>
-      <button id="prev">← Previous</button>
-      <button id="next">Next →</button>
-      <div id="pager"></div>
+      <button id="prev-btn" class="btn">← Previous</button>
+      <button id="next-btn" class="btn">Next →</button>
+      
+      <div class="dots-container" id="dots-navigation"></div>
+      
+      <div class="page-counter" id="page-counter">1 of 8</div>
+      <button id="skip-btn" class="btn skip-btn">Skip Tour</button>
     </footer>
   </div>
 
   <script>
+    // Define all pages with their content
     const pages = [
       {
         title: "Welcome to Ankimon! 🎮",
-        subtitle: "Your Pokémon Adventure Begins Here",
-        description: "Turn your Anki reviews into a fun Pokémon journey. Catch, train, and battle as you learn!",
+        subtitle: "Your Pokémon Adventure Begins",
+        description: "Transform your Anki study sessions into an exciting Pokémon journey! Catch, train, and battle with Pokémon as you review your cards. Ankimon turns learning into a rewarding adventure that keeps you motivated.",
         features: [
-          "Catch Pokémon while studying",
-          "Battle wild Pokémon in real-time",
-          "Train your team with every correct card",
-          "Collect achievements and items"
+          "Learn while catching and training Pokémon",
+          "Battle against wild Pokémon with each card review",
+          "Collect and evolve your favorite species",
+          "Track your progress with achievements"
         ],
-        image: "https://raw.githubusercontent.com/your-repo/ankimon/main/images/ankimon-logo.png"
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/ankimon-logo.png"
       },
       {
         title: "Battle During Reviews ⚔️",
         subtitle: "Study Smart, Battle Hard",
-        description: "Each correct answer triggers an attack. Watch epic battles unfold in your reviewer window!",
+        description: "As you review your Anki cards, your Pokémon will automatically attack wild Pokémon. Each correct answer powers up your attacks! Watch your Pokémon fight in real-time as you strengthen your memory.",
         features: [
           "Review cards to trigger attacks",
-          "See enemy HP & stats live",
-          "Dynamic battle animations",
-          "Strategic learning boost"
+          "See enemy HP and stats in your reviewer",
+          "Experience dynamic battle animations",
+          "Make learning strategic and fun"
         ],
-        image: "https://raw.githubusercontent.com/your-repo/ankimon/main/images/reviewer-battle.png"
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/reviewer-battle.png"
       },
       {
         title: "Defeat for Experience 💪",
-        subtitle: "Power Up Your Team",
-        description: "Defeat wild Pokémon to earn XP. Level up and unlock powerful new moves!",
+        subtitle: "Level Up Your Pokémon",
+        description: "Choose to defeat wild Pokémon to earn valuable experience points. Watch your Pokémon grow stronger with each victory, unlocking new abilities and increasing their stats.",
         features: [
-          "Gain XP from battles",
-          "Level up stats & moves",
-          "Focused training for favorites",
-          "Track progress visually"
+          "Gain XP from successful battles",
+          "Level up your Pokémon's stats and moves",
+          "Focus training on your favorite team members",
+          "Track your progress with visual indicators"
         ],
-        image: "https://raw.githubusercontent.com/your-repo/ankimon/main/images/defeat-pokemon.png"
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/defeat-pokemon.png"
       },
       {
         title: "Catch New Pokémon 🎯",
-        subtitle: "Gotta Catch 'Em All",
-        description: "When a wild Pokémon's HP hits zero you can catch it! Expand your Pokédex with every card.",
+        subtitle: "Expand Your Collection",
+        description: "When a wild Pokémon's HP reaches zero, you can choose to catch it instead! Build your collection of Pokémon with different types, abilities, and strengths to create your ultimate team.",
         features: [
-          "Catch Pokémon instead of defeating",
-          "Pokédex-style capture UI",
-          "Discover new species",
-          "Build your dream team"
+          "Catch defeated wild Pokémon",
+          "Add diverse species to your collection",
+          "Discover rare and powerful Pokémon",
+          "Build the perfect balanced team"
         ],
-        image: "https://raw.githubusercontent.com/your-repo/ankimon/main/images/catch-pokemon.png"
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/catch-pokemon.png"
       },
       {
         title: "Manage Your Collection 📚",
-        subtitle: "Organize Your Dream Team",
-        description: "View, trade, release, rename, and configure all your Pokémon in one place.",
+        subtitle: "Organize Your Team",
+        description: "Access your complete Pokémon collection through the management window. View stats, rename your Pokémon, trade with friends, and select which Pokémon to train during your study sessions.",
         features: [
-          "View detailed stats",
-          "Trade with friends",
-          "Rename & relabel team",
-          "Release unwanted Pokémon"
+          "View detailed stats for all your Pokémon",
+          "Trade Pokémon with friends and other users",
+          "Rename your Pokémon with custom nicknames",
+          "Release Pokémon you no longer want"
         ],
-        image: "https://raw.githubusercontent.com/your-repo/ankimon/main/images/pokemon-collection.png"
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/pokemon-collection.png"
       },
       {
         title: "Watch Battles Live 🪟",
-        subtitle: "Epic Real-Time Animations",
-        description: "Open the battle window to see every attack, dodge, and special move as you study.",
+        subtitle: "Epic Battle Animations",
+        description: "Open the dedicated Ankimon battle window to see your Pokémon fight in stunning detail! Witness every attack, dodge, and special move as you progress through your reviews.",
         features: [
-          "Live battle animations",
-          "Toggle with M+Ctrl/Cmd",
-          "Immersive visual feedback",
-          "Full screen support"
+          "Watch real-time battle animations",
+          "Toggle with M+Ctrl/Cmd keyboard shortcut",
+          "Get visual feedback for every move",
+          "Enjoy an immersive gaming experience while studying"
         ],
-        image: "https://raw.githubusercontent.com/your-repo/ankimon/main/images/battle-window.png"
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/battle-window.png"
       },
       {
         title: "Customize Your Experience ⚙️",
-        subtitle: "Settings & Configuration",
-        description: "Adjust battle frequency, keybindings, and enable special features to suit your style.",
+        subtitle: "Settings & Preferences",
+        description: "Fine-tune your Ankimon experience with the comprehensive settings panel. Adjust battle frequency, customize keyboard shortcuts, and enable special features to match your personal study style.",
         features: [
           "Customize keyboard shortcuts",
-          "Set encounter rate",
-          "Enable special modes",
-          "Personalize colors & layout"
+          "Adjust Pokémon encounter frequency",
+          "Enable special gameplay modes",
+          "Personalize your experience fully"
         ],
-        image: "https://raw.githubusercontent.com/your-repo/ankimon/main/images/settings-panel.png"
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/settings-panel.png"
       },
       {
         title: "Enjoy Your Journey! 🎉",
         subtitle: "Community & Support",
-        description: "Join our community for tips, report bugs, and support development on Ko-fi.",
+        description: "Welcome to the Ankimon community! If you need help, check our documentation or reach out to fellow trainers. Consider supporting continued development if you enjoy using Ankimon.",
         features: [
-          "Full documentation",
-          "Active Discord & forums",
-          "Support on ko-fi.com/unlucky99",
-          "Thanks to all contributors"
+          "Access comprehensive documentation",
+          "Join our community Discord for help",
+          "Support development at ko-fi.com/unlucky99",
+          "Special thanks to all our contributors!"
         ],
-        image: "https://raw.githubusercontent.com/your-repo/ankimon/main/images/community.png"
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/community.png"
       }
     ];
 
-    let idx = 0;
-    const titleEl = document.getElementById("title");
-    const subtitleEl = document.getElementById("subtitle");
-    const descEl = document.getElementById("description");
-    const featEl = document.getElementById("features");
-    const imgEl = document.getElementById("image");
-    const prevBtn = document.getElementById("prev");
-    const nextBtn = document.getElementById("next");
-    const pager = document.getElementById("pager");
+    // Initialize variables
+    let currentPage = 0;
+    const totalPages = pages.length;
 
-    function render() {
-      const p = pages[idx];
-      titleEl.textContent = p.title;
-      subtitleEl.textContent = p.subtitle;
-      descEl.textContent = p.description;
+    // Get DOM elements
+    const pageTitle = document.getElementById('page-title');
+    const pageImage = document.getElementById('page-image');
+    const pageSubtitle = document.getElementById('page-subtitle');
+    const pageDescription = document.getElementById('page-description');
+    const pageFeatures = document.getElementById('page-features');
+    const prevButton = document.getElementById('prev-btn');
+    const nextButton = document.getElementById('next-btn');
+    const skipButton = document.getElementById('skip-btn');
+    const pageCounter = document.getElementById('page-counter');
+    const dotsNavigation = document.getElementById('dots-navigation');
 
-      featEl.innerHTML = "";
-      p.features.forEach(f => {
-        const li = document.createElement("li");
-        li.textContent = f;
-        featEl.append(li);
-      });
-
-      imgEl.innerHTML = `
-        <img src="${p.image}"
-             onerror="this.remove(); this.parentNode.innerHTML='<div class=placeholder>Image not available</div>'"/>
-      `;
-
-      prevBtn.disabled = (idx === 0);
-      nextBtn.textContent = (idx === pages.length - 1 ? "Finish →" : "Next →");
-      pager.textContent = `Page ${idx + 1} of ${pages.length}`;
+    // Create navigation dots
+    function createDots() {
+      dotsNavigation.innerHTML = '';
+      for (let i = 0; i < totalPages; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === currentPage ? ' active' : '');
+        dot.addEventListener('click', () => goToPage(i));
+        dotsNavigation.appendChild(dot);
+      }
     }
 
-    prevBtn.addEventListener("click", () => {
-      if (idx > 0) idx--;
-      render();
-    });
-    nextBtn.addEventListener("click", () => {
-      if (idx < pages.length - 1) {
-        idx++;
-        render();
+    // Load page content
+    function loadPage(pageIndex) {
+      // Update current page
+      currentPage = pageIndex;
+      
+      // Get page data
+      const page = pages[pageIndex];
+      
+      // Start fade transition
+      const fadeElements = document.querySelectorAll('.fade-transition');
+      fadeElements.forEach(el => el.classList.remove('fade-in'));
+      
+      // Set short timeout to allow fade out
+      setTimeout(() => {
+        // Update page title
+        pageTitle.textContent = page.title;
+        
+        // Update image
+        pageImage.innerHTML = `<img src="${page.image}" alt="${page.title}" 
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                               <div class="placeholder" style="display:none;">Image not available</div>`;
+        
+        // Update text content
+        pageSubtitle.textContent = page.subtitle;
+        pageDescription.textContent = page.description;
+        
+        // Update features list
+        pageFeatures.innerHTML = '';
+        page.features.forEach(feature => {
+          const li = document.createElement('li');
+          li.className = 'feature-item';
+          li.textContent = feature;
+          pageFeatures.appendChild(li);
+        });
+        
+        // Update navigation
+        updateNavigation();
+        
+        // Complete fade transition
+        fadeElements.forEach(el => el.classList.add('fade-in'));
+      }, 300);
+    }
+
+    // Update navigation elements
+    function updateNavigation() {
+      // Update buttons
+      prevButton.disabled = currentPage === 0;
+      nextButton.textContent = currentPage === totalPages - 1 ? 'Finish' : 'Next →';
+      
+      // Update page counter
+      pageCounter.textContent = `${currentPage + 1} of ${totalPages}`;
+      
+      // Update dots
+      const dots = dotsNavigation.querySelectorAll('.dot');
+      dots.forEach((dot, index) => {
+        dot.className = index === currentPage ? 'dot active' : 'dot';
+      });
+    }
+
+    // Navigation functions
+    function goToNextPage() {
+      if (currentPage < totalPages - 1) {
+        loadPage(currentPage + 1);
       } else {
         window.close();
       }
-    });
+    }
 
-    document.addEventListener("keydown", e => {
-      if (e.key === "ArrowRight" || e.key === " ") nextBtn.click();
-      if (e.key === "ArrowLeft") prevBtn.click();
-      if (e.key === "Escape") window.close();
-    });
+    function goToPrevPage() {
+      if (currentPage > 0) {
+        loadPage(currentPage - 1);
+      }
+    }
 
-    render();
+    function goToPage(pageIndex) {
+      if (pageIndex >= 0 && pageIndex < totalPages) {
+        loadPage(pageIndex);
+      }
+    }
+
+    // Setup event listeners
+    function setupListeners() {
+      // Button navigation
+      prevButton.addEventListener('click', goToPrevPage);
+      nextButton.addEventListener('click', goToNextPage);
+      skipButton.addEventListener('click', () => window.close());
+      
+      // Keyboard navigation
+      document.addEventListener('keydown', event => {
+        if (event.key === 'ArrowRight' || event.key === ' ') {
+          goToNextPage();
+        } else if (event.key === 'ArrowLeft') {
+          goToPrevPage();
+        } else if (event.key === 'Escape') {
+          window.close();
+        }
+      });
+    }
+
+    // Initialize
+    function init() {
+      createDots();
+      loadPage(0);
+      setupListeners();
+    }
+
+    // Start the application
+    init();
   </script>
 </body>
 </html>
