@@ -33,6 +33,10 @@ from PyQt6.QtWidgets import QDialog
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
 
+from .resources import generate_startup_files, user_path
+
+generate_startup_files(user_path)
+
 from .config_var import (
     dmg_in_reviewer,
     no_more_news,
@@ -127,6 +131,7 @@ from .singletons import (
     version_dialog,
     pokecollection_win,
     achievements,
+    pokemon_pc
 )
 
 from .pyobj.error_handler import show_warning_with_traceback
@@ -822,7 +827,7 @@ count_items_and_rewrite(itembag_path)
 create_menu_actions(
     database_complete,
     online_connectivity,
-    pokecollection_win,
+    None,#pokecollection_win,
     item_window,
     test_window,
     achievement_bag,
@@ -850,7 +855,8 @@ create_menu_actions(
     open_leaderboard_url,
     settings_obj,
     addon_dir,          
-    data_handler_obj    
+    data_handler_obj,
+    pokemon_pc,
 )
 
     #https://goo.gl/uhAxsg

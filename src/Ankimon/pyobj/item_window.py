@@ -170,7 +170,7 @@ class ItemWindow(QWidget):
             self.contentLayout.addWidget(empty_label, 1, 1)
         else:
             for item in self.itembag_list:
-                item_widget = self.ItemLabel(item["item"], item["quantity"])
+                item_widget = self.ItemLabel(item["item"], item["quantity"], item_type=item.get("type"))
                 self.contentLayout.addWidget(item_widget, row, col)
                 col += 1
                 if col >= max_items_per_row:
@@ -228,20 +228,25 @@ class ItemWindow(QWidget):
             self.logger.log_and_showinfo("error", f"Error filtering items: {e}")
 
         for item in filtered_items:
-            item_widget = self.ItemLabel(item["item"], item["quantity"])
+            item_widget = self.ItemLabel(item["item"], item["quantity"], item_type=item.get("type"))
             self.contentLayout.addWidget(item_widget, row, col)
             col += 1
             if col >= max_items_per_row:
                 row += 1
                 col = 0
 
-    def ItemLabel(self, item_name, quantity):
+    def ItemLabel(self, item_name, quantity, **kwargs):
         item_file_path = items_path / f"{item_name}.png"
+        if kwargs.get("item_type") == "TM":
+            item_file_path = items_path / "Bag_TM_Normal_SV_Sprite.png"
         item_frame = QVBoxLayout()  # itemframe
         info_item_button = QPushButton("More Info")
         info_item_button.clicked.connect(lambda: self.more_info_button_act(item_name))
         item_name_for_label = item_name.replace("-", " ")  # Remove hyphens from item_name
-        item_name_label = QLabel(f"{item_name_for_label.capitalize()} x{quantity}")  # Display quantity
+        item_name_for_label = f"{item_name_for_label.capitalize()} x{quantity}"  # Display quantity
+        if kwargs.get("item_type") == "TM":
+            item_name_for_label = f"TM : {item_name_for_label}"
+        item_name_label = QLabel(item_name_for_label)
         item_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         item_picture_pixmap = QPixmap(str(item_file_path))
         item_picture_label = QLabel()
@@ -263,6 +268,14 @@ class ItemWindow(QWidget):
         elif item_name in self.pokeball_chances:
             use_item_button = QPushButton("Try catching wild Pokemon")
             use_item_button.clicked.connect(lambda: self.Handle_Pokeball(item_name))
+        elif kwargs.get("item_type") == "TM":
+            use_item_button = QLabel()
+            info_item_button = QLabel(
+                f"""
+                Allows the user to teach {item_name.replace('-', ' ').title()} to Pokémon that can learn this move. \n
+                Teaching the move doesn't consume the TM.
+                """
+                )
         else:
             use_item_button = QPushButton("Evolve Pokemon")
             use_item_button.clicked.connect(
