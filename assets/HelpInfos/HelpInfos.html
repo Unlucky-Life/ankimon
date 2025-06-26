@@ -159,7 +159,7 @@
     }
     
     .feature-item::before {
-      content: 'âš¡';
+      content: '⚡';
       margin-right: 10px;
       color: #FFA500;
       font-size: 1.1rem;
@@ -295,8 +295,8 @@
     </div>
 
     <footer>
-      <button id="prev-btn" class="btn">â† Previous</button>
-      <button id="next-btn" class="btn">Next â†’</button>
+      <button id="prev-btn" class="btn">← Previous</button>
+      <button id="next-btn" class="btn">Next →</button>
       
       <div class="dots-container" id="dots-navigation"></div>
       
@@ -309,69 +309,57 @@
     // Define all pages with their content
     const pages = [
       {
-        title: "Welcome to Ankimon! ðŸŽ®",
-        subtitle: "Your PokÃ©mon Adventure Begins",
-        description: "Transform your Anki study sessions into an exciting PokÃ©mon journey! Catch, train, and battle with PokÃ©mon as you review your cards. Ankimon turns learning into a rewarding adventure that keeps you motivated.",
+        title: "Welcome to Ankimon! 🎮",
+        subtitle: "Your Pokémon Adventure Begins",
+        description: "Transform your Anki study sessions into an exciting Pokémon journey! Catch, train, and battle with Pokémon as you review your cards. Ankimon turns learning into a rewarding adventure that keeps you motivated.",
         features: [
-          "Learn while catching and training PokÃ©mon",
-          "Battle against wild PokÃ©mon with each card review",
+          "Learn while catching and training Pokémon",
+          "Battle against wild Pokémon with each card review",
           "Collect and evolve your favorite species",
           "Track your progress with achievements"
         ],
         image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_logo.png"
       },
       {
-        title: "Battle During Reviews âš”ï¸",
+        title: "Battle During Reviews ⚔️",
         subtitle: "Study Smart, Battle Hard",
-        description: "As you review your Anki cards, your PokÃ©mon will automatically attack wild PokÃ©mon. Each correct answer powers up your attacks! Watch your PokÃ©mon fight in real-time as you strengthen your memory.",
+        description: "As you review your Anki cards, your Pokémon will automatically attack wild Pokémon. Each correct answer powers up your attacks! Watch your Pokémon fight in real-time as you strengthen your memory.",
         features: [
           "Review cards to trigger attacks",
           "See enemy HP and stats in your reviewer",
           "Experience dynamic battle animations",
           "Make learning strategic and fun"
         ],
-        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/reviewer-battle.png"
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_reviewer.png"
       },
       {
-        title: "Defeat for Experience ðŸ’ª",
-        subtitle: "Level Up Your PokÃ©mon",
-        description: "Choose to defeat wild PokÃ©mon to earn valuable experience points. Watch your PokÃ©mon grow stronger with each victory, unlocking new abilities and increasing their stats.",
+        title: "Defeat and Catch Pokémon 🎯",
+        subtitle: "Become the best Pokémon trainer!",
+        description: "When a wild Pokémon's HP reaches zero, choose to either defeat wild Pokémon to gain XP, or can choose to catch it instead to gain new Pokémon!",
         features: [
           "Gain XP from successful battles",
-          "Level up your PokÃ©mon's stats and moves",
+          "Level up your Pokémon's stats and moves",
           "Focus training on your favorite team members",
           "Track your progress with visual indicators"
         ],
-        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/defeat-pokemon.png"
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_fainted.png"
       },
       {
-        title: "Catch New PokÃ©mon ðŸŽ¯",
-        subtitle: "Expand Your Collection",
-        description: "When a wild PokÃ©mon's HP reaches zero, you can choose to catch it instead! Build your collection of PokÃ©mon with different types, abilities, and strengths to create your ultimate team.",
-        features: [
-          "Catch defeated wild PokÃ©mon",
-          "Add diverse species to your collection",
-          "Discover rare and powerful PokÃ©mon",
-          "Build the perfect balanced team"
-        ],
-        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/catch-pokemon.png"
-      },
-      {
-        title: "Manage Your Collection ðŸ“š",
+        title: "Manage Your Collection 📚",
         subtitle: "Organize Your Team",
-        description: "Access your complete PokÃ©mon collection through the management window. View stats, rename your PokÃ©mon, trade with friends, and select which PokÃ©mon to train during your study sessions.",
+        description: "Access your complete Pokémon collection through the management window. View stats, rename your Pokémon, trade with friends, and select which Pokémon to train during your study sessions.",
         features: [
-          "View detailed stats for all your PokÃ©mon",
-          "Trade PokÃ©mon with friends and other users",
-          "Rename your PokÃ©mon with custom nicknames",
-          "Release PokÃ©mon you no longer want"
+          "View detailed stats for all your Pokémon",
+          "Trade Pokémon with friends and other users",
+          "Rename your Pokémon with custom nicknames",
+          "Release Pokémon you no longer want"
         ],
-        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/pokemon-collection.png"
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_collection.png"
       },
       {
-        title: "Watch Battles Live ðŸªŸ",
+        title: "Watch Battles Live 🪟",
         subtitle: "Epic Battle Animations",
-        description: "Open the dedicated Ankimon battle window to see your PokÃ©mon fight in stunning detail! Witness every attack, dodge, and special move as you progress through your reviews.",
+        description: "Open the dedicated Ankimon battle window to see your Pokémon fight in stunning detail! Witness every attack, dodge, and special move as you progress through your reviews.",
         features: [
           "Watch real-time battle animations",
           "Toggle with M+Ctrl/Cmd keyboard shortcut",
@@ -381,19 +369,19 @@
         image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_window.png"
       },
       {
-        title: "Customize Your Experience âš™ï¸",
+        title: "Customize Your Experience ⚙️",
         subtitle: "Settings & Preferences",
         description: "Fine-tune your Ankimon experience with the comprehensive settings panel. Adjust battle frequency, customize keyboard shortcuts, and enable special features to match your personal study style.",
         features: [
           "Customize keyboard shortcuts",
-          "Adjust PokÃ©mon encounter frequency",
+          "Adjust Pokémon encounter frequency",
           "Enable special gameplay modes",
           "Personalize your experience fully"
         ],
         image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_settings.png"
       },
       {
-        title: "Enjoy Your Journey! ðŸŽ‰",
+        title: "Enjoy Your Journey! 🎉",
         subtitle: "Community & Support",
         description: "Welcome to the Ankimon community! If you need help, check our documentation or reach out to fellow trainers. Consider supporting continued development if you enjoy using Ankimon.",
         features: [
@@ -402,7 +390,7 @@
           "Support development at ko-fi.com/unlucky99",
           "Special thanks to all our contributors!"
         ],
-        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/community.png"
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_contributors.png"
       }
     ];
 
@@ -480,7 +468,7 @@
     function updateNavigation() {
       // Update buttons
       prevButton.disabled = currentPage === 0;
-      nextButton.textContent = currentPage === totalPages - 1 ? 'Finish' : 'Next â†’';
+      nextButton.textContent = currentPage === totalPages - 1 ? 'Finish' : 'Next →';
       
       // Update page counter
       pageCounter.textContent = `${currentPage + 1} of ${totalPages}`;
