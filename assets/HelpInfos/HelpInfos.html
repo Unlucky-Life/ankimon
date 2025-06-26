@@ -434,14 +434,14 @@
               <div class="checkmark"></div>
               <div class="link-text">
                 <a href="https://discord.gg/eY8jPHZw4z" target="_blank" class="link-title">Join Our Discord Community</a>
-                <div class="link-description">Meet other trainers, join us for studying, and help with Ankimon development~</div>
+                <div class="link-description">Meet other trainers, join us for studying, and help with Ankimon development!</div>
               </div>
             </div>
             <div class="link-item" data-link="kofi">
               <div class="checkmark"></div>
               <div class="link-text">
                 <a href="https://ko-fi.com/unlucky99" target="_blank" class="link-title">Support Development on Ko-fi</a>
-                <div class="link-description">Help fund new features and keep Ankimon growing~</div>
+                <div class="link-description">Help fund new features and keep Ankimon growing!</div>
               </div>
             </div>
             <div class="link-item" data-link="experimental">
@@ -500,8 +500,17 @@
       if (currentPage < totalPages - 1) {
         loadPage(currentPage + 1);
       } else {
-        if (typeof window !== 'undefined' && window.close) {
-          window.close();
+        if (typeof qt !== 'undefined' && qt.webChannelTransport) {
+          new QWebChannel(qt.webChannelTransport, function(channel) {
+            var bridge = channel.objects.bridge;
+            if (bridge) {
+              bridge.closeDialog();
+            } else {
+              console.log("Bridge object not found in channel");
+            }
+          });
+        } else {
+          console.log("QWebChannel not available, cannot close dialog");
         }
       }
     }
@@ -512,27 +521,25 @@
       }
     }
 
-    function goToPage(pageIndex) {
-      if (pageIndex >= 0 && pageIndex < totalPages) {
-        loadPage(pageIndex);
-      }
-    }
-
     // Setup event listeners
     function setupListeners() {
       // Button navigation
       prevButton.addEventListener('click', goToPrevPage);
       nextButton.addEventListener('click', goToNextPage);
       
-      // Fixed skip button functionality
+      // Fixed skip button functionality using QWebChannel
       skipButton.addEventListener('click', function() {
-        try {
-          if (typeof window !== 'undefined' && window.close) {
-            window.close();
-          }
-        } catch(e) {
-          // Fallback for environments where window.close() isn't available
-          console.log('Skip tour clicked - would close window');
+        if (typeof qt !== 'undefined' && qt.webChannelTransport) {
+          new QWebChannel(qt.webChannelTransport, function(channel) {
+            var bridge = channel.objects.bridge;
+            if (bridge) {
+              bridge.closeDialog();
+            } else {
+              console.log("Bridge object not found in channel");
+            }
+          });
+        } else {
+          console.log("QWebChannel not available, cannot close dialog");
         }
       });
       
