@@ -5,6 +5,432 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Ankimon Guide</title>
   <style>
+    /* Pokémon-themed color variables */
+    :root {
+      --pkmn-blue: #3B4CCA;
+      --pkmn-red:  #DC143C;
+      --pkmn-yellow: #FFDE00;
+      --pkmn-white: #FFFFFF;
+      --pkmn-black: #00000088;
+    }
+
+    /* Reset & base */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--pkmn-black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height:100vh;
+      overflow:hidden;
+      color: var(--pkmn-white);
+    }
+
+    /* Outer container */
+    #container {
+      width: 90%;
+      max-width: 900px;
+      height: 85vh;
+      background: var(--pkmn-black);
+      border: 2px solid var(--pkmn-yellow);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      background: var(--pkmn-blue);
+      padding: 16px;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 2.2rem;
+      color: var(--pkmn-yellow);
+      text-shadow: 1px 1px var(--pkmn-red);
+    }
+
+    /* Main area */
+    .content {
+      flex: 1;
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+      overflow: hidden;
+    }
+
+    /* Image pane */
+    .image-pane {
+      flex: 0.8;
+      background: var(--pkmn-black);
+      border: 2px solid var(--pkmn-yellow);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding:10px;
+    }
+    .image-pane img {
+      max-width:100%;
+      max-height:100%;
+      border-radius: 4px;
+    }
+    .image-pane .placeholder {
+      color: var(--pkmn-yellow);
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    /* Text pane */
+    .text-pane {
+      flex: 1.2;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .text-pane h2 {
+      color: var(--pkmn-red);
+      font-size: 1.5rem;
+      margin-bottom: 4px;
+    }
+    .text-pane p {
+      line-height: 1.4;
+      color: #ddd;
+      margin-bottom: 8px;
+    }
+
+    /* Info nuggets */
+    .nuggets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .nugget {
+      background: var(--pkmn-blue);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      flex: 1 1 calc(50% - 10px);
+      box-shadow: 0 2px 4px #0006;
+    }
+
+    /* Footer & navigation */
+    footer {
+      background: var(--pkmn-blue);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    footer button {
+      background: var(--pkmn-yellow);
+      color: var(--pkmn-black);
+      border: none;
+      padding: 10px 18px;
+      font-weight: bold;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    footer button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    footer button:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+    .dots {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius:50%;
+      background: #555;
+      cursor: pointer;
+    }
+    .dot.active {
+      background: var(--pkmn-yellow);
+    }
+
+    /* Final page CTAs */
+    .final-ctas {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .final-ctas .cta {
+      flex: 1;
+      background: var(--pkmn-red);
+      color: var(--pkmn-white);
+      text-align: center;
+      padding: 10px 0;
+      border-radius: 18px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .final-ctas .cta:hover {
+      background: #a41f32;
+    }
+
+    /* Responsive adjustments */
+    @media(max-width:768px) {
+      .content { flex-direction: column; }
+      .image-pane { height: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <header>
+      <h1 id="title">Ankimon Guide</h1>
+    </header>
+
+    <div class="content">
+      <div class="image-pane" id="image-pane">
+        <div class="placeholder">Loading...</div>
+      </div>
+      <div class="text-pane">
+        <h2 id="subtitle"></h2>
+        <p id="description"></p>
+        <div class="nuggets" id="nuggets"></div>
+      </div>
+    </div>
+
+    <footer>
+      <button id="prev" disabled>← Previous</button>
+      <button id="next">Next →</button>
+      <div class="dots" id="dots"></div>
+      <button id="skip">Skip Tour</button>
+    </footer>
+  </div>
+
+  <script>
+    const pages = [
+      {
+        title: "Welcome to Ankimon! 🎮",
+        subtitle: "Anki Meets Pokémon",
+        description: "Turn your flashcard reviews into a monster-catching adventure. Learn faster by battling and collecting your favorite Pokémon!",
+        nuggets: [
+          "Catch & train new Pokémon as you study.",
+          "Battle wild Pokémon on every correct answer.",
+          "Track achievements and level up in style."
+        ],
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_logo.png"
+      },
+      {
+        title: "Battles During Reviews ⚔️",
+        subtitle: "Fight While You Learn",
+        description: "Each correct flashcard triggers an attack. Watch your Pokémon battle wild monsters inside your reviewer window!",
+        nuggets: [
+          "See HP and stats update live.",
+          "Dynamic battle animations keep you engaged.",
+          "Answer wrong? Your Pokémon might miss a turn."
+        ],
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/reviewer-battle.png"
+      },
+      {
+        title: "Defeat for Experience 💪",
+        subtitle: "Level Up Your Team",
+        description: "Defeat Pokémon to earn XP and level up. Grow stronger, unlock moves, and customize your team’s battle strategy!",
+        nuggets: [
+          "Gain experience after every victory.",
+          "Increase attack, defense, and special stats.",
+          "Unlock powerful new moves at higher levels."
+        ],
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/defeat-pokemon.png"
+      },
+      {
+        title: "Catch New Pokémon 🎯",
+        subtitle: "Gotta Catch ‘Em All!",
+        description: "When HP hits zero, choose to catch instead of defeating. Build your Pokédex with rare and legendary species!",
+        nuggets: [
+          "Capture wild Pokémon for your collection.",
+          "Access a Pokédex-style capture interface.",
+          "Discover rare variants and evolving forms."
+        ],
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/catch-pokemon.png"
+      },
+      {
+        title: "Manage Your Collection 📚",
+        subtitle: "Your Pokémon Roster",
+        description: "Open the collection window to trade, rename, release, or pick which Pokémon trains next. Keep your team organized!",
+        nuggets: [
+          "Trade Pokémon with friends.",
+          "Rename and relabel your team members.",
+          "Release unwanted Pokémon with a click."
+        ],
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/pokemon-collection.png"
+      },
+      {
+        title: "Watch Battles Live 🪟",
+        subtitle: "Epic Real-Time Animations",
+        description: "Launch the battle window to watch every attack, dodge, and special move in lush animations—right alongside your reviews!",
+        nuggets: [
+          "Visualize every move in real time.",
+          "Toggle window with M + Ctrl/Cmd.",
+          "Resize and position to your preference."
+        ],
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_window.png"
+      },
+      {
+        title: "Customize Your Experience ⚙️",
+        subtitle: "Settings & Preferences",
+        description: "Adjust encounter rate, keybindings, and special features. Tailor Ankimon to fit your study style perfectly!",
+        nuggets: [
+          "Set how often wild Pokémon appear.",
+          "Customize keyboard shortcuts.",
+          "Enable special challenge modes."
+        ],
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_settings.png"
+      },
+      {
+        title: "Enjoy Your Journey! 🎉",
+        subtitle: "Community & Support",
+        description: "Thank you for choosing Ankimon! Join our community, read the docs, or support development to keep updates coming.",
+        nuggets: [],
+        image: "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/src/Ankimon/images/community.png",
+        final: true
+      }
+    ];
+
+    let current = 0;
+    const total = pages.length;
+    const titleEl = document.getElementById('title');
+    const subtitleEl = document.getElementById('subtitle');
+    const descEl = document.getElementById('description');
+    const nuggetsEl = document.getElementById('nuggets');
+    const imgPane = document.getElementById('image-pane');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    const skipBtn = document.getElementById('skip');
+    const dotsEl = document.getElementById('dots');
+
+    function render() {
+      const page = pages[current];
+
+      // Header
+      titleEl.textContent = page.title;
+
+      // Content
+      subtitleEl.textContent = page.subtitle;
+      descEl.textContent = page.description;
+
+      // Nuggets
+      nuggetsEl.innerHTML = '';
+      if (page.final) {
+        // Add CTAs on last page
+        const ctaContainer = document.createElement('div');
+        ctaContainer.className = 'final-ctas';
+
+        const discord = document.createElement('a');
+        discord.href = 'https://discord.gg/your-server';
+        discord.target = '_blank';
+        discord.className = 'cta';
+        discord.textContent = 'Join Discord';
+
+        const kofi = document.createElement('a');
+        kofi.href = 'https://ko-fi.com/unlucky99';
+        kofi.target = '_blank';
+        kofi.className = 'cta';
+        kofi.textContent = 'Donate on Ko-fi';
+
+        ctaContainer.append(discord, kofi);
+        nuggetsEl.appendChild(ctaContainer);
+      } else {
+        page.nuggets.forEach(n => {
+          const div = document.createElement('div');
+          div.className = 'nugget';
+          div.textContent = n;
+          nuggetsEl.appendChild(div);
+        });
+      }
+
+      // Image
+      imgPane.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = page.image;
+      img.onerror = () => {
+        img.remove();
+        const ph = document.createElement('div');
+        ph.className = 'placeholder';
+        ph.textContent = 'Image not available';
+        imgPane.appendChild(ph);
+      };
+      imgPane.appendChild(img);
+
+      // Buttons
+      prevBtn.disabled = current === 0;
+      nextBtn.textContent = current === total - 1 ? 'Finish' : 'Next →';
+
+      // Dots
+      dotsEl.innerHTML = '';
+      for (let i = 0; i < total; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === current ? ' active' : '');
+        dot.addEventListener('click', () => {
+          current = i;
+          render();
+        });
+        dotsEl.appendChild(dot);
+      }
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (current > 0) current--;
+      render();
+    });
+    nextBtn.addEventListener('click', () => {
+      if (current < total - 1) current++;
+      else window.close();
+      render();
+    });
+    skipBtn.addEventListener('click', () => window.close());
+
+    // Keyboard navigation
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ') nextBtn.click();
+      if (e.key === 'ArrowLeft') prevBtn.click();
+      if (e.key === 'Escape') window.close();
+    });
+
+    // Initialize
+    render();
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Ankimon Guide</title>
+  <style>
     /* Core styling */
     * {
       margin: 0;
