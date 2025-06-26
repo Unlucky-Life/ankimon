@@ -56,8 +56,11 @@ class TestWindow(QWidget):
             translator: Translator=None,
             logger: ShowInfoLogger=None,
             ):
-        super().__init__()
-        self.setWindowFlag(Qt.WindowType.Tool)
+        super().__init__(parent)  # <-- set parent here
+        # Set as a tool window so it stays above parent but not above all apps
+        self.setWindowFlag(Qt.WindowType.Tool, True)
+        # Optionally: ensure it raises above the parent when shown
+        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, False)  # Explicitly disable global always-on-top
         self.pkmn_window = False #if fighting window open
         self.first_start = False
         self.enemy_pokemon = enemy_pokemon
