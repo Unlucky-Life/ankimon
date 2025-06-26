@@ -1,3 +1,7 @@
+from typing import Callable
+from pathlib import Path
+from typing import Union
+
 from aqt.utils import *
 from aqt.qt import *
 from PyQt6.QtWidgets import QMenu
@@ -11,9 +15,28 @@ from .gui_classes.pokemon_team_window import PokemonTeamDialog
 from .gui_classes.check_files import FileCheckerApp
 from .pyobj.download_sprites import show_agreement_and_download_dialog
 from .pyobj.ankimon_leaderboard import show_api_key_dialog
-from .pyobj.achievements_dialog import AchievementsDialog
 from .pyobj.settings import Settings
 from .pyobj.translator import Translator
+from .pyobj.InfoLogger import ShowInfoLogger
+from .pyobj.collection_dialog import PokemonCollectionDialog
+from .pyobj.item_window import ItemWindow
+from .pyobj.pc_box import PokemonPC
+from .pyobj.trainer_card import TrainerCard
+from .pyobj.data_handler_window import DataHandlerWindow
+from .pyobj.settings_window import SettingsWindow
+from .pyobj.test_window import TestWindow
+from .pyobj.data_handler import DataHandler
+from .pyobj.ankimon_shop import PokemonShopManager
+from .pokedex.pokedex_obj import Pokedex
+from .pyobj.achievement_window import AchievementWindow
+from .pyobj.ankimon_tracker_window import AnkimonTrackerWindow
+from .gui_entities import (
+    License,
+    Credits,
+    TableWidget,
+    IDTableWidget,
+    Version_Dialog,
+)
 
 debug = True
 
@@ -29,46 +52,54 @@ if debug is True:
     debug_menu = mw.pokemenu.addMenu(mw.translator.translate("ankimon_debug_button_title"))
 
 def create_menu_actions(
-    database_complete,
-    online_connectivity,
-    pokecollection_win,
-    item_window,
-    test_window,
-    achievement_bag,
-    open_team_builder,
-    export_to_pkmn_showdown,
-    export_all_pkmn_showdown,
-    flex_pokemon_collection,
-    eff_chart,
-    gen_id_chart,
-    credits,
-    license,
-    open_help_window,
-    report_bug,
-    rate_addon_url,
-    version_dialog,
-    trainer_card,
-    ankimon_tracker_window,
-    logger,
-    data_handler_window,
-    settings_window,
-    shop_manager,
-    pokedex_window,
+    database_complete: bool,
+    online_connectivity: bool,
+    pokecollection_win: Union[PokemonCollectionDialog, None],
+    item_window: ItemWindow,
+    test_window: TestWindow,
+    achievement_bag: AchievementWindow,
+    open_team_builder: Callable,
+    export_to_pkmn_showdown: Callable,
+    export_all_pkmn_showdown: Callable,
+    flex_pokemon_collection: Callable,
+    eff_chart: TableWidget,
+    gen_id_chart: IDTableWidget,
+    credits: Credits,
+    license: License,
+    open_help_window: Callable,
+    report_bug: Callable,
+    rate_addon_url: Callable,
+    version_dialog: Version_Dialog,
+    trainer_card: TrainerCard,
+    ankimon_tracker_window: AnkimonTrackerWindow,
+    logger: ShowInfoLogger,
+    data_handler_window: DataHandlerWindow,
+    settings_window: SettingsWindow,
+    shop_manager: PokemonShopManager,
+    pokedex_window: Pokedex,
     ankimon_key,
-    join_discord_url,
-    open_leaderboard_url,
-    settings_obj,
-    addon_dir,           
-    data_handler_obj     
+    join_discord_url: Callable,
+    open_leaderboard_url: Callable,
+    settings_obj: Settings,
+    addon_dir: Path,           
+    data_handler_obj: DataHandler,
+    pokemon_pc: PokemonPC,
 ):
     actions = []
 
     if database_complete:
         # Pokémon collection
-        pokecol_action = QAction(mw.translator.translate("show_collection_button"), mw)
-        pokecol_action.setMenuRole(QAction.MenuRole.NoRole)
-        collection_menu.addAction(pokecol_action)
-        qconnect(pokecol_action.triggered, pokecollection_win.show)
+        if pokecollection_win is not None:
+            pokecol_action = QAction(mw.translator.translate("show_collection_button"), mw)
+            pokecol_action.setMenuRole(QAction.MenuRole.NoRole)
+            collection_menu.addAction(pokecol_action)
+            qconnect(pokecol_action.triggered, pokecollection_win.show)
+
+        # Pokémon PC
+        pokemon_pc_action = QAction("Pokémon PC", mw)
+        pokemon_pc_action.setMenuRole(QAction.MenuRole.NoRole)
+        collection_menu.addAction(pokemon_pc_action)
+        qconnect(pokemon_pc_action.triggered, pokemon_pc.show)
 
         # Ankimon Window
         ankimon_window_action = QAction(mw.translator.translate("open_ankimon_window_button"), mw)
@@ -85,11 +116,13 @@ def create_menu_actions(
 
         # Achievements
         def show_achievements_window():
-            # Lazy import inside the handler
             from .pyobj.achievements_dialog import AchievementsDialog
-            dlg = AchievementsDialog(addon_dir, data_handler_obj)
-            dlg.setWindowModality(Qt.WindowModality.ApplicationModal)
-            dlg.exec()
+            if not hasattr(mw, "_achievements_dialog") or mw._achievements_dialog is None:
+                mw._achievements_dialog = AchievementsDialog(addon_dir, data_handler_obj)
+            mw._achievements_dialog.setWindowModality(Qt.WindowModality.NonModal)
+            mw._achievements_dialog.show()
+            mw._achievements_dialog.raise_()
+            mw._achievements_dialog.activateWindow()
 
         achievement_bag_action = QAction(mw.translator.translate("achievements_button"), mw)
         achievement_bag_action.setMenuRole(QAction.MenuRole.NoRole)
