@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Ankimon Guide</title>
+  <script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
   <style>
     /* Core styling */
     * {
@@ -30,12 +31,10 @@
       height: 90vh;
       background: rgba(0, 0, 0, 0.5);
       border-radius: 16px;
-      backdrop-filter: blur(10px);
       display: flex;
       flex-direction: column;
       box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3), 
                   0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-      transition: transform 0.3s ease;
     }
     
     /* Header styles */
@@ -76,11 +75,6 @@
       border: 1px solid rgba(255, 215, 0, 0.2);
       overflow: hidden;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease;
-    }
-    
-    .image-container:hover {
-      transform: scale(1.02);
     }
     
     .image-container img {
@@ -88,7 +82,6 @@
       max-height: 100%;
       object-fit: contain;
       border-radius: 5px;
-      transition: transform 0.5s ease;
     }
     
     .image-container .placeholder {
@@ -137,32 +130,15 @@
       color: #e0e0e0;
     }
     
-    /* Feature list */
-    .feature-list {
-      list-style: none;
+    /* Feature text area */
+    .feature-text {
       background: rgba(255, 255, 255, 0.05);
       border-radius: 10px;
       padding: 15px 20px;
       border: 1px solid rgba(255, 215, 0, 0.1);
       margin-top: auto;
-    }
-    
-    .feature-item {
-      margin: 10px 0;
-      display: flex;
-      align-items: center;
-      transition: transform 0.2s ease;
-    }
-    
-    .feature-item:hover {
-      transform: translateX(5px);
-    }
-    
-    .feature-item::before {
-      content: '⚡';
-      margin-right: 10px;
-      color: #FFA500;
-      font-size: 1.1rem;
+      line-height: 1.5;
+      color: #e0e0e0;
     }
     
     /* Footer with navigation */
@@ -185,7 +161,6 @@
       border-radius: 25px;
       cursor: pointer;
       margin-right: 15px;
-      transition: all 0.3s ease;
       font-size: 0.95rem;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
@@ -219,7 +194,6 @@
       height: 10px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.2);
-      transition: all 0.3s ease;
       cursor: pointer;
     }
     
@@ -252,16 +226,6 @@
       }
     }
     
-    /* Animation effects */
-    .fade-transition {
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    
-    .fade-in {
-      opacity: 1;
-    }
-
     /* Skip button */
     .skip-btn {
       background: rgba(255, 255, 255, 0.1);
@@ -274,23 +238,81 @@
     .skip-btn:hover {
       background: rgba(255, 255, 255, 0.15);
     }
+
+    /* Final page CTAs */
+    .final-links {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .link-item {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 12px 15px;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .link-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 215, 0, 0.4);
+    }
+
+    .checkmark {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #FFD700;
+      border-radius: 4px;
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #FFD700;
+      transition: all 0.3s ease;
+    }
+
+    .link-item.clicked .checkmark {
+      background: #FFD700;
+      color: #1a1a3a;
+    }
+
+    .link-text {
+      flex: 1;
+    }
+
+    .link-title {
+      font-weight: 600;
+      color: #FFD700;
+      margin-bottom: 2px;
+    }
+
+    .link-description {
+      font-size: 0.9rem;
+      color: #BBB;
+    }
   </style>
 </head>
 <body>
   <div id="container">
     <header>
-      <h1 id="page-title" class="fade-transition">Welcome to Ankimon</h1>
+      <h1 id="page-title">Welcome to Ankimon</h1>
     </header>
 
     <div class="content-area">
-      <div class="image-container fade-transition" id="page-image">
+      <div class="image-container" id="page-image">
         <div class="placeholder">Loading image...</div>
       </div>
 
       <div class="text-content">
-        <h2 class="subtitle fade-transition" id="page-subtitle"></h2>
-        <p class="description fade-transition" id="page-description"></p>
-        <ul class="feature-list fade-transition" id="page-features"></ul>
+        <h2 class="subtitle" id="page-subtitle"></h2>
+        <p class="description" id="page-description"></p>
+        <div class="feature-text" id="page-features"></div>
       </div>
     </div>
 
@@ -300,7 +322,7 @@
       
       <div class="dots-container" id="dots-navigation"></div>
       
-      <div class="page-counter" id="page-counter">1 of 8</div>
+      <div class="page-counter" id="page-counter">1 of 7</div>
       <button id="skip-btn" class="btn skip-btn">Skip Tour</button>
     </footer>
   </div>
@@ -309,92 +331,56 @@
     // Define all pages with their content
     const pages = [
       {
-        title: "Welcome to Ankimon! 🎮",
-        subtitle: "Your Pokémon Adventure Begins",
-        description: "Transform your Anki study sessions into an exciting Pokémon journey! Catch, train, and battle with Pokémon as you review your cards. Ankimon turns learning into a rewarding adventure that keeps you motivated.",
-        features: [
-          "Learn while catching and training Pokémon",
-          "Battle against wild Pokémon with each card review",
-          "Collect and evolve your favorite species",
-          "Track your progress with achievements"
-        ],
+        title: "Welcome to Ankimon!",
+        subtitle: "Gotta catch 'em all, Ankimon style!",
+        description: "Ankimon seamlessly blends the excitement of Pokémon with your Anki flashcard reviews!",
+        content: "Whether you're learning languages, medical terms, or any subject, Ankimon turns the grind into an adventure.",
         image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_logo.png"
       },
       {
-        title: "Battle During Reviews ⚔️",
-        subtitle: "Study Smart, Battle Hard",
-        description: "As you review your Anki cards, your Pokémon will automatically attack wild Pokémon. Each correct answer powers up your attacks! Watch your Pokémon fight in real-time as you strengthen your memory.",
-        features: [
-          "Review cards to trigger attacks",
-          "See enemy HP and stats in your reviewer",
-          "Experience dynamic battle animations",
-          "Make learning strategic and fun"
-        ],
+        title: "Battle During Reviews",
+        subtitle: "Study hard, and let your Pokémon fight!",
+        description: "As you review cards, wild Pokémon appear automatically, and your main Pokémon springs into action!",
+        content: "The better you perform on your cards, the more dominant you become in battle! It's studying, but with the thrill of becoming the best Ankimon trainer.",
         image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_reviewer.png"
       },
       {
-        title: "Defeat and Catch Pokémon 🎯",
-        subtitle: "Become the best Pokémon trainer!",
-        description: "When a wild Pokémon's HP reaches zero, choose to either defeat wild Pokémon to gain XP, or can choose to catch it instead to gain new Pokémon!",
-        features: [
-          "Gain XP from successful battles",
-          "Level up your Pokémon's stats and moves",
-          "Focus training on your favorite team members",
-          "Track your progress with visual indicators"
-        ],
+        title: "Defeat and Catch Pokémon",
+        subtitle: "Become the Ultimate Trainer!",
+        description: "When enemy Pokémon fall in battle, you face an exciting choice that shapes your journey - defeat or catch.",
+        content: "Defeating Pokémon grants XP to level up your Pokémon, increasing their stats and unlocking powerful new moves. But catching them adds unique species to your collection! The choice is always yours!",
         image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_fainted.png"
       },
       {
-        title: "Manage Your Collection 📚",
-        subtitle: "Organize Your Team",
-        description: "Access your complete Pokémon collection through the management window. View stats, rename your Pokémon, trade with friends, and select which Pokémon to train during your study sessions.",
-        features: [
-          "View detailed stats for all your Pokémon",
-          "Trade Pokémon with friends and other users",
-          "Rename your Pokémon with custom nicknames",
-          "Release Pokémon you no longer want"
-        ],
+        title: "Manage Your Collection",
+        subtitle: "Organize Your Dream Team",
+        description: "Your Pokémon collection is your personal army of study companions!",
+        content: "Check your collection to change main Pokémon, change moves, use items, and trade your Pokémon with fellow trainers!",
         image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_collection.png"
       },
       {
-        title: "Watch Battles Live 🪟",
-        subtitle: "Epic Battle Animations",
-        description: "Open the dedicated Ankimon battle window to see your Pokémon fight in stunning detail! Witness every attack, dodge, and special move as you progress through your reviews.",
-        features: [
-          "Watch real-time battle animations",
-          "Toggle with M+Ctrl/Cmd keyboard shortcut",
-          "Get visual feedback for every move",
-          "Enjoy an immersive gaming experience while studying"
-        ],
+        title: "Spectate with the Ankimon Window",
+        subtitle: "Epic Visual Experience",
+        description: "Want to see the action up close? The dedicated battle window transforms your study session into a cinematic experience with full-screen battle animations.",
+        content: "Open this window alongside your reviews to have the full Pokémon experience! Open using Ctrl + N or Cmd + N",
         image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_window.png"
       },
       {
-        title: "Customize Your Experience ⚙️",
-        subtitle: "Settings & Preferences",
-        description: "Fine-tune your Ankimon experience with the comprehensive settings panel. Adjust battle frequency, customize keyboard shortcuts, and enable special features to match your personal study style.",
-        features: [
-          "Customize keyboard shortcuts",
-          "Adjust Pokémon encounter frequency",
-          "Enable special gameplay modes",
-          "Personalize your experience fully"
-        ],
+        title: "Customize Your  Ankimon Experience",
+        subtitle: "Tailor Everything to Your Style!",
+        description: "There are many features and options waiting for you in the Ankimon Settings!",
+        content: "Check features like automatic battle, Pokémon GIFs, sound effects, Ankimon Leaderboard, and more!",
         image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_settings.png"
       },
       {
-        title: "Enjoy Your Journey! 🎉",
-        subtitle: "Community & Support",
-        description: "Welcome to the Ankimon community! If you need help, check our documentation or reach out to fellow trainers. Consider supporting continued development if you enjoy using Ankimon.",
-        features: [
-          "Access comprehensive documentation",
-          "Join our community Discord for help",
-          "Support development at ko-fi.com/unlucky99",
-          "Special thanks to all our contributors!"
-        ],
-        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_contributors.png"
+        title: "Join Our Community!",
+        subtitle: "Connect with Fellow Ankimon Trainers!",
+        content: "Whether you need help troubleshooting, want to share your impressive Pokémon collection, or have ideas for new features, our community is here for you.",
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_contributors.png",
+        final: true
       }
     ];
 
-    // Initialize variables
     let currentPage = 0;
     const totalPages = pages.length;
 
@@ -410,6 +396,9 @@
     const pageCounter = document.getElementById('page-counter');
     const dotsNavigation = document.getElementById('dots-navigation');
 
+    // Track clicked links for final page
+    const clickedLinks = new Set();
+
     // Create navigation dots
     function createDots() {
       dotsNavigation.innerHTML = '';
@@ -423,45 +412,71 @@
 
     // Load page content
     function loadPage(pageIndex) {
-      // Update current page
       currentPage = pageIndex;
-      
-      // Get page data
       const page = pages[pageIndex];
       
-      // Start fade transition
-      const fadeElements = document.querySelectorAll('.fade-transition');
-      fadeElements.forEach(el => el.classList.remove('fade-in'));
+      // Update page title
+      pageTitle.textContent = page.title;
       
-      // Set short timeout to allow fade out
-      setTimeout(() => {
-        // Update page title
-        pageTitle.textContent = page.title;
-        
-        // Update image
-        pageImage.innerHTML = `<img src="${page.image}" alt="${page.title}" 
-                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                               <div class="placeholder" style="display:none;">Image not available</div>`;
-        
-        // Update text content
-        pageSubtitle.textContent = page.subtitle;
-        pageDescription.textContent = page.description;
-        
-        // Update features list
-        pageFeatures.innerHTML = '';
-        page.features.forEach(feature => {
-          const li = document.createElement('li');
-          li.className = 'feature-item';
-          li.textContent = feature;
-          pageFeatures.appendChild(li);
+      // Update image
+      pageImage.innerHTML = `<img src="${page.image}" alt="${page.title}" 
+                              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                             <div class="placeholder" style="display:none;">Image not available</div>`;
+      
+      // Update text content
+      pageSubtitle.textContent = page.subtitle;
+      pageDescription.textContent = page.description;
+      
+      if (page.final) {
+        pageFeatures.innerHTML = `
+          <div class="final-links">
+            <div class="link-item" data-link="discord">
+              <div class="checkmark"></div>
+              <div class="link-text">
+                <a href="https://discord.gg/your-server-id" target="_blank" class="link-title">Join Our Discord Community</a>
+                <div class="link-description">Meet other trainers, join us for studying, and help with Ankimon development~</div>
+              </div>
+            </div>
+            <div class="link-item" data-link="kofi">
+              <div class="checkmark"></div>
+              <div class="link-text">
+                <a href="https://ko-fi.com/unlucky99" target="_blank" class="link-title">Support Development on Ko-fi</a>
+                <div class="link-description">Help fund new features and keep Ankimon growing~</div>
+              </div>
+            </div>
+            <div class="link-item" data-link="experimental">
+              <div class="checkmark"></div>
+              <div class="link-text">
+                <a href="https://leaderboard.ankimon.com/" target="_blank" class="link-title">Check out Ankimon Leaderboard</a>
+                <div class="link-description">Show off your progress in the Ankimon leaderboard!</div>
+              </div>
+            </div>
+          </div>
+        `;
+        // Add checkmark logic only (do not open links via JS)
+        document.querySelectorAll('.link-item').forEach(item => {
+          item.addEventListener('click', function(e) {
+            // Only mark if not already marked
+            if (!this.classList.contains('clicked')) {
+              this.classList.add('clicked');
+              this.querySelector('.checkmark').textContent = '✓';
+            }
+            // Let anchor tag handle navigation if clicked
+            // If user clicks the link, don't preventDefault
+            // If user clicks elsewhere in the div, find the link and click it
+            if (e.target.tagName !== 'A') {
+              const a = this.querySelector('a');
+              if (a) a.click();
+            }
+          });
         });
-        
-        // Update navigation
-        updateNavigation();
-        
-        // Complete fade transition
-        fadeElements.forEach(el => el.classList.add('fade-in'));
-      }, 300);
+      } else {
+        pageFeatures.textContent = page.content;
+      }
+
+      
+      // Update navigation
+      updateNavigation();
     }
 
     // Update navigation elements
@@ -482,11 +497,20 @@
 
     // Navigation functions
     function goToNextPage() {
-      if (currentPage < totalPages - 1) {
+    if (currentPage < totalPages - 1) {
         loadPage(currentPage + 1);
-      } else {
-        window.close();
-      }
+    } else {
+        if (typeof qt !== 'undefined' && qt.webChannelTransport) {
+        new QWebChannel(qt.webChannelTransport, function(channel) {
+            var bridge = channel.objects.bridge;
+            if (bridge) {
+            bridge.closeDialog();
+            }
+        });
+        } else {
+        console.log("QWebChannel not available, cannot close dialog");
+        }
+    }
     }
 
     function goToPrevPage() {
@@ -503,21 +527,35 @@
 
     // Setup event listeners
     function setupListeners() {
-      // Button navigation
-      prevButton.addEventListener('click', goToPrevPage);
-      nextButton.addEventListener('click', goToNextPage);
-      skipButton.addEventListener('click', () => window.close());
-      
-      // Keyboard navigation
-      document.addEventListener('keydown', event => {
-        if (event.key === 'ArrowRight' || event.key === ' ') {
-          goToNextPage();
-        } else if (event.key === 'ArrowLeft') {
-          goToPrevPage();
-        } else if (event.key === 'Escape') {
-          window.close();
+    // Button navigation
+    prevButton.addEventListener('click', goToPrevPage);
+    nextButton.addEventListener('click', goToNextPage);
+    
+    // Fixed skip button functionality using QWebChannel
+    skipButton.addEventListener('click', function() {
+        if (typeof qt !== 'undefined' && qt.webChannelTransport) {
+        new QWebChannel(qt.webChannelTransport, function(channel) {
+            var bridge = channel.objects.bridge;
+            if (bridge) {
+            bridge.closeDialog();
+            }
+        });
+        } else {
+        // Fallback if QWebChannel is not available
+        console.log("QWebChannel not available, cannot close dialog");
         }
-      });
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', event => {
+        if (event.key === 'ArrowRight' || event.key === ' ') {
+        goToNextPage();
+        } else if (event.key === 'ArrowLeft') {
+        goToPrevPage();
+        } else if (event.key === 'Escape') {
+        skipButton.click();
+        }
+    });
     }
 
     // Initialize

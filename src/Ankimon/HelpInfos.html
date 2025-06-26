@@ -1,69 +1,534 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Ankimon Guide</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212; /* Dark background */
-            color: #FFFFFF; /* White text */
-        }
-        h1, h2, h3 {
-            color: #FFD700; /* Gold color for headers */
-        }
-        p, li {
-            color: #FFFFFF; /* White text for paragraphs and list items */
-        }
-        a {
-            color: #1E90FF; /* Dodgerblue color for links */
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        ol, ul {
-            padding-left: 20px;
-        }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Ankimon Guide</title>
+  <style>
+    /* Core styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', 'Open Sans', sans-serif;
+      background: linear-gradient(135deg, #1a1a3a 0%, #2d1b69 100%);
+      color: #ffffff;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-rendering: optimizeLegibility;
+    }
+    
+    #container {
+      width: 90%;
+      max-width: 1000px;
+      height: 90vh;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3), 
+                  0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+      transition: transform 0.3s ease;
+    }
+    
+    /* Header styles */
+    header {
+      padding: 25px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    }
+    
+    header h1 {
+      font-size: 2.4rem;
+      background: linear-gradient(45deg, #FFD700, #FFA500);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Main content area */
+    .content-area {
+      flex: 1;
+      display: flex;
+      padding: 25px;
+      overflow: hidden;
+      gap: 25px;
+    }
+    
+    /* Image container */
+    .image-container {
+      flex: 0.8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 15px;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+    
+    .image-container:hover {
+      transform: scale(1.02);
+    }
+    
+    .image-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 5px;
+      transition: transform 0.5s ease;
+    }
+    
+    .image-container .placeholder {
+      color: #FFD700;
+      text-align: center;
+      padding: 20px;
+      font-size: 1.1rem;
+    }
+    
+    /* Text content */
+    .text-content {
+      flex: 1.2;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding-right: 5px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 215, 0, 0.3) rgba(0, 0, 0, 0.1);
+    }
+    
+    .text-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .text-content::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 215, 0, 0.3);
+      border-radius: 3px;
+    }
+    
+    .text-content::-webkit-scrollbar-track {
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 3px;
+    }
+    
+    .subtitle {
+      margin-bottom: 15px;
+      color: #FFA500;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .description {
+      margin-bottom: 20px;
+      line-height: 1.6;
+      font-size: 1.1rem;
+      color: #e0e0e0;
+    }
+    
+    /* Feature list */
+    .feature-list {
+      list-style: none;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 15px 20px;
+      border: 1px solid rgba(255, 215, 0, 0.1);
+      margin-top: auto;
+    }
+    
+    .feature-item {
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      transition: transform 0.2s ease;
+    }
+    
+    .feature-item:hover {
+      transform: translateX(5px);
+    }
+    
+    .feature-item::before {
+      content: '⚡';
+      margin-right: 10px;
+      color: #FFA500;
+      font-size: 1.1rem;
+    }
+    
+    /* Footer with navigation */
+    footer {
+      padding: 20px 25px;
+      border-top: 1px solid rgba(255, 215, 0, 0.2);
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+    }
+    
+    .btn {
+      background: linear-gradient(45deg, #FFD700, #FFA500);
+      border: none;
+      color: #1a1a3a;
+      font-weight: 700;
+      padding: 12px 22px;
+      border-radius: 25px;
+      cursor: pointer;
+      margin-right: 15px;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn:disabled {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.3);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+    }
+    
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+    
+    .dots-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 6px;
+    }
+    
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .dot.active {
+      background: #FFD700;
+      transform: scale(1.2);
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    }
+    
+    .page-counter {
+      font-size: 0.95rem;
+      color: #BBB;
+      margin-left: auto;
+      font-weight: 500;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+      .content-area {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .image-container {
+        height: 250px;
+      }
+      
+      header h1 {
+        font-size: 1.9rem;
+      }
+    }
+    
+    /* Animation effects */
+    .fade-transition {
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    
+    .fade-in {
+      opacity: 1;
+    }
+
+    /* Skip button */
+    .skip-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-left: 10px;
+      font-weight: normal;
+    }
+    
+    .skip-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  </style>
 </head>
 <body>
+  <div id="container">
+    <header>
+      <h1 id="page-title" class="fade-transition">Welcome to Ankimon</h1>
+    </header>
 
-<h1>The Upcoming Guide to Ankimon</h1>
+    <div class="content-area">
+      <div class="image-container fade-transition" id="page-image">
+        <div class="placeholder">Loading image...</div>
+      </div>
 
-<h2>How to Start</h2>
-<ol>
-    <li>After you first installed Ankimon, on the next Anki start up, you will be asked to download the file resources.
-        <ul>
-            <li>Navigate to: "Ankimon" =&gt; "Download Resources"</li>
-            <li>Accept terms and conditions to download all needed files to run Ankimon.</li>
-            <li>After all files have been downloaded, close and reopen Anki.</li>
-            <li>On the next startup, you will be able to choose a starter Pokémon. After choosing your starter Pokémon, you will be told to restart Anki.</li>
-            <li>Once you have restarted Anki, Ankimon is fully functional.</li>
-        </ul>
-    </li>
-</ol>
+      <div class="text-content">
+        <h2 class="subtitle fade-transition" id="page-subtitle"></h2>
+        <p class="description fade-transition" id="page-description"></p>
+        <ul class="feature-list fade-transition" id="page-features"></ul>
+      </div>
+    </div>
 
-<h2>Ankimon Window</h2>
-<p>Your Ankimon window is a second window you can have open next to your reviews to see the battle between your Pokémon and enemy Pokémon happening. This window is needed to be able to catch Pokémon (or defeat them for XP if you like). You can manually open the Ankimon window by going to the "Open Ankimon Window" button. You can only open and close the Ankimon Window with the key you choose in your configuration and cmd / ctrl. For example, the standard configuration is M + cmd for Mac / for Windows and Linux M + ctrl. You will always be provided with the enemy HP, name, and picture in your reviewer window. After a certain number of reviewed cards, a random attack of your main Pokémon is selected and will then hurt the wild Pokémon. Once the enemy Pokémon reaches 0 HP, your Ankimon window will display a Pokedex-a-like theme, and you can choose to defeat the Pokémon or catch it. A new wild Pokémon will appear after choosing one of both options.</p>
+    <footer>
+      <button id="prev-btn" class="btn">← Previous</button>
+      <button id="next-btn" class="btn">Next →</button>
+      
+      <div class="dots-container" id="dots-navigation"></div>
+      
+      <div class="page-counter" id="page-counter">1 of 8</div>
+      <button id="skip-btn" class="btn skip-btn">Skip Tour</button>
+    </footer>
+  </div>
 
-<h2>Show Pokémon Collection</h2>
-<p>You are able to see your Pokémon by going to the top of buttons in Anki. There, you can check out your collected Pokémon for now. You can pick a new main Pokémon you want to train right now by clicking the "Pick as main Pokémon" button. This Pokémon can now be trained by reviewing Anki cards. To train different Pokémon, you need to pick a different main Pokémon in your Pokémon collection window!</p>
+  <script>
+    // Define all pages with their content
+    const pages = [
+      {
+        title: "Welcome to Ankimon! 🎮",
+        subtitle: "Your Pokémon Adventure Begins",
+        description: "Transform your Anki study sessions into an exciting Pokémon journey! Catch, train, and battle with Pokémon as you review your cards. Ankimon turns learning into a rewarding adventure that keeps you motivated.",
+        features: [
+          "Learn while catching and training Pokémon",
+          "Battle against wild Pokémon with each card review",
+          "Collect and evolve your favorite species",
+          "Track your progress with achievements"
+        ],
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_logo.png"
+      },
+      {
+        title: "Battle During Reviews ⚔️",
+        subtitle: "Study Smart, Battle Hard",
+        description: "As you review your Anki cards, your Pokémon will automatically attack wild Pokémon. Each correct answer powers up your attacks! Watch your Pokémon fight in real-time as you strengthen your memory.",
+        features: [
+          "Review cards to trigger attacks",
+          "See enemy HP and stats in your reviewer",
+          "Experience dynamic battle animations",
+          "Make learning strategic and fun"
+        ],
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_reviewer.png"
+      },
+      {
+        title: "Defeat and Catch Pokémon 🎯",
+        subtitle: "Become the best Pokémon trainer!",
+        description: "When a wild Pokémon's HP reaches zero, choose to either defeat wild Pokémon to gain XP, or can choose to catch it instead to gain new Pokémon!",
+        features: [
+          "Gain XP from successful battles",
+          "Level up your Pokémon's stats and moves",
+          "Focus training on your favorite team members",
+          "Track your progress with visual indicators"
+        ],
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_fainted.png"
+      },
+      {
+        title: "Manage Your Collection 📚",
+        subtitle: "Organize Your Team",
+        description: "Access your complete Pokémon collection through the management window. View stats, rename your Pokémon, trade with friends, and select which Pokémon to train during your study sessions.",
+        features: [
+          "View detailed stats for all your Pokémon",
+          "Trade Pokémon with friends and other users",
+          "Rename your Pokémon with custom nicknames",
+          "Release Pokémon you no longer want"
+        ],
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_collection.png"
+      },
+      {
+        title: "Watch Battles Live 🪟",
+        subtitle: "Epic Battle Animations",
+        description: "Open the dedicated Ankimon battle window to see your Pokémon fight in stunning detail! Witness every attack, dodge, and special move as you progress through your reviews.",
+        features: [
+          "Watch real-time battle animations",
+          "Toggle with M+Ctrl/Cmd keyboard shortcut",
+          "Get visual feedback for every move",
+          "Enjoy an immersive gaming experience while studying"
+        ],
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_window.png"
+      },
+      {
+        title: "Customize Your Experience ⚙️",
+        subtitle: "Settings & Preferences",
+        description: "Fine-tune your Ankimon experience with the comprehensive settings panel. Adjust battle frequency, customize keyboard shortcuts, and enable special features to match your personal study style.",
+        features: [
+          "Customize keyboard shortcuts",
+          "Adjust Pokémon encounter frequency",
+          "Enable special gameplay modes",
+          "Personalize your experience fully"
+        ],
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_settings.png"
+      },
+      {
+        title: "Enjoy Your Journey! 🎉",
+        subtitle: "Community & Support",
+        description: "Welcome to the Ankimon community! If you need help, check our documentation or reach out to fellow trainers. Consider supporting continued development if you enjoy using Ankimon.",
+        features: [
+          "Access comprehensive documentation",
+          "Join our community Discord for help",
+          "Support development at ko-fi.com/unlucky99",
+          "Special thanks to all our contributors!"
+        ],
+        image: "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/ankimon_contributors.png"
+      }
+    ];
 
-<h3>Pokémon Details</h3>
-<p>In the Details window, you can view several options such as:</p>
-<ul>
-    <li>Trade your Pokémon with friends.</li>
-    <li>Release Pokémon you have already caught, if you don't want them anymore.</li>
-    <li>Rename Pokémon.</li>
-    <li>Remember Attacks if you want your Pokémon to relearn old attacks.</li>
-</ul>
+    // Initialize variables
+    let currentPage = 0;
+    const totalPages = pages.length;
 
-<h2>Collecting Items and Achievements</h2>
-<p>You can also collect items and achievements (badges), which can be overviewed through the Ankimon buttons: "Ankimon" =&gt; "Achievements" and "Items". A cool feature is to simulate battles between your main Pokémon or Pokémon collection; you can export all your Pokémon collections info and create a team on Pokémon Showdown. For this, use the buttons: "Export main Pokémon to Pkmn Showdown" or "Export all Pokémon to Pkmn Showdown". The needed infos are then copied to your clipboard. Then simply use the buttons in the Ankimon button layout: "Open Pokémon Showdown Teambuilder" or visit through your browser. There, you can create a team by pressing "new Team" and then "import from text or URL" - here you need to paste the infos already copied from Anki and then save your team. Important: you may need to play around with certain abilities or stats or moves because Pokémon Showdown formats have different rules which are complicated to overview. Make changes as needed. Most often the format: "anything goes generation 9" works best. You also need to validate your team if everything is correct. Once the team is built, you can play with your friends or other Ankimon users only and battle with your Ankimon team.</p>
+    // Get DOM elements
+    const pageTitle = document.getElementById('page-title');
+    const pageImage = document.getElementById('page-image');
+    const pageSubtitle = document.getElementById('page-subtitle');
+    const pageDescription = document.getElementById('page-description');
+    const pageFeatures = document.getElementById('page-features');
+    const prevButton = document.getElementById('prev-btn');
+    const nextButton = document.getElementById('next-btn');
+    const skipButton = document.getElementById('skip-btn');
+    const pageCounter = document.getElementById('page-counter');
+    const dotsNavigation = document.getElementById('dots-navigation');
 
-<h3>Support Ankimon</h3>
-<p>If you like Ankimon and the features, please consider donating to: <a href="https://ko-fi.com/unlucky99">https://ko-fi.com/unlucky99</a></p>
+    // Create navigation dots
+    function createDots() {
+      dotsNavigation.innerHTML = '';
+      for (let i = 0; i < totalPages; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === currentPage ? ' active' : '');
+        dot.addEventListener('click', () => goToPage(i));
+        dotsNavigation.appendChild(dot);
+      }
+    }
 
+    // Load page content
+    function loadPage(pageIndex) {
+      // Update current page
+      currentPage = pageIndex;
+      
+      // Get page data
+      const page = pages[pageIndex];
+      
+      // Start fade transition
+      const fadeElements = document.querySelectorAll('.fade-transition');
+      fadeElements.forEach(el => el.classList.remove('fade-in'));
+      
+      // Set short timeout to allow fade out
+      setTimeout(() => {
+        // Update page title
+        pageTitle.textContent = page.title;
+        
+        // Update image
+        pageImage.innerHTML = `<img src="${page.image}" alt="${page.title}" 
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                               <div class="placeholder" style="display:none;">Image not available</div>`;
+        
+        // Update text content
+        pageSubtitle.textContent = page.subtitle;
+        pageDescription.textContent = page.description;
+        
+        // Update features list
+        pageFeatures.innerHTML = '';
+        page.features.forEach(feature => {
+          const li = document.createElement('li');
+          li.className = 'feature-item';
+          li.textContent = feature;
+          pageFeatures.appendChild(li);
+        });
+        
+        // Update navigation
+        updateNavigation();
+        
+        // Complete fade transition
+        fadeElements.forEach(el => el.classList.add('fade-in'));
+      }, 300);
+    }
+
+    // Update navigation elements
+    function updateNavigation() {
+      // Update buttons
+      prevButton.disabled = currentPage === 0;
+      nextButton.textContent = currentPage === totalPages - 1 ? 'Finish' : 'Next →';
+      
+      // Update page counter
+      pageCounter.textContent = `${currentPage + 1} of ${totalPages}`;
+      
+      // Update dots
+      const dots = dotsNavigation.querySelectorAll('.dot');
+      dots.forEach((dot, index) => {
+        dot.className = index === currentPage ? 'dot active' : 'dot';
+      });
+    }
+
+    // Navigation functions
+    function goToNextPage() {
+      if (currentPage < totalPages - 1) {
+        loadPage(currentPage + 1);
+      } else {
+        window.close();
+      }
+    }
+
+    function goToPrevPage() {
+      if (currentPage > 0) {
+        loadPage(currentPage - 1);
+      }
+    }
+
+    function goToPage(pageIndex) {
+      if (pageIndex >= 0 && pageIndex < totalPages) {
+        loadPage(pageIndex);
+      }
+    }
+
+    // Setup event listeners
+    function setupListeners() {
+      // Button navigation
+      prevButton.addEventListener('click', goToPrevPage);
+      nextButton.addEventListener('click', goToNextPage);
+      skipButton.addEventListener('click', () => window.close());
+      
+      // Keyboard navigation
+      document.addEventListener('keydown', event => {
+        if (event.key === 'ArrowRight' || event.key === ' ') {
+          goToNextPage();
+        } else if (event.key === 'ArrowLeft') {
+          goToPrevPage();
+        } else if (event.key === 'Escape') {
+          window.close();
+        }
+      });
+    }
+
+    // Initialize
+    function init() {
+      createDots();
+      loadPage(0);
+      setupListeners();
+    }
+
+    // Start the application
+    init();
+  </script>
 </body>
 </html>

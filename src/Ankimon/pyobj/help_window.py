@@ -1,24 +1,50 @@
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QDesktopServices
 from PyQt6.QtWidgets import QVBoxLayout, QTextEdit
-from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtCore import Qt, QUrl, QObject, pyqtSlot
 from aqt.qt import QDialog
-from aqt.utils import showWarning, QWebEngineSettings
+from aqt.utils import showWarning, QWebEngineSettings, QWebEnginePage, QWebEngineView
+from PyQt6.QtWebChannel import QWebChannel  # Add this import
 
 from ..resources import icon_path, addon_dir
-from ..utils import read_local_file, read_github_file, compare_files, write_local_file
+from ..utils import read_local_file, read_github_file, compare_files, write_local_file, test_online_connectivity
+
+class ExternalLinkWebEnginePage(QWebEnginePage):
+    def acceptNavigationRequest(self, url, nav_type, isMainFrame):
+        if nav_type == QWebEnginePage.NavigationType.NavigationTypeLinkClicked:
+            QDesktopServices.openUrl(url)
+            return False
+        return super().acceptNavigationRequest(url, nav_type, isMainFrame)
+
+    def createWindow(self, _type):
+        # This catches target="_blank" and window.open
+        class DummyPage(QWebEnginePage):
+            def acceptNavigationRequest(self, url, nav_type, isMainFrame):
+                QDesktopServices.openUrl(url)
+                return False
+        return DummyPage(self.parent())
+
+class Bridge(QObject):
+    def __init__(self, dialog, parent=None):
+        super().__init__(parent)
+        self.dialog = dialog
+
+    @pyqtSlot()
+    def closeDialog(self):
+        if self.dialog:
+            self.dialog.close()
 
 class HelpWindow(QDialog):
     """
     Modern Ankimon Help Guide window that displays interactive HTML content.
-    
     Features:
     - Uses QWebEngineView when available for full browser capabilities
     - Falls back to QTextEdit when WebEngine isn't available
     - Loads content from GitHub with local fallback
     - Supports direct loading of remote images
     - Interactive page navigation within the HTML
+    - All links (including target="_blank" and JS window.open) open in external browser
     """
-    def __init__(self, online_connectivity=True):
+    def __init__(self, online_connectivity=test_online_connectivity):
         super().__init__()
         self.setWindowTitle("Ankimon Guide")
         self.setWindowIcon(QIcon(str(icon_path)))
@@ -45,23 +71,25 @@ class HelpWindow(QDialog):
         self.setLayout(layout)
         
     def _setup_web_engine_view(self, layout, online_connectivity):
-        """Setup QWebEngineView for full HTML/CSS/JS support"""
         from PyQt6.QtWebEngineWidgets import QWebEngineView
-        
-        # Create web view
+
         self.web_view = QWebEngineView()
-        
-        # Configure settings
+        # Set our custom page that opens links externally
+        self.web_view.setPage(ExternalLinkWebEnginePage(self.web_view))
+
         settings = self.web_view.settings()
         settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptEnabled, True)
         settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
         settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
         settings.setAttribute(QWebEngineSettings.WebAttribute.AutoLoadImages, True)
         
-        # Fetch HTML content
+        # Set up QWebChannel for JavaScript to Python communication
+        self.channel = QWebChannel(self.web_view)
+        self.bridge = Bridge(self)
+        self.channel.registerObject('bridge', self.bridge)
+        self.web_view.page().setWebChannel(self.channel)
+
         html_content = self._get_html_content(online_connectivity)
-        
-        # Load content
         self.web_view.setHtml(html_content, QUrl("https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/HelpInfos.html"))
         layout.addWidget(self.web_view)
         
