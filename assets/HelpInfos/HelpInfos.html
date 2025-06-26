@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ankimon Guide - Your Journey Starts Here</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 50%, #2d1b69 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FF6B35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #B8B8B8;
+            margin-bottom: 30px;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-tab:hover::before {
+            left: 100%;
+        }
+
+        .nav-tab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
+            border-color: #FFD700;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #1a1a3a;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        /* Content Pages */
+        .content-page {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .content-page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card Layout */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #FFD700, #FFA500, #FF6B35);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .info-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .info-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .card-content {
+            line-height: 1.6;
+            color: #E0E0E0;
+        }
+
+        .card-content ul, .card-content ol {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .card-content li {
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .card-content ul li::marker {
+            content: '⚡ ';
+        }
+
+        /* Step Cards */
+        .step-card {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+            border-left: 4px solid #FFD700;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            left: -15px;
+            top: 20px;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #1a1a3a;
+            font-size: 0.9rem;
+        }
+
+        /* Button Styles */
+        .cta-button {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #1a1a3a;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 5px;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        /* Image Placeholder */
+        .image-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.1));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+            font-size: 1.1rem;
+        }
+
+        /* Support Section */
+        .support-card {
+            background: linear-gradient(135deg, rgba(30, 144, 255, 0.1), rgba(0, 191, 255, 0.05));
+            border: 1px solid rgba(30, 144, 255, 0.3);
+            text-align: center;
+        }
+
+        .support-link {
+            color: #1E90FF;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .support-link:hover {
+            color: #87CEEB;
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-tabs {
+                gap: 10px;
+            }
+            
+            .nav-tab {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .info-card {
+                padding: 20px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 215, 0, 0.3);
+            border-left: 4px solid #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>🎮 Ankimon Guide</h1>
+            <p>Master your Pokémon journey while learning with Anki!</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showPage('getting-started')">🚀 Getting Started</button>
+            <button class="nav-tab" onclick="showPage('gameplay')">⚔️ Gameplay</button>
+            <button class="nav-tab" onclick="showPage('collection')">📚 Collection</button>
+            <button class="nav-tab" onclick="showPage('features')">✨ Features</button>
+            <button class="nav-tab" onclick="showPage('support')">💝 Support</button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" id="loadingSpinner"></div>
+
+        <!-- Content Pages -->
+        
+        <!-- Getting Started Page -->
+        <div id="getting-started" class="content-page active">
+            <div class="card-grid">
+                <div class="info-card step-card">
+                    <div class="step-number">1</div>
+                    <div class="card-icon">📥</div>
+                    <div class="card-title">Initial Setup</div>
+                    <div class="card-content">
+                        <p>After installing Ankimon, follow these steps to get started:</p>
+                        <ol>
+                            <li>Navigate to "Ankimon" → "Download Resources"</li>
+                            <li>Accept terms and conditions to download all required files</li>
+                            <li>Close and reopen Anki after download completes</li>
+                        </ol>
+                        <div class="image-placeholder">📦 Resource Download Interface</div>
+                    </div>
+                </div>
+
+                <div class="info-card step-card">
+                    <div class="step-number">2</div>
+                    <div class="card-icon">🎯</div>
+                    <div class="card-title">Choose Your Starter</div>
+                    <div class="card-content">
+                        <p>Select your first Pokémon companion:</p>
+                        <ul>
+                            <li>Choose from classic starter Pokémon</li>
+                            <li>This will be your main training partner</li>
+                            <li>Restart Anki to activate your starter</li>
+                        </ul>
+                        <div class="image-placeholder">🔥💧🌿 Starter Selection Screen</div>
+                    </div>
+                </div>
+
+                <div class="info-card step-card">
+                    <div class="step-number">3</div>
+                    <div class="card-icon">✅</div>
+                    <div class="card-title">Ready to Play!</div>
+                    <div class="card-content">
+                        <p>You're all set! Ankimon is now fully functional and ready for your learning adventure.</p>
+                        <button class="cta-button" onclick="showPage('gameplay')">Start Playing →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gameplay Page -->
+        <div id="gameplay" class="content-page">
+            <div class="card-grid">
+                <div class="info-card">
+                    <div class="card-icon">🪟</div>
+                    <div class="card-title">Ankimon Battle Window</div>
+                    <div class="card-content">
+                        <p>Experience epic Pokémon battles while studying!</p>
+                        <ul>
+                            <li>Open with "Open Ankimon Window" button</li>
+                            <li>Toggle with <kbd>M + Ctrl/Cmd</kbd> (configurable)</li>
+                            <li>Watch battles unfold as you review cards</li>
+                            <li>Enemy stats displayed in reviewer window</li>
+                        </ul>
+                        <div class="image-placeholder">⚔️ Battle Interface Preview</div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-icon">🎲</div>
+                    <div class="card-title">Battle Mechanics</div>
+                    <div class="card-content">
+                        <p>How battles work:</p>
+                        <ol>
+                            <li>Review cards to trigger random attacks</li>
+                            <li>Reduce enemy HP to 0</li>
+                            <li>Choose to defeat or catch the Pokémon</li>
+                            <li>New wild Pokémon appears automatically</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-icon">🏆</div>
+                    <div class="card-title">Capture System</div>
+                    <div class="card-content">
+                        <p>When a wild Pokémon's HP reaches 0, you'll see a Pokédex-style interface where you can:</p>
+                        <ul>
+                            <li>🎯 Catch the Pokémon for your collection</li>
+                            <li>⚡ Defeat it for experience points</li>
+                        </ul>
+                        <div class="image-placeholder">📱 Pokédex Capture Interface</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collection Page -->
+        <div id="collection" class="content-page">
+            <div class="card-grid">
+                <div class="info-card">
+                    <div class="card-icon">📖</div>
+                    <div class="card-title">Pokémon Collection</div>
+                    <div class="card-content">
+                        <p>Manage your growing team of Pokémon:</p>
+                        <ul>
+                            <li>View all captured Pokémon</li>
+                            <li>Select your main training Pokémon</li>
+                            <li>Track stats and progress</li>
+                            <li>Access detailed information</li>
+                        </ul>
+                        <button class="cta-button">View Collection</button>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-icon">⚙️</div>
+                    <div class="card-title">Pokémon Management</div>
+                    <div class="card-content">
+                        <p>In the Details window, you can:</p>
+                        <ul>
+                            <li>🔄 Trade Pokémon with friends</li>
+                            <li>🗑️ Release unwanted Pokémon</li>
+                            <li>✏️ Rename your Pokémon</li>
+                            <li>🧠 Relearn forgotten attacks</li>
+                        </ul>
+                        <div class="image-placeholder">🔧 Pokémon Management Interface</div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-icon">🏋️</div>
+                    <div class="card-title">Training System</div>
+                    <div class="card-content">
+                        <p>Train your Pokémon by reviewing Anki cards. Switch your main Pokémon anytime to train different team members!</p>
+                        <div class="image-placeholder">📊 Training Progress Visualization</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Page -->
+        <div id="features" class="content-page">
+            <div class="card-grid">
+                <div class="info-card">
+                    <div class="card-icon">🎁</div>
+                    <div class="card-title">Items & Achievements</div>
+                    <div class="card-content">
+                        <p>Collect special items and earn badges as you progress:</p>
+                        <ul>
+                            <li>🏅 Achievement badges for milestones</li>
+                            <li>💎 Special items and rewards</li>
+                            <li>📈 Progress tracking</li>
+                        </ul>
+                        <button class="cta-button">View Achievements</button>
+                        <button class="cta-button">Check Items</button>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-icon">⚔️</div>
+                    <div class="card-title">Pokémon Showdown Integration</div>
+                    <div class="card-content">
+                        <p>Battle with your Ankimon team online!</p>
+                        <ul>
+                            <li>Export your Pokémon to Pokémon Showdown</li>
+                            <li>Battle friends and other Ankimon users</li>
+                            <li>Use "Anything Goes Generation 9" format</li>
+                        </ul>
+                        <button class="cta-button">Export Main Pokémon</button>
+                        <button class="cta-button">Export All Pokémon</button>
+                        <button class="cta-button">Open Showdown</button>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-icon">🔧</div>
+                    <div class="card-title">Showdown Setup Guide</div>
+                    <div class="card-content">
+                        <ol>
+                            <li>Export your team from Ankimon</li>
+                            <li>Open Pokémon Showdown Teambuilder</li>
+                            <li>Create "New Team" → "Import from text or URL"</li>
+                            <li>Paste the copied team data</li>
+                            <li>Adjust stats/moves as needed for format rules</li>
+                            <li>Validate and save your team</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Page -->
+        <div id="support" class="content-page">
+            <div class="card-grid">
+                <div class="info-card support-card">
+                    <div class="card-icon">💝</div>
+                    <div class="card-title">Support Ankimon Development</div>
+                    <div class="card-content">
+                        <p>Love using Ankimon? Help support continued development and new features!</p>
+                        <p>Your support helps keep Ankimon free and enables new exciting features for the community.</p>
+                        <a href="https://ko-fi.com/unlucky99" class="support-link" target="_blank">☕ Support on Ko-fi</a>
+                        <div class="image-placeholder">💖 Community Support</div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-icon">🤝</div>
+                    <div class="card-title">Join the Community</div>
+                    <div class="card-content">
+                        <p>Connect with other Ankimon trainers:</p>
+                        <ul>
+                            <li>Share your favorite Pokémon teams</li>
+                            <li>Exchange training tips</li>
+                            <li>Report bugs and suggest features</li>
+                            <li>Participate in community events</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-icon">📚</div>
+                    <div class="card-title">Getting Help</div>
+                    <div class="card-content">
+                        <p>Need assistance? Here's how to get help:</p>
+                        <ul>
+                            <li>📖 Check this guide for common questions</li>
+                            <li>🐛 Report bugs through the official channels</li>
+                            <li>💡 Suggest new features to improve the experience</li>
+                            <li>👥 Ask the community for tips and tricks</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            // Show loading spinner
+            const spinner = document.getElementById('loadingSpinner');
+            spinner.style.display = 'block';
+            
+            // Simulate loading delay for smooth transition
+            setTimeout(() => {
+                // Hide all pages
+                const pages = document.querySelectorAll('.content-page');
+                pages.forEach(page => page.classList.remove('active'));
+                
+                // Remove active class from all tabs
+                const tabs = document.querySelectorAll('.nav-tab');
+                tabs.forEach(tab => tab.classList.remove('active'));
+                
+                // Show selected page
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                }
+                
+                // Add active class to clicked tab
+                event.target.classList.add('active');
+                
+                // Hide loading spinner
+                spinner.style.display = 'none';
+                
+                // Smooth scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 300);
+        }
+
+        // Add smooth hover effects and animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add intersection observer for card animations
+            const cards = document.querySelectorAll('.info-card');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+
+            // Add keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key >= '1' && e.key <= '5') {
+                    const pages = ['getting-started', 'gameplay', 'collection', 'features', 'support'];
+                    const pageIndex = parseInt(e.key) - 1;
+                    if (pages[pageIndex]) {
+                        showPage(pages[pageIndex]);
+                    }
+                }
+            });
+        });
+
+        // Add particle effect on hover for cards
+        document.querySelectorAll('.info-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
