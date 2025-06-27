@@ -251,24 +251,6 @@ def simulate_battle_with_poke_engine(
         # the choices in transpose_instructions, based on factors like accuracy rate, the chance to
         # inflict a certain status (like sleep or paralyze), etc.  
 
-        # Did the chosen outcome deal damage?
-        user_did_damage = any(i[0] == 'damage' and i[1] == 'opponent' and i[2] > 0 for i in instrs)
-        opponent_did_damage = any(i[0] == 'damage' and i[1] == 'user' and i[2] > 0 for i in instrs)
-
-        # Could the move have dealt damage in any possible outcome?
-        user_move_can_hit = any(
-            any(i[0] == 'damage' and i[1] == 'opponent' and i[2] > 0 for i in outcome.instructions)
-            for outcome in transpose_instructions
-        )
-        opponent_move_can_hit = any(
-            any(i[0] == 'damage' and i[1] == 'user' and i[2] > 0 for i in outcome.instructions)
-            for outcome in transpose_instructions
-        )
-
-        # Final miss detection: missed if this outcome did not deal damage, but another could have
-        user_missed = user_move_can_hit and not user_did_damage
-        opponent_missed = opponent_move_can_hit and not opponent_did_damage
-
         battle_effects = []
         for instr in chosen_outcome.instructions:
             battle_effects.append(list(instr))  # Convert tuples to lists
@@ -278,8 +260,6 @@ def simulate_battle_with_poke_engine(
         battle_info = {
             'battle_header': battle_header,
             'instructions': battle_effects,
-            'user_missed': user_missed,
-            'opponent_missed': opponent_missed
             }
 
         return battle_info, copy.deepcopy(new_state), dmg_from_enemy_move, dmg_from_user_move, mutator_full_reset
