@@ -114,6 +114,9 @@
     "effect_volatile_status": "{pokemon_side} was affected by {status}!",
     "effect_side_condition": "{side} is protected by {condition}!",
     "effect_weather_change": "The weather changed to {weather}!",
+
+    "battle_effect_weather_start": "The weather changed to {weather}!",
+    "battle_effect_weather_end": "The {weather} weather has ended!",
     
     "your_pokemon": "Your Pokémon",
     "enemy_pokemon": "The opposing Pokémon",

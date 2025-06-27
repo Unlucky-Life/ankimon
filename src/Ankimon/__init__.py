@@ -376,7 +376,6 @@ cry_counter = 0
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
-        battle_status = enemy_pokemon.battle_status
         multiplier = ankimon_tracker_obj.multiplier
         mainpokemon_type = main_pokemon.type
         mainpokemon_name = main_pokemon.name
@@ -526,7 +525,7 @@ def on_review_card(*args):
                 dmg_from_enemy_move=dmg_from_enemy_move,
                 user_hp_after=user_hp_after,
                 opponent_hp_after=opponent_hp_after,
-                battle_status=battle_status,
+                battle_status=main_pokemon.battle_status,
                 pokemon_encounter=ankimon_tracker_obj.pokemon_encouter,
                 dmg_in_reviewer=settings_obj.get("battle.dmg_in_reviewer", True),
                 translator=translator
