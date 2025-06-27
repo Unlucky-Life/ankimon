@@ -322,27 +322,37 @@ def random_fossil():
 
 def count_items_and_rewrite(file_path):
     """
-    Reads the items.json file, counts item occurrences by name,
-    and rewrites the file with items and their total quantities.
+    Reads the items.json file, groups entries by all keys except 'quantity',
+    sums their quantities, and rewrites the file preserving every other field.
     """
     try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            items = json.load(file)
+        with open(file_path, "r", encoding="utf-8") as f:
+            items = json.load(f)
 
-        # Aggregate quantities by item name
-        item_counts = Counter()
+        aggregated = {}  # maps a frozenset of (key,value) pairs to the merged entry
+
         for entry in items:
-            name = entry["item"]
+            # Extract quantity (default 1) and collect the rest of the fields
             qty = entry.get("quantity", 1)
-            item_counts[name] += qty
+            # Build grouping key from all other fields
+            key_fields = {k: v for k, v in entry.items() if k != "quantity"}
+            # Use a frozenset of sorted items for a hashable key
+            key = frozenset(sorted(key_fields.items()))
 
-        # Create a list of dictionaries with item names and their total quantities
-        updated_items = [{"item": item, "quantity": count} for item, count in item_counts.items()]
+            if key not in aggregated:
+                # Clone the non-quantity fields, set initial quantity
+                aggregated[key] = dict(key_fields)
+                aggregated[key]["quantity"] = qty
+            else:
+                aggregated[key]["quantity"] += qty
 
-        with open(file_path, 'w', encoding="utf-8") as file:
-            json.dump(updated_items, file, indent=4)
+        # Build the list to write back
+        updated_items = list(aggregated.values())
 
-        print("items.json has been updated with item quantities!")
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(updated_items, f, indent=4, ensure_ascii=False)
+
+        print("items.json has been updated with aggregated quantities!")
 
     except Exception as e:
         show_warning_with_traceback(exception=e, message=f"An unexpected error occurred: {e}")
