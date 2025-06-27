@@ -71,6 +71,66 @@
     "received_a_badge": "You received a badge ",
     "catch_or_free": "Would you like to free or catch the wild {enemy_pokemon_name} ?",
     "choose_nickname": "Choose nickname",
-    "stat_increased": "has increased",
-    "stat_decreased": "has decreased"
+    "enemy_attack_announcement": "{pokemon_name} used {attack_name}!",
+    "player_attack_announcement": "{pokemon_name} used {attack_name}!",
+    "damage_to_player_pokemon": "{pokemon_name} took {damage} damage!",
+    "damage_to_enemy_pokemon": "{pokemon_name} took {damage} damage!",
+    "enemy_attack_no_damage": "The attack had no effect on {pokemon_name}!",
+    "player_attack_no_damage": "The attack had no effect on {pokemon_name}!",
+    "special_battle_status_effect": "{pokemon_name} is affected by {status}!",
+    "battle_effects_header": "=== Battle Effects ===",
+    "battle_effect_damage": "{pokemon_side} took {damage} damage!",
+    "battle_effect_heal": "{pokemon_side} recovered {heal_amount} HP!",
+    "battle_effect_status_applied": "{pokemon_side} was inflicted with {status}!",
+    "battle_effect_stat_change": "{pokemon_side}'s {stat} {direction} by {amount} stage(s)!",
+    "battle_effect_volatile_status": "{pokemon_side} was affected by {status}!",
+    "battle_effect_side_condition": "{condition} was set up on {side}!",
+    "battle_effect_weather_change": "The weather changed to {weather}!",
+    "battle_effect_processing_error": "Error processing battle effect: {error}",
+    "battle_multiplier_display": "{multiplier}x Multiplier",
+    
+    
+    "attack_no_effect_short": "It had no effect on {pokemon_name}!",
+    "damage_dealt_short": "It dealt {damage} damage to {pokemon_name}!",
+    
+    "enemy_pokemon_fainted": "{pokemon_name} fainted!",
+    "player_pokemon_fainted": "{pokemon_name} fainted!",
+    
+    "pokemon_is_sleeping": "{pokemon_name} is fast asleep!",
+    "pokemon_is_paralyzed": "{pokemon_name} is paralyzed! It can't move!",
+    "pokemon_is_frozen": "{pokemon_name} is frozen solid!",
+    "pokemon_is_burned": "{pokemon_name} is hurt by its burn!",
+    "pokemon_is_poisoned": "{pokemon_name} is hurt by poison!",
+    "pokemon_is_badly_poisoned": "{pokemon_name} is badly poisoned!",
+    "pokemon_is_confused": "{pokemon_name} is confused!",
+    "pokemon_flinched": "{pokemon_name} flinched and couldn't move!",
+    "pokemon_is_taunted": "{pokemon_name} can't use {move_name} after the taunt!",
+    "pokemon_special_condition": "{pokemon_name} is affected by {condition}!",
+    
+    "effect_damage_dealt": "{pokemon_side} took {damage} damage!",
+    "effect_health_restored": "{pokemon_side} restored {heal_amount} HP!",
+    "effect_status_applied": "{pokemon_side} was afflicted with {status}!",
+    "effect_stat_change": "{pokemon_side}'s {stat} {direction} by {amount} stage(s)!",
+    "effect_volatile_status": "{pokemon_side} was affected by {status}!",
+    "effect_side_condition": "{side} is protected by {condition}!",
+    "effect_weather_change": "The weather changed to {weather}!",
+    
+    "your_pokemon": "Your Pokémon",
+    "enemy_pokemon": "The opposing Pokémon",
+    "your_side": "your team",
+    "enemy_side": "the opposing team",
+    "stat_increased": "increased",
+    "stat_decreased": "decreased",
+    
+    "invalid_battle_data_error": "Battle data is invalid!",
+    "battle_effects_error": "Error processing battle effects: {error}",
+    "battle_processing_error": "Error in battle processing: {error}",
+    "battle_message_empty_fallback": "Battle concluded.",
+    
+    "super_effective": "It's super effective!",
+    "not_very_effective": "It's not very effective...",
+    "critical_hit": "A critical hit!",
+    "move_missed": "The attack missed!",
+    "move_failed": "But it failed!"
 }
+
