@@ -47,7 +47,7 @@ def update_pokemon_battle_status(battle_info: dict, enemy_pokemon, main_pokemon)
                         main_status_changed = True
             
             # Handle status removal
-            elif action == 'constants.MUTATOR_REMOVE_STATUS':
+            elif action == constants.MUTATOR_REMOVE_STATUS:
                 if target == 'opponent':
                     # Remove enemy Pokemon status - return to fighting
                     old_status = getattr(enemy_pokemon, 'battle_status', 'fighting')
@@ -61,7 +61,7 @@ def update_pokemon_battle_status(battle_info: dict, enemy_pokemon, main_pokemon)
                     main_pokemon.battle_status = 'fighting'
                     if old_status != 'fighting':
                         main_status_changed = True
-        
+            
         # Handle fainted status based on HP
         if hasattr(enemy_pokemon, 'hp') and enemy_pokemon.hp <= 0:
             old_status = getattr(enemy_pokemon, 'battle_status', 'fighting')
@@ -243,7 +243,6 @@ def _handle_special_battle_status(main_pokemon, battle_status: str, translator) 
     """Handle special battle status conditions using the provided constants."""
     
     try:
-        from . import constants
         
         status_messages = {
             constants.SLEEP: "pokemon_is_sleeping",
@@ -289,12 +288,7 @@ def _process_battle_effects(instructions: list, translator) -> list:
     
     if not instructions or not isinstance(instructions, list):
         return []
-    
-    try:
-        from . import constants
-    except ImportError:
-        return []
-    
+        
     effect_messages = []
     
     for instr in instructions:
@@ -360,7 +354,23 @@ def _process_battle_effects(instructions: list, translator) -> list:
                         amount=abs(amount)
                     )
                 )
-                
+            
+            elif action == constants.MUTATOR_WEATHER_START and len(instr) >= 2:
+                weather = instr[1]
+                effect_messages.append(
+                    translator.translate(
+                        "battle_effect_weather_start",
+                        weather=weather.replace('-', ' ').title()
+                    )
+                )
+            elif action == constants.MUTATOR_WEATHER_END and len(instr) >= 2:
+                weather = instr[1]
+                effect_messages.append(
+                    translator.translate(
+                        "battle_effect_weather_end",
+                        weather=weather.replace('-', ' ').title()
+                    )
+                )
         except Exception as e:
             # Non‐fatal: report and continue
             show_warning_with_traceback(
