@@ -7,7 +7,7 @@ from ..texts import inject_life_bar_css_1, inject_life_bar_css_2
 from ..functions.create_gui_functions import create_status_html
 from ..resources import icon_path
 from ..functions.pokedex_functions import get_pokemon_diff_lang_name
-
+from ..functions.battle_functions import validate_pokemon_status
 from .pokemon_obj import PokemonObject
 
 class Reviewer_Manager:
@@ -121,10 +121,8 @@ class Reviewer_Manager:
                     name_display_text = f"{enemy_lang_name} LvL: {self.enemy_pokemon.level}"
                     name_display_text += self.get_boost_values_string(self.enemy_pokemon, display_neutral_boost=False)
                     web_content.body += f'<div id="name-display" class="Ankimon">{name_display_text}</div>'
-                    if self.enemy_pokemon.hp > 0:
-                        web_content.body += f'{create_status_html(f"{self.enemy_pokemon.battle_status}", settings_obj=self.settings)}'
-                    else:
-                        web_content.body += f'{create_status_html("fainted", settings_obj=self.settings)}'
+                    validated_status = validate_pokemon_status(self.enemy_pokemon)
+                    web_content.body += f'{create_status_html(validated_status, settings_obj=self.settings)}'
 
                     web_content.body += f'<div id="hp-display" class="Ankimon">HP: {self.enemy_pokemon.hp}/{self.enemy_pokemon.max_hp}</div>'
                     # Inject a div element at the end of the body for the life bar
@@ -197,10 +195,9 @@ class Reviewer_Manager:
             #hex_color = hp_color.lstrip('#')
             #rgb_values = tuple(int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
             status_html = ""
-            if self.enemy_pokemon.hp < 1:
-                status_html = create_status_html('fainted', settings_obj=self.settings)
-            elif self.enemy_pokemon.hp > 0:
-                status_html = create_status_html(f"{self.enemy_pokemon.battle_status}", settings_obj=self.settings)
+            validated_status = validate_pokemon_status(self.enemy_pokemon)
+            status_html = create_status_html(validated_status, settings_obj=self.settings)
+
             if self.settings.get("gui.styling_in_reviewer", True) is True:
                 # Refresh the reviewer content to apply the updated life bar
                 reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
