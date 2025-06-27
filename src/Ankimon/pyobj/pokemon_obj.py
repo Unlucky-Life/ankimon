@@ -252,7 +252,7 @@ class PokemonObject:
             'types': [normalize_name(t) for t in self.type],
             'hp': self.hp,
             'maxhp': self.max_hp,
-            'ability': normalize_name(self.ability[0]) if self.ability else 'none',
+            'ability': normalize_name(self.ability) if self.ability else 'none',
             'item': None,
             'attack': self.stats.get('atk', 0),
             'defense': self.stats.get('def', 0),
@@ -274,7 +274,7 @@ class PokemonObject:
             'speed_boost': self.stat_stages.get('spe', 0),
             'accuracy_boost': self.stat_stages.get('accuracy', 0),
             'evasion_boost': self.stat_stages.get('evasion', 0),
-            'status': normalize_name(self.battle_status) if self.battle_status != "fighting" else None,
+            'status': self.battle_status if self.battle_status != "fighting" else None,
             'volatile_status': set(normalize_name(vs) for vs in self.volatile_status),
             'moves': [{'id': normalize_name(move)} for move in self.attacks]
         }
