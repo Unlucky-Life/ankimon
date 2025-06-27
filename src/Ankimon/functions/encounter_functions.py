@@ -689,8 +689,38 @@ def handle_enemy_faint(
 
     if auto_battle_setting == 3:  # Catch if uncollected
         enemy_id = enemy_pokemon.id
+        legendary_and_mythical_ids = {
+    # Gen I
+        144, 145, 146, 150, 151,
+
+        # Gen II
+        243, 244, 245, 249, 250, 251,
+
+        # Gen III
+        377, 378, 379, 380, 381, 382, 383, 384, 385, 386,
+
+        # Gen IV
+        480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493,
+
+        # Gen V
+        494, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649,
+
+        # Gen VI
+        716, 717, 718, 719, 720, 721,
+
+        # Gen VII
+        772, 773, 785, 786, 787, 788, 789, 790, 791, 792, 800, 801, 802, 803, 804, 805, 806, 807, 808, 809,
+
+        # Gen VIII
+        888, 889, 890, 891, 892, 893, 894, 895, 896, 897, 898,
+
+        # Gen IX
+        905, 986, 987, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014
+        }   
+        event_ids = {52, 53, 133, 134, 135, 136, 196, 197, 215, 431, 432, 461, 470, 471, 677, 678, 700}
+        eevee_ids = {133, 134, 135, 136, 196, 197, 470, 471, 700}
         # Check cache instead of file
-        if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny:
+        if enemy_id not in collected_pokemon_ids or enemy_pokemon.shiny or enemy_id in event_ids or enemy_id in eevee_ids or  enemy_id in legendary_and_mythical_ids:
             catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
         else:
             kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
