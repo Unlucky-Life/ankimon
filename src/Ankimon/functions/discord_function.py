@@ -4,7 +4,6 @@ import time
 from ..addon_files.lib.pypresence import Presence
 from aqt.utils import showWarning, tooltip
 from aqt import mw
-from ..pyobj.error_handler import show_warning_with_traceback
 
 class DiscordPresence:
     def __init__(self, client_id, large_image_url, ankimon_tracker, logger, settings_obj, parent=mw):
@@ -51,7 +50,7 @@ class DiscordPresence:
             ]
             self.state = random.choice(self.quotes)
         except Exception as e:
-            show_warning_with_traceback(exception=e, message="Error with Discord setup")
+            mw.logger.log("info",f"Error with Discord setup: {e}")
 
     def update_presence(self):
         """
@@ -66,7 +65,7 @@ class DiscordPresence:
                 )
                 time.sleep(30)  # Sleep for 30 seconds before updating again
         except Exception as e:
-            show_warning_with_traceback(exception=e, message="Error updating Discord Rich Presence")
+            mw.logger.log("error",f"Error updating Discord Rich Presence: {e}")
 
     def start(self):
         """
@@ -78,7 +77,7 @@ class DiscordPresence:
                 self.thread = threading.Thread(target=self.update_presence, daemon=True)
                 self.thread.start()
         except Exception as e:
-            show_warning_with_traceback(exception=e, message="Error starting Discord Rich Presence")
+            mw.logger.log("error",f"Error starting Discord Rich Presence: {e}")
 
     def stop(self):
         """
@@ -91,7 +90,7 @@ class DiscordPresence:
                 self.thread = None  # Reset the thread
             self.RPC.clear()
         except Exception as e:
-            show_warning_with_traceback(exception=e, message="Error clearing Discord Rich Presence")
+            mw.logger.log("error",f"Error clearing Discord Rich Presence: {e}")
 
     def stop_presence(self):
         """
@@ -105,4 +104,4 @@ class DiscordPresence:
                     large_image=self.large_image_url
                 )
         except Exception as e:
-            show_warning_with_traceback(exception=e, message="Error updating presence to break state")
+            mw.logger.log("error",f"Error updating presence to break state: {e}")

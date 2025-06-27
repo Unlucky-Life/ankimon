@@ -1,6 +1,5 @@
 from pathlib import Path
 import os
-import json
 
 addon_dir = Path(__file__).parents[0]
 
@@ -31,9 +30,7 @@ pokedex_image_path = addon_dir / "addon_sprites" / "pokedex_template.jpg"
 evolve_image_path = addon_dir / "addon_sprites" / "evo_temp.jpg"
 learnset_path = addon_dir / "user_files" / "data_files" / "learnsets.json"
 pokedex_path = addon_dir / "user_files" / "data_files" / "pokedex.json"
-pokemon_names_file_path = addon_dir / "user_files" / "data_files" / "pokemon_names.json"
 moves_file_path = addon_dir / "user_files" / "data_files" / "moves.json"
-move_names_file_path = addon_dir / "user_files" / "data_files" / "move_names.json"
 items_path = addon_dir / "user_files" / "sprites" / "items"
 badges_path = addon_dir / "user_files" / "sprites" / "badges"
 itembag_path = addon_dir / "user_files" / "items.json"
@@ -56,7 +53,6 @@ csv_file_items = addon_dir / "user_files" / "data_files" / "item_names.csv"
 csv_file_descriptions = addon_dir / "user_files" / "data_files" / "item_flavor_text.csv"
 csv_file_items_cost = addon_dir / "user_files" / "data_files" / "items.csv"
 pokemon_csv = addon_dir / "user_files" / "data_files" / "pokemon.csv"
-pokemon_tm_learnset_path = addon_dir / "user_files" / "data_files" / "pokemon_tm_learnset.json"
 
 #effect sounds paths
 hurt_normal_sound_path = addon_dir / "addon_sprites" / "sounds" / "HurtNormal.mp3"
@@ -99,31 +95,3 @@ backup_root = addon_dir / "user_files" / "backups"
 backup_folder_1 = backup_root / "backup_1"
 backup_folder_2 = backup_root / "backup_2"
 backup_folders = [os.path.join(backup_root, f"backup_{i}") for i in range(1, 4)]
-
-def generate_startup_files(base_path):  # Add base_path parameter
-    """
-    Generates blank personal files at startup with the value [].
-    Introduced as a workaround to gitignore personal files.
-    """
-    files = ['mypokemon.json', 'mainpokemon.json', 'items.json', 
-             'team.json', 'data.json', 'badges.json']
-    
-    for file in files:
-        file_path = os.path.join(base_path, file)  # Use base_path parameter
-        # Create parent directory if needed
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        
-        if not os.path.exists(file_path):
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump([], f, indent=2)
-
-    # Default data for the file
-    default_rating_data = {"rate_this": False}
-    rate_path = os.path.join(base_path, 'rate_this.json')
-
-    # Create the file with default contents if it doesn't exist
-    if not os.path.exists(rate_path):
-        os.makedirs(os.path.dirname(rate_path), exist_ok=True)
-        with open(rate_path, "w", encoding="utf-8") as f:
-            json.dump(default_rating_data, f, indent=4)
-

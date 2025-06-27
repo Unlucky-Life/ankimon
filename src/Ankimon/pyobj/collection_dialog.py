@@ -1,50 +1,25 @@
+from ..resources import mypokemon_path, frontdefault, user_path_sprites, frontdefault
+from ..gui_entities import MovieSplashLabel
+from ..functions.pokedex_functions import search_pokeapi_db_by_id, get_pokemon_diff_lang_name
 import json
-from collections import defaultdict
-import uuid
-
-from aqt.utils import showInfo, showWarning
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
-from aqt import mw
-
-from ..pyobj.InfoLogger import ShowInfoLogger
-from ..pyobj.pokemon_obj import PokemonObject
-from ..pyobj.settings import Settings
-from ..pyobj.pokemon_obj import PokemonObject
-from ..pyobj.InfoLogger import ShowInfoLogger
-from ..pyobj.translator import Translator
-from ..pyobj.test_window import TestWindow
-from ..pyobj.reviewer_obj import Reviewer_Manager
-from ..functions.sprite_functions import get_sprite_path
-from ..functions.pokedex_functions import search_pokedex, search_pokedex_by_id
 from ..gui_classes.pokemon_details import PokemonCollectionDetails
-from ..gui_entities import MovieSplashLabel
-from ..resources import mypokemon_path, frontdefault, frontdefault, mainpokemon_path
-
+from aqt import mw
+from aqt.utils import showInfo
+from ..functions.sprite_functions import get_sprite_path
 
 class PokemonCollectionDialog(QDialog):
-    def __init__(
-            self,
-            logger: ShowInfoLogger,
-            translator: Translator,
-            reviewer_obj: Reviewer_Manager,
-            test_window: TestWindow,
-            settings_obj: Settings,
-            main_pokemon: PokemonObject,
-            parent=mw
-            ):
+    def __init__(self, logger, settings_obj, mainpokemon_function, main_pokemon, parent=mw):
         super().__init__(parent)
 
         #logger and settings object
         self.logger = logger
-        self.translator = translator
-        self.reviewer_obj = reviewer_obj
-        self.test_window = test_window
         self.settings = settings_obj
         self.language = int(self.settings.get("misc.language", 11))
         self.remove_levelcap = settings_obj.get("remove_levelcap", False)
-        self.main_pokemon_function_callback = lambda _pokemon_data: MainPokemon(_pokemon_data, main_pokemon, logger, translator, reviewer_obj, test_window)
+        self.main_pokemon_function_callback = mainpokemon_function
         self.main_pokemon = main_pokemon
         #mypokemon file path
         self.mypokemon_path = mypokemon_path
@@ -311,7 +286,7 @@ class PokemonCollectionDialog(QDialog):
             shiny=pokemon.get("shiny", False),
             ability=pokemon['ability'],
             type=pokemon['type'],
-            detail_stats={**pokemon['stats'], "xp": pokemon.get("xp", 0)},
+            detail_stats=pokemon['stats'],
             attacks=pokemon['attacks'],
             base_experience=pokemon['base_experience'],
             growth_rate=pokemon['growth_rate'],
@@ -466,6 +441,9 @@ class PokemonCollectionDialog(QDialog):
         self.refresh_collection(pokemon_list)
 
 
+from aqt.utils import showWarning
+from ..resources import mainpokemon_path
+
 def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
      # Load the data from the file
     with open(mainpokemon_path, "r", encoding="utf-8") as file:
@@ -594,6 +572,7 @@ def PokemonTradeIn(number_code, old_pokemon_name, position):
     else:
         showWarning("Please enter a valid Code !")
 
+from aqt.utils import showWarning
 
 def trade_pokemon(old_pokemon_name, pokemon_trade, position):
     try:
@@ -622,66 +601,3 @@ def trade_pokemon(old_pokemon_name, pokemon_trade, position):
         showWarning(f"{old_pokemon_name} has been traded successfully!")
     except Exception as e:
         showWarning(f"An error occurred while writing to the file: {e}")
-
-def MainPokemon(
-        pokemon_data: dict,
-        main_pokemon: PokemonObject,
-        logger: ShowInfoLogger,
-        translator: Translator,
-        reviewer_obj: Reviewer_Manager,
-        test_window: TestWindow,
-        ):
-    pokemon_id = pokemon_data.get("id")
-    pokemon_name = search_pokedex_by_id(pokemon_id)
-    base_stats = search_pokedex(pokemon_name, "baseStats")
-    current_hp = PokemonObject.calc_stat(
-        "hp",
-        base_stats["hp"],
-        pokemon_data['level'],
-        pokemon_data['iv']['hp'],
-        pokemon_data['ev']['hp'],
-        pokemon_data.get("nature", "serious")
-        )
-    # Create NEW PokemonObject instance using class constructor
-    new_main_pokemon = PokemonObject(
-        name=pokemon_name,
-        level=pokemon_data.get('level', 5),
-        ability=pokemon_data.get('ability', ['none']),
-        type=pokemon_data.get('type', ['Normal']),
-        base_stats=base_stats,
-        ev=pokemon_data.get('ev', defaultdict(int)),
-        iv=pokemon_data.get('iv', defaultdict(int)),
-        attacks=pokemon_data.get('attacks', ['Struggle']),
-        base_experience=pokemon_data.get('base_experience', 0),
-        growth_rate=pokemon_data.get('growth_rate', 'medium'),
-        current_hp=current_hp,
-        gender=pokemon_data.get('gender', 'N'),
-        shiny=pokemon_data.get('shiny', False),
-        individual_id=pokemon_data.get('individual_id', str(uuid.uuid4())),
-        id=pokemon_data.get('id', 133),
-        status=pokemon_data.get('status', None),
-        volatile_status=set(pokemon_data.get('volatile_status', [])),
-        xp=pokemon_data.get("xp", 0),
-    )
-    
-    # Update existing reference
-    main_pokemon.__dict__.update(new_main_pokemon.__dict__)
-    
-    # Save to JSON using the object's native serialization
-    main_pokemon_data = [main_pokemon.to_dict()]
-    with open(mainpokemon_path, "w") as f:
-        json.dump(main_pokemon_data, f, indent=2)
-
-    logger.log_and_showinfo(
-        "info",
-        translator.translate("picked_main_pokemon",main_pokemon_name=main_pokemon.name.capitalize())
-        )
-    
-    # Update UI components
-    class Container(object): pass
-    reviewer = Container()
-    reviewer.web = mw.reviewer.web
-    reviewer_obj.update_life_bar(reviewer, 0, 0)
-    
-    if test_window.isVisible():
-        test_window.display_first_encounter()

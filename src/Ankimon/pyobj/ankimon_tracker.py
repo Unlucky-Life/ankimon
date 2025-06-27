@@ -252,3 +252,4 @@ class AnkimonTracker:
 
     def randomize_battle_scene(self):
         self.battlescene_file = random_battle_scene()
+

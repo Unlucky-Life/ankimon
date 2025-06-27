@@ -285,6 +285,27 @@
       background: #067cbc;
       color: white;
     }
+
+    .credit {
+      color: #ffb300;
+      margin-left: auto;
+      cursor: pointer;
+      transition: color 0.2s, text-shadow 0.2s;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .credit:hover {
+      color: #fff176;
+      text-shadow: 0 0 8px #ffb300, 0 0 16px #fff176;
+      filter: brightness(1.2);
+    }
+    body.dark-mode .credit {
+      color: #ffe082;
+    }
+    body.dark-mode .credit:hover {
+      color: #fffde7;
+      text-shadow: 0 0 8px #ffe082, 0 0 16px #fffde7;
+    }
   </style>
 </head>
 <body>
@@ -308,6 +329,7 @@
       <button id="filter-all" class="active">All</button>
       <button id="filter-caught">Caught</button>
       <button id="filter-not-caught">Not Caught</button>
+      <span class="credit">by Peace (@thepeacemonk)</span>
     </div>
   </div>
 
@@ -375,7 +397,30 @@
       seenCount.textContent = `Pokémon Seen: ${seenTotal}`;
 
       let currentPage = 0;
-      const itemsPerPage = 25;
+
+      function calculateItemsPerPage() {
+        const itemWidth = 150;  // Width of one item in pixels
+        const itemHeight = 150;  // Height of one item in pixels
+
+        const availableWidth = window.innerWidth;
+        const availableHeight = window.innerHeight;
+
+        const itemsPerRow = Math.floor(availableWidth / itemWidth);
+        const itemsPerColumn = Math.floor(availableHeight / itemHeight);
+
+        return itemsPerRow * itemsPerColumn;
+      }
+
+      // Optional: Recalculate on window resize
+      window.addEventListener('resize', () => {
+        itemsPerPage = calculateItemsPerPage();
+        updatePagination();
+        displayPokemon();
+        console.log("Updated itemsPerPage:", itemsPerPage);
+      });
+
+      let itemsPerPage = calculateItemsPerPage();
+
       let currentFilter = "all";
 
       function updateActiveButton() {

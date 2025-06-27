@@ -10,8 +10,8 @@ class AnkimonTrackerWindow:
         self.window = None
         self.layout = None
         self.stats_labels = {}
-        self.title_label = None  # To store the title label for dynamic updates
         self.previous_stats = {}  # Dictionary to store previous stats for comparison
+        self.title_label = None  # To store the title label for dynamic updates
 
     def get_text_color(self):
         """Returns the appropriate text color based on Anki's theme."""
@@ -107,7 +107,6 @@ class AnkimonTrackerWindow:
         # Update the title label color
         if self.title_label:
             self.title_label.setStyleSheet(f"color: {self.get_text_color()}; padding: 2px;")
-
         stats = self.tracker.get_stats()
         main_pokemon_stats = self.tracker.get_main_pokemon_stats()
         enemy_pokemon_stats = self.tracker.get_enemy_pokemon_stats()

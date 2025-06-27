@@ -3,7 +3,6 @@ from aqt.utils import showWarning
 import json
 import random
 import csv
-from ..pyobj.error_handler import show_warning_with_traceback
 
 def special_pokemon_names_for_min_level(name):
     if name == "flabébé":
@@ -416,7 +415,7 @@ def pokemon_evolves_from_id(pokemon_id):
         return evolves_from_ids
     except Exception as e:
         # Use a more specific error message
-        show_warning_with_traceback(exception=e, message="Error in pokemon_evolves_from_id function: {e} with pokemon_id {pokemon_id}")
+        showWarning(f"Error in pokemon_evolves_from_id function: {e} with pokemon_id {pokemon_id}")
         return []
 
 def get_pokemon_evolution_data(pokemon_id):
