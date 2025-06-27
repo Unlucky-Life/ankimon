@@ -454,13 +454,6 @@ def process_battle_data(battle_data: dict) -> str:
                 show_warning_with_traceback(parent=mw, exception=e, message="Error processing instruction:")
                 continue
 
-        # Add missed move information
-        if battle_data.get('user_missed', False):
-            output.append(mw.translator.translate("user_move_missed"))
-        
-        if battle_data.get('opponent_missed', False):
-            output.append(mw.translator.translate("opponent_move_missed"))
-
         return "\n".join(output)
 
     except KeyError as e:
