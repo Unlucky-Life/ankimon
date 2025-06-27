@@ -1,5 +1,6 @@
 import copy
 from ..poke_engine import constants
+from ..pyobj.error_handler import show_warning_with_traceback
 
 def update_pokemon_battle_status(battle_info: dict, enemy_pokemon, main_pokemon):
     """
@@ -229,7 +230,11 @@ def process_battle_data(
         return final_message
         
     except Exception as e:
-        # Comprehensive error handling
+        show_warning_with_traceback(
+            exception=e,
+            message="Critical error generating battle message"
+        )
+
         error_msg = translator.translate("battle_processing_error", error=str(e)[:100])
         return f"{translator.translate('battle_multiplier_display', multiplier=multiplier)}\n{error_msg}"
 
@@ -266,8 +271,12 @@ def _handle_special_battle_status(main_pokemon, battle_status: str, translator) 
                 condition=battle_status.replace('_', ' ').title()
             )
             
-    except ImportError:
-        # Fallback if constants aren't available
+    except Exception as e:
+        # Non‐fatal: return generic message
+        show_warning_with_traceback(
+            exception=e,
+            message="Error handling special battle status"
+        )
         return translator.translate(
             "pokemon_special_condition",
             pokemon_name=main_pokemon.name.capitalize(),
@@ -353,8 +362,11 @@ def _process_battle_effects(instructions: list, translator) -> list:
                 )
                 
         except Exception as e:
-            # Log individual instruction errors but continue processing
-            continue
+            # Non‐fatal: report and continue
+            show_warning_with_traceback(
+                exception=e,
+                message="Error processing battle effects"
+            )
     
     return effect_messages
 
