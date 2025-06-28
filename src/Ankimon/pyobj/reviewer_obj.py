@@ -114,6 +114,7 @@ class Reviewer_Manager:
                 css += inject_life_bar_css_2
 
                 # Add adaptive styling for text elements with rounded backgrounds
+                # Add adaptive styling for text elements with rounded backgrounds
                 css += """
                 /* Adaptive styling for text elements with rounded backgrounds */
                 #name-display, #myname-display, #hp-display, #myhp-display, #xp_text {
@@ -123,11 +124,13 @@ class Reviewer_Manager:
                     padding: 4px 8px !important;
                 }
 
-                /* Remove glow and shadow from HP and XP bars, add border */
+                /* Remove glow and shadow from HP and XP bars, add border and solid background */
                 #life-bar, #mylife-bar, #xp-bar {
                     box-shadow: none !important;
-                    border: 2px solid white !important;
+                    border: 3px solid white !important;
                     display: block;
+                    background: #72e660 !important; /* Solid green as default, can be overridden inline */
+                    opacity: 1 !important;
                 }
 
                 /* Dark mode detection and styles */
@@ -139,7 +142,7 @@ class Reviewer_Manager:
                         padding: 4px 8px !important;
                     }
                     #life-bar, #mylife-bar, #xp-bar {
-                        border: 2px solid #2C2C2C !important;
+                        border: 3px solid #2C2C2C !important;
                     }
                 }
 
