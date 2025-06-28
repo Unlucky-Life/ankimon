@@ -204,7 +204,7 @@ def simulate_battle_with_poke_engine(
 
         mutator.apply(instrs)
 
-        # In case the pokemon used a stat enhancing move or a healing move, we need to save those changes from the State into the PokemonObject so that they carry to the next round
+        # Save changes from State to Pokemon objects (enhanced for volatile status)
         main_pokemon.current_hp = main_pokemon.hp = state.user.active.hp
         main_pokemon.stat_stages = {
             'atk': state.user.active.attack_boost,
@@ -216,7 +216,13 @@ def simulate_battle_with_poke_engine(
             'evasion': state.user.active.evasion_boost
         }
         
-         # In case the pokemon used a stat enhancing move or a healing move, we need to save those changes from the State into the PokemonObject so that they carry to the next round
+        # Save volatile status from poke-engine state to Pokemon object - NEW
+        if hasattr(state.user.active, 'volatile_status'):
+            main_pokemon.volatile_status = state.user.active.volatile_status.copy()
+        elif not hasattr(main_pokemon, 'volatile_status'):
+            main_pokemon.volatile_status = set()
+        
+        # Same for enemy Pokemon
         enemy_pokemon.current_hp = enemy_pokemon.hp = state.opponent.active.hp
         enemy_pokemon.stat_stages = {
             'atk': state.opponent.active.attack_boost,
@@ -227,7 +233,13 @@ def simulate_battle_with_poke_engine(
             'accuracy': state.opponent.active.accuracy_boost, 
             'evasion': state.opponent.active.evasion_boost
         }
-
+        
+        # Save volatile status for enemy - NEW
+        if hasattr(state.opponent.active, 'volatile_status'):
+            enemy_pokemon.volatile_status = state.opponent.active.volatile_status.copy()
+        elif not hasattr(enemy_pokemon, 'volatile_status'):
+            enemy_pokemon.volatile_status = set()
+        
         new_state = copy.deepcopy(state)
 
         mutator_full_reset = int(0) # preserve battle state - until something else changes this value
