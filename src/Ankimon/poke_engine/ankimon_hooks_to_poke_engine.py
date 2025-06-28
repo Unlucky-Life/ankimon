@@ -121,7 +121,7 @@ def simulate_battle_with_poke_engine(
 
     if (state is not None) and (state.user.active.id != main_pokemon.name.lower()):
         mutator_full_reset = 1 # reset AFTER Pokemon is changed !
-    if mutator_full_reset not in (0, 1, 2):
+    if mutator_full_reset not in (0, 1):
         mutator_full_reset = 1
 
     try:
@@ -174,12 +174,25 @@ def simulate_battle_with_poke_engine(
                 state.user.active = reset_stat_boosts(state.user.active)
                 state.user = reset_side(main_pokemon_poke_engine)
                 state.opponent = reset_side(enemy_pokemon_poke_engine)
-            elif mutator_full_reset == 2: # Opponent got KOed, reset the opponent's side
-                state.user.active = reset_stat_boosts(state.user.active)  # reseting the user's stat boosts to avoid snowballing
-                state.opponent = reset_side(enemy_pokemon_poke_engine)
+
+                # Reset battle_status and volatile_status for both engine state Pokémon
+                if hasattr(state.user.active, 'battle_status'):
+                    state.user.active.battle_status = 'fighting'
+                if hasattr(state.user.active, 'volatile_status'):
+                    state.user.active.volatile_status = set()
+                if hasattr(state.opponent.active, 'battle_status'):
+                    state.opponent.active.battle_status = 'fighting'
+                if hasattr(state.opponent.active, 'volatile_status'):
+                    state.opponent.active.volatile_status = set()
+
+                # Also reset the main_pokemon and enemy_pokemon Python objects
+                main_pokemon.battle_status = 'fighting'
+                main_pokemon.volatile_status = set()
+                enemy_pokemon.battle_status = 'fighting'
+                enemy_pokemon.volatile_status = set()
+
             else:
                 raise ValueError(f"Wrong mutator_full_reset encountered : {mutator_full_reset}")
-
                 
         mutator = StateMutator(state)
 
@@ -272,9 +285,10 @@ def simulate_battle_with_poke_engine(
         battle_info = {
             'battle_header': battle_header,
             'instructions': battle_effects,
+            'state': new_state
             }
 
-        return battle_info, copy.deepcopy(new_state), dmg_from_enemy_move, dmg_from_user_move, mutator_full_reset
+        return battle_info, new_state, dmg_from_enemy_move, dmg_from_user_move, mutator_full_reset
     
     except Exception as e:
         show_warning_with_traceback(exception=e, message="Error simulating battle:")
