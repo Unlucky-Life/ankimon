@@ -32,10 +32,17 @@ from aqt.utils import downArrow, showWarning, tr, tooltip
 from PyQt6.QtWidgets import QDialog
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
-
+from .utils import is_online
 from .resources import generate_startup_files, user_path
 
 generate_startup_files(user_path)
+
+import requests
+from .utils import is_online
+from aqt.utils import tooltip, showWarning
+from .gui_entities import UpdateNotificationWindow
+from .resources import addon_dir
+from .utils import read_local_file, write_local_file, read_github_file, compare_files
 
 from .config_var import (
     dmg_in_reviewer,
@@ -136,6 +143,26 @@ from .singletons import (
 
 from .pyobj.error_handler import show_warning_with_traceback
 from .functions.drawing_utils import draw_gender_symbols, draw_stat_boosts
+
+from .utils import test_online_connectivity
+from aqt import mw
+
+if not test_online_connectivity():
+    try:
+        if hasattr(mw.col.media.syncer, "sync_queue_manager"):
+            mw.col.media.syncer.sync_queue_manager.stop(wait=True)
+        if hasattr(mw, "sync_manager"):
+            mw.sync_manager._syncing = False
+        logger.log_and_showinfo("sync", "Internet offline: Syncing disabled.")
+        
+        from aqt.utils import tooltip
+        tooltip(
+            "⚠️ Offline mode: Syncing is disabled until internet is restored.",
+            period=5000,
+            title="Ankimon"
+        )
+    except Exception as e:
+        logger.log("error", f"Failed to stop syncing offline: {e}")
 
 # Load move and pokemon name mapping at startup
 with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
@@ -260,35 +287,33 @@ gui_hooks.reviewer_did_show_answer.append(on_show_answer)
 
 setupHooks(check_data , ankimon_tracker_obj, prepare)
 
-online_connectivity = test_online_connectivity()
+def check_github_update():
+    if not is_online():
+        tooltip("You're offline — skipped GitHub update check.")
+        return
 
-#Connect to GitHub and Check for Notification and HelpGuideChanges
-try:           
-    if online_connectivity and ssh != False:
-        # URL of the file on GitHub
-        github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
-        # Path to the local file
-        local_file_path = addon_dir / "updateinfos.md"
-        # Read content from GitHub
+    github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
+    local_file_path = addon_dir / "updateinfos.md"
+
+    try:
         github_content, github_html_content = read_github_file(github_url)
-        # Read content from the local file
         local_content = read_local_file(local_file_path)
-        # If local content exists and is the same as GitHub content, do not open dialog
-        if local_content is not None and compare_files(local_content, github_content):
-            pass
-        else:
-            # Download new content from GitHub
-            if github_content is not None:
-                # Write new content to the local file
-                write_local_file(local_file_path, github_content)
+
+        if github_content and not compare_files(local_content, github_content):
+            write_local_file(local_file_path, github_content)
+            if no_more_news is False:
                 dialog = UpdateNotificationWindow(github_html_content)
-                if no_more_news is False:
-                    dialog.exec()
-            else:
-                showWarning("Failed to retrieve Ankimon content from GitHub.")
-except Exception as e:
-    if ssh != False:
-        logger.log_and_showinfo("info",f"Error in try connect to GitHub: {e}")
+                dialog.exec()
+            logger.log("info", "GitHub update content downloaded.")
+        else:
+            logger.log("info", "GitHub update check: no changes.")
+
+    except Exception as e:
+        if ssh != False:
+            logger.log("error", f"GitHub update check failed: {e}")
+
+
+check_github_update() 
 
 def open_help_window(online_connectivity):
     try:
@@ -836,7 +861,7 @@ count_items_and_rewrite(itembag_path)
 # Create menu actions
 create_menu_actions(
     database_complete,
-    online_connectivity,
+    #online_connectivity,
     None,#pokecollection_win,
     item_window,
     test_window,

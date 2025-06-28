@@ -8,6 +8,8 @@ import random
 import csv
 from collections import Counter
 from typing import Union
+import socket 
+
 
 from aqt.utils import showWarning, showInfo
 from PyQt6.QtGui import QFontDatabase, QFont
@@ -74,19 +76,30 @@ def check_file_exists(folder, filename):
     file_path = os.path.join(folder, filename)
     return os.path.isfile(file_path)
 
-def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5):
+def is_online(host="8.8.8.8", port=53, timeout=2) -> bool:
+    """
+    Fast general-purpose connectivity check via socket.
+    """
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        return True
+    except Exception:
+        return False
+
+def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md', timeout=5) -> bool:
+    """
+    Slower GitHub-specific connectivity check. Falls back to is_online().
+    """
     try:
         # Attempt to get the URL
         response = requests.get(url, timeout=timeout)
-
-        # Check if the response status code is 200 (OK)
-        if response.status_code == 200:
-            return True
-    except:
-        # Connection error means no internet connectivity
-        return False
+        return response.status_code == 200 
+    except requests.RequestException:
+        # Fallback to general connectivity check
+        showWarning("GitHub connectivity check failed. Falling back to general connectivity check.")
+        return is_online()
     
-
 # Define the hook function
 def addon_config_editor_will_display_json(text: str) -> str:
     """

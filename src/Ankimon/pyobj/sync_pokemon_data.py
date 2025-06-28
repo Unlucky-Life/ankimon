@@ -4,6 +4,8 @@ from PyQt6.QtWidgets import QLabel, QVBoxLayout, QTextEdit, QPushButton, QDialog
 from aqt import mw
 from aqt.utils import showWarning, showInfo, tooltip
 from ..resources import mypokemon_path, mainpokemon_path
+from ..utils import is_online
+from ..pyobj.sync_queue import SyncQueueManager 
 
 class CheckPokemonData(QDialog):
     def __init__(self, settings_obj, logger):
@@ -16,6 +18,10 @@ class CheckPokemonData(QDialog):
         self.setup_ui()
         self.sync_pokemons()
         self.display_data_comparison()
+        try:
+            mw.col.media.syncer.sync_queue_manager = self.sync_queue_manager
+        except Exception as e:
+            self.logger.log("error", f"Failed to register sync queue manager: {e}")
 
     def setup_ui(self):
         # Set the window title for the dialog
@@ -100,21 +106,50 @@ class CheckPokemonData(QDialog):
         except Exception as e:
             showWarning("Failed to sync data to local: " + str(e))
         self.close()
+        
+def sync_data_to_ankiweb(self):
+    if not is_online():
+        tooltip("You're offline — sync canceled.", period=4000)
+        self.logger.log("info", "User attempted to sync while offline.")
+        return  # Do NOT close the window
 
-    def sync_data_to_ankiweb(self):
-        try:
-            self.config.set("pokemon_collection", self.pokemon_collection_sync_data)
-            self.config.set("mainpokemon", self.mainpokemon_sync_data)
-            showInfo("Local Data synced to AnkiWeb.")
-        except Exception as e:
-            showWarning("Failed to sync data to AnkiWeb: " + str(e))
-        self.close()
-
-    def sync_on_anki_close(self):
-        tooltip("Syncing PokemonData to AnkiWeb")
+    try:
         self.get_pokemon_data()
         self.config.set("pokemon_collection", self.pokemon_collection_sync_data)
         self.config.set("mainpokemon", self.mainpokemon_sync_data)
+        showInfo("Synced local data to AnkiWeb.")
+        self.close()
+    except Exception as e:
+        showWarning("Failed to sync data to AnkiWeb: " + str(e))
+        self.logger.log("error", f"Sync failed with error: {e}")
+
+
+        
+        try:
+            self.get_pokemon_data()
+            self.config.set("pokemon_collection", self.pokemon_collection_sync_data)
+            self.config.set("mainpokemon", self.mainpokemon_sync_data)
+            showInfo("Synced local data to AnkiWeb.")
+        except Exception as e:
+            showWarning("Failed to sync data to AnkiWeb: " + str(e))
+        self.close()
+    
+    def sync_on_anki_close(self):
+        if not is_online():
+            self.logger.log("info", "Offline on close — skipping sync.")
+            tooltip("You're offline — data was not synced to AnkiWeb.", period=4000)
+            return
+
+    tooltip("Syncing Pokémon data to AnkiWeb...", period=3000)
+    self.get_pokemon_data()
+    try:
+        self.config.set("pokemon_collection", self.pokemon_collection_sync_data)
+        self.config.set("mainpokemon", self.mainpokemon_sync_data)
+        self.logger.log("info", "Sync on close completed successfully.")
+    except Exception as e:
+        self.logger.log("error", f"Sync on close failed: {e}")
+        showWarning("Failed to sync data on close.")
+
 
     def modify_json_configuration_on_save(self, text: str) -> str:
         try:
