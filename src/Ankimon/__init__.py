@@ -136,7 +136,8 @@ from .singletons import (
 from .functions.battle_functions import (
     update_pokemon_battle_status,
     validate_pokemon_status,
-    process_battle_data
+    process_battle_data,
+    _process_battle_effects
 )
 
 from .pyobj.error_handler import show_warning_with_traceback
@@ -573,7 +574,7 @@ def on_review_card(*args):
                     achievements
                     )
 
-                mutator_full_reset = 2 # reset opponent state
+                mutator_full_reset = 1 # reset opponent state
 
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
