@@ -116,10 +116,10 @@ def update_pokemon_battle_status(battle_info: dict, enemy_pokemon, main_pokemon)
         return False, False
 
 
-def _process_battle_effects(instructions: list, translator=None) -> list:
+def _process_battle_effects(instructions: list, translator) -> list:
     """
-    Process battle instructions including volatile status effects using constants.
-    Enhanced with debugging and fallback message generation.
+    Process all battle instructions including comprehensive volatile status effects.
+    Uses translation function for internationalization support.
     """
     
     if not instructions or not isinstance(instructions, list):
@@ -127,7 +127,25 @@ def _process_battle_effects(instructions: list, translator=None) -> list:
         
     effect_messages = []
     
-    for i, instr in enumerate(instructions):
+    def get_pokemon_side(target_side: str) -> str:
+        """Convert target side to human-readable pokemon side."""
+        return "Your Pokemon" if target_side == 'user' else "Enemy Pokemon"
+    
+    def safe_translate(key: str, **kwargs) -> str:
+        """Safely translate with fallback handling."""
+        try:
+            if translator:
+                return translator.translate(key, **kwargs)
+            else:
+                # No translator available - use basic fallback
+                return f"Battle effect: {key}"
+        except (KeyError, AttributeError):
+            # Translation key not found - create generic message
+            if 'pokemon_side' in kwargs and 'status_name' in kwargs:
+                return f"{kwargs['pokemon_side']} is affected by {kwargs['status_name']}!"
+            return f"Battle effect occurred: {key}"
+    
+    for instr in instructions:
         if not instr or not isinstance(instr, (list, tuple)) or len(instr) < 2:
             continue
             
@@ -135,112 +153,53 @@ def _process_battle_effects(instructions: list, translator=None) -> list:
             action = instr[0]
             target_side = instr[1] if len(instr) > 1 else None
             
-            # Handle regular status application
-            if action == constants.MUTATOR_APPLY_STATUS and len(instr) >= 3:
-                status = instr[2]
-                pokemon_side = ("Your Pokemon" if target_side == 'user' else "Enemy Pokemon")
-                
-                status_names = {
-                    constants.SLEEP: "sleep",
-                    constants.PARALYZED: "paralysis", 
-                    constants.FROZEN: "freeze",
-                    constants.BURN: "burn",
-                    constants.POISON: "poison",
-                    constants.TOXIC: "toxic poisoning"
-                }
-                
-                status_name = status_names.get(status, status.replace('_', ' '))
-                
-                # Try translator first, fallback to direct message
-                try:
-                    if translator:
-                        message = translator.translate(
-                            "effect_status_applied",
-                            pokemon_side=pokemon_side,
-                            status=status_name.title()
-                        )
-                    else:
-                        message = f"{pokemon_side} was afflicted with {status_name}!"
-                except:
-                    message = f"{pokemon_side} was afflicted with {status_name}!"
-                
-                effect_messages.append(message)
-            
-            # Handle volatile status application - FIXED SYNTAX
-            elif action == constants.MUTATOR_APPLY_VOLATILE_STATUS and len(instr) >= 3:
+            # Handle volatile status application
+            if action == constants.MUTATOR_APPLY_VOLATILE_STATUS and len(instr) >= 3:
                 volatile_status = instr[2]
-                pokemon_side = ("Your Pokemon" if target_side == 'user' else "Enemy Pokemon")
+                pokemon_side = get_pokemon_side(target_side)
                 
-                # Map volatile status to readable names
-                volatile_status_names = {
-                    'roost': "temporarily loses its Flying type",
-                    'substitute': "created a substitute",
-                    'confusion': "became confused",
-                    'taunt': "was taunted",
-                    'encore': "was encored",
-                    'disable': "was disabled",
-                    'torment': "was tormented",
-                    'magnet_rise': "rose into the air with electromagnetic force",
-                    'telekinesis': "was lifted by telekinesis"
-                }
+                # Try specific translation key first
+                translation_key = f"volatile_{volatile_status}_apply"
                 
-                status_description = volatile_status_names.get(volatile_status, f"was affected by {volatile_status.replace('_', ' ')}")
-                
-                # Try translator first, fallback to direct message
-                try:
-                    if translator:
-                        message = translator.translate(
-                            "effect_volatile_status_applied",
-                            pokemon_side=pokemon_side,
-                            status=status_description
-                        )
-                    else:
-                        message = f"{pokemon_side} {status_description}!"
-                except:
-                    message = f"{pokemon_side} {status_description}!"
+                if volatile_status in constants.KNOWN_VOLATILE_STATUSES:
+                    message = safe_translate(translation_key, pokemon_side=pokemon_side)
+                else:
+                    # Use generic fallback for unknown volatile status
+                    status_name = volatile_status.replace('_', ' ').title()
+                    message = safe_translate(
+                        "volatile_status_unknown_apply", 
+                        pokemon_side=pokemon_side,
+                        status_name=status_name
+                    )
                 
                 effect_messages.append(message)
             
-            # Handle volatile status removal - FIXED SYNTAX
+            # Handle volatile status removal
             elif action == constants.MUTATOR_REMOVE_VOLATILE_STATUS and len(instr) >= 3:
                 volatile_status = instr[2]
-                pokemon_side = ("Your Pokemon" if target_side == 'user' else "Enemy Pokemon")
+                pokemon_side = get_pokemon_side(target_side)
                 
-                # Special messages for volatile status removal
-                volatile_removal_messages = {
-                    'roost': "Flying type is restored",
-                    'substitute': "substitute faded",
-                    'confusion': "snapped out of confusion",
-                    'taunt': "taunt wore off",
-                    'encore': "encore ended",
-                    'disable': "disable wore off",
-                    'torment': "torment ended",
-                    'magnet_rise': "magnetic force wore off and it fell down",
-                    'telekinesis': "telekinesis wore off"
-                }
+                # Try specific translation key first
+                translation_key = f"volatile_{volatile_status}_remove"
                 
-                status_description = volatile_removal_messages.get(volatile_status, f"{volatile_status.replace('_', ' ')} wore off")
-                
-                # Try translator first, fallback to direct message
-                try:
-                    if translator:
-                        message = translator.translate(
-                            "effect_volatile_status_removed",
-                            pokemon_side=pokemon_side,
-                            status=status_description
-                        )
-                    else:
-                        message = f"{pokemon_side}'s {status_description}!"
-                except:
-                    message = f"{pokemon_side}'s {status_description}!"
+                if volatile_status in constants.KNOWN_VOLATILE_STATUSES:
+                    message = safe_translate(translation_key, pokemon_side=pokemon_side)
+                else:
+                    # Use generic fallback for unknown volatile status
+                    status_name = volatile_status.replace('_', ' ').title()
+                    message = safe_translate(
+                        "volatile_status_unknown_remove", 
+                        pokemon_side=pokemon_side,
+                        status_name=status_name
+                    )
                 
                 effect_messages.append(message)
             
-            # Handle stat boosts
+            # Handle stat boosts (existing logic with improved error handling)
             elif action == constants.MUTATOR_BOOST and len(instr) >= 4:
                 stat = instr[2]
                 amount = instr[3]
-                pokemon_side = ("Your Pokemon" if target_side == 'user' else "Enemy Pokemon")
+                pokemon_side = get_pokemon_side(target_side)
                 
                 stat_names = {
                     constants.ATTACK: "Attack",
@@ -255,64 +214,39 @@ def _process_battle_effects(instructions: list, translator=None) -> list:
                 stat_name = stat_names.get(stat, stat.replace('-', ' ').title())
                 direction = "increased" if amount > 0 else "decreased"
                 
-                # Try translator first, fallback to direct message
-                try:
-                    if translator:
-                        message = translator.translate(
-                            "effect_stat_change",
-                            pokemon_side=pokemon_side,
-                            stat=stat_name,
-                            direction=direction,
-                            amount=abs(amount)
-                        )
-                    else:
-                        message = f"{pokemon_side}'s {stat_name} {direction} by {abs(amount)}!"
-                except:
-                    message = f"{pokemon_side}'s {stat_name} {direction} by {abs(amount)}!"
+                message = safe_translate(
+                    "effect_stat_change",
+                    pokemon_side=pokemon_side,
+                    stat=stat_name,
+                    direction=direction,
+                    amount=abs(amount)
+                )
                 
                 effect_messages.append(message)
             
-            # Handle weather effects
+            # Handle weather effects (existing logic with improved error handling)
             elif action == constants.MUTATOR_WEATHER_START and len(instr) >= 2:
                 weather = instr[1]
-                
-                # Try translator first, fallback to direct message
-                try:
-                    if translator:
-                        message = translator.translate(
-                            "battle_effect_weather_start",
-                            weather=weather.replace('-', ' ').title()
-                        )
-                    else:
-                        message = f"{weather.replace('-', ' ').title()} weather started!"
-                except:
-                    message = f"{weather.replace('-', ' ').title()} weather started!"
-                
+                message = safe_translate(
+                    "battle_effect_weather_start",
+                    weather=weather.replace('-', ' ').title()
+                )
                 effect_messages.append(message)
                 
             elif action == constants.MUTATOR_WEATHER_END and len(instr) >= 2:
                 weather = instr[1]
-                
-                # Try translator first, fallback to direct message
-                try:
-                    if translator:
-                        message = translator.translate(
-                            "battle_effect_weather_end",
-                            weather=weather.replace('-', ' ').title()
-                        )
-                    else:
-                        message = f"{weather.replace('-', ' ').title()} weather ended!"
-                except:
-                    message = f"{weather.replace('-', ' ').title()} weather ended!"
-                
+                message = safe_translate(
+                    "battle_effect_weather_end",
+                    weather=weather.replace('-', ' ').title()
+                )
                 effect_messages.append(message)
                 
         except Exception as e:
-            # Log error but continue processing
+            # Specific error logging with instruction context
+            print(f"Error processing battle instruction {instr}: {e}")
             continue
     
     return effect_messages
-
 
 def validate_pokemon_status(pokemon):
     """
