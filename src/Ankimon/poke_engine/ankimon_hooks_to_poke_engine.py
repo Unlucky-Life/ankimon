@@ -184,7 +184,12 @@ def simulate_battle_with_poke_engine(
                     state.opponent.active.battle_status = 'fighting'
                 if hasattr(state.opponent.active, 'volatile_status'):
                     state.opponent.active.volatile_status = set()
-
+                # Clear Future Sight state on reset - NEW
+                if hasattr(state.user, 'future_sight'):
+                    state.user.future_sight = (0, 0)
+                if hasattr(state.opponent, 'future_sight'):
+                    state.opponent.future_sight = (0, 0)
+                    
                 # Also reset the main_pokemon and enemy_pokemon Python objects
                 main_pokemon.battle_status = 'fighting'
                 main_pokemon.volatile_status = set()
@@ -234,6 +239,7 @@ def simulate_battle_with_poke_engine(
             main_pokemon.volatile_status = state.user.active.volatile_status.copy()
         elif not hasattr(main_pokemon, 'volatile_status'):
             main_pokemon.volatile_status = set()
+    
         
         # Same for enemy Pokemon
         enemy_pokemon.current_hp = enemy_pokemon.hp = state.opponent.active.hp

@@ -87,6 +87,30 @@ def update_pokemon_battle_status(battle_info: dict, enemy_pokemon, main_pokemon)
                     main_pokemon.volatile_status.discard(status_value)
                     if old_volatile != main_pokemon.volatile_status:
                         main_status_changed = True
+                        
+                # Handle Future Sight instructions - NEW
+                elif action == constants.MUTATOR_FUTURESIGHT_START and len(instr) >= 4:
+                    # ['futuresight_start', 'user', 'cresselia', 0]
+                    # Format: [action, side, pokemon_name, initial_counter]
+                    side = instr[1]
+                    pokemon_name = instr[2] 
+                    counter = instr[3]
+                    
+                    # Future Sight affects the opposing side, so track on opposite side
+                    if side == 'user':
+                        # User's Future Sight will hit opponent in 2 turns
+                        enemy_status_changed = True
+                    else:
+                        # Opponent's Future Sight will hit user in 2 turns  
+                        main_status_changed = True
+                        
+                elif action == constants.MUTATOR_FUTURESIGHT_DECREMENT:
+                    # ['futuresight_decrement', 'user']
+                    # Just decrement the counter - the engine handles this
+                    if instr[1] == 'user':
+                        main_status_changed = True
+                    else:
+                        enemy_status_changed = True
         
         # Handle fainted status based on HP
         if hasattr(enemy_pokemon, 'hp') and enemy_pokemon.hp <= 0:
@@ -378,6 +402,40 @@ def _process_battle_effects(
                 weather = instr[1]
                 message = safe_translate("battle_effect_weather_end", weather=weather.replace('-', ' ').title())
                 effect_messages.append(message)
+                
+            # Handle Future Sight effects
+            elif action == constants.MUTATOR_FUTURESIGHT_START and len(instr) >= 4:
+                # ['futuresight_start', 'user', 'cresselia', 0]
+                side = instr[1]
+                pokemon_name = instr[2]
+                counter = instr[3]
+                
+                user_pokemon_name = get_pokemon_name(side)
+                message = safe_translate(
+                    "futuresight_start",
+                    pokemon_name=user_pokemon_name,
+                    target_pokemon=pokemon_name
+                )
+                effect_messages.append(message)
+                
+            elif action == constants.MUTATOR_FUTURESIGHT_DECREMENT and len(instr) >= 2:
+                # ['futuresight_decrement', 'user'] 
+                side = instr[1]
+                message = safe_translate(
+                    "futuresight_still_active",
+                    side="your team" if side == 'user' else "the opposing team"
+                )
+                effect_messages.append(message)
+                
+            elif action == constants.MUTATOR_FUTURESIGHT_END and len(instr) >= 2:
+                # When Future Sight actually deals damage
+                side = instr[1]
+                message = safe_translate(
+                    "futuresight_hits",
+                    side="your team" if side == 'user' else "the opposing team"
+                )
+                effect_messages.append(message)
+
 
         except Exception as e:
             print(f"Error processing battle instruction {instr}: {e}")
