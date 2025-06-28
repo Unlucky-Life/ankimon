@@ -336,7 +336,21 @@ def _process_battle_effects(
                         status_name=status_name
                     )
                 effect_messages.append(message)
+                
+            elif action == constants.MUTATOR_HEAL and len(instr) >= 3:
+                # ['heal', 'user' | 'opponent', amount]
+                heal_amount = instr[2]                     # numeric HP restored
+                pokemon_name = get_pokemon_name(target_side)
 
+                # translator key:  "effect_health_restored"
+                # placeholders:    {pokemon_name}, {heal_amount}
+                message = safe_translate(
+                    "effect_health_restored",
+                    pokemon_name=pokemon_name,
+                    heal_amount=heal_amount
+                )
+                effect_messages.append(message)
+            
             # Handle stat boosts
             elif action == constants.MUTATOR_BOOST and len(instr) >= 4:
                 stat, amount = instr[2], instr[3]
