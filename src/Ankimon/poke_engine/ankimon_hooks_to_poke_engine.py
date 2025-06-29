@@ -223,7 +223,11 @@ def simulate_battle_with_poke_engine(
         mutator.apply(instrs)
 
         # Save changes from State to Pokemon objects (enhanced for volatile status)
-        main_pokemon.current_hp = main_pokemon.hp = state.user.active.hp
+        main_pokemon.hp = state.user.active.hp
+        main_pokemon.current_hp = state.user.active.hp
+        enemy_pokemon.hp = state.opponent.active.hp  
+        enemy_pokemon.current_hp = state.opponent.active.hp
+        
         main_pokemon.stat_stages = {
             'atk': state.user.active.attack_boost,
             'def': state.user.active.defense_boost,
@@ -242,7 +246,6 @@ def simulate_battle_with_poke_engine(
     
         
         # Same for enemy Pokemon
-        enemy_pokemon.current_hp = enemy_pokemon.hp = state.opponent.active.hp
         enemy_pokemon.stat_stages = {
             'atk': state.opponent.active.attack_boost,
             'def': state.opponent.active.defense_boost,
