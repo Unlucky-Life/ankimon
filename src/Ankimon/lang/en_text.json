@@ -330,7 +330,7 @@
   "volatile_status_unknown_apply": "{pokemon_name} is affected by {status_name}!",
   "volatile_status_unknown_remove": "{pokemon_name} is no longer affected by {status_name}!",
   "_comment_persistent_weather": "=== PERSISTENT WEATHER EFFECTS ===",
-  "weather_rain_still": "It is still raining!",
+  "weather_raindance_still": "It is still raining!",
   "weather_sun_still": "The sunlight is still harsh!",
   "weather_sand_still": "The sandstorm is still raging!",
   "weather_hail_still": "It is still hailing!",
