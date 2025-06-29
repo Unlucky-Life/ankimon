@@ -23,15 +23,6 @@ from ..singletons import logger, test_window
 
 def rate_this_addon():
     
-    # Default data for the file
-    default_data = {"rate_this": False}
-
-    # Create the file with default contents if it doesn't exist
-    if not os.path.exists(rate_path):
-        os.makedirs(os.path.dirname(rate_path), exist_ok=True)
-        with open(rate_path, "w", encoding="utf-8") as f:
-            json.dump(default_data, f, indent=4)
-
     # Load rate data
     try:
         with open(rate_path, "r", encoding="utf-8") as file:

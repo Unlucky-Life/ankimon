@@ -1,8 +1,9 @@
 import os
 import json
 from aqt import QDialog, QVBoxLayout, QWebEngineView, mw
-from aqt.qt import QPushButton, QCheckBox, QFrame
+from aqt.qt import QPushButton, QCheckBox, QFrame, Qt
 from PyQt6.QtCore import QUrl, QUrlQuery
+from PyQt6.QtGui import QGuiApplication
 from pathlib import Path
 
 class AchievementsDialog(QDialog):
@@ -11,30 +12,26 @@ class AchievementsDialog(QDialog):
         self.addon_dir = addon_dir
         self.data_handler = data_handler
         self.setWindowTitle("Achievements & Badges")
-
+        
+        screen = QGuiApplication.primaryScreen()
+        avail_geom = screen.availableGeometry()
+        avail_height = avail_geom.height()
+        target_height = min(900, avail_height)
+        self.setMinimumSize(800, target_height)
+        
+        # Remove window frame (commented out for now as it might cause issues)
+        # self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint)
+        
         self.layout = QVBoxLayout()
-        self.frame = QFrame()
-        self.layout.addWidget(self.frame)
+        self.layout.setContentsMargins(0, 0, 0, 0)  # Remove layout margins
         self.setLayout(self.layout)
 
         self.webview = QWebEngineView()
-        self.frame.setLayout(QVBoxLayout())
-        self.frame.layout().addWidget(self.webview)
-
-        # Add toggle button for showing locked/unlocked
-        self.show_all_checkbox = QCheckBox("Show Locked Achievements")
-        self.show_all_checkbox.setChecked(False)  # Default: only unlocked
-        self.show_all_checkbox.stateChanged.connect(self.load_html)
-        self.layout.addWidget(self.show_all_checkbox)
-        # this is the reason for the "Qt debug: Compositor returned null texture" message
+        self.layout.addWidget(self.webview)
 
         self.load_html()
 
     def load_html(self):
-        from pathlib import Path
-        import json
-        from PyQt6.QtCore import QUrl, QUrlQuery
-
         # Load badge definitions
         badges_path = self.addon_dir / "addon_files" / "badges.json"
         with open(badges_path, "r") as f:
@@ -46,33 +43,21 @@ class AchievementsDialog(QDialog):
         # Construct absolute path to HTML file
         html_path = self.addon_dir / "achievements" / "achievements.html"
         
-        # Convert to POSIX path for QUrl compatibility
-        html_path_str = html_path.as_posix()
-        
-        # Create URL with proper encoding for macOS
-        url = QUrl.fromLocalFile(html_path_str)
+        # Create URL with proper encoding
+        url = QUrl.fromLocalFile(html_path.as_posix())
         
         # Create and encode query parameters
         query = QUrlQuery()
         query.addQueryItem("addon_name", mw.addonManager.addonFromModule(__name__))
         query.addQueryItem(
-            "badge_definitions", 
-            json.dumps(badge_definitions, separators=(",", ":"))  # Minimize JSON size
-        )
-        query.addQueryItem(
             "unlocked_badges", 
-            json.dumps(unlocked_badges, separators=(",", ":"))
+            json.dumps(unlocked_badges)
         )
         query.addQueryItem(
-            "show_all", 
-            "1" if self.show_all_checkbox.isChecked() else "0"
+            "badge_definitions",
+            json.dumps(badge_definitions)
         )
         
-        # Set query and ensure proper encoding
         url.setQuery(query.query(QUrl.ComponentFormattingOption.FullyEncoded))
         
-        # Load the URL
         self.webview.setUrl(url)
-
-
-
