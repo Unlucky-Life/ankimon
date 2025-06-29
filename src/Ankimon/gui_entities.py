@@ -10,6 +10,7 @@ from PyQt6.QtCore import Qt
 from .resources import icon_path, addon_dir, eff_chart_html_path, table_gen_id_html_path, mypokemon_path
 from .texts import terms_text, pokedex_html_template
 from .utils import read_local_file, read_github_file, compare_files, write_local_file, read_html_file
+from .pyobj.error_handler import show_warning_with_traceback
 
 
 class MovieSplashLabel(QLabel):
@@ -220,8 +221,8 @@ class HelpWindow(QDialog):
                 help_local_file_path = addon_dir / "HelpInfos.html"
                 local_content = read_local_file(help_local_file_path)
                 html_content = local_content
-        except:
-            showWarning("Failed to retrieve Ankimon HelpGuide from GitHub.")
+        except Exception as e:
+            show_warning_with_traceback(parent=mw, exception=e, message="Failed to retrieve Ankimon HelpGuide from GitHub.")
             local_content = read_local_file(help_local_file_path)
             html_content = local_content
         self.setWindowTitle("Ankimon HelpGuide")
