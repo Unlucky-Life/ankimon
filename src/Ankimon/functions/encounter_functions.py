@@ -27,6 +27,7 @@ from ..functions.pokedex_functions import (
     search_pokedex,
     search_pokedex_by_id
 )
+from ..pyobj.error_handler import show_warning_with_traceback
 from ..functions.trainer_functions import xp_share_gain_exp
 from ..functions.badges_functions import check_for_badge, receive_badge
 from ..functions.drawing_utils import tooltipWithColour
@@ -165,7 +166,7 @@ def choose_random_pkmn_from_tier():
         id = get_pokemon_id_by_tier(tier)
         return id, tier
     except Exception as e:
-        showWarning(translator.translate("error_occured", error="choose_random_pkmn_from_tier"))
+        show_warning_with_traceback(parent=mw, exception=e, message="Error occurred")
 
 def check_min_generate_level(name):
     evoType = search_pokedex(name.lower(), "evoType")
@@ -587,14 +588,11 @@ def save_caught_pokemon(
             if check is False:
                 achievements = receive_badge(10, achievements)
 
-    if nickname is None:
-        nickname = enemy_pokemon.name.capitalize()
-
     #enemy_pokemon.stats["xp"] = 0
     enemy_pokemon.xp = 0
     caught_pokemon = {
         "name": enemy_pokemon.name.capitalize(),
-        "nickname": nickname,
+        "nickname": "",
         "level": enemy_pokemon.level,
         "gender": enemy_pokemon.gender,
         "id": enemy_pokemon.id,
@@ -665,7 +663,7 @@ def catch_pokemon(
         tooltipWithColour(msg, color)
     except Exception as e:
         if logger is not None:
-            logger.log_and_showinfo("info",f"{e}") # Display a message when the Pokémon is caught
+            show_warning_with_traceback(parent=mw, exception=e, message="Error while catching Pokemon:") # Display a message when the Pokémon is caught
 
 def handle_enemy_faint(
         main_pokemon: PokemonObject,

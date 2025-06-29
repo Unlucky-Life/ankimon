@@ -116,11 +116,13 @@ def create_menu_actions(
 
         # Achievements
         def show_achievements_window():
-            # Lazy import inside the handler
             from .pyobj.achievements_dialog import AchievementsDialog
-            dlg = AchievementsDialog(addon_dir, data_handler_obj)
-            dlg.setWindowModality(Qt.WindowModality.ApplicationModal)
-            dlg.exec()
+            if not hasattr(mw, "_achievements_dialog") or mw._achievements_dialog is None:
+                mw._achievements_dialog = AchievementsDialog(addon_dir, data_handler_obj)
+            mw._achievements_dialog.setWindowModality(Qt.WindowModality.NonModal)
+            mw._achievements_dialog.show()
+            mw._achievements_dialog.raise_()
+            mw._achievements_dialog.activateWindow()
 
         achievement_bag_action = QAction(mw.translator.translate("achievements_button"), mw)
         achievement_bag_action.setMenuRole(QAction.MenuRole.NoRole)
