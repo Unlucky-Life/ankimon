@@ -416,7 +416,71 @@
   "status_poison_still":    "{pokemon_name} is still poisoned!",
   "status_sleep_still":     "{pokemon_name} is still asleep!",
   "status_frozen_still":    "{pokemon_name} is still frozen!",
-  "status_toxic_still":     "{pokemon_name} is still badly poisoned!"
+  "status_toxic_still":     "{pokemon_name} is still badly poisoned!",
+  
+  "volatile_attract_apply": "{pokemon_name} falls in love!",
+  "volatile_attract_remove": "{pokemon_name} is no longer infatuated!",
+  "volatile_attract_still": "{pokemon_name} is still infatuated!",
+  
+  "volatile_bide_apply": "{pokemon_name} is storing energy!",
+  "volatile_bide_remove": "{pokemon_name} unleashes its stored energy!",
+  "volatile_bide_still": "{pokemon_name} is still storing energy!",
+  
+  "volatile_partiallytrapped_apply": "{pokemon_name} is trapped and can't escape!",
+  "volatile_partiallytrapped_remove": "{pokemon_name} breaks free from the trap!",
+  "volatile_partiallytrapped_still": "{pokemon_name} is still trapped!",
+  
+  "volatile_burningbulwark_apply": "{pokemon_name} creates a burning protective barrier!",
+  "volatile_burningbulwark_remove": "{pokemon_name}'s burning barrier fades!",
+  "volatile_burningbulwark_still": "{pokemon_name} is still protected by a burning barrier!",
+  
+  "volatile_curse_apply": "{pokemon_name} is cursed!",
+  "volatile_curse_remove": "{pokemon_name} is no longer cursed!",
+  "volatile_curse_still": "{pokemon_name} is still cursed!",
+  
+  "volatile_destinybond_apply": "{pokemon_name} is trying to take its foe down with it!",
+  "volatile_destinybond_remove": "{pokemon_name} is no longer linked by Destiny Bond!",
+  "volatile_destinybond_still": "{pokemon_name} is still linked by Destiny Bond!",
+  
+  "volatile_electrify_apply": "{pokemon_name}'s moves are electrified!",
+  "volatile_electrify_remove": "{pokemon_name}'s moves are no longer electrified!",
+  "volatile_electrify_still": "{pokemon_name}'s moves are still electrified!",
+  
+  "volatile_dragoncheer_apply": "{pokemon_name} is encouraged by Dragon Cheer!",
+  "volatile_dragoncheer_remove": "{pokemon_name} is no longer encouraged!",
+  "volatile_dragoncheer_still": "{pokemon_name} is still encouraged by Dragon Cheer!",
+  
+  "volatile_focusenergy_apply": "{pokemon_name} is getting pumped up!",
+  "volatile_focusenergy_remove": "{pokemon_name} is no longer pumped up!",
+  "volatile_focusenergy_still": "{pokemon_name} is still pumped up!",
+  
+  "volatile_gastroacid_apply": "{pokemon_name}'s ability is suppressed!",
+  "volatile_gastroacid_remove": "{pokemon_name}'s ability is restored!",
+  "volatile_gastroacid_still": "{pokemon_name}'s ability is still suppressed!",
+  
+  "volatile_glaiverush_apply": "{pokemon_name} is in a reckless state!",
+  "volatile_glaiverush_remove": "{pokemon_name} is no longer reckless!",
+  "volatile_glaiverush_still": "{pokemon_name} is still in a reckless state!",
+  
+  "volatile_grudge_apply": "{pokemon_name} bears a grudge!",
+  "volatile_grudge_remove": "{pokemon_name} no longer bears a grudge!",
+  "volatile_grudge_still": "{pokemon_name} still bears a grudge!",
+  
+  "volatile_helpinghand_apply": "{pokemon_name} is ready to help!",
+  "volatile_helpinghand_remove": "{pokemon_name} is no longer helping!",
+  "volatile_helpinghand_still": "{pokemon_name} is still ready to help!",
+  
+  "volatile_laserfocus_apply": "{pokemon_name} concentrated intensely!",
+  "volatile_laserfocus_remove": "{pokemon_name} is no longer concentrated!",
+  "volatile_laserfocus_still": "{pokemon_name} is still concentrated!",
+
+
+  "futuresight_start": "{pokemon_name} foresees an attack!",
+  "futuresight_still_active": "An attack is foreseen for {side}!",
+  "futuresight_hits": "The foreseen attack strikes {side}!",
+  "futuresight_fails": "Future Sight failed!"
+
+
 
 
 }
