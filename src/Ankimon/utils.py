@@ -17,6 +17,7 @@ from .pyobj.settings import Settings
 from .pyobj.InfoLogger import ShowInfoLogger
 from .functions.battle_functions import calculate_hp
 from .functions.pokedex_functions import find_details_move, search_pokedex
+from .pyobj.error_handler import show_warning_with_traceback
 from .resources import (
     battlescene_path,
     berries_path,
@@ -322,38 +323,30 @@ def random_fossil():
 
 def count_items_and_rewrite(file_path):
     """
-    Reads the items.json file, counts item occurrences, 
-    and rewrites the file with items and their quantities in the form of dictionaries.
-    
-    :param file_path: Path to the items.json file.
+    Reads the items.json file, counts item occurrences by name,
+    and rewrites the file with items and their total quantities.
     """
     try:
-        # Read the existing file
         with open(file_path, "r", encoding="utf-8") as file:
             items = json.load(file)
 
-        # Ensure the file contains a list
-        if not isinstance(items, list):
-            raise ValueError("The items.json file should contain a list of item names.")
+        # Aggregate quantities by item name
+        item_counts = Counter()
+        for entry in items:
+            name = entry["item"]
+            qty = entry.get("quantity", 1)
+            item_counts[name] += qty
 
-        # Count the occurrences of each item
-        item_counts = Counter(items)
-
-        # Create a list of dictionaries with item names and their quantities
+        # Create a list of dictionaries with item names and their total quantities
         updated_items = [{"item": item, "quantity": count} for item, count in item_counts.items()]
 
-        # Rewrite the file with the updated list
-        with open(file_path, 'w') as file:
+        with open(file_path, 'w', encoding="utf-8") as file:
             json.dump(updated_items, file, indent=4)
 
         print("items.json has been updated with item quantities!")
-    
-    except FileNotFoundError:
-        print(f"Error: The file '{file_path}' was not found.")
-    except json.JSONDecodeError:
-        print("Error: Failed to decode JSON. Ensure the file contains valid JSON data.")
+
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        show_warning_with_traceback(exception=e, message=f"An unexpected error occurred: {e}")
 
 # Assuming the data is stored in a CSV file named 'item_flavor_texts.csv'
 def get_item_description(item_name, language_id):
@@ -382,11 +375,8 @@ def get_item_description(item_name, language_id):
         # If no match is found, return None
         return None
     
-    except FileNotFoundError:
-        print(f"Error: The file {file_path} was not found.")
-        return None
     except Exception as e:
-        print(f"An error occurred: {e}")
+        show_warning_with_traceback(exception=e, message="An error occurred:")
         return None
     
 def load_custom_font(font_size, language):
@@ -485,7 +475,7 @@ def save_error_code(error_code, logger=None):
 
     except Exception as e:
         if logger is not None:
-            logger.log_and_showinfo("info",f"An error occurred: {e}")
+            show_warning_with_traceback(exception=e, message="An error occurred:")
 
     if logger is not None:
         logger.log_and_showinfo("info",f"{error_fix_msg}")
@@ -565,7 +555,7 @@ def load_collected_pokemon_ids() -> set:
             collection = json.load(f)
             collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
     except Exception as e:
-        ShowInfoLogger().log("error", f"Error loading collection cache: {str(e)}")
+        show_warning_with_traceback(exception=e, message="Error loading collection cache")
     
     return collected_pokemon_ids
 
