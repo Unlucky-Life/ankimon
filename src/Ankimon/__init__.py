@@ -486,35 +486,33 @@ def on_review_card(*args):
                 enemy_attack,
                 mutator_full_reset,
                 new_state,
-                )
+            )
           
-            '''
-            It is important that any changes to pokemon stats are accurately represented
-            in the main_pokemon and enemy_pokemon objects, in order to let them
-            be arguments in the engine function.
-
-            Next, we need an unpacker to ensure that it goes from tuple values under results, to actual variables!
-            '''
-
-            # After the battle simulation results are unpacked:
+            # 2. Unpack results from the simulation
             battle_info = results[0]
             new_state = copy.deepcopy(results[1])
             dmg_from_enemy_move = results[2]
             dmg_from_user_move = results[3]
-            user_hp_after = new_state.user.active.hp
-            opponent_hp_after = new_state.opponent.active.hp
             mutator_full_reset = results[4]
 
-            # Update Pokemon battle status based on battle instructions
+            # 3. --- IMMEDIATE STATE SYNCHRONIZATION (THE FIX) ---
+            # Update Pokémon objects with the new state from the engine BEFORE any other processing.
+            # This ensures all subsequent functions have the correct HP and status.
+            main_pokemon.hp = new_state.user.active.hp
+            main_pokemon.current_hp = new_state.user.active.hp
+            enemy_pokemon.hp = new_state.opponent.active.hp
+            enemy_pokemon.current_hp = new_state.opponent.active.hp
+
+            # Update statuses based on instructions, now that HP is correct.
             enemy_status_changed, main_status_changed = update_pokemon_battle_status(
                 battle_info, enemy_pokemon, main_pokemon
             )
 
-            # Validate status after battle processing
+            # Final validation to ensure consistency
             enemy_pokemon.battle_status = validate_pokemon_status(enemy_pokemon)
             main_pokemon.battle_status = validate_pokemon_status(main_pokemon)
             
-            # Generate complete battle message using the revamped function
+            # 4. Generate the battle log message using the now-correct Pokémon states
             formatted_battle_log = process_battle_data(
                 battle_info=battle_info,
                 multiplier=multiplier,
@@ -524,23 +522,17 @@ def on_review_card(*args):
                 enemy_attack=enemy_attack,
                 dmg_from_user_move=dmg_from_user_move,
                 dmg_from_enemy_move=dmg_from_enemy_move,
-                user_hp_after=user_hp_after,
-                opponent_hp_after=opponent_hp_after,
+                user_hp_after=main_pokemon.hp, # Use the already updated HP
+                opponent_hp_after=enemy_pokemon.hp, # Use the already updated HP
                 battle_status=main_pokemon.battle_status,
                 pokemon_encounter=ankimon_tracker_obj.pokemon_encouter,
                 dmg_in_reviewer=settings_obj.get("battle.dmg_in_reviewer", True),
                 translator=translator
             )
 
-            # Update pokemon states
-            main_pokemon.hp = user_hp_after
-            main_pokemon.current_hp = user_hp_after
-            enemy_pokemon.hp = opponent_hp_after
-            enemy_pokemon.current_hp = opponent_hp_after
-
             # Display the complete message
             tooltipWithColour(formatted_battle_log, color)
-
+            
             # Handle sound effects and animations (existing code)
             if dmg_from_enemy_move > 0 and multiplier < 1:
                 reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")

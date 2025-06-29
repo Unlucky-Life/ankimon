@@ -478,8 +478,9 @@
   "futuresight_start": "{pokemon_name} foresees an attack!",
   "futuresight_still_active": "An attack is foreseen for {side}!",
   "futuresight_hits": "The foreseen attack strikes {side}!",
-  "futuresight_fails": "Future Sight failed!"
+  "futuresight_fails": "Future Sight failed!",
 
+  "wish_started": "{pokemon_name} made a wish! It will heal {heal_amount} HP soon."
 
 
 

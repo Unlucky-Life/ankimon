@@ -1,142 +1,123 @@
 import copy
+import json
 from ..poke_engine import constants
+from ..resources import move_names_file_path
 from ..pyobj.error_handler import show_warning_with_traceback
+
+with open(move_names_file_path, "r", encoding="utf-8") as f:
+    MOVE_NAME_LOOKUP = json.load(f)
+    
+def format_move_name(move: str) -> str:
+    """
+    Look up the official move name using the normalized key.
+    Falls back to title-casing with spaces if not found.
+    """
+    key = move.replace(" ", "").replace("-", "").replace("_", "").lower()
+    return MOVE_NAME_LOOKUP.get(key, " ".join(word.capitalize() for word in move.replace("_", " ").split()))
 
 def update_pokemon_battle_status(battle_info: dict, enemy_pokemon, main_pokemon):
     """
     Update Pokemon battle status and volatile status based on battle instructions.
-    
-    Enhanced to handle both regular status and volatile status effects.
-    Volatile status effects are temporary and can stack, unlike regular status.
+    HP is now handled by the main battle loop to ensure a single source of truth.
+    This function now only processes status changes.
     """
-    
     if not isinstance(battle_info, dict) or 'instructions' not in battle_info:
         return False, False
     
     instructions = battle_info.get('instructions', [])
-    if not instructions or not isinstance(instructions, list):
+    if not instructions:
         return False, False
     
     enemy_status_changed = False
     main_status_changed = False
     
     try:
-        # Initialize volatile_status if not present
+        # Initialize volatile_status sets if they don't exist
         if not hasattr(enemy_pokemon, 'volatile_status'):
             enemy_pokemon.volatile_status = set()
         if not hasattr(main_pokemon, 'volatile_status'):
             main_pokemon.volatile_status = set()
             
-        # Process each instruction in the battle
         for instr in instructions:
-            if not instr or not isinstance(instr, (list, tuple)) or len(instr) < 3:
+            # Skip malformed instructions or instructions this function doesn't handle
+            if not isinstance(instr, (list, tuple)) or len(instr) < 2:
                 continue
-                
-            action = instr[0]
-            target = instr[1] 
-            status_value = instr[2]
             
+            action = instr[0]
+            target = instr[1]
+            
+            # This function only handles status, not damage or heal
+            if action in [constants.MUTATOR_DAMAGE, constants.MUTATOR_HEAL]:
+                continue
+
+            status_value = instr[2] if len(instr) >= 3 else None
+
             # Handle regular status application
-            if action == constants.MUTATOR_APPLY_STATUS:
+            if action == constants.MUTATOR_APPLY_STATUS and status_value:
                 if target == 'opponent':
-                    old_status = getattr(enemy_pokemon, 'battle_status', 'fighting')
-                    enemy_pokemon.battle_status = status_value
-                    if old_status != status_value:
+                    if enemy_pokemon.battle_status != status_value:
+                        enemy_pokemon.battle_status = status_value
                         enemy_status_changed = True
                 elif target == 'user':
-                    old_status = getattr(main_pokemon, 'battle_status', 'fighting')
-                    main_pokemon.battle_status = status_value
-                    if old_status != status_value:
+                    if main_pokemon.battle_status != status_value:
+                        main_pokemon.battle_status = status_value
                         main_status_changed = True
             
             # Handle regular status removal
             elif action == constants.MUTATOR_REMOVE_STATUS:
                 if target == 'opponent':
-                    old_status = getattr(enemy_pokemon, 'battle_status', 'fighting')
-                    enemy_pokemon.battle_status = 'fighting'
-                    if old_status != 'fighting':
+                    if enemy_pokemon.battle_status != 'fighting':
+                        enemy_pokemon.battle_status = 'fighting'
                         enemy_status_changed = True
                 elif target == 'user':
-                    old_status = getattr(main_pokemon, 'battle_status', 'fighting')  
-                    main_pokemon.battle_status = 'fighting'
-                    if old_status != 'fighting':
+                    if main_pokemon.battle_status != 'fighting':
+                        main_pokemon.battle_status = 'fighting'
                         main_status_changed = True
             
-            # Handle volatile status application - NEW
-            elif action == constants.MUTATOR_APPLY_VOLATILE_STATUS:
+            # Handle volatile status application
+            elif action == constants.MUTATOR_APPLY_VOLATILE_STATUS and status_value:
                 if target == 'opponent':
-                    old_volatile = enemy_pokemon.volatile_status.copy()
-                    enemy_pokemon.volatile_status.add(status_value)
-                    if old_volatile != enemy_pokemon.volatile_status:
+                    if status_value not in enemy_pokemon.volatile_status:
+                        enemy_pokemon.volatile_status.add(status_value)
                         enemy_status_changed = True
                 elif target == 'user':
-                    old_volatile = main_pokemon.volatile_status.copy()
-                    main_pokemon.volatile_status.add(status_value)
-                    if old_volatile != main_pokemon.volatile_status:
+                    if status_value not in main_pokemon.volatile_status:
+                        main_pokemon.volatile_status.add(status_value)
                         main_status_changed = True
             
-            # Handle volatile status removal - NEW
-            elif action == constants.MUTATOR_REMOVE_VOLATILE_STATUS:
+            # Handle volatile status removal
+            elif action == constants.MUTATOR_REMOVE_VOLATILE_STATUS and status_value:
                 if target == 'opponent':
-                    old_volatile = enemy_pokemon.volatile_status.copy()
-                    enemy_pokemon.volatile_status.discard(status_value)
-                    if old_volatile != enemy_pokemon.volatile_status:
+                    if status_value in enemy_pokemon.volatile_status:
+                        enemy_pokemon.volatile_status.discard(status_value)
                         enemy_status_changed = True
                 elif target == 'user':
-                    old_volatile = main_pokemon.volatile_status.copy()
-                    main_pokemon.volatile_status.discard(status_value)
-                    if old_volatile != main_pokemon.volatile_status:
+                    if status_value in main_pokemon.volatile_status:
+                        main_pokemon.volatile_status.discard(status_value)
                         main_status_changed = True
                         
-                # Handle Future Sight instructions - NEW
-                elif action == constants.MUTATOR_FUTURESIGHT_START and len(instr) >= 4:
-                    # ['futuresight_start', 'user', 'cresselia', 0]
-                    # Format: [action, side, pokemon_name, initial_counter]
-                    side = instr[1]
-                    pokemon_name = instr[2] 
-                    counter = instr[3]
-                    
-                    # Future Sight affects the opposing side, so track on opposite side
-                    if side == 'user':
-                        # User's Future Sight will hit opponent in 2 turns
-                        enemy_status_changed = True
-                    else:
-                        # Opponent's Future Sight will hit user in 2 turns  
-                        main_status_changed = True
-                        
-                elif action == constants.MUTATOR_FUTURESIGHT_DECREMENT:
-                    # ['futuresight_decrement', 'user']
-                    # Just decrement the counter - the engine handles this
-                    if instr[1] == 'user':
-                        main_status_changed = True
-                    else:
-                        enemy_status_changed = True
-        
-        # Handle fainted status based on HP
+        # Final check for fainted status based on the already-updated HP from the main loop
         if hasattr(enemy_pokemon, 'hp') and enemy_pokemon.hp <= 0:
-            old_status = getattr(enemy_pokemon, 'battle_status', 'fighting')
-            enemy_pokemon.battle_status = 'fainted'
-            if old_status != 'fainted':
+            if enemy_pokemon.battle_status != 'fainted':
+                enemy_pokemon.battle_status = 'fainted'
+                enemy_pokemon.volatile_status = set() # Clear volatiles on faint
                 enemy_status_changed = True
                 
         if hasattr(main_pokemon, 'hp') and main_pokemon.hp <= 0:
-            old_status = getattr(main_pokemon, 'battle_status', 'fighting')
-            main_pokemon.battle_status = 'fainted' 
-            if old_status != 'fainted':
+            if main_pokemon.battle_status != 'fainted':
+                main_pokemon.battle_status = 'fainted'
+                main_pokemon.volatile_status = set() # Clear volatiles on faint
                 main_status_changed = True
         
         return enemy_status_changed, main_status_changed
         
     except Exception as e:
-        # If there's an error, ensure Pokemon have valid status
-        if not hasattr(enemy_pokemon, 'battle_status'):
-            enemy_pokemon.battle_status = 'fighting'
-        if not hasattr(main_pokemon, 'battle_status'):
-            main_pokemon.battle_status = 'fighting'
-        if not hasattr(enemy_pokemon, 'volatile_status'):
-            enemy_pokemon.volatile_status = set()
-        if not hasattr(main_pokemon, 'volatile_status'):
-            main_pokemon.volatile_status = set()
+        # Use the existing error handler if available, otherwise print
+        try:
+            from ..pyobj.error_handler import show_warning_with_traceback
+            show_warning_with_traceback(e, "Failed to update pokemon battle status")
+        except ImportError:
+            print(f"ERROR in update_pokemon_battle_status: {e}")
         return False, False
 
 
@@ -266,7 +247,8 @@ def _process_battle_effects(
 
     # Process instructions for apply/remove messages
     for instr in instructions:
-        if not instr or not isinstance(instr, (list, tuple)) or len(instr) < 2:
+        # Skip nulls, malformed, or raw damage instructions (we handle damage in move lines)
+        if not instr or not isinstance(instr, (list, tuple)) or len(instr) < 2 or instr[0] == constants.MUTATOR_DAMAGE:
             continue
 
         try:
@@ -402,7 +384,39 @@ def _process_battle_effects(
                 weather = instr[1]
                 message = safe_translate("battle_effect_weather_end", weather=weather.replace('-', ' ').title())
                 effect_messages.append(message)
+                            
+            # Handle heal instructions - NEW
+            elif action == constants.MUTATOR_HEAL and len(instr) >= 3:
+                target_side = instr[1]
+                heal_amount = instr[2]
+                pokemon_name = get_pokemon_name(target_side)
                 
+                message = safe_translate(
+                    "battle_effect_heal",
+                    pokemon_name=pokemon_name,
+                    heal_amount=heal_amount
+                )
+                effect_messages.append(message)
+                
+            elif action == constants.MUTATOR_SIDE_START and len(instr) >= 3:
+                condition = instr[2]
+                message = safe_translate(
+                    "battle_effect_side_condition",
+                    condition=condition.replace('_', ' ').title(),
+                    side="your team" if target_side == 'user' else "the opposing team"
+                )
+                effect_messages.append(message)
+                
+            elif action == constants.MUTATOR_WISH_START and len(instr) >= 4:
+                heal_amount = instr[2]
+                pokemon_name = get_pokemon_name(target_side)
+                message = safe_translate(
+                    "wish_started",
+                    pokemon_name=pokemon_name,
+                    heal_amount=heal_amount
+                )
+                effect_messages.append(message)
+
             # Handle Future Sight effects
             elif action == constants.MUTATOR_FUTURESIGHT_START and len(instr) >= 4:
                 # ['futuresight_start', 'user', 'cresselia', 0]
@@ -496,12 +510,8 @@ def process_battle_data(
     """
     Generate complete battle message from battle data.
     
-    This function centralizes all battle message generation, handling:
-    - Multiplier display
-    - Attack announcements with effectiveness on same line
-    - Status conditions and special effects
-    - Battle outcome messages without HP display
-    - Error handling for edge cases
+    This function centralizes all battle message generation and now uses
+    format_move_name to display official move names.
     """
     
     if not isinstance(battle_info, dict):
@@ -511,35 +521,27 @@ def process_battle_data(
     message_parts = []
     
     try:
-        # 1. Multiplier display (always shown first)
+        # 1. Multiplier display
+        formatted_multiplier = f"{multiplier:.1f}"
         message_parts.append(
-            translator.translate("battle_multiplier_display", multiplier=multiplier)
+            translator.translate("battle_multiplier_display", multiplier=formatted_multiplier)
         )
         
-        # 2. Enemy attack section (when applicable)
+        # 2. Enemy attack section
         if (pokemon_encounter > 0 and enemy_pokemon.hp > 0 and 
             dmg_in_reviewer and multiplier < 1):
             
-            # Build enemy attack message with effectiveness on same line
+            # --- NEW: Format enemy move name ---
+            formatted_enemy_attack = format_move_name(enemy_attack)
+            
             enemy_attack_msg = translator.translate(
                 "enemy_attack_announcement",
                 pokemon_name=enemy_pokemon.name.capitalize(),
-                attack_name=enemy_attack.capitalize()
+                attack_name=formatted_enemy_attack  # Use the formatted name
             )
-            
-            # Add effectiveness message to same line if applicable
-            if dmg_from_enemy_move > 0:
-                # Attack was effective - show damage
-                damage_msg = translator.translate(
-                    "damage_dealt_short",
-                    damage=dmg_from_enemy_move,
-                    pokemon_name=main_pokemon.name.capitalize()
-                )
-                enemy_attack_msg += " " + damage_msg
-            
             message_parts.append(enemy_attack_msg)
         
-        # 3. User attack section (when pokemon encounter is active)
+        # 3. User attack section
         if pokemon_encounter > 0 and main_pokemon.hp > 0:
             
             # Handle special battle statuses first
@@ -550,36 +552,26 @@ def process_battle_data(
                 if status_msg:
                     message_parts.append(status_msg)
             else:
+                # --- NEW: Format user move name ---
+                formatted_user_attack = format_move_name(user_attack)
+                
                 # Normal attack resolution
                 user_attack_msg = translator.translate(
                     "player_attack_announcement",
                     pokemon_name=main_pokemon.name.capitalize(),
-                    attack_name=user_attack.capitalize()
+                    attack_name=formatted_user_attack  # Use the formatted name
                 )
-                
-                # Add effectiveness message to same line
-                if dmg_from_user_move > 0:
-
-                    # Attack was effective - show damage
-                    damage_msg = translator.translate(
-                        "damage_dealt_short",
-                        damage=dmg_from_user_move,
-                        pokemon_name=enemy_pokemon.name.capitalize()
-                    )
-                    user_attack_msg += " " + damage_msg
-                
                 message_parts.append(user_attack_msg)
-                
         
-        # In process_battle_data function, find this section:
+        # 4. Process all other battle effect instructions
         if isinstance(battle_info, dict) and 'instructions' in battle_info:
             try:
                 effects_messages = _process_battle_effects(
                     battle_info['instructions'], 
                     translator,
-                    main_pokemon=main_pokemon,      # NEW - pass Pokemon objects
-                    enemy_pokemon=enemy_pokemon,    # NEW - pass Pokemon objects  
-                    current_state=battle_info.get('state') # NEW - pass state if available
+                    main_pokemon=main_pokemon,
+                    enemy_pokemon=enemy_pokemon,
+                    current_state=battle_info.get('state')
                 )
                 if effects_messages:
                     message_parts.extend(effects_messages)
@@ -588,10 +580,9 @@ def process_battle_data(
                     translator.translate("battle_effects_error", error=str(e)[:50])
                 )
         
-        # Join all message parts with newlines (NO HP STATUS SECTION)
+        # Join all message parts with newlines
         final_message = "\n".join(filter(None, message_parts))
         
-        # Ensure we always return something meaningful
         if not final_message.strip():
             return translator.translate("battle_message_empty_fallback")
         
@@ -602,7 +593,6 @@ def process_battle_data(
             exception=e,
             message="Critical error generating battle message"
         )
-
         error_msg = translator.translate("battle_processing_error", error=str(e)[:100])
         return f"{translator.translate('battle_multiplier_display', multiplier=multiplier)}\n{error_msg}"
 
