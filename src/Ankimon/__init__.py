@@ -33,6 +33,10 @@ from PyQt6.QtWidgets import QDialog
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
 
+from .resources import generate_startup_files, user_path
+
+generate_startup_files(user_path)
+
 from .config_var import (
     dmg_in_reviewer,
     no_more_news,
@@ -77,7 +81,6 @@ from .utils import (
     play_sound,
     load_collected_pokemon_ids,
 )
-from .functions.battle_functions import status_effect
 from .functions.reviewer_iframe import create_iframe_html, create_head_code
 from .functions.url_functions import open_team_builder, rate_addon_url, report_bug, join_discord_url, open_leaderboard_url
 from .functions.badges_functions import check_badges, handle_achievements, check_and_award_badges
@@ -152,8 +155,8 @@ logger.log_and_showinfo('game', translator.translate("backing_up_files"))
 #backup_files
 try:
     run_backup()
-except:
-    logger.log("error", translator.translate("backup_error"))
+except Exception as e:
+    show_warning_with_traceback(parent=mw, exception=e, message="Backup error:")
 
 # Initialize mutator and mutator_full_reset
 global new_state
@@ -284,7 +287,7 @@ try:
                 showWarning("Failed to retrieve Ankimon content from GitHub.")
 except Exception as e:
     if ssh != False:
-        logger.log_and_showinfo("info",f"Error in try connect to GitHub: {e}")
+        show_warning_with_traceback(parent=mw, exception=e, message="Error connecting to GitHub:")
 
 def open_help_window(online_connectivity):
     try:
@@ -292,8 +295,8 @@ def open_help_window(online_connectivity):
         # TODO: HelpWindow constructor must be empty?
         help_dialog = HelpWindow(online_connectivity)
         help_dialog.exec()
-    except:
-        showWarning("Error in opening HelpGuide")
+    except Exception as e:
+        show_warning_with_traceback(parent=mw, exception=e, message="Error in opening Help Guide:")
 
 gen_config = []
 for i in range(1,10):
@@ -436,13 +439,6 @@ def process_battle_data(battle_data: dict) -> str:
                         weather=weather
                     ))
                               
-                elif action == constants.MUTATOR_FAIL:
-                    reason = instr[2] if len(instr) > 2 else "unknown"
-                    output.append(mw.translator.translate(
-                        "move_failed",
-                        reason=reason
-                    ))
-
                 elif action == constants.MUTATOR_APPLY_VOLATILE_STATUS:
                     status = format_move_name(instr[2])
                     output.append(mw.translator.translate(
@@ -455,7 +451,7 @@ def process_battle_data(battle_data: dict) -> str:
                     output.append(f"Unhandled action: {action}")
 
             except Exception as e:
-                logger.log("error", f"Error processing instruction {instr}: {str(e)}")
+                show_warning_with_traceback(parent=mw, exception=e, message="Error processing instruction:")
                 continue
 
         # Add missed move information
@@ -468,11 +464,9 @@ def process_battle_data(battle_data: dict) -> str:
         return "\n".join(output)
 
     except KeyError as e:
-        error_msg = mw.translator.translate("missing_key_in_data", key=str(e))
-        return f"Error: {error_msg}"
+        show_warning_with_traceback(parent=mw, exception=e, message="Missing key in data:")
     except Exception as e:
-        error_msg = mw.translator.translate("unexpected_error", error=str(e))
-        return f"Error: {error_msg}"
+        show_warning_with_traceback(parent=mw, exception=e, message="Unexpected error:")
             
 #get main pokemon details:
 if database_complete:
@@ -511,51 +505,6 @@ if database_complete:
     ankimon_tracker_obj.randomize_battle_scene()
 
 cry_counter = 0
-
-def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpokemon_name):
-    global battle_status
-    move = find_details_move(format_move_name(move_name))
-    target = move.get("target")
-    boosts = move.get("boosts", {})
-    stat_boost_value = {
-        "hp": boosts.get("hp", 0),
-        "atk": boosts.get("atk", 0),
-        "def": boosts.get("def", 0),
-        "spa": boosts.get("spa", 0),
-        "spd": boosts.get("spd", 0),
-        "spe": boosts.get("spe", 0),
-        "xp": mainpokemon_stats.get("xp", 0)
-    }
-    move_stat = move.get("status",None)
-    status = move.get("secondary",None)
-    if move_stat is not None:
-        battle_status = move_stat
-    if status is not None:
-        random_number = random.random()
-        chances = status["chance"] / 100
-        if random_number < chances:
-            battle_status = status["status"]
-    if battle_status == "slp":
-        slp_counter = random.randint(1, 3)
-    if target == "self":
-        for boost, stage in boosts.items():
-            stat = get_multiplier_stats(stage)
-            mainpokemon_stats[boost] = mainpokemon_stats.get(boost, 0) * stat
-            msg += f" {main_pokemon.name.capitalize()}'s "
-            if stage < 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_decreased')}."
-            elif stage > 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
-    elif target in ["normal", "allAdjacentFoes"]:
-        for boost, stage in boosts.items():
-            stat = get_multiplier_stats(stage)
-            stats[boost] = stats.get(boost, 0) * stat
-            msg += f" {name.capitalize()}'s "
-            if stage < 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_decreased')}."
-            elif stage > 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
-    return msg
 
 # Hook into Anki's card review event
 def on_review_card(*args):
@@ -721,7 +670,7 @@ def on_review_card(*args):
                             msg += "\n" + translator.translate("move_has_missed")'''
                     
                 except Exception as e:
-                    showWarning(f"Error rendering enemy attack: {str(e)}")
+                    show_warning_with_traceback(parent=mw, exception=e, message="Error rendering enemy attack:")
 
             # if enemy pokemon hp > 0, attack enemy pokemon
             if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
@@ -732,11 +681,11 @@ def on_review_card(*args):
                 msg += translator.translate("pokemon_chose_attack", pokemon_name=main_pokemon.name.capitalize(), pokemon_attack=user_attack.capitalize())
                 
                 if battle_status != "fighting": # dealing with SPECIAL EFFECTS on Pokemon
-                    msg, acc, battle_status, enemy_pokemon.stats = status_effect(enemy_pokemon, move, slp_counter, msg, acc)
+                    pass
                
                 else:
                     if category == "Status":
-                        msg = effect_status_moves(user_attack, main_pokemon.stats, enemy_pokemon.stats, msg, enemy_pokemon.name, main_pokemon.name)                        
+                        pass
 
                         '''if dmg_from_user_move == 0:
                             if results.get('user_missed', False):
@@ -797,8 +746,7 @@ def on_review_card(*args):
         if test_window is not None:
             test_window.display_battle()
     except Exception as e:
-        showWarning(f"An error occurred in reviewer: {str(e)}")
-        traceback.print_exc()
+        show_warning_with_traceback(parent=mw, exception=e, message="An error occurred in reviewer:")
 
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
