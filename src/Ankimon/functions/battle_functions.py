@@ -377,6 +377,8 @@ def _process_battle_effects(
             # Handle weather effects
             elif action == constants.MUTATOR_WEATHER_START and len(instr) >= 2:
                 weather = instr[1]
+                if weather == constants.RAIN:
+                    weather = "Rain"
                 message = safe_translate("battle_effect_weather_start", weather=weather.replace('-', ' ').title())
                 effect_messages.append(message)
 

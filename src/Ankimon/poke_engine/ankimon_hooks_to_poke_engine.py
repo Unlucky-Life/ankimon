@@ -195,6 +195,10 @@ def simulate_battle_with_poke_engine(
                 main_pokemon.volatile_status = set()
                 enemy_pokemon.battle_status = 'fighting'
                 enemy_pokemon.volatile_status = set()
+                
+                state.weather = None # Reset weather to None
+                state.field = None # Reset field to None
+                state.trick_room = None # Reset trick room to None
 
             else:
                 raise ValueError(f"Wrong mutator_full_reset encountered : {mutator_full_reset}")
