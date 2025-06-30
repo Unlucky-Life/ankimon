@@ -318,7 +318,7 @@ class PokemonPC(QDialog):
         prev_idx = self.tier_combo.currentIndex() if self.tier_combo is not None else 0
         self.tier_combo = QComboBox()
         self.tier_combo.addItem("All tiers")
-        self.tier_combo.addItems(["Normal", "Legendary", "Mythical", "Baby", "Ultra"])
+        self.tier_combo.addItems(["Normal", "Legendary", "Mythical", "Baby", "Ultra", "Fossil", "Starter"])
         self.tier_combo.setCurrentIndex(prev_idx)
         self.tier_combo.currentIndexChanged.connect(lambda: self.go_to_box(0))
         # Sorting by favorites
