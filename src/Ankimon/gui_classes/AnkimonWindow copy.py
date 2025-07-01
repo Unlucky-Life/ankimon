@@ -459,7 +459,7 @@ class TestWindow(QWidget):
 
             return image_label
         except Exception as e:
-            showWarning(f"An error occured in badges window {e}")
+            show_warning_with_traceback(exception=e, message="An error occured in badges window")
 
     def pokemon_display_dead_pokemon(self):
         global pokemon_hp, name, id, level, type, caught_pokemon, caught
