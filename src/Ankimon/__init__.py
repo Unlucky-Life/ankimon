@@ -33,9 +33,9 @@ from PyQt6.QtWidgets import QDialog
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
 
-from .resources import generate_startup_files, user_path, IS_EXPERIMENTAL_BUILD, addon_ver
+from .resources import generate_startup_files, user_path, IS_EXPERIMENTAL_BUILD, addon_ver, addon_dir
 
-generate_startup_files(user_path)
+generate_startup_files(addon_dir, user_path)
 
 from .config_var import (
     dmg_in_reviewer,
@@ -520,7 +520,7 @@ cry_counter = 0
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
-        battle_status = enemy_pokemon.battle_status
+        battle_status = enemy_pokemon.bttle_status
         multiplier = ankimon_tracker_obj.multiplier
         mainpokemon_type = main_pokemon.type
         mainpokemon_name = main_pokemon.name
