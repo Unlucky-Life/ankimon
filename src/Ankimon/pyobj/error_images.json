@@ -1,32 +1,42 @@
 [
     {
-        "path": "https://www.instagram.com/p/DJ7tl8mPX2m/media/?size=l",
+        "path": "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/error_images/oshawott_error.jpg",
         "credit": "@frostyalmonds on Instagram",
         "url": "https://www.instagram.com/p/DJ7tl8mPX2m/"
     },
     {
-        "path": "https://www.instagram.com/p/DKAwt7cBZSi/media/?size=l",
+        "path": "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/error_images/ditto_moods.jpg",
         "credit": "@taigakitten on Instagram",
         "url": "https://www.instagram.com/p/DKAwt7cBZSi/"
     },
     {
-        "path": "https://static.wikia.nocookie.net/international-pokedex/images/4/47/Confused_(Dawn's_Piplup).png/revision/latest?cb=20190104201512",
+        "path": "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/error_images/piplup_dizzy.png",
         "credit": "From International Pokédex Wiki",
         "url": "https://international-pokedex.fandom.com/wiki/Confused?file=Confused_%28Dawn%27s_Piplup%29.png"
     },
     {
-        "path": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/9d875363-9c5f-4092-8ace-1b33d1ee8982/de6fbdu-c28c5ade-c706-46c0-8ad3-77f503a2afe7.png/v1/fit/w_540,h_640/confused_pikachu_vector_by_bricegum138_de6fbdu-375w-2x.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjQwIiwicGF0aCI6IlwvZlwvOWQ4NzUzNjMtOWM1Zi00MDkyLThhY2UtMWIzM2QxZWU4OTgyXC9kZTZmYmR1LWMyOGM1YWRlLWM3MDYtNDZjMC04YWQzLTc3ZjUwM2EyYWZlNy5wbmciLCJ3aWR0aCI6Ijw9NTQwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.vf4PZyLggPEUzs3nAUWWo26OdbMA8VRMG9wSI2HiPMY",
+        "path": "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/error_images/pikachu_confused.png",
         "credit": "@BriceGum138 on DeviantArt",
         "url": "https://www.deviantart.com/bricegum138/art/Confused-Pikachu-Vector-857318754"
     },
     {
-        "path": "https://preview.redd.it/wt6j8qsgo7u51.jpg?width=1080&crop=smart&auto=webp&s=3119f2fa436594571a0ac22a359a61a0ee991a09",
+        "path": "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/error_images/riolu_confused.webp",
         "credit": "u/sRioni on Reddit",
         "url": "https://www.reddit.com/r/MysteryDungeon/comments/jeligw/confused_riolu/"
     },
     {
-        "path": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fgeneration-nintendo.com%2Fimages%2Fencyclopedie%2F2-1417030962.png",
+        "path": "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/error_images/MissingNo.png",
         "credit": "From Generation Nintendo",
         "url": "https://generation-nintendo.com/wiki/MissingNo/"
+    },
+    {
+        "path": "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/error_images/wooper_oh.jpg",
+        "credit": "@PokemonGems on X",
+        "url": "https://x.com/PokemonGems/status/1495539276636901377/photo/1"
+    },
+    {
+        "path": "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/error_images/jigglypuff_explosion.jpg",
+        "credit": "@PokemonGems on X",
+        "url": "https://x.com/PokemonGems/status/1930347918856503665/photo/2"
     }
 ]
