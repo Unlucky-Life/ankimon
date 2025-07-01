@@ -92,7 +92,7 @@ class Version_Dialog(QDialog):
         self.text_browser.setOpenExternalLinks(True)  # Enable clickable links
         self.text_browser.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.text_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.local_file_path = addon_dir / "update_notes.md"
+        self.local_file_path = addon_dir / "updateinfos.md"
         self.local_content = read_local_file(self.local_file_path)
         self.html_content = markdown.markdown(self.local_content)
         self.text_browser.setHtml(self.html_content)
