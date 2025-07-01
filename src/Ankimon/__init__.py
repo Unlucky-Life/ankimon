@@ -520,7 +520,7 @@ cry_counter = 0
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
-        battle_status = enemy_pokemon.bttle_status
+        battle_status = enemy_pokemon.battle_status
         multiplier = ankimon_tracker_obj.multiplier
         mainpokemon_type = main_pokemon.type
         mainpokemon_name = main_pokemon.name
