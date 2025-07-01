@@ -17,8 +17,7 @@ debug_console.py
 src/Ankimon/user_files/todays_shop.json
 src/Ankimon/user_files/meta.json
 .DS_Store
+# HelpInfos has to be fetched from the web
 src/Ankimon/HelpInfos.html
 # changelog
-
-
 src/Ankimon/updateinfos.md
