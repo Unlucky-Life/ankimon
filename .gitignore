@@ -19,5 +19,6 @@ src/Ankimon/user_files/meta.json
 .DS_Store
 src/Ankimon/HelpInfos.html
 # changelog
-src/Ankimon/updateinfos.md 
 
+
+src/Ankimon/updateinfos.md
