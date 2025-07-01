@@ -33,7 +33,7 @@ from PyQt6.QtWidgets import QDialog
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
 
-from .resources import generate_startup_files, user_path
+from .resources import generate_startup_files, user_path, IS_EXPERIMENTAL_BUILD, addon_ver
 
 generate_startup_files(user_path)
 
@@ -267,6 +267,10 @@ try:
     if online_connectivity and ssh != False:
         # URL of the file on GitHub
         github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
+        
+        if IS_EXPERIMENTAL_BUILD == True:
+            github_url = "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/changelogs/{addon_ver}.md"
+        
         # Path to the local file
         local_file_path = addon_dir / "updateinfos.md"
         # Read content from GitHub
