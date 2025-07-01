@@ -42,6 +42,7 @@ from .resources import (
     pokemon_species_mythical_path,
     pokemon_species_normal_path,
     pokemon_species_ultra_path,
+    POKEMON_TIERS
 )
 
 # Load move and pokemon name mapping at startup
@@ -675,8 +676,8 @@ def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
     """
     Determines the tier category of a Pokémon based on its ID.
 
-    Searches through predefined JSON files representing different Pokémon tiers
-    (Normal, Legendary, Mythical, Baby, Ultra) to find the tier corresponding
+    Searches through lists in resources.py representing different Pokémon tiers
+    (Normal, Legendary, Mythical, Baby, Ultra, Fossil, Hisuian, Starter) to find the tier corresponding
     to the given Pokémon ID.
 
     Args:
@@ -686,20 +687,10 @@ def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
         Union[str, None]: The tier name as a string if the Pokémon ID is found
         in one of the tier lists; otherwise, None.
     """
-    paths = {
-        "Normal": pokemon_species_normal_path,
-        "Legendary": pokemon_species_legendary_path,
-        "Mythical": pokemon_species_mythical_path,
-        "Baby": pokemon_species_baby_path,
-        "Ultra": pokemon_species_ultra_path,
-    }
-
-    for tier, path in paths.items():
-        with open(path, "r", encoding="utf-8") as f:
-            id_list = json.load(f)
-        if pokemon_id in id_list:
+    
+    for tier, ids in POKEMON_TIERS.items():
+        if pokemon_id in ids:
             return tier
-        
     return None
 
 def safe_get_random_move(
