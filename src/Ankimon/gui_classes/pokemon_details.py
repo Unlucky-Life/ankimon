@@ -129,7 +129,7 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         if captured_date is not None :
             captured_date_label = QLabel(f"Captured: {captured_date.split()[0]}")
         else:
-            captured_date_label = QLabel(f"Captured: no date available")
+            captured_date_label = QLabel(f"Captured: N/A")
 
         level_label.setFont(custom_font)
         type_label = QLabel("Type:")
