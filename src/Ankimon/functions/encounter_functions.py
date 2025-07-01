@@ -588,14 +588,11 @@ def save_caught_pokemon(
             if check is False:
                 achievements = receive_badge(10, achievements)
 
-    if nickname is None:
-        nickname = enemy_pokemon.name.capitalize()
-
     #enemy_pokemon.stats["xp"] = 0
     enemy_pokemon.xp = 0
     caught_pokemon = {
         "name": enemy_pokemon.name.capitalize(),
-        "nickname": nickname,
+        "nickname": "",
         "level": enemy_pokemon.level,
         "gender": enemy_pokemon.gender,
         "id": enemy_pokemon.id,
