@@ -20,7 +20,7 @@ class PokemonObject:
         attacks=None,
         base_experience=0,
         growth_rate="medium",
-        hp=None,
+        hp=16,
         ev=None,
         iv=None,
         gender="N",
@@ -35,6 +35,7 @@ class PokemonObject:
         friendship=0,
         individual_id=None,
         everstone=False,
+        pokemon_defeated=0,
         **kwargs
     ):
         # Unique identifier
@@ -49,6 +50,7 @@ class PokemonObject:
         self.gender = str(gender) if gender is not None else "N"
         self.tier = str(tier) if tier is not None else "Normal"
         self.everstone = bool(everstone)
+        self.pokemon_defeated = int(pokemon_defeated)
 
         if not ability or str(ability).strip().lower() in ("none", "no ability", ""):
             self.ability = "Run Away"
@@ -174,7 +176,10 @@ class PokemonObject:
             "mega": getattr(self, "mega", False),
             "special-form": getattr(self, "special_form", None),
             "evos": self.evos,
-            "xp": self.xp
+            "xp": self.xp,
+            "hp": self.hp,  # NEW: Save current HP
+            "friendship": self.friendship,  # NEW: Save friendship
+            "pokemon_defeated": self.pokemon_defeated  # NEW: Save defeated count
         }    
     @classmethod
     def from_dict(cls, data):
