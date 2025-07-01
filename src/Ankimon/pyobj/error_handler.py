@@ -208,7 +208,7 @@ def setup_dialog_style(dialog: QDialog) -> None:
     """)
 
 def show_warning_with_traceback(
-    parent: QDialog,
+    parent: QDialog = mw,
     exception: Optional[Exception] = None,
     message: str = "An error occurred during execution."
 ) -> None:

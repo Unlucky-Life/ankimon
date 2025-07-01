@@ -9,6 +9,7 @@ from ..functions.url_functions import open_browser_window
 from ..utils import save_error_code
 from ..resources import mypokemon_path
 from ..singletons import main_pokemon, logger
+from ..pyobj.error_handler import show_warning_with_traceback
 
 def export_to_pkmn_showdown():
     # Create a main window
@@ -153,7 +154,7 @@ def export_all_pkmn_showdown():
 
         export_window.exec()
     except Exception as e:
-        logger.log_and_showinfo("info",f"An error occurred: {e}")
+        show_warning_with_traceback(exception=e, message="An error occurred:")
 
 def flex_pokemon_collection():
     # Create a main window
@@ -237,4 +238,4 @@ def flex_pokemon_collection():
 
         export_window.exec()
     except Exception as e:
-        logger.log_and_showinfo("info",f"An error occurred: {e}")
+        show_warning_with_traceback(exception=e, message="An error occurred:")
