@@ -422,7 +422,7 @@ def save_main_pokemon_progress(
         color = "#6A4DAC" #pokemon leveling info color for tooltip
         check = check_for_badge(achievements, 5)
         if check is False:
-            achievements = receive_badge(5,- achievements)
+            achievements = receive_badge(5,achievements)
         try:
             tooltipWithColour(msg, color)
         except:
@@ -502,10 +502,12 @@ def save_main_pokemon_progress(
         mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
         mainpkmndata["ev"]["spe"] += ev_yield["speed"]
         mainpkmndata["current_hp"] = int(main_pokemon.hp)
+        main_pokemon.friendship += random.randint(5, 9)
         if main_pokemon.friendship > 255:
             main_pokemon.friendship = 255
-        mainpkmndata["friendship"] = main_pokemon.get("friendship", 0)
-        mainpkmndata["pokemon_defeated"] = main_pokemon.get("pokemon_defeated", 0) + 1
+        mainpkmndata["friendship"] = main_pokemon.friendship
+        main_pokemon.pokemon_defeated += 1
+        mainpkmndata["pokemon_defeated"] = main_pokemon.pokemon_defeated
     mypkmndata = mainpkmndata
     mainpkmndata = [mainpkmndata]
     # Save the caught Pokémon's data to a JSON file
