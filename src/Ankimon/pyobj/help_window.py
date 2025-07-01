@@ -90,7 +90,7 @@ class HelpWindow(QDialog):
         self.web_view.page().setWebChannel(self.channel)
 
         html_content = self._get_html_content(online_connectivity)
-        self.web_view.setHtml(html_content, QUrl("https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/HelpInfos.html"))
+        self.web_view.setHtml(html_content, QUrl("https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/HelpInfos/HelpInfos.html"))
         layout.addWidget(self.web_view)
         
     def _setup_text_edit_view(self, layout, online_connectivity):
@@ -121,7 +121,7 @@ class HelpWindow(QDialog):
         try:
             if online_connectivity:
                 # URL of the file on GitHub
-                help_github_url = "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/h0tp/assets-in-root/assets/HelpInfos/HelpInfos.html"
+                help_github_url = "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/HelpInfos/HelpInfos.html"
                 
                 # Read local content
                 local_content = read_local_file(help_local_file_path)
