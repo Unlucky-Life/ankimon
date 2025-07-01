@@ -33,7 +33,7 @@ from PyQt6.QtWidgets import QDialog
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
 
-from .resources import generate_startup_files, user_path
+from .resources import generate_startup_files, user_path, IS_EXPERIMENTAL_BUILD, addon_ver
 
 generate_startup_files(user_path)
 
@@ -97,7 +97,8 @@ from .functions.encounter_functions import (
     handle_main_pokemon_faint
 )
 from .functions.pokedex_functions import find_details_move
-from .gui_entities import UpdateNotificationWindow, HelpWindow, CheckFiles
+from .gui_entities import UpdateNotificationWindow, CheckFiles
+from .pyobj.help_window import HelpWindow
 from .pyobj.sync_pokemon_data import CheckPokemonData
 from .pyobj.backup_files import run_backup
 from .classes.choose_move_dialog import MoveSelectionDialog
@@ -266,10 +267,20 @@ try:
     if online_connectivity and ssh != False:
         # URL of the file on GitHub
         github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
+        
+        if IS_EXPERIMENTAL_BUILD == True:
+            github_url = "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/changelogs/{addon_ver}.md"
+        
         # Path to the local file
         local_file_path = addon_dir / "updateinfos.md"
         # Read content from GitHub
         github_content, github_html_content = read_github_file(github_url)
+        
+        # If experimental build and content is None, try unknown.md
+        if IS_EXPERIMENTAL_BUILD == True and github_content is None:
+            github_url = "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/changelogs/unknown.md"
+            github_content, github_html_content = read_github_file(github_url)
+            
         # Read content from the local file
         local_content = read_local_file(local_file_path)
         # If local content exists and is the same as GitHub content, do not open dialog
