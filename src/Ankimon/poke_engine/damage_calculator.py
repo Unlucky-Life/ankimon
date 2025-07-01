@@ -381,8 +381,8 @@ def volatile_status_modifier(attacking_move, attacker, defender):
 
 def calculate_damage(state, attacking_side_string, attacking_move, defending_move, calc_type='average'):
     # a wrapper for `_calculate_damage` that takes into account move/item/ability special-effects
-    from poke_engine.find_state_instructions import update_attacking_move
-    from poke_engine.find_state_instructions import user_moves_first
+    from .find_state_instructions import update_attacking_move
+    from .find_state_instructions import user_moves_first
 
     attacking_move_dict = get_move(attacking_move)
     if defending_move.startswith(constants.SWITCH_STRING + " "):
