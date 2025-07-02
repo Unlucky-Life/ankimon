@@ -4,6 +4,12 @@
 ---
 
 ### GitHub Contributors
+#### Ankimon Experimental: `h0tp-ftw/ankimon`
+
+| <img src="https://github.com/h0tp-ftw.png" width="80"><br>[h0tp](https://github.com/h0tp-ftw)<br>Owner<br>@h0tp-ftw | <img src="https://github.com/thepeacemonk.png" width="80"><br>[Peace](https://github.com/thepeacemonk)<br>Contributor<br>@thepeacemonk | <img src="https://github.com/Axil12.png" width="80"><br>[Axil](https://github.com/Axil12)<br>Contributor<br>@Axil12 | <img src="https://github.com/gykoh.png" width="80"><br>[Gill](https://github.com/gykoh)<br>Contributor<br>@gykoh |
+| :---: | :---: | :---: | :---: |
+| <img src="https://github.com/richy431.png" width="80"><br>[richy](https://github.com/richy431)<br>Contributor<br>@richy431 | <img src="https://github.com/MORGANlTE.png" width="80"><br>[Morganite](https://github.com/MORGANlTE)<br>Contributor<br>@MORGANlTE | <img src="https://github.com/unlucky-life.png" width="80"><br>[Unlucky](https://github.com/unlucky-life)<br>Ankimon creator<br>@unlucky-life | <img src="https://github.com/primer.png" width="80"><br>[You?](#i-dont-know-how-to-code-where-do-i-start)<br>Join us!<br>Be a Contributor! |
+
 #### Ankimon: `Unlucky-Life/ankimon`
 
 <a href="https://github.com/unlucky-life/ankimon/graphs/contributors">
@@ -11,17 +17,9 @@
 </a>
 
 
-#### Ankimon Experimental: `h0tp-ftw/ankimon`
-
-<a href="https://github.com/h0tp-ftw/ankimon/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=h0tp-ftw/ankimon&columns=4" />
-</a>
-
 Made with [contrib.rocks](https://contrib.rocks).
 
-| <img src="https://github.com/h0tp-ftw.png" width="80"><br>[h0tp](https://github.com/h0tp-ftw)<br>Owner<br>@h0tp-ftw | <img src="https://github.com/thepeacemonk.png" width="80"><br>[Peace](https://github.com/thepeacemonk)<br>Contributor<br>@thepeacemonk | <img src="https://github.com/Axil12.png" width="80"><br>[Axil](https://github.com/Axil12)<br>Contributor<br>@Axil12 | <img src="https://github.com/gykoh.png" width="80"><br>[Gill](https://github.com/gykoh)<br>Contributor<br>@gykoh |
-| :---: | :---: | :---: | :---: |
-| <img src="https://github.com/richy431.png" width="80"><br>[richy](https://github.com/richy431)<br>Contributor<br>@richy431 | <img src="https://github.com/MORGANlTE.png" width="80"><br>[Morganite](https://github.com/MORGANlTE)<br>Contributor<br>@MORGANlTE | <img src="https://github.com/unlucky-life.png" width="80"><br>[Unlucky](https://github.com/unlucky-life)<br>Ankimon creator<br>@unlucky-life | <img src="https://github.com/primer.png" width="80"><br>[You?](#i-dont-know-how-to-code-where-do-i-start)<br>Join us!<br>Be a Contributor! |
+
 
 ## Table of Contents
 
