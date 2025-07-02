@@ -8,8 +8,6 @@ from ..functions.create_gui_functions import create_status_html
 from ..resources import icon_path
 from ..functions.pokedex_functions import get_pokemon_diff_lang_name
 
-from .pokemon_obj import PokemonObject
-
 class Reviewer_Manager:
     def __init__(self, settings_obj, main_pokemon, enemy_pokemon, ankimon_tracker):
         self.settings = settings_obj
@@ -27,55 +25,6 @@ class Reviewer_Manager:
 
     def reviewer_reset_life_bar_inject(self):
         self.life_bar_injected = False
-
-    def get_boost_values_string(self, pokemon: PokemonObject, display_neutral_boost: bool=False) -> str:
-        """Generates a formatted string representing the stat boost multipliers of a Pokémon.
-
-        This function retrieves the stat boost values of a given Pokémon, converts them 
-        into their corresponding multiplier strings (e.g., x1.5 for +1), and compiles 
-        them into a single display string. Neutral boosts (value of 0) can optionally be 
-        omitted from the output.
-
-        Args:
-            pokemon (PokemonObject): The Pokémon object containing current stat boost information.
-            display_neutral_boost (bool, optional): If False, stat boosts with a value of 0 
-                (neutral) are omitted from the output. Defaults to False.
-
-        Returns:
-            str: A string representing the stat boost multipliers.
-        """
-        pokemon_dict = pokemon.to_engine_format()
-        boosts = {
-            "atk": pokemon_dict.get('attack_boost', 0),
-            "def": pokemon_dict.get('defense_boost', 0),
-            "SpA": pokemon_dict.get('special_attack_boost', 0),
-            "SpD": pokemon_dict.get('special_defense_boost', 0),
-            "SPE": pokemon_dict.get('speed_boost', 0),
-            "ACC": pokemon_dict.get('accuracy_boost', 0),
-            "EVD": pokemon_dict.get('evasion_boost', 0),
-        }
-        boost_to_mult = {
-            0: "x1",
-            1: "x1.5",
-            2: "x2",
-            3: "x2.5",
-            4: "x3",
-            5: "x3.5",
-            6: "x4",
-            -1: "x0.67",
-            -2: "x0.5",
-            -3: "x0.4",
-            -4: "x0.33",
-            -5: "x0.29",
-            -6: "x0.25",
-            }
-        boost_display = " "
-        for key, boost_val in boosts.items():
-            if display_neutral_boost is False and boost_val == 0:
-                continue  # Do no display a neutral boost
-            mult_str = boost_to_mult[boost_val]
-            boost_display += f"  | {key} {mult_str} |  "
-        return boost_display
 
     def inject_life_bar(self, web_content, context):
         if int(self.settings.get("gui.show_mainpkmn_in_reviewer", 1)) < 3:
@@ -102,12 +51,71 @@ class Reviewer_Manager:
                 css = create_css_for_reviewer(int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)), pokemon_hp_percent, self.settings.get("battle.hp_bar_thickness", 2) * 4, int(self.settings.compute_special_variable('xp_bar_spacer')), self.settings.compute_special_variable('view_main_front'), int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50), int(self.settings.compute_special_variable('hp_only_spacer')), int(self.settings.compute_special_variable('wild_hp_spacer')), self.settings.get("gui.xp_bar_config", False), self.main_pokemon, int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings.get("remove_levelcap", False))), self.settings.compute_special_variable('xp_bar_location'))
                 css += inject_life_bar_css_1
                 css += inject_life_bar_css_2
-                # background-image: url('{pokemon_image_file}'); Change to your image path */
+                
+                # Add adaptive styling for text elements - transparent background and theme-specific text colors
+                css += """
+                /* Adaptive styling for text elements */
+                #name-display, #myname-display, #hp-display, #myhp-display, #next_lvl_text, #xp_text {
+                    background: transparent !important;
+                    color: var(--text-fg, #6D6D6E);
+                }
+                
+                /* Dark mode detection and styles */
+                @media (prefers-color-scheme: dark) {
+                    #name-display, #myname-display, #hp-display, #myhp-display, #next_lvl_text, #xp_text {
+                        color: white !important;
+                    }
+                }
+                
+                /* Support for Anki's night mode class */
+                .night_mode #name-display, .night_mode #myname-display, .night_mode #hp-display, 
+                .night_mode #myhp-display, .night_mode #next_lvl_text, .night_mode #xp_text {
+                    color: white !important;
+                }
+                """
+                
+                # Inject the CSS into the head of the HTML content
                 if self.settings.get("gui.styling_in_reviewer", True) is True:
-                    # Inject the CSS into the head of the HTML content
                     web_content.head += f"<style>{css}</style>"
+                    
+                    # Inject the theme detection script
+                    web_content.head += """
+                    <script>
+                    // Function to check if Anki is in night mode and adjust text colors
+                    function updateTextColors() {
+                        const isNightMode = document.body.classList.contains('night_mode');
+                        const textElements = document.querySelectorAll('#name-display, #myname-display, #hp-display, #myhp-display, #next_lvl_text, #xp_text');
+                        
+                        textElements.forEach(element => {
+                            if (isNightMode) {
+                                element.style.color = 'white';
+                            } else {
+                                element.style.color = '#6D6D6E';
+                            }
+                        });
+                    }
+                    
+                    // Run when DOM is loaded and whenever classes change on the body
+                    document.addEventListener('DOMContentLoaded', updateTextColors);
+                    
+                    // Create a mutation observer to detect theme changes
+                    const observer = new MutationObserver(mutations => {
+                        mutations.forEach(mutation => {
+                            if (mutation.attributeName === 'class') {
+                                updateTextColors();
+                            }
+                        });
+                    });
+                    
+                    // Start observing the body element for class changes
+                    observer.observe(document.body, {
+                        attributes: true,
+                        attributeFilter: ['class']
+                    });
+                    </script>
+                    """
+                    
                     # Inject a div element at the end of the body for the life bar
-                    #web_content.body += f'<div id="pokebackground">' try adding backgroudns to battle
                     if self.settings.get("gui.hp_bar_config", True) is True:
                         web_content.body += '<div id="life-bar" class="Ankimon"></div>'
                     if self.settings.get("gui.xp_bar_config", False) is True:
@@ -119,7 +127,6 @@ class Reviewer_Manager:
                     if self.enemy_pokemon.shiny is True:
                         enemy_lang_name += " ⭐ "
                     name_display_text = f"{enemy_lang_name} LvL: {self.enemy_pokemon.level}"
-                    name_display_text += self.get_boost_values_string(self.enemy_pokemon, display_neutral_boost=False)
                     web_content.body += f'<div id="name-display" class="Ankimon">{name_display_text}</div>'
                     if self.enemy_pokemon.hp > 0:
                         web_content.body += f'{create_status_html(f"{self.enemy_pokemon.battle_status}", settings_obj=self.settings)}'
@@ -137,7 +144,6 @@ class Reviewer_Manager:
                         if self.main_pokemon.shiny:
                             main_lang_name += " ⭐ "
                         main_name_display_text = f"{main_lang_name} LvL: {self.main_pokemon.level}"
-                        main_name_display_text += self.get_boost_values_string(self.main_pokemon, display_neutral_boost=False)
                         web_content.body += f'<div id="myname-display" class="Ankimon">{main_name_display_text}</div>'
                         web_content.body += f'<div id="myhp-display" class="Ankimon">HP: {self.main_pokemon.hp}/{self.main_pokemon.max_hp}</div>'
                         # Inject a div element at the end of the body for the life bar
@@ -193,9 +199,7 @@ class Reviewer_Manager:
                     myhp_color = "rgba(255, 255, 0, 0.7)"  # Yellow
                 else:
                     myhp_color = "rgba(114, 230, 96, 0.7)"  # Green
-            # Extract RGB values from the hex color code
-            #hex_color = hp_color.lstrip('#')
-            #rgb_values = tuple(int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
+            
             status_html = ""
             if self.enemy_pokemon.hp < 1:
                 status_html = create_status_html('fainted', settings_obj=self.settings)
@@ -214,10 +218,13 @@ class Reviewer_Manager:
                 if self.enemy_pokemon.shiny is True:
                     enemy_lang_name += " ⭐ "
                 name_display_text = f"{enemy_lang_name} LvL: {self.enemy_pokemon.level}"
-                name_display_text += self.get_boost_values_string(self.enemy_pokemon, display_neutral_boost=False)
                 hp_display_text = f"HP: {self.enemy_pokemon.hp}/{self.enemy_pokemon.max_hp}"
                 reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
                 reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
+                
+                # Update text colors based on current theme
+                reviewer.web.eval('updateTextColors();')
+                
                 new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage" style="animation: shake {self.seconds}s ease;">'
                 reviewer.web.eval(f'document.getElementById("PokeImage").innerHTML = `{new_html_content}`;')
                 if self.ankimon_tracker.pokemon_in_collection == True:
@@ -233,7 +240,6 @@ class Reviewer_Manager:
                     if self.main_pokemon.shiny:
                         main_lang_name += " ⭐ "
                     main_name_display_text = f"{main_lang_name} LvL: {self.main_pokemon.level}"
-                    main_name_display_text += self.get_boost_values_string(self.main_pokemon, display_neutral_boost=False)
                     main_hp_display_text = f"HP: {self.main_pokemon.hp}/{self.main_pokemon.max_hp}"
                     reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50)) + '%";')
                     reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')

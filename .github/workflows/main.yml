@@ -1,26 +1,22 @@
 name: Create Add-on Release
 
 on:
-  push:
-    tags:
-      - '*'   # Run on any tag push
+  workflow_dispatch:
+    inputs:
+      version:
+        description: version string (eg. 6.1)
+        required: true
 
 jobs:
   create-release:
-    name: Version ${{ github.ref_name }}
+    name: Version ${{ github.event.inputs.version }}
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-      pull-requests: read
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
+          submodules: recursive
           fetch-depth: 0
-          fetch-tags: true
-          ref: ${{ github.ref }}
 
       - name: Setup Python
         uses: actions/setup-python@v2.2.1
@@ -29,40 +25,37 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           python -m pip install git+https://github.com/glutanimate/anki-addon-builder.git@4039b5bb743773a18cb2911e6dd38fa1e3f65982
           python -m pip install pyqt5
-          sudo apt-get update && sudo apt-get install -y jq gh
-
-      - name: Setup git config
+      - name: setup git config
         run: |
+          # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
           git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-
-      - name: Create .ankiaddon package
+          git config user.email "<>"
+      - name: commit version bump and create tag
+        run: |
+          git commit --allow-empty -m "Bump Version to v${{ github.event.inputs.version }}"
+          git push origin main
+          git tag ${{ github.event.inputs.version }}
+          git push origin tag ${{ github.event.inputs.version }}
+      - name: Create ankiaddon file
         run: aab build -d ankiweb
 
-      - name: Declare variables
+      - name: Declare some variables
         id: vars
         shell: bash
         run: |
-          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "module_name=$(ls src)"           >> $GITHUB_OUTPUT
-          echo "build_name=$(ls build/*.ankiaddon)" >> $GITHUB_OUTPUT
-
-      - name: Get previous tag
-        id: previoustag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
-        with:
-          fallback: '0.0.0'
-
-      - name: Create GitHub release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: "${{ steps.vars.outputs.module_name }} v${{ github.ref_name }}"
-          generate_release_notes: true
-          files: build/*.ankiaddon
-          draft: true
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+          echo "::set-output name=module_name::$(ls src)"
+          echo "::set-output name=build_name::$(ls build | grep --color=never .ankiaddon)"
+          
+      - name: Create github release and upload ankiaddon file
+        uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          repo_token: ${{ github.token }}
+          file: "build/${{ steps.vars.outputs.build_name }}"
+          release_name: ${{ steps.vars.outputs.module_name }} v${{ github.event.inputs.version }}
+          tag: ${{ github.event.inputs.version }}
+          draft: true

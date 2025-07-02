@@ -49,8 +49,7 @@ class TrainerCard:
             'caughtPokemon': get_total_pokemon(),  # Example Pokedex
             'highestLevel': highest_level,  # Example highest level
             'shinies': f"{get_shinies()}",  # Example shinies
-            'cash': cash,  # Example cash,
-            'trainerSprite': f'{settings_obj.get("trainer.sprite", "ash-sinnoh") + ".png"}'
+            'cash': cash,  # Example cash
         }
         try:
             sync_data_to_leaderboard(data)

@@ -1,0 +1,106 @@
+name: Create Add-on Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version string (eg. 6.1)
+        required: true
+
+jobs:
+  create-release:
+    name: Version ${{ github.event.inputs.version }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v2.2.1
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          python -m pip install git+https://github.com/glutanimate/anki-addon-builder.git@4039b5bb743773a18cb2911e6dd38fa1e3f65982
+          python -m pip install pyqt5
+          sudo apt-get install -y jq
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update && sudo apt install -y gh
+
+      - name: Setup git config
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+
+      - name: Commit version bump and create tag
+        run: |
+          git commit --allow-empty -m "Bump Version to v${{ github.event.inputs.version }}"
+          git push origin main
+          git tag ${{ github.event.inputs.version }}
+          git push origin tag ${{ github.event.inputs.version }}
+
+      - name: Create ankiaddon file
+        run: aab build -d ankiweb
+
+      - name: Declare variables
+        id: vars
+        shell: bash
+        run: |
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "module_name=$(ls src)" >> $GITHUB_OUTPUT
+          echo "build_name=$(ls build | grep --color=never .ankiaddon)" >> $GITHUB_OUTPUT
+
+      - name: Generate branch-aware release notes
+        id: release_notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # ... (previous setup code remains the same)
+      
+          # Build release body with proper indentation
+          RELEASE_BODY="⚠️ **This is the Original Ankimon Branch. We launch Prereleases and Releases. Releases are mostly stable, while prerelease are untested features and fixes and may contain bugs. You may encounter issues and bugs. Thank you for checking it out and helping us improve!**
+      
+          **Build Details**
+          - Commit SHA: ${{ steps.vars.outputs.sha_short }}
+          "
+      
+          [ -n "$FEATURES" ] && RELEASE_BODY+="
+          ## 🚀 New Features
+          $FEATURES
+          "
+      
+          [ -n "$FIXES" ] && RELEASE_BODY+="
+          ## 🐛 Bug Fixes
+          $FIXES
+          "
+      
+          [ -n "$CONTRIBUTORS" ] && RELEASE_BODY+="
+          ## 👥 Contributors
+          $CONTRIBUTORS
+          "
+      
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+                       
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: "${{ steps.vars.outputs.module_name }} v${{ github.event.inputs.version }}"
+          body: |
+            ${{ steps.release_notes.outputs.notes }}
+            **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ env.PREV_TAG }}...${{ github.event.inputs.version }}
+          files: build/${{ steps.vars.outputs.build_name }}
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

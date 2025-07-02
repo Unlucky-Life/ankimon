@@ -20,7 +20,7 @@
     "caught_wild_pokemon": "You caught a wild {enemy_pokemon_name} !",
     "already_caught_pokemon": "You have already caught this pokemon. Please close this window!",
     "multiplier": "Multiplier",
-    "pokemon_chose_attack": "{pokemon_name} chose {pokemon_attack}!",
+    "pokemon_chose_attack": "{pokemon_name} chose {pokemon_attack}",
     "move_has_missed": "Move has missed !",
     "dmg_dealt": " {dmg} dmg is dealt to {pokemon_name}.",
     "pokemon_paralyzed": "{pokemon_name} is paralyzed.",

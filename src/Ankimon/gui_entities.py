@@ -1,7 +1,7 @@
 import markdown
 import json
 from PyQt6.QtGui import QMovie, QIcon
-from PyQt6.QtWidgets import QLabel, QVBoxLayout, QTextEdit, QCheckBox, QPushButton, QMessageBox, QWidget, QScrollArea, QGridLayout, QTextBrowser
+from PyQt6.QtWidgets import QLabel, QVBoxLayout, QTextEdit, QCheckBox, QPushButton, QMessageBox, QWidget, QScrollArea, QGridLayout
 from aqt import mw
 from aqt.qt import QDialog, qconnect
 from aqt.utils import showWarning, showInfo, tooltip
@@ -10,7 +10,6 @@ from PyQt6.QtCore import Qt
 from .resources import icon_path, addon_dir, eff_chart_html_path, table_gen_id_html_path, mypokemon_path
 from .texts import terms_text, pokedex_html_template
 from .utils import read_local_file, read_github_file, compare_files, write_local_file, read_html_file
-from .pyobj.error_handler import show_warning_with_traceback
 
 
 class MovieSplashLabel(QLabel):
@@ -28,32 +27,23 @@ class MovieSplashLabel(QLabel):
         self.movie.stop()
 
 class UpdateNotificationWindow(QDialog):
-    """Custom Dialog class with enhanced features."""
-    def __init__(self, content, is_markdown=False):
+    """Custom Dialog class"""
+    def __init__(self, content):
         super().__init__()
         self.setWindowTitle("Ankimon Notifications")
         self.setGeometry(100, 100, 600, 400)
 
         layout = QVBoxLayout()
-        self.text_browser = QTextBrowser()
-        self.text_browser.setOpenExternalLinks(True)  # Enable clickable links
-        self.text_browser.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.text_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        # If content is markdown, convert to HTML
-        if is_markdown:
-            import markdown
-            html_content = markdown.markdown(content)
-        else:
-            html_content = content
-
-        self.text_browser.setHtml(html_content)
-        layout.addWidget(self.text_browser)
+        self.text_edit = QTextEdit()
+        self.text_edit.setReadOnly(True)
+        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
+        self.text_edit.setHtml(content)
+        layout.addWidget(self.text_edit)
         self.setWindowIcon(QIcon(str(icon_path)))
+
         self.setLayout(layout)
 
-    def open(self):
-        self.exec()
 
 class AgreementDialog(QDialog):
     def __init__(self):
@@ -97,24 +87,21 @@ class Version_Dialog(QDialog):
         self.setWindowTitle("Ankimon Notifications")
         self.setGeometry(100, 100, 600, 400)
         layout = QVBoxLayout()
-        self.text_browser = QTextBrowser()
-        self.text_browser.setOpenExternalLinks(True)  # Enable clickable links
-        self.text_browser.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.text_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.local_file_path = addon_dir / "updateinfos.md"
-        # Ensure the file exists, create blank if not
-        if not self.local_file_path.exists():
-            self.local_file_path.write_text("")
+        self.text_edit = QTextEdit()
+        self.text_edit.setReadOnly(True)
+        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
+        self.local_file_path = addon_dir / "update_notes.md"
         self.local_content = read_local_file(self.local_file_path)
         self.html_content = markdown.markdown(self.local_content)
-        self.text_browser.setHtml(self.html_content)
-        layout.addWidget(self.text_browser)
+        self.text_edit.setHtml(self.html_content)
+        layout.addWidget(self.text_edit)
         self.setWindowIcon(QIcon(str(icon_path)))
         self.setLayout(layout)
-
+    
     def open(self):
         self.exec()
-        
+
 class License(QWidget):
     def __init__(self):
         super().__init__()
@@ -233,8 +220,8 @@ class HelpWindow(QDialog):
                 help_local_file_path = addon_dir / "HelpInfos.html"
                 local_content = read_local_file(help_local_file_path)
                 html_content = local_content
-        except Exception as e:
-            show_warning_with_traceback(parent=mw, exception=e, message="Failed to retrieve Ankimon HelpGuide from GitHub.")
+        except:
+            showWarning("Failed to retrieve Ankimon HelpGuide from GitHub.")
             local_content = read_local_file(help_local_file_path)
             html_content = local_content
         self.setWindowTitle("Ankimon HelpGuide")

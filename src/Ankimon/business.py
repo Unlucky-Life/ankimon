@@ -1,7 +1,5 @@
 import base64
 import csv
-
-from .resources import csv_file_items, csv_file_descriptions
     
 def get_image_as_base64(path):
     with open(path, 'rb') as image_file:
@@ -84,8 +82,8 @@ def bP_none_moves(move):
             damage = 5
         return damage
     
-def type_colors(type_str):
-    _type_colors = {
+def type_colors(type):
+    type_colors = {
         "Normal": "#A8A77A",
         "Fire": "#EE8130",
         "Water": "#6390F0",
@@ -106,7 +104,7 @@ def type_colors(type_str):
         "Fairy": "#D685AD"
     }
 
-    return _type_colors.get(type_str, "Unknown")
+    return type_colors.get(type, "Unknown")
 
 def calc_exp_gain(base_experience, w_pkmn_level):
     exp = int((base_experience * w_pkmn_level) / 7)
@@ -137,30 +135,3 @@ def read_descriptions_csv(csv_file):
             key = (item_id, version_group_id, language_id)
             descriptions[key] = description
     return descriptions
-
-def get_id_and_description_by_item_name(item_name: str) -> str:
-    """
-    Retrieve the item ID and description based on the given item name.
-
-    This function normalizes the item name by capitalizing each word, 
-    then looks up the item ID from a CSV mapping. If found, it retrieves
-    the item description from a descriptions CSV using a fixed version group
-    and language ID.
-
-    Args:
-        item_name (str): The name of the item to look up.
-
-    Returns:
-        tuple:
-            - item_id (str or None): The ID of the item if found, else None.
-            - description (str or None): The description of the item if found, else None.
-    """
-    item_name = capitalize_each_word(item_name)
-    item_id_mapping = read_csv_file(csv_file_items)
-    item_id = item_id_mapping.get(item_name.lower())
-    if item_id is None:
-        return None, None
-    descriptions = read_descriptions_csv(csv_file_descriptions)
-    key = (item_id, 11, 9)  # Assuming version_group_id 11 and language_id 9
-    description = descriptions.get(key, None)
-    return description

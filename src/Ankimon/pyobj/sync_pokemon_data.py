@@ -12,9 +12,9 @@ class CheckPokemonData(QDialog):
         self.logger = logger
         self.mypokemon_path = mypokemon_path
         self.mainpokemon_path = mainpokemon_path
+        self.sync_pokemons()
         self.get_pokemon_data()
         self.setup_ui()
-        self.sync_pokemons()
         self.display_data_comparison()
 
     def setup_ui(self):
@@ -70,13 +70,6 @@ class CheckPokemonData(QDialog):
 
     def sync_pokemons(self):
         try:
-            for pokelist in [
-                self.pokemon_collection_sync_data,
-                self.mainpokemon_sync_data,
-            ]:
-                for p in pokelist:
-                    if not isinstance(p.get("evos"), list):
-                        p["evos"] = []
             self.mainpokemon_web_data = self.config.get('mainpokemon', [])
             self.pokemon_collection_web_data = self.config.get('pokemon_collection', [])
         except Exception as e:
@@ -84,12 +77,10 @@ class CheckPokemonData(QDialog):
             self.mainpokemon_web_data = []
             self.pokemon_collection_web_data = []
         self.get_pokemon_data()
-        
-        differences_exist = self.display_data_comparison()
-        if differences_exist:
+
+        if self.mainpokemon_web_data != self.mainpokemon_sync_data or self.pokemon_collection_web_data != self.pokemon_collection_sync_data:
             self.show()
 
-        
     def sync_data_to_local(self):
         try:
             with open(self.mypokemon_path, 'w', encoding='utf-8') as file:
@@ -168,9 +159,9 @@ class CheckPokemonData(QDialog):
             f"Individual ID: {pokemon_data['individual_id']}\n"
             f"Everstone: {pokemon_data['everstone']}\n"
             f"Shiny: {pokemon_data['shiny']}\n"
-            # f"Friendship: {pokemon_data['friendship']}\n"
-            # f"Pokémon Defeated: {pokemon_data['pokemon_defeated']}\n"
-            # f"Captured Date: {pokemon_data['captured_date']}"
+            f"Friendship: {pokemon_data['friendship']}\n"
+            f"Pokémon Defeated: {pokemon_data['pokemon_defeated']}\n"
+            f"Captured Date: {pokemon_data['captured_date']}"
         )
 
         return pokemon_info
@@ -183,12 +174,12 @@ class CheckPokemonData(QDialog):
         for local, ankiweb in zip(self.mainpokemon_sync_data, self.mainpokemon_web_data):
             pokemon_name = local.get('name', "Unknown")
             individual_id = local.get('individual_id', "Unknown")
-            for key in set(local.keys()).union(ankiweb.keys()):
-                local_value = local.get(key, [])
-                web_value = ankiweb.get(key, [])
+            for key in local:
+                local_value = local.get(key, "Unknown")
+                web_value = ankiweb.get(key, "Unknown")
                 if local_value != web_value:
                     local_main_differences.append(f"{pokemon_name} - {individual_id} - {key}: {local_value}")
-                    web_main_differences.append(f"{pokemon_name} - {individual_id} - {key}: {web_value}")        
+                    web_main_differences.append(f"{pokemon_name} - {individual_id} - {key}: {web_value}")
 
         # Pokémon Collection Data Comparison
         local_pokemon_differences = []
@@ -197,9 +188,9 @@ class CheckPokemonData(QDialog):
         for local, ankiweb in zip(self.pokemon_collection_sync_data, self.pokemon_collection_web_data):
             pokemon_name = local.get('name', "Unknown")
             individual_id = local.get('individual_id', "Unknown")
-            for key in set(local.keys()).union(ankiweb.keys()):
-                local_value = local.get(key, [])
-                web_value = ankiweb.get(key, [])
+            for key in local:
+                local_value = local.get(key, "Unknown")
+                web_value = ankiweb.get(key, "Unknown")
                 if local_value != web_value:
                     local_pokemon_differences.append(f"{pokemon_name} - {individual_id} - {key}: {local_value}")
                     web_pokemon_differences.append(f"{pokemon_name} - {individual_id} - {key}: {web_value}")
@@ -231,6 +222,3 @@ class CheckPokemonData(QDialog):
         
         # Set the web text area with the prepared content
         self.web_text_area.setPlainText(web_text_content)
-        
-        any_differences = bool(local_main_differences or web_main_differences or local_pokemon_differences or web_pokemon_differences)
-        return any_differences

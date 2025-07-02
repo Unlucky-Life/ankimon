@@ -1,73 +1,15 @@
 import os
-from pathlib import Path
-from typing import Union
 import requests
 import json
 import markdown
 import random
 import csv
-from collections import Counter
-from typing import Union
-
+from .resources import battlescene_path, berries_path, items_path, itembag_path, csv_file_items_cost, csv_file_descriptions, items_list_path, font_path
 from aqt.utils import showWarning, showInfo
+from collections import Counter
 from PyQt6.QtGui import QFontDatabase, QFont
+from aqt import mw
 
-from . import audios
-from .pyobj.settings import Settings
-from .pyobj.InfoLogger import ShowInfoLogger
-from .functions.battle_functions import calculate_hp
-from .functions.pokedex_functions import find_details_move, search_pokedex
-from .pyobj.error_handler import show_warning_with_traceback
-from .resources import (
-    battlescene_path,
-    berries_path,
-    items_path,
-    itembag_path,
-    csv_file_items_cost,
-    csv_file_descriptions,
-    font_path,
-    pokemon_names_file_path,
-    move_names_file_path,
-    hurt_normal_sound_path,
-    hurt_noteff_sound_path,
-    hurt_supereff_sound_path,
-    hpheal_sound_path,
-    ownhplow_sound_path,
-    fainted_sound_path,
-    mypokemon_path,
-    mainpokemon_path,
-    addon_dir,
-    pokemon_species_baby_path,
-    pokemon_species_legendary_path,
-    pokemon_species_mythical_path,
-    pokemon_species_normal_path,
-    pokemon_species_ultra_path,
-    POKEMON_TIERS
-)
-
-# Load move and pokemon name mapping at startup
-with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
-    POKEMON_NAME_LOOKUP = json.load(f)
-with open(move_names_file_path, "r", encoding="utf-8") as f:
-    MOVE_NAME_LOOKUP = json.load(f)
-
-
-def format_pokemon_name(name: str) -> str:
-    """
-    Look up the official Pokémon name using the normalized key.
-    Falls back to capitalizing if not found.
-    """
-    key = name.replace(" ", "").replace("-", "").replace("_", "").lower()
-    return POKEMON_NAME_LOOKUP.get(key, name.capitalize())
-
-def format_move_name(move: str) -> str:
-    """
-    Look up the official move name using the normalized key.
-    Falls back to title-casing with spaces if not found.
-    """
-    key = move.replace(" ", "").replace("-", "").replace("_", "").lower()
-    return MOVE_NAME_LOOKUP.get(key, " ".join(word.capitalize() for word in move.replace("_", " ").split()))
-    
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
     return os.path.isdir(folder_path)
@@ -230,7 +172,7 @@ def daily_item_list():
     return item_names
 
 # Function to give an item to the player
-def give_item(item_name, item_type: Union[str, None]=None):
+def give_item(item_name):
     with open(itembag_path, "r", encoding="utf-8") as json_file:
         itembag_list = json.load(json_file)
         # Check if the item exists and update quantity, otherwise append
@@ -240,12 +182,9 @@ def give_item(item_name, item_type: Union[str, None]=None):
                 break
         else:
             # Add a new item if not found
-            item_dict = {"item": item_name, "quantity": 1}
-            if item_type is not None:
-                item_dict["type"] = item_type
-            itembag_list.append(item_dict)
+            itembag_list.append({"item": item_name, "quantity": 1})
     with open(itembag_path, 'w', encoding="utf-8") as json_file:
-        json.dump(itembag_list, json_file, indent=4)
+        json.dump(itembag_list, json_file)
     #logger.log_and_showinfo('game', f"Player bought item {item_name.capitalize()}")
 
 #Function to return a cost of an item
@@ -323,30 +262,38 @@ def random_fossil():
 
 def count_items_and_rewrite(file_path):
     """
-    Reads the items.json file, counts item occurrences by name,
-    and rewrites the file with items and their total quantities.
+    Reads the items.json file, counts item occurrences, 
+    and rewrites the file with items and their quantities in the form of dictionaries.
+    
+    :param file_path: Path to the items.json file.
     """
     try:
+        # Read the existing file
         with open(file_path, "r", encoding="utf-8") as file:
             items = json.load(file)
 
-        # Aggregate quantities by item name
-        item_counts = Counter()
-        for entry in items:
-            name = entry["item"]
-            qty = entry.get("quantity", 1)
-            item_counts[name] += qty
+        # Ensure the file contains a list
+        if not isinstance(items, list):
+            raise ValueError("The items.json file should contain a list of item names.")
 
-        # Create a list of dictionaries with item names and their total quantities
+        # Count the occurrences of each item
+        item_counts = Counter(items)
+
+        # Create a list of dictionaries with item names and their quantities
         updated_items = [{"item": item, "quantity": count} for item, count in item_counts.items()]
 
-        with open(file_path, 'w', encoding="utf-8") as file:
+        # Rewrite the file with the updated list
+        with open(file_path, 'w') as file:
             json.dump(updated_items, file, indent=4)
 
         print("items.json has been updated with item quantities!")
-
+    
+    except FileNotFoundError:
+        print(f"Error: The file '{file_path}' was not found.")
+    except json.JSONDecodeError:
+        print("Error: Failed to decode JSON. Ensure the file contains valid JSON data.")
     except Exception as e:
-        show_warning_with_traceback(exception=e, message=f"An unexpected error occurred: {e}")
+        print(f"An unexpected error occurred: {e}")
 
 # Assuming the data is stored in a CSV file named 'item_flavor_texts.csv'
 def get_item_description(item_name, language_id):
@@ -375,8 +322,11 @@ def get_item_description(item_name, language_id):
         # If no match is found, return None
         return None
     
+    except FileNotFoundError:
+        print(f"Error: The file {file_path} was not found.")
+        return None
     except Exception as e:
-        show_warning_with_traceback(exception=e, message="An error occurred:")
+        print(f"An error occurred: {e}")
         return None
     
 def load_custom_font(font_size, language):
@@ -402,6 +352,8 @@ def load_custom_font(font_size, language):
 
     return custom_font
 
+import os
+
 def get_all_sprites(directory):
     """
     Returns a list of trainer sprite names without the '.png' extension
@@ -420,320 +372,4 @@ def get_all_sprites(directory):
     except FileNotFoundError:
         print(f"Error: The directory '{directory}' does not exist.")
         return []
-    
-def play_effect_sound(sound_type):
-    sound_effects = Settings().get("audio.sound_effects", False)
-    if sound_effects is True:
-        audio_path = None
-        if sound_type == "HurtNotEffective":
-            audio_path = hurt_noteff_sound_path
-        elif sound_type == "HurtNormal":
-            audio_path = hurt_normal_sound_path
-        elif sound_type == "HurtSuper":
-            audio_path = hurt_supereff_sound_path
-        elif sound_type == "OwnHpLow":
-            audio_path = ownhplow_sound_path
-        elif sound_type == "HpHeal":
-            audio_path = hpheal_sound_path
-        elif sound_type == "Fainted":
-            audio_path = fainted_sound_path
 
-        if not audio_path.is_file():
-            return
-        else:   
-            audio_path = Path(audio_path)
-            #threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
-            audios.will_use_audio_player()
-            audios.audio(audio_path)
-    else:
-        pass
-
-def save_error_code(error_code, logger=None):
-    error_fix_msg = ""
-    try:
-        # Find the position of the phrase "can't be transferred from Gen"
-        index = error_code.find("can't be transferred from Gen")
-
-        # Extract the substring starting from this position
-        relevant_text = error_code[index:]
-
-        # Find the first number in the extracted text (assuming it's the generation number)
-        generation_number = int(''.join(filter(str.isdigit, relevant_text)))
-
-        # Show the generation number
-        error_fix_msg += (f"\n Please use Gen {str(generation_number)[0]} or lower")
-
-        index = error_code.find("can't be transferred from Gen")
-
-        # Extract the substring starting from this position
-        relevant_text = error_code[index:]
-
-        # Find the first number in the extracted text (assuming it's the generation number)
-        generation_number = int(''.join(filter(str.isdigit, relevant_text)))
-
-        error_fix_msg += (f"\n Please use Gen {str(generation_number)[0]} or lower")
-
-    except Exception as e:
-        if logger is not None:
-            show_warning_with_traceback(exception=e, message="An error occurred:")
-
-    if logger is not None:
-        logger.log_and_showinfo("info",f"{error_fix_msg}")
-
-def get_main_pokemon_data():
-    with (open(str(mainpokemon_path), "r", encoding="utf-8") as json_file):
-        main_pokemon_datalist = json.load(json_file)
-
-    main_pokemon_data = []
-    for main_pokemon_data in main_pokemon_datalist:
-        _name = main_pokemon_data["name"]
-        if not main_pokemon_data.get('nickname') or main_pokemon_data.get('nickname') is None:
-            _nickname = None
-        else:
-            _nickname = main_pokemon_data['nickname']
-        _id = main_pokemon_data["id"]
-        _ability = main_pokemon_data["ability"]
-        _type = main_pokemon_data["type"]
-        _stats = main_pokemon_data["stats"]
-        _attacks = main_pokemon_data["attacks"]
-        _level = main_pokemon_data["level"]
-        _hp_base_stat = main_pokemon_data["stats"]["hp"]
-        _evolutions = search_pokedex(main_pokemon_data["name"], "evos")
-        _xp = main_pokemon_data.get("xp") or main_pokemon_data["stats"].get("xp", 0)
-        _ev = main_pokemon_data["ev"]
-        _iv = main_pokemon_data["iv"]
-        #mainpokemon_battle_stats = mainpokemon_stats
-        _battle_stats = {}
-        for d in [_stats, _iv, _ev]:
-            for key, value in d.items():
-                _battle_stats[key] = value
-        #mainpokemon_battle_stats += mainpokemon_iv
-        #mainpokemon_battle_stats += mainpokemon_ev
-        _hp = calculate_hp(_hp_base_stat, _level, _ev, _iv)
-        _current_hp = _hp
-        _base_experience = main_pokemon_data["base_experience"]
-        _growth_rate = main_pokemon_data["growth_rate"]
-        _gender = main_pokemon_data["gender"]
-        
-        return (
-            _name,
-            _id,
-            _ability,
-            _type,
-            _stats,
-            _attacks,
-            _level,
-            _base_experience,
-            _xp,
-            _hp,
-            _current_hp,
-            _growth_rate,
-            _ev,
-            _iv,
-            _evolutions,
-            _battle_stats,
-            _gender,
-            _nickname
-        )
-
-def play_sound(enemy_pokemon_id: int, settings_obj: Settings):
-    if settings_obj.get("audio.sounds", False):
-        file_name = f"{enemy_pokemon_id}.ogg"
-        audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
-        if audio_path.is_file():
-            audio_path = Path(audio_path)
-            audios.will_use_audio_player()
-            audios.audio(audio_path)
-
-def load_collected_pokemon_ids() -> set:
-    if not mypokemon_path.is_file():
-        return set()
-    
-    collected_pokemon_ids = set()
-    try:
-        with open(mypokemon_path, "r", encoding="utf-8") as f:
-            collection = json.load(f)
-            collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
-    except Exception as e:
-        show_warning_with_traceback(exception=e, message="Error loading collection cache")
-    
-    return collected_pokemon_ids
-
-def limit_ev_yield(current_pokemon_ev: dict[str, int], ev_yield: dict[str, int]) -> dict[str, int]:
-    """
-    Limits the EV (Effort Value) yield for a Pokémon based on current EVs and Pokémon game rules.
-
-    Ensures that the total EVs after applying the yield do not exceed 510, and that no single
-    stat exceeds 252 EVs. Adjusts the EV yield to comply with these constraints by capping individual
-    stats and reducing EVs randomly if the total would exceed the maximum allowed.
-
-    Args:
-        current_pokemon_ev (dict[str, int]): Current EVs of the Pokémon, with keys as stat abbreviations 
-            ("hp", "atk", "def", "spa", "spd", "spe") and values as their EV amounts.
-        ev_yield (dict[str, int]): Proposed EV yields from a defeated Pokémon, with keys as full stat names 
-            ("hp", "attack", "defense", "special-attack", "special-defense", "speed") and values as EV amounts.
-
-    Raises:
-        ValueError: If any key in `current_pokemon_ev` or `ev_yield` is not a recognized stat.
-
-    Returns:
-        dict[str, int]: Adjusted EV yields that do not cause the Pokémon's total EVs to exceed 510 or any
-        single stat to exceed 252. The keys correspond to full stat names.
-    """
-    # The sum of EVs of a Pokemon can only add up to 510. With a limit of 252 EVs in a single stat.
-    for stat in current_pokemon_ev.keys():
-        if stat not in ("hp", "atk", "def", "spa", "spd", "spe"):
-            raise ValueError(f"Unknown EV : {stat}")
-        
-    for stat in ev_yield.keys():
-        if stat not in ("hp", "attack", "defense", "special-attack", "special-defense", "speed"):
-            raise ValueError(f"Unknown EV : {stat}")
-        
-    zipped_keys = zip(
-        ["hp", "atk", "def", "spa", "spd", "spe"],
-        ["hp", "attack", "defense", "special-attack", "special-defense", "speed"]
-    )
-        
-    new_ev_yield = {"hp": 0, "attack": 0, "defense": 0, "special-attack": 0, "special-defense": 0, "speed": 0}
-    
-    for key_1, key_2 in zipped_keys:
-        # For each stat, we yield an amount of EVs that will not exceed the value of 252
-        new_ev_yield[key_2] = min(ev_yield[key_2], 252 - current_pokemon_ev[key_1])
-
-    # To ensure that we won't go above 510 EVs after yielding the EVs, we randomly reduce the EV yield until we drop below the 510 limit
-    while (sum(current_pokemon_ev.values()) + sum(new_ev_yield.values())) > 510:
-        rand_key = [key for key, val in new_ev_yield.items() if val > 0]  # We only reduce the positive EV yield values. In other words : We don't give out negative EV yields
-        if len(rand_key) == 0:
-            break
-        rand_key = random.choice(rand_key)
-        new_ev_yield[rand_key] -= 1
-
-    # This final block here is specifically made to give out negative EV yields
-    # This might be necessary if, for any reason, the user's pokemon has a total EV sum already above 510
-    # In that case, we randomly give out negative EV yields to bring down the EVs of the user's pokemon below 510
-    while (sum(current_pokemon_ev.values()) + sum(new_ev_yield.values())) > 510:
-        rand_key = random.choice(list(new_ev_yield.keys()))  # This time, we choose any EV yields, including those that could already have a negative EV yield
-        new_ev_yield[rand_key] -= 1
-
-    return new_ev_yield
-
-def iv_rand_gauss(mu: float=15, sigma: float=5) -> int:
-    """
-    Generates a random individual value (IV) using a Gaussian distribution,
-    clamped to the range [0, 31].
-
-    Args:
-        mu (float, optional): The mean of the Gaussian distribution. Defaults to 15.
-        sigma (float, optional): The standard deviation of the Gaussian distribution. Defaults to 5.
-
-    Returns:
-        int: An integer IV value between 0 and 31 inclusive.
-    """
-    rand = random.gauss(mu, sigma)
-    rand = max(0, rand)  # ensures that rand >= 0
-    rand = min(31, rand)  # ensures that rand <= 31
-    return int(rand)
-
-def get_ev_spread(mode: str="random") -> dict[str, int]:
-    """
-    Generate an EV (Effort Value) spread for Pokémon stats based on the specified mode.
-
-    Args:
-        mode (str): The mode of EV distribution. Supported modes are:
-            - "random": Randomly distributes up to 510 EVs across stats using a uniform distribution,
-                        with each stat capped at 252 EVs.
-            - "pair": Assigns 252 EVs to two random stats and 4 EVs to a third random stat.
-            - "defense": Returns a predefined defensive spread with 252 EVs in Defense and Special Defense,
-                         and 4 EVs in HP.
-            - "uniform": Distributes EVs evenly (84 EVs) across all stats.
-
-    Returns:
-        dict[str, int]: A dictionary mapping each stat ("hp", "atk", "def", "spa", "spd", "spe")
-                        to its corresponding EV value according to the selected mode.
-    """
-    stat_names = ["hp", "atk", "def", "spa", "spd", "spe"]
-    if mode == "random":  # Draws each EV following a uniform probability distribution
-        cuts = sorted(random.sample(range(510 + 1), 6 - 1))
-        parts = [a - b for a, b in zip(cuts + [510], [0] + cuts)]
-        parts = [min(252, part) for part in parts]
-        evs = {stat: val for stat, val in zip(stat_names, parts)}
-        return evs
-    elif mode == "pair":  # Draws 2 stats at 252 EVs, and a 3rd at 4 EVs
-        ev = {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}
-        stats = random.sample(stat_names, 3)
-        ev[stats[0]] = 252
-        ev[stats[1]] = 252
-        ev[stats[2]] = 4
-        return ev
-    elif mode == "defense":
-        return {"hp": 4, "atk": 0, "def": 252, "spa": 0, "spd": 252, "spe": 0}
-    elif mode == "uniform":
-        return {"hp": 84, "atk": 84, "def": 84, "spa": 84, "spd": 84, "spe": 84}
-    
-    raise ValueError(f"Received unknown value for 'mode': {mode}")
-
-def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
-    """
-    Determines the tier category of a Pokémon based on its ID.
-
-    Searches through lists in resources.py representing different Pokémon tiers
-    (Normal, Legendary, Mythical, Baby, Ultra, Fossil, Hisuian, Starter) to find the tier corresponding
-    to the given Pokémon ID.
-
-    Args:
-        pokemon_id (int): The unique identifier of the Pokémon.
-
-    Returns:
-        Union[str, None]: The tier name as a string if the Pokémon ID is found
-        in one of the tier lists; otherwise, None.
-    """
-    
-    for tier, ids in POKEMON_TIERS.items():
-        if pokemon_id in ids:
-            return tier
-    return None
-
-def safe_get_random_move(
-    pokemon_moves: list[str],
-    logger: Union[ShowInfoLogger, None] = None
-) -> dict:
-    """
-    Attempts to retrieve details of a randomly selected move from a list of Pokémon moves.
-
-    This function shuffles the provided list of move names and tries to find the first
-    move for which details can be successfully retrieved using `find_details_move`. If no
-    valid move is found, it logs a warning (if a logger is provided) and defaults to
-    returning the details for the move "Splash".
-
-    Args:
-        pokemon_moves (list[str]): A list of move names to select from.
-        logger (Union[ShowInfoLogger, None], optional): An optional logger instance for
-            logging warnings if no valid move is found. Defaults to None.
-
-    Returns:
-        dict: A dictionary containing the details of a valid move if found;
-            otherwise, the details for the move "Splash".
-    """
-    rand_moves = pokemon_moves.copy()
-    random.shuffle(rand_moves)
-    # We go through the shuffled list to find the first move that gets successfully parsed
-    for move in rand_moves:
-        move_details = find_details_move(move) or find_details_move(
-            format_move_name(move)
-        )
-        if move_details is not None:
-            return move_details
-        else:
-            if logger is not None:
-                logger.log(
-                    "warning",
-                    f"Could not parse the following move : {str(move)}",
-                )
-
-    # If we fail to successfully parse a single move, we just return Splash
-    if logger is not None:
-        logger.log(
-            "warning",
-            f"Could not parse a single move in the following moveset : {str(pokemon_moves)}",
-        )
-    return find_details_move(format_move_name("splash"))
