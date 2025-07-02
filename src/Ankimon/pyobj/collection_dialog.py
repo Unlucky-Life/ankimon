@@ -662,6 +662,11 @@ def MainPokemon(
         status=pokemon_data.get('status', None),
         volatile_status=set(pokemon_data.get('volatile_status', [])),
         xp=pokemon_data.get("xp", 0),
+        tier=pokemon_data.get('tier', 'None'),
+        pokemon_defeated=pokemon_data.get('pokemon_defeated', 0),
+        everstone=pokemon_data.get('everstone', False),
+        captured_date=pokemon_data.get('captured_date', None),
+        is_favorite = pokemon_data.get('is_favorite', False)   
     )
     
     # Update existing reference
