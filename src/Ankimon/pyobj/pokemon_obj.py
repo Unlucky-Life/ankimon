@@ -36,6 +36,8 @@ class PokemonObject:
         individual_id=None,
         everstone=False,
         pokemon_defeated=0,
+        is_favorite=False,
+        captured_date=None,
         **kwargs
     ):
         # Unique identifier
@@ -88,6 +90,9 @@ class PokemonObject:
         self.max_hp = self.calculate_max_hp()
         self.hp = int(kwargs.get('hp', self.max_hp))
         self.current_hp = current_hp or 15 
+        
+        self.is_favorite = bool(is_favorite)
+        self.captured_date = captured_date or None
         
     @classmethod
     def calc_stat(
@@ -152,7 +157,6 @@ class PokemonObject:
                 return 0.9
         return 1.0
 
-
     def to_dict(self):
         return {
             "name": self.name,
@@ -163,7 +167,7 @@ class PokemonObject:
             "ability": self.ability,
             "type": self.type,
             "base_stats": self.base_stats,
-            "stats": self.stats,
+            "stats": self.stats,  # Calculated stats
             "ev": self.ev,
             "iv": self.iv,
             "attacks": self.attacks,
@@ -177,10 +181,15 @@ class PokemonObject:
             "special-form": getattr(self, "special_form", None),
             "evos": self.evos,
             "xp": self.xp,
-            "hp": self.hp,  # NEW: Save current HP
-            "friendship": self.friendship,  # NEW: Save friendship
-            "pokemon_defeated": self.pokemon_defeated  # NEW: Save defeated count
-        }    
+            "hp": self.hp,  # Current HP
+            "friendship": self.friendship,
+            "pokemon_defeated": self.pokemon_defeated,
+            "tier": self.tier,  # Added tier
+            "is_favorite": getattr(self, "is_favorite", False),  # Added with default
+            # Additional fields from your example
+            "current_hp": getattr(self, "current_hp", "hp")  # For backward compatibility
+        }
+
     @classmethod
     def from_dict(cls, data):
         return cls(**data)
