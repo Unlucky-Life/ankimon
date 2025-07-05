@@ -330,15 +330,14 @@ def count_items_and_rewrite(file_path):
         with open(file_path, "r", encoding="utf-8") as file:
             items = json.load(file)
 
-        # Aggregate quantities by item name
-        item_counts = Counter()
-        for entry in items:
-            name = entry["item"]
-            qty = entry.get("quantity", 1)
-            item_counts[name] += qty
-
-        # Create a list of dictionaries with item names and their total quantities
-        updated_items = [{"item": item, "quantity": count} for item, count in item_counts.items()]
+        updated_items = []
+        for item in items:
+            updated_item = dict()
+            for key in item.keys():
+                updated_item[key] = item[key]  # We try to keep any additional field that the item might ahave
+            updated_item["item"] = item["item"]
+            updated_item["quantity"] = item.get("quantity", 1)
+            updated_items.append(updated_item)
 
         with open(file_path, 'w', encoding="utf-8") as file:
             json.dump(updated_items, file, indent=4)
