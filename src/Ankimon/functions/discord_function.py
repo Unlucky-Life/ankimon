@@ -5,6 +5,7 @@ from ..addon_files.lib.pypresence import Presence
 from aqt.utils import showWarning, tooltip
 from aqt import mw
 from ..pyobj.error_handler import show_warning_with_traceback
+logger = mw.logger
 
 class DiscordPresence:
     def __init__(self, client_id, large_image_url, ankimon_tracker, logger, settings_obj, parent=mw):
@@ -51,8 +52,8 @@ class DiscordPresence:
             ]
             self.state = random.choice(self.quotes)
         except Exception as e:
-            show_warning_with_traceback(exception=e, message="Error with Discord setup")
-
+            logger.log("error",f"Error with Discord setup: {e}")
+            
     def update_presence(self):
         """
         Update the Discord Rich Presence with a new state message.
@@ -66,8 +67,8 @@ class DiscordPresence:
                 )
                 time.sleep(30)  # Sleep for 30 seconds before updating again
         except Exception as e:
-            show_warning_with_traceback(exception=e, message="Error updating Discord Rich Presence")
-
+            logger.log("error",f"Error with Discord Rich Presence: {e}")
+            
     def start(self):
         """
         Start updating the Discord Rich Presence in a separate thread.
@@ -78,7 +79,7 @@ class DiscordPresence:
                 self.thread = threading.Thread(target=self.update_presence, daemon=True)
                 self.thread.start()
         except Exception as e:
-            show_warning_with_traceback(exception=e, message="Error starting Discord Rich Presence")
+            logger.log("error",f"Error starting Discord Rich Presence: {e}")
 
     def stop(self):
         """
@@ -91,8 +92,8 @@ class DiscordPresence:
                 self.thread = None  # Reset the thread
             self.RPC.clear()
         except Exception as e:
-            show_warning_with_traceback(exception=e, message="Error clearing Discord Rich Presence")
-
+            logger.log("error",f"Error clearing Discord Rich Presence: {e}")
+            
     def stop_presence(self):
         """
         Update the Discord Rich Presence to indicate a break when stopping.
@@ -105,4 +106,4 @@ class DiscordPresence:
                     large_image=self.large_image_url
                 )
         except Exception as e:
-            show_warning_with_traceback(exception=e, message="Error updating presence to break state")
+            logger.log("error",f"Error stopping Discord Rich Presence: {e}")
