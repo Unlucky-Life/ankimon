@@ -524,8 +524,14 @@ def on_review_card(*args):
         multiplier = ankimon_tracker_obj.multiplier
         mainpokemon_type = main_pokemon.type
         mainpokemon_name = main_pokemon.name
-        user_attack = random.choice(main_pokemon.attacks)
-        enemy_attack = random.choice(enemy_pokemon.attacks)
+        if main_pokemon.attacks:
+            user_attack = random.choice(main_pokemon.attacks)
+        else:
+            user_attack = "splash"
+        if enemy_pokemon.attacks:
+            enemy_attack = random.choice(enemy_pokemon.attacks)
+        else:
+            enemy_attack = "splash"
         
         global mutator_full_reset
 
