@@ -530,8 +530,7 @@ def process_battle_data(
         )
         
         # 2. Enemy attack section
-        if (pokemon_encounter > 0 and enemy_pokemon.hp > 0 and 
-            dmg_in_reviewer and multiplier < 1):
+        if enemy_attack is not "splash" or None:
             
             # --- NEW: Format enemy move name ---
             formatted_enemy_attack = format_move_name(enemy_attack)
@@ -544,7 +543,7 @@ def process_battle_data(
             message_parts.append(enemy_attack_msg)
         
         # 3. User attack section
-        if pokemon_encounter > 0 and main_pokemon.hp > 0:
+        if user_attack is not "splash" or None:
             
             # Handle special battle statuses first
             if battle_status and battle_status != "fighting":
@@ -585,7 +584,7 @@ def process_battle_data(
         # Join all message parts with newlines
         final_message = "\n".join(filter(None, message_parts))
         
-        if not final_message.strip():
+        if not final_message:
             return translator.translate("battle_message_empty_fallback")
         
         return final_message
