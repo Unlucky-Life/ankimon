@@ -102,9 +102,6 @@ class Version_Dialog(QDialog):
         self.text_browser.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.text_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.local_file_path = addon_dir / "updateinfos.md"
-        # Ensure the file exists, create blank if not
-        if not self.local_file_path.exists():
-            self.local_file_path.write_text("")
         self.local_content = read_local_file(self.local_file_path)
         self.html_content = markdown.markdown(self.local_content)
         self.text_browser.setHtml(self.html_content)

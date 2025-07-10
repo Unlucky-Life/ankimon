@@ -33,9 +33,9 @@ from PyQt6.QtWidgets import QDialog
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
 
-from .resources import generate_startup_files, user_path, IS_EXPERIMENTAL_BUILD, addon_ver
+from .resources import generate_startup_files, user_path, IS_EXPERIMENTAL_BUILD, addon_ver, addon_dir
 
-generate_startup_files(user_path)
+generate_startup_files(addon_dir, user_path)
 
 from .config_var import (
     dmg_in_reviewer,

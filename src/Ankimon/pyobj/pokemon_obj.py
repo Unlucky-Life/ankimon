@@ -15,11 +15,12 @@ class PokemonObject:
         level=3,
         ability=None,
         type=None,
+        current_hp=15,
         base_stats=None,
         attacks=None,
         base_experience=0,
         growth_rate="medium",
-        hp=None,
+        hp=16,
         ev=None,
         iv=None,
         gender="N",
@@ -34,6 +35,9 @@ class PokemonObject:
         friendship=0,
         individual_id=None,
         everstone=False,
+        pokemon_defeated=0,
+        is_favorite=False,
+        captured_date=None,
         **kwargs
     ):
         # Unique identifier
@@ -48,6 +52,7 @@ class PokemonObject:
         self.gender = str(gender) if gender is not None else "N"
         self.tier = str(tier) if tier is not None else "Normal"
         self.everstone = bool(everstone)
+        self.pokemon_defeated = int(pokemon_defeated)
 
         if not ability or str(ability).strip().lower() in ("none", "no ability", ""):
             self.ability = "Run Away"
@@ -84,8 +89,11 @@ class PokemonObject:
         # HP calculation
         self.max_hp = self.calculate_max_hp()
         self.hp = int(kwargs.get('hp', self.max_hp))
-        self.current_hp = self.hp  # to be removed later
-
+        self.current_hp = current_hp or 15 
+        
+        self.is_favorite = bool(is_favorite)
+        self.captured_date = captured_date or None
+        
     @classmethod
     def calc_stat(
         cls,
@@ -149,7 +157,6 @@ class PokemonObject:
                 return 0.9
         return 1.0
 
-
     def to_dict(self):
         return {
             "name": self.name,
@@ -160,7 +167,7 @@ class PokemonObject:
             "ability": self.ability,
             "type": self.type,
             "base_stats": self.base_stats,
-            "stats": self.stats,
+            "stats": self.stats,  # Calculated stats
             "ev": self.ev,
             "iv": self.iv,
             "attacks": self.attacks,
@@ -173,8 +180,16 @@ class PokemonObject:
             "mega": getattr(self, "mega", False),
             "special-form": getattr(self, "special_form", None),
             "evos": self.evos,
-            "xp": self.xp
-        }    
+            "xp": self.xp,
+            "hp": self.hp,  # Current HP
+            "friendship": self.friendship,
+            "pokemon_defeated": self.pokemon_defeated,
+            "tier": self.tier,  # Added tier
+            "is_favorite": getattr(self, "is_favorite", False),  # Added with default
+            # Additional fields from your example
+            "current_hp": getattr(self, "current_hp", "hp")  # For backward compatibility
+        }
+
     @classmethod
     def from_dict(cls, data):
         return cls(**data)
