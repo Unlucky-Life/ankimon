@@ -422,7 +422,7 @@ def save_main_pokemon_progress(
         color = "#6A4DAC" #pokemon leveling info color for tooltip
         check = check_for_badge(achievements, 5)
         if check is False:
-            achievements = receive_badge(5,- achievements)
+            achievements = receive_badge(5,achievements)
         try:
             tooltipWithColour(msg, color)
         except:
@@ -490,7 +490,7 @@ def save_main_pokemon_progress(
     # Load existing Pokémon data if it exists
 
     for mainpkmndata in main_pokemon_data:
-        mainpkmndata["stats"] = main_pokemon.base_stats
+        mainpkmndata["stats"] = main_pokemon.stats
         mainpkmndata["xp"] = int(main_pokemon.xp)
         #mainpkmndata["stats"]["xp"] = int(main_pokemon.xp)
         mainpkmndata["level"] = int(main_pokemon.level)
@@ -501,6 +501,17 @@ def save_main_pokemon_progress(
         mainpkmndata["ev"]["spa"] += ev_yield["special-attack"]
         mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
         mainpkmndata["ev"]["spe"] += ev_yield["speed"]
+        mainpkmndata["current_hp"] = int(main_pokemon.current_hp)
+        main_pokemon.friendship += random.randint(5, 9)
+        if main_pokemon.friendship > 255:
+            main_pokemon.friendship = 255
+        mainpkmndata["friendship"] = main_pokemon.friendship
+        main_pokemon.pokemon_defeated += 1
+        mainpkmndata["pokemon_defeated"] = main_pokemon.pokemon_defeated
+        if hasattr(main_pokemon, "tier"):
+            mainpkmndata["tier"] = main_pokemon.tier
+        if hasattr(main_pokemon, "is_favorite"):
+            mainpkmndata["is_favorite"] = main_pokemon.is_favorite   
     mypkmndata = mainpkmndata
     mainpkmndata = [mainpkmndata]
     # Save the caught Pokémon's data to a JSON file

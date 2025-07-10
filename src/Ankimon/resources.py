@@ -274,7 +274,7 @@ POKEMON_TIERS = {
 
 }
 
-def generate_startup_files(base_path):  # Add base_path parameter
+def generate_startup_files(base_path, base_user_path):  # Add base_user_path parameter
     """
     Generates blank personal files at startup with the value [].
     Introduced as a workaround to gitignore personal files.
@@ -283,7 +283,7 @@ def generate_startup_files(base_path):  # Add base_path parameter
              'team.json', 'data.json', 'badges.json']
     
     for file in files:
-        file_path = os.path.join(base_path, file)  # Use base_path parameter
+        file_path = os.path.join(base_user_path, file)  # Use base_user_path parameter
         # Create parent directory if needed
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         
@@ -293,12 +293,27 @@ def generate_startup_files(base_path):  # Add base_path parameter
 
     # Default data for the file
     default_rating_data = {"rate_this": False}
-    rate_path = os.path.join(base_path, 'rate_this.json')
+    rate_path = os.path.join(base_user_path, 'rate_this.json')
 
     # Create the file with default contents if it doesn't exist
     if not os.path.exists(rate_path):
         os.makedirs(os.path.dirname(rate_path), exist_ok=True)
         with open(rate_path, "w", encoding="utf-8") as f:
             json.dump(default_rating_data, f, indent=4)
+            
+    # Create blank HelpInfos.html and updateinfos.md at base_path if they don't exist
+    helpinfos_path = os.path.join(base_path, 'HelpInfos.html')
+    updateinfos_path = os.path.join(base_path, 'updateinfos.md')
 
+    if not os.path.exists(helpinfos_path):
+        os.makedirs(os.path.dirname(helpinfos_path), exist_ok=True)
+        with open(helpinfos_path, 'w', encoding='utf-8') as f:
+            f.write('')
+
+    if not os.path.exists(updateinfos_path):
+        os.makedirs(os.path.dirname(updateinfos_path), exist_ok=True)
+        with open(updateinfos_path, 'w', encoding='utf-8') as f:
+            f.write('')
+
+    return True
 
