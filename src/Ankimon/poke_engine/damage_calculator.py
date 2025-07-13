@@ -61,6 +61,7 @@ SPECIAL_LOGIC_MOVES = {
     "nightshade": lambda attacker, defender: [int(attacker.level)] if "normal" not in defender.types else None,
     "superfang": lambda attacker, defender: [int(defender.hp / 2)] if "ghost" not in defender.types else None,
     "naturesmadness": lambda attacker, defender: [int(defender.hp / 2)],
+    "guardianofalola": lambda attacker, defender: [int(3*defender.hp / 4)],
     "ruination": lambda attacker, defender: [int(defender.hp / 2)],
     "finalgambit": lambda attacker, defender: [int(attacker.hp)] if "ghost" not in defender.types else None,
     "endeavor": lambda attacker, defender: [int(defender.hp - attacker.hp)] if defender.hp > attacker.hp and "ghost" not in defender.types else None,

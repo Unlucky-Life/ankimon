@@ -6086,6 +6086,24 @@
         "type": "ghost",
         "volatileStatus": "grudge"
     },
+    "guardianofalola": {
+        "accuracy": true,
+        "basePower": 0,
+        "category": "special",
+        "flags": {
+            "zmove": 1
+        },
+        "id": "guardianofalola",
+        "name": "Guardian of Alola",
+        "pp": 1,
+        "priority": 0,
+        "secondary": null,
+        "target": "normal",
+        "type": "fairy",
+        "isZ": "tapuniumz",
+        "desc": "Deals damage to the target equal to 3/4 of its current HP, rounded down, but not less than 1 HP.",
+        "shortDesc": "Does damage equal to 3/4 target's current HP."
+    },
     "guardsplit": {
         "accuracy": true,
         "basePower": 0,
