@@ -453,6 +453,7 @@ def remember_attack(id, attacks, new_attack, logger):
     for mainpkmndata in main_pokemon_data:
         if mainpkmndata["id"] == id:
             mainpokemon_name = mainpkmndata["name"]
+            mainpokemon_individual_id = mainpkmndata["individual_id"]
             attacks = mainpkmndata["attacks"]
             if new_attack:
                 msg = ""
@@ -482,7 +483,7 @@ def remember_attack(id, attacks, new_attack, logger):
             with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
                 mypokemondata = json.load(output_file)
             for index, pokemon_data in enumerate(mypokemondata):
-                if pokemon_data["name"] == mainpokemon_name:
+                if pokemon_data["individual_id"] == mainpokemon_individual_id:
                     mypokemondata[index] = mypkmndata
                     break
             with open(str(mypokemon_path), "w") as output_file:
@@ -513,6 +514,7 @@ def forget_attack(id: int, attacks: list[str], attack_to_forget: str, logger: Sh
     for mainpkmndata in main_pokemon_data:
         if mainpkmndata["id"] == id:
             mainpokemon_name = mainpkmndata["name"]
+            mainpokemon_individual_id = mainpkmndata["individual_id"]
             attacks = mainpkmndata["attacks"]
             if attack_to_forget:
                 if attack_to_forget in attacks:
@@ -534,7 +536,7 @@ def forget_attack(id: int, attacks: list[str], attack_to_forget: str, logger: Sh
             with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
                 mypokemondata = json.load(output_file)
             for index, pokemon_data in enumerate(mypokemondata):
-                if pokemon_data["name"] == mainpokemon_name:
+                if pokemon_data["individual_id"] == mainpokemon_individual_id:
                     mypokemondata[index] = mypkmndata
                     break
             with open(str(mypokemon_path), "w") as output_file:
