@@ -215,7 +215,7 @@ class Reviewer_Manager:
                     enemy_lang_name += " ⭐ "
                 name_display_text = f"{enemy_lang_name} LvL: {self.enemy_pokemon.level}"
                 name_display_text += self.get_boost_values_string(self.enemy_pokemon, display_neutral_boost=False)
-                hp_display_text = f"HP: {self.enemy_pokemon.hp}/{self.enemy_pokemon.max_hp}"
+                hp_display_text = f"HP: {int(self.enemy_pokemon.hp)}/{int(self.enemy_pokemon.max_hp)}"
                 reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
                 reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
                 new_html_content = f'<img src="data:image/png;base64,{image_base64}" alt="PokeImage" style="animation: shake {self.seconds}s ease;">'
@@ -234,7 +234,7 @@ class Reviewer_Manager:
                         main_lang_name += " ⭐ "
                     main_name_display_text = f"{main_lang_name} LvL: {self.main_pokemon.level}"
                     main_name_display_text += self.get_boost_values_string(self.main_pokemon, display_neutral_boost=False)
-                    main_hp_display_text = f"HP: {self.main_pokemon.hp}/{self.main_pokemon.max_hp}"
+                    main_hp_display_text = f"HP: {int(self.main_pokemon.hp)}/{int(self.main_pokemon.max_hp)}"
                     reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50)) + '%";')
                     reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
                     reviewer.web.eval('document.getElementById("mylife-bar").style.boxShadow = "0 0 10px ' + myhp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')

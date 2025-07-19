@@ -308,8 +308,8 @@ class TestWindow(QWidget):
         #painter.drawText(55, 85, gender_text)
         painter.drawText(490, 199, f"{self.main_pokemon.level}")
 
-        hp_text = str(self.main_pokemon.hp)
-        max_hp_text = str(self.main_pokemon.max_hp)
+        hp_text = str(int(self.main_pokemon.hp))
+        max_hp_text = str(int(self.main_pokemon.max_hp))
 
         hp_x = 442 if int(self.main_pokemon.hp) < 100 else 430  # Shift left if 3 digits
         max_hp_x = 487 if int(self.main_pokemon.max_hp) < 100 else 480  # Shift left if 3 digits
@@ -475,8 +475,8 @@ class TestWindow(QWidget):
         painter.drawText(208, 67, f"{self.enemy_pokemon.level}")
         painter.drawText(490, 199, f"{self.main_pokemon.level}")
 
-        hp_text = str(self.main_pokemon.hp)
-        max_hp_text = str(self.main_pokemon.max_hp)
+        hp_text = str(int(self.main_pokemon.hp))
+        max_hp_text = str(int(self.main_pokemon.max_hp))
 
         hp_x = 442 if int(self.main_pokemon.hp) < 100 else 430  # Shift left if 3 digits
         max_hp_x = 487 if int(self.main_pokemon.max_hp) < 100 else 480  # Shift left if 3 digits
