@@ -668,7 +668,8 @@ def MainPokemon(
         pokemon_defeated=pokemon_data.get('pokemon_defeated', 0),
         everstone=pokemon_data.get('everstone', False),
         captured_date=pokemon_data.get('captured_date', None),
-        is_favorite = pokemon_data.get('is_favorite', False)   
+        is_favorite = pokemon_data.get('is_favorite', False),
+        held_item = pokemon_data.get('held_item'),
     )
     
     # Update existing reference
