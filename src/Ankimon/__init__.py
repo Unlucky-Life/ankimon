@@ -651,11 +651,14 @@ def on_review_card(*args):
             '''
             battle_info = results[0]
             new_state = copy.deepcopy(results[1])
-            dmg_from_enemy_move = results[2]
+            dmg_from_enemy_move = results[2]  # NOTE : This is ACTUALLY the sum of all damages and heals that occured to the user during the turn
             dmg_from_user_move = results[3]
-            user_hp_after = new_state.user.active.hp
-            opponent_hp_after = new_state.opponent.active.hp
+            user_hp_after = int(new_state.user.active.hp)
+            opponent_hp_after = int(new_state.opponent.active.hp)
             mutator_full_reset = results[4]
+            instructions = results[0]["instructions"]
+            heals_to_user = sum([inst[2] for inst in instructions if inst[0:2] == ['heal', 'user']])
+            true_dmg_from_enemy_move = sum([inst[2] for inst in instructions if inst[0:2] == ['damage', 'user']])
 
             # Unpacked and ready to go ! This info gives us pretty much ANYTHING we need to know about the battle (other than detailed logging)            
 
@@ -663,31 +666,31 @@ def on_review_card(*args):
 
             # For the variables below, calculating early > individually calling multiple times later
 
-            # Handling enemy attack on main pokemon, when multiplier < 1
-            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:               
-                
+            
+            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True:
                 main_pokemon.hp = user_hp_after
                 main_pokemon.current_hp = user_hp_after
 
                 try:
                     msg += translator.translate("pokemon_chose_attack", pokemon_name=enemy_pokemon.name.capitalize(), pokemon_attack=enemy_attack.capitalize())
 
-                    if dmg_from_enemy_move > 0:
+                    if true_dmg_from_enemy_move > 0:
                         reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
-                        msg += translator.translate("dmg_dealt", dmg=dmg_from_enemy_move, pokemon_name=main_pokemon.name.capitalize())
+                        msg += translator.translate("dmg_dealt", dmg=int(true_dmg_from_enemy_move), pokemon_name=main_pokemon.name.capitalize())
                         msg += "\n"
-                        tooltipWithColour(f" -{dmg_from_enemy_move} HP ", "#F06060", x=-200)
+                        tooltipWithColour(f" -{int(true_dmg_from_enemy_move)} HP ", "#F06060", x=-200)
                         if multiplier < 1:
                             play_effect_sound("HurtNormal")
                         else:
                             reviewer_obj.myseconds = 0
-                                                             
-                    '''elif dmg_from_enemy_move == 0:
-                        if results.get('opponent_missed', False):
-                            msg += "\n" + translator.translate("move_has_missed")'''
-                    
                 except Exception as e:
                     show_warning_with_traceback(parent=mw, exception=e, message="Error rendering enemy attack:")
+                    
+                if int(heals_to_user) != 0:
+                    # "Negative heal" can happen sometimes. That's how the Life Orb item deals its damage for instance
+                    heal_color = "#68FA94" if heals_to_user > 0 else "#F06060"
+                    sign = "+" if heals_to_user > 0 else ""
+                    tooltipWithColour(f" {sign}{int(heals_to_user)} HP ", heal_color, x=-250)
 
             # if enemy pokemon hp > 0, attack enemy pokemon
             if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
