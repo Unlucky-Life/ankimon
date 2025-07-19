@@ -1,10 +1,11 @@
+from typing import Union
 import uuid
 import json
 import os
 
 from ..poke_engine.objects import Pokemon
-from ..resources import pkmnimgfolder
-
+from ..resources import pkmnimgfolder, mainpokemon_path, mypokemon_path
+from ..utils import substract_item_from_itembag, give_item
 
 class PokemonObject:
     def __init__(
@@ -38,6 +39,7 @@ class PokemonObject:
         pokemon_defeated=0,
         is_favorite=False,
         captured_date=None,
+        held_item: Union[str, None]=None,
         **kwargs
     ):
         # Unique identifier
@@ -84,7 +86,7 @@ class PokemonObject:
         })
         self.volatile_status = set(kwargs.get('volatile_status', []))
         self.nature = kwargs.get('nature', 'serious')
-        self.item = kwargs.get('item', None)
+        self.held_item = held_item
 
         # HP calculation
         self.max_hp = self.calculate_max_hp()
@@ -187,7 +189,8 @@ class PokemonObject:
             "tier": self.tier,  # Added tier
             "is_favorite": getattr(self, "is_favorite", False),  # Added with default
             # Additional fields from your example
-            "current_hp": getattr(self, "current_hp", "hp")  # For backward compatibility
+            "current_hp": getattr(self, "current_hp", "hp"),  # For backward compatibility
+            "held_item": self.held_item,
         }
 
     @classmethod
@@ -268,7 +271,7 @@ class PokemonObject:
             'hp': self.hp,
             'maxhp': self.max_hp,
             'ability': normalize_name(self.ability[0]) if self.ability else 'none',
-            'item': None,
+            'item': normalize_name(self.held_item) if self.held_item else None,
             'attack': self.stats.get('atk', 0),
             'defense': self.stats.get('def', 0),
             'special_attack': self.stats.get('spa', 0),
@@ -324,7 +327,7 @@ class PokemonObject:
             },
             volatile_status=set(engine_data.get('volatile_status', [])),
             nature=engine_data.get('nature', 'serious'),
-            item=engine_data.get('item', '')
+            held_item=engine_data.get('item', '')
         )
     
     def to_poke_engine_Pokemon(self) -> Pokemon:
@@ -383,6 +386,105 @@ class PokemonObject:
             'accuracy': 0,
             'evasion': 0
             }
+        
+    def give_held_item(self, held_item: str) -> None:
+        """
+        Assigns a held item to the Pokémon and updates relevant data files.
+
+        If the Pokémon is already holding an item, it is removed first. The specified
+        item is subtracted from the item bag, assigned as the Pokémon's held item, 
+        and then saved in the user's Pokémon data files.
+
+        This method updates both `mypokemon_path` (the full Pokémon list) and
+        `mainpokemon_path` (if the Pokémon is the main one) to reflect the new held item.
+
+        Args:
+            held_item (str): The name of the item to be given to the Pokémon.
+
+        Returns:
+            None
+
+        Side Effects:
+            - Modifies `mypokemon_path` JSON file to set the held item.
+            - Modifies `mainpokemon_path` JSON file if the Pokémon is the main one.
+            - Removes one instance of the held item from the item bag.
+            - If an item is already held, it is removed first.
+            - Uses `ShowInfoLogger` for logging in case of errors via `substract_item_from_itembag`.
+        """
+        # If the pokemon already holds an object, we remove it to make room for the new one.
+        if self.held_item:
+            self.remove_held_item()
+
+        substract_item_from_itembag(held_item, quantity=1)
+        self.held_item = held_item
+
+        # Then, We save that information in the user data
+        # First, we save the info in mypokemon_path
+        with open(mypokemon_path, "r", encoding="utf-8") as f:
+            pokemon_list_data = json.load(f)
+
+        for i in range(len(pokemon_list_data)):
+            if pokemon_list_data[i]["individual_id"] == self.individual_id:
+                pokemon_list_data[i]["held_item"] = held_item
+                break
+
+        with open(str(mypokemon_path), "w") as f:
+            json.dump(pokemon_list_data, f, indent=2)
+
+        # Secondly, we save the info in mainpokemon_path, if the pokemon happens to be our main pokemon
+        with open(mainpokemon_path, "r", encoding="utf-8") as f:
+            main_pokemon_data = json.load(f)
+
+        if main_pokemon_data[0]["individual_id"] == self.individual_id:
+            main_pokemon_data[0]["held_item"] = held_item
+            with open(str(mainpokemon_path), "w") as f:
+                json.dump(main_pokemon_data, f, indent=2)
+
+    def remove_held_item(self) -> None:
+        """
+        Removes the held item from the Pokémon and updates relevant data files.
+
+        If the Pokémon is currently holding an item, the item is returned to the item bag
+        via `give_item`, the `held_item` attribute is cleared, and the change is saved
+        in both `mypokemon_path` (the user's Pokémon list) and `mainpokemon_path` (if the
+        Pokémon is the main one).
+
+        Returns:
+            None
+
+        Side Effects:
+            - Adds the held item back to the item bag using `give_item`.
+            - Updates the `mypokemon_path` JSON file to set `held_item` to `None`.
+            - If the Pokémon is the main Pokémon, updates the `mainpokemon_path` file as well.
+        """
+        if self.held_item is None:
+            return
+        
+        give_item(self.held_item)  # We put the item back in the item bag
+        self.held_item = None
+
+        # Then, We save that information in the user data
+        # First, we save the info in mypokemon_path
+        with open(mypokemon_path, "r", encoding="utf-8") as f:
+            pokemon_list_data = json.load(f)
+
+        for i in range(len(pokemon_list_data)):
+            if pokemon_list_data[i]["individual_id"] == self.individual_id:
+                pokemon_list_data[i]["held_item"] = None
+                break
+
+        with open(str(mypokemon_path), "w") as f:
+            json.dump(pokemon_list_data, f, indent=2)
+
+        # Secondly, we save the info in mainpokemon_path, if the pokemon happens to be our main pokemon
+        with open(mainpokemon_path, "r", encoding="utf-8") as f:
+            main_pokemon_data = json.load(f)
+
+        if main_pokemon_data[0]["individual_id"] == self.individual_id:
+            main_pokemon_data[0]["held_item"] = None
+            with open(str(mainpokemon_path), "w") as f:
+                json.dump(main_pokemon_data, f, indent=2)
+
 
 class PokemonEncoder(json.JSONEncoder):
     def default(self, obj):

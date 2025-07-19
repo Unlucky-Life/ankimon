@@ -736,3 +736,62 @@ def safe_get_random_move(
             f"Could not parse a single move in the following moveset : {str(pokemon_moves)}",
         )
     return find_details_move(format_move_name("splash"))
+
+def substract_item_from_itembag(item: str, quantity: int=1) -> None:
+    """
+    Removes a specified quantity of an item from the item bag.
+
+    This function reads the item bag from a JSON file located at `itembag_path`,
+    checks for the presence of the given item, and attempts to subtract the specified
+    quantity. If the item's quantity reaches zero, it is removed from the bag.
+    Logs and displays warnings or errors using ShowInfoLogger if the operation
+    cannot be completed (e.g., item not found or insufficient quantity).
+
+    Args:
+        item (str): The name of the item to remove from the item bag.
+        quantity (int, optional): The number of items to remove. Defaults to 1.
+
+    Returns:
+        None
+
+    Raises:
+        This function does not raise exceptions directly, but logs and shows errors
+        using ShowInfoLogger in cases such as:
+            - Item not found in the item bag.
+            - Item does not have a 'quantity' field.
+            - Insufficient quantity to subtract.
+    """
+    with open(itembag_path, "r", encoding="utf-8") as f:
+        items_list = json.load(f)
+
+    # First, we check if the item is in the item bag
+    if item not in [item_data["item"] for item_data in items_list]:
+        ShowInfoLogger().log_and_showinfo("error", f"Could not find {item} in the item bag.")
+        return
+    
+    # Now that we know the item is in the item bag, we retrieve its index
+    index = None
+    for i in range(len(items_list)):
+        if items_list[i]["item"] == item:
+            index = i
+            break
+    
+    # Now we check whether we can actually substract the chosen amount
+    if items_list[index].get("quantity") is None:
+        ShowInfoLogger().log_and_showinfo("error", f"{item} does not seem to have a 'quantity' attribute in the item bag.")
+        return
+    if items_list[index].get("quantity") < quantity:
+        ShowInfoLogger().log_and_showinfo("error", f"There are {items_list[index].get('quantity')} instances of {item} in the item bag, but you are trying to remove {quantity}.")
+        return
+    
+    # Finally, we substract the given amount
+    if items_list[index].get("quantity") == quantity:
+        del items_list[index]
+        with open(str(itembag_path), "w") as f:
+            json.dump(items_list, f, indent=2)
+        return
+    if items_list[index].get("quantity") > quantity:
+        items_list[index]["quantity"] -= quantity
+        with open(str(itembag_path), "w") as f:
+            json.dump(items_list, f, indent=2)
+        return
