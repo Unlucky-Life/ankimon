@@ -65,5 +65,12 @@
     "ankimon_export_button_title": "エクスポート",
     "ankimon_help_button_title": "ヘルプ",
     "ankimon_debug_button_title": "デバッグ",
-    "backup_error": "ファイルのバックアップ中にエラーが発生しました。詳細はコンソールを確認してください。"
+    "backup_error": "ファイルのバックアップ中にエラーが発生しました。詳細はコンソールを確認してください。",
+    "wild_pokemon_appeared": "野生の{enemy_pokemon_name}が現れた！",
+    "received_an_item": "アイテムを受け取りました: {item_name}",
+    "received_a_badge": "バッジを受け取りました",
+    "catch_or_free": "野生の{enemy_pokemon_name}を逃がすか捕まえますか？",
+    "choose_nickname": "ニックネームを選択",
+    "stat_increased": "が上がった",
+    "stat_decreased": "が下がった"
 }
