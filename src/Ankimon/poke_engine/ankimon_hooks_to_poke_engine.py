@@ -10,8 +10,9 @@ from .helpers import normalize_name
 from .find_state_instructions import get_all_state_instructions
 from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.error_handler import show_warning_with_traceback
+from ..pyobj.InfoLogger import ShowInfoLogger
 
-#logger = ShowInfoLogger()
+logger = ShowInfoLogger()
 
 def reset_stat_boosts(pokemon: Pokemon) -> Pokemon:
     """
@@ -224,7 +225,14 @@ def simulate_battle_with_poke_engine(
         user_hp_before = int(state.user.active.hp)
         opponent_hp_before = int(state.opponent.active.hp)
 
+        # --- Debugging: State changes BEFORE applying instructions
+        state_before = copy.deepcopy(mutator.state)
         mutator.apply(instrs)
+        state_after = mutator.state
+        changes = diff_states(state_before, state_after)
+        for change in changes:
+            print("State changed:", change)
+        # --- End Debugging
 
         # Save changes from State to Pokemon objects (enhanced for volatile status)
         main_pokemon.hp = state.user.active.hp
@@ -293,15 +301,66 @@ def simulate_battle_with_poke_engine(
         for instr in chosen_outcome.instructions:
             battle_effects.append(list(instr))  # Convert tuples to lists
 
-        print(f"{unlucky_life * 100}% chance: {battle_effects}")
-
         battle_info = {
             'battle_header': battle_header,
             'instructions': battle_effects,
             'state': new_state
             }
 
+        print(f"{unlucky_life * 100}% chance: {battle_effects}")
         return battle_info, new_state, dmg_from_enemy_move, dmg_from_user_move, mutator_full_reset
     
     except Exception as e:
         show_warning_with_traceback(exception=e, message="Error simulating battle:")
+
+def diff_states(state_before, state_after, path="", changes=None):
+    """Recursively compare two state objects and return a list of changed attributes."""
+    if changes is None:
+        changes = []
+
+    # If both are None or both are the same primitive, skip
+    if state_before == state_after:
+        return changes
+
+    # Dict: recurse into keys
+    if isinstance(state_before, dict):
+        keys = set(state_before.keys()).union(set(state_after.keys()))
+        for key in keys:
+            new_path = f"{path}.{key}" if path else str(key)
+            changes += diff_states(state_before.get(key), state_after.get(key), new_path)
+        return changes
+
+    # List or tuple: recurse into indices
+    if isinstance(state_before, (list, tuple)):
+        min_len = min(len(state_before), len(state_after))
+        for i in range(min_len):
+            new_path = f"{path}[{i}]"
+            changes += diff_states(state_before[i], state_after[i], new_path)
+        if len(state_before) != len(state_after):
+            changes.append(f"{path}: length changed from {len(state_before)} to {len(state_after)}")
+        return changes
+
+    # Custom class: recurse into attributes (__dict__ and __slots__)
+    if hasattr(state_before, "__dict__") or hasattr(state_before, "__slots__"):
+        attrs = set()
+        if hasattr(state_before, "__dict__"):
+            attrs.update(vars(state_before).keys())
+        if hasattr(state_after, "__dict__"):
+            attrs.update(vars(state_after).keys())
+        # Handle __slots__ if present
+        for obj in (state_before, state_after):
+            if hasattr(obj, "__slots__"):
+                for slot in obj.__slots__:
+                    attrs.add(slot)
+        for attr in attrs:
+            b = getattr(state_before, attr, None)
+            a = getattr(state_after, attr, None)
+            new_path = f"{path}.{attr}" if path else attr
+            changes += diff_states(b, a, new_path)
+        return changes
+
+    # Otherwise, compare directly
+    if state_before != state_after:
+        changes.append(f"{path}: {state_before} -> {state_after}")
+        logger.log("debug", f"State changed: {path}: {state_before} -> {state_after}")
+    return changes
