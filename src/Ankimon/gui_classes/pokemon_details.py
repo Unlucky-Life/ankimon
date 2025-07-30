@@ -482,7 +482,7 @@ def remember_attack(id, attacks, new_attack, logger):
             with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
                 mypokemondata = json.load(output_file)
             for index, pokemon_data in enumerate(mypokemondata):
-                if pokemon_data["name"] == mainpokemon_name:
+                if pokemon_data["individual_id"] == id:
                     mypokemondata[index] = mypkmndata
                     break
             with open(str(mypokemon_path), "w") as output_file:
