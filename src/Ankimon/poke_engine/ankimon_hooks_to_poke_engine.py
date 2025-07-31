@@ -115,9 +115,9 @@ def simulate_battle_with_poke_engine(
     if enemy_move is None and enemy_pokemon.attacks:
         enemy_move = random.choice(enemy_pokemon.attacks)
     if not main_move:
-        main_move = "Struggle"
+        main_move = "Splash"
     if not enemy_move:
-        enemy_move = "Struggle"
+        enemy_move = "Splash"
     
 
     if (state is not None) and (state.user.active.id != main_pokemon.name.lower()):
