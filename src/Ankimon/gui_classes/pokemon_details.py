@@ -451,8 +451,8 @@ def remember_attack(id, attacks, new_attack, logger):
     with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
         main_pokemon_data = json.load(json_file)
     for mainpkmndata in main_pokemon_data:
-        if mainpkmndata["id"] == id:
-            mainpokemon_name = mainpkmndata["name"]
+        # Use both id and individual_id for robustness
+        if mainpkmndata.get("id") == id or mainpkmndata.get("individual_id") == id:
             attacks = mainpkmndata["attacks"]
             if new_attack:
                 msg = ""
@@ -475,20 +475,22 @@ def remember_attack(id, attacks, new_attack, logger):
                         else:
                             logger.log_and_showinfo("info",f"{new_attack} will be discarded.")
             mainpkmndata["attacks"] = attacks
-            mypkmndata = mainpkmndata
-            mainpkmndata = [mainpkmndata]
+            # Save to mainpokemon file
             with open(str(mainpokemon_path), "w") as json_file:
-                json.dump(mainpkmndata, json_file, indent=2)
+                json.dump([mainpkmndata], json_file, indent=2)
+            # Update mypokemon file
             with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
                 mypokemondata = json.load(output_file)
             for index, pokemon_data in enumerate(mypokemondata):
-                if pokemon_data["individual_id"] == id:
-                    mypokemondata[index] = mypkmndata
+                # Use individual_id for matching
+                if pokemon_data.get("individual_id") == mainpkmndata.get("individual_id"):
+                    mypokemondata[index] = mainpkmndata
                     break
             with open(str(mypokemon_path), "w") as output_file:
                 json.dump(mypokemondata, output_file, indent=2)
-        else:
-            logger.log_and_showinfo("info","Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
+            break
+    else:
+        logger.log_and_showinfo("info","Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
 
 def forget_attack(id: int, attacks: list[str], attack_to_forget: str, logger: ShowInfoLogger) -> None:
     """
