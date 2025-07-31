@@ -90,10 +90,10 @@ def update_main_pokemon(main_pokemon: Optional[PokemonObject] = None):
                     main_pokemon = PokemonObject(**MAIN_POKEMON_DEFAULT)
                 max_hp = main_pokemon.calculate_max_hp()
                 main_pokemon.max_hp = max_hp
-                # if main_pokemon_data[0].get("current_hp", max_hp) > max_hp:
-                # main_pokemon_data[0]["current_hp"] = max_hp
+                if main_pokemon_data[0].get("current_hp", max_hp) > max_hp:
+                    main_pokemon_data[0]["current_hp"] = max_hp
                 if main_pokemon_data:
-                    main_pokemon.hp = main_pokemon_data[0].get("hp", max_hp)
+                    main_pokemon.hp = main_pokemon_data[0].get("current_hp", max_hp)
                 return main_pokemon, mainpokemon_empty
 
             except json.JSONDecodeError:
