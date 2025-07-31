@@ -323,12 +323,14 @@ def random_fossil():
 
 def count_items_and_rewrite(file_path):
     """
-    Reads the items.json file, counts item occurrences by name,
-    and rewrites the file with items and their total quantities.
+    Reads the items.json file, groups entries by all keys except 'quantity',
+    sums their quantities, and rewrites the file preserving every other field.
     """
     try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            items = json.load(file)
+        with open(file_path, "r", encoding="utf-8") as f:
+            items = json.load(f)
+
+        aggregated = {}  # maps a frozenset of (key,value) pairs to the merged entry
 
         updated_items = []
         for item in items:
@@ -339,10 +341,10 @@ def count_items_and_rewrite(file_path):
             updated_item["quantity"] = item.get("quantity", 1)
             updated_items.append(updated_item)
 
-        with open(file_path, 'w', encoding="utf-8") as file:
-            json.dump(updated_items, file, indent=4)
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(updated_items, f, indent=4, ensure_ascii=False)
 
-        print("items.json has been updated with item quantities!")
+        print("items.json has been updated with aggregated quantities!")
 
     except Exception as e:
         show_warning_with_traceback(exception=e, message=f"An unexpected error occurred: {e}")

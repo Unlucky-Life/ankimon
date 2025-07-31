@@ -5,6 +5,9 @@ from . import constants
 from .data import all_move_json
 from .data import pokedex
 
+from ..singletons import ankimon_tracker_obj
+
+import math
 
 pokemon_type_indicies = {
     'normal': 0,
@@ -58,6 +61,7 @@ SPECIAL_LOGIC_MOVES = {
     "nightshade": lambda attacker, defender: [int(attacker.level)] if "normal" not in defender.types else None,
     "superfang": lambda attacker, defender: [int(defender.hp / 2)] if "ghost" not in defender.types else None,
     "naturesmadness": lambda attacker, defender: [int(defender.hp / 2)],
+    "guardianofalola": lambda attacker, defender: [int(3*defender.hp / 4)],
     "ruination": lambda attacker, defender: [int(defender.hp / 2)],
     "finalgambit": lambda attacker, defender: [int(attacker.hp)] if "ghost" not in defender.types else None,
     "endeavor": lambda attacker, defender: [int(defender.hp - attacker.hp)] if defender.hp > attacker.hp and "ghost" not in defender.types else None,
@@ -151,8 +155,11 @@ def _calculate_damage(attacker, defender, move, conditions=None, calc_type='aver
     damage *= calculate_modifier(attacker, defender, defending_types, attacking_move, conditions)
 
     damage_rolls = get_damage_rolls(damage, calc_type)
+    
+    # Allow for multiplier adjustments to the damage rolls
+    modified_damage_rolls = [math.floor(dmg * ankimon_tracker_obj.multiplier) for dmg in damage_rolls]
 
-    return list(set(damage_rolls))
+    return list(set(modified_damage_rolls))
 
 
 def is_super_effective(move_type, defending_pokemon_types):

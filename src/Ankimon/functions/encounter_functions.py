@@ -1,3 +1,4 @@
+
 import json
 import random
 import math
@@ -531,8 +532,54 @@ def save_main_pokemon_progress(
         # Save the modified data to the output JSON file
         with open(str(mypokemon_path), "w") as output_file:
             json.dump(mypokemondata, output_file, indent=2)
+    
+    sync_mainpokemon_to_mypokemon(main_pokemon, mainpokemon_path, mypokemon_path)
 
     return main_pokemon.level
+
+# --- Utility: Sync mainpokemon to mypokemon ---
+def sync_mainpokemon_to_mypokemon(main_pokemon, mainpokemon_path, mypokemon_path):
+    """
+    Update the relevant entry in mypokemon file with the latest values from mainpokemon file.
+    Args:
+        main_pokemon: The main PokemonObject (should have individual_id).
+        mainpokemon_path: Path to mainpokemon.json.
+        mypokemon_path: Path to mypokemon.json.
+    """
+    import json
+    # Load mainpokemon data
+    if not mainpokemon_path.is_file():
+        return
+    with open(mainpokemon_path, "r", encoding="utf-8") as f:
+        main_data = json.load(f)
+    if not main_data:
+        return
+    # Use the first (and only) mainpokemon entry
+    main_entry = main_data[0] if isinstance(main_data, list) else main_data
+    main_id = main_entry.get("individual_id", None)
+    if not main_id:
+        main_id = getattr(main_pokemon, "individual_id", None)
+    if not main_id:
+        return
+    # Load mypokemon data
+    if not mypokemon_path.is_file():
+        return
+    with open(mypokemon_path, "r", encoding="utf-8") as f:
+        my_data = json.load(f)
+    # Find and update the entry with matching individual_id
+    updated = False
+    for idx, entry in enumerate(my_data):
+        if entry.get("individual_id") == main_id:
+            # Update all keys from main_entry (except those you want to preserve in mypokemon)
+            for k, v in main_entry.items():
+                entry[k] = v
+            my_data[idx] = entry
+            updated = True
+            break
+    if updated:
+        with open(mypokemon_path, "w", encoding="utf-8") as f:
+            json.dump(my_data, f, indent=2)
+    return
 
 def kill_pokemon(
         main_pokemon: PokemonObject,

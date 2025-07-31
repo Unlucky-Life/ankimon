@@ -134,6 +134,13 @@ from .singletons import (
     pokemon_pc
 )
 
+from .functions.battle_functions import (
+    update_pokemon_battle_status,
+    validate_pokemon_status,
+    process_battle_data,
+    _process_battle_effects
+)
+
 from .pyobj.error_handler import show_warning_with_traceback
 from .functions.drawing_utils import draw_gender_symbols, draw_stat_boosts
 
@@ -338,146 +345,7 @@ def answerCard_after(rev, card, ease):
 
 aqt.gui_hooks.reviewer_will_answer_card.append(answerCard_before)
 aqt.gui_hooks.reviewer_did_answer_card.append(answerCard_after)
-        
-def process_battle_data(battle_data: dict) -> str:
-    """Convert raw battle instructions into human-readable format."""
-    # Error handling and input validation
-    
 
-    if not isinstance(battle_data, dict) or 'battle_header' not in battle_data:
-        error_msg = mw.translator.translate("invalid_battle_data")
-        return f"Error: {error_msg}"
-    
-    try:
-        # Extract battle header information
-        header = battle_data['battle_header']
-        user_name = format_pokemon_name(header['user']['name'])
-        opponent_name = format_pokemon_name(header['opponent']['name'])
-        user_move = format_move_name(header['user']['move'])
-        opponent_move = format_move_name(header['opponent']['move'])
-        
-        # Initialize output with battle context
-        output = [
-            mw.translator.translate(
-                "battle_header",
-                user_name=user_name,
-                user_level=header['user']['level'],
-                opponent_name=opponent_name,
-                opponent_level=header['opponent']['level']
-            ),
-            mw.translator.translate("user_move", user_name=user_name, move=user_move),
-            mw.translator.translate("opponent_move", opponent_name=opponent_name, move=opponent_move),
-            "\n=== " + mw.translator.translate("battle_effects") + " ==="
-        ]
-
-        # Helper functions for common patterns
-        def format_stat(raw_stat: str) -> str:
-            """Convert engine stat names to display names."""
-            stat_map = {
-                'atk': 'attack',
-                'def': 'defense',
-                'spa': 'special-attack',
-                'spd': 'special-defense',
-                'spe': 'speed',
-                'accuracy': 'accuracy',
-                'evasion': 'evasion'
-            }
-            return stat_map.get(raw_stat, raw_stat.replace('-', ' ').title())
-
-        def get_pokemon_name(side: str) -> str:
-            """Get formatted Pokémon name based on battle side."""
-            return user_name if side == 'user' else opponent_name
-
-        # Process each instruction
-        for instr in battle_data.get('instructions', []):
-            if not instr:
-                continue
-
-            action = instr[0]
-            target_side = instr[1] if len(instr) > 1 else None
-            pokemon_name = get_pokemon_name(target_side) if target_side else None
-
-            try:
-                if action == constants.MUTATOR_DAMAGE:
-                    damage = instr[2]
-                    output.append(mw.translator.translate(
-                        "damage_taken",
-                        pokemon_name=pokemon_name,
-                        damage=damage
-                    ))
-                
-                elif action == constants.MUTATOR_HEAL:
-                    amount = instr[2]
-                    output.append(mw.translator.translate(
-                        "heal_effect",
-                        pokemon_name=pokemon_name,
-                        amount=amount
-                    ))
-                
-                elif action == constants.MUTATOR_APPLY_STATUS:
-                    status = format_move_name(instr[2])
-                    output.append(mw.translator.translate(
-                        "status_apply",
-                        pokemon_name=pokemon_name,
-                        status=status
-                    ))
-                
-                elif action == constants.MUTATOR_BOOST:
-                    stat = format_stat(instr[2])
-                    amount = instr[3]
-                    direction = mw.translator.translate("rose") if amount > 0 else mw.translator.translate("fell")
-                    output.append(mw.translator.translate(
-                        "stat_change",
-                        pokemon_name=pokemon_name,
-                        stat=stat,
-                        direction=direction,
-                        amount=abs(amount)
-                    ))
-                
-                elif action == constants.MUTATOR_SIDE_START:
-                    condition = format_move_name(instr[2])
-                    side = mw.translator.translate("your_side") if target_side == 'user' else mw.translator.translate("opponent_side")
-                    output.append(mw.translator.translate(
-                        "side_effect",
-                        side=side,
-                        condition=condition
-                    ))
-                
-                elif action == constants.MUTATOR_WEATHER_START:
-                    weather = format_move_name(instr[1])
-                    output.append(mw.translator.translate(
-                        "weather_change",
-                        weather=weather
-                    ))
-                              
-                elif action == constants.MUTATOR_APPLY_VOLATILE_STATUS:
-                    status = format_move_name(instr[2])
-                    output.append(mw.translator.translate(
-                        "volatile_status_apply",
-                        pokemon_name=pokemon_name,
-                        status=status.capitalize()
-                    ))
-
-                else:
-                    output.append(f"Unhandled action: {action}")
-
-            except Exception as e:
-                show_warning_with_traceback(parent=mw, exception=e, message="Error processing instruction:")
-                continue
-
-        # Add missed move information
-        if battle_data.get('user_missed', False):
-            output.append(mw.translator.translate("user_move_missed"))
-        
-        if battle_data.get('opponent_missed', False):
-            output.append(mw.translator.translate("opponent_move_missed"))
-
-        return "\n".join(output)
-
-    except KeyError as e:
-        show_warning_with_traceback(parent=mw, exception=e, message="Missing key in data:")
-    except Exception as e:
-        show_warning_with_traceback(parent=mw, exception=e, message="Unexpected error:")
             
 #get main pokemon details:
 if database_complete:
@@ -520,7 +388,6 @@ cry_counter = 0
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
-        battle_status = enemy_pokemon.battle_status
         multiplier = ankimon_tracker_obj.multiplier
         mainpokemon_type = main_pokemon.type
         mainpokemon_name = main_pokemon.name
@@ -605,10 +472,6 @@ def on_review_card(*args):
                 elif category == "Special":
                     color = "#D2B4DE"
 
-            msg = ""
-            # msg += f"{multiplier}x {translator.translate('multiplier')}"
-            # DISABLED for now - multiplier has to be implemented properly into new system
-            #failed card = enemy attack
 
             try:
                 new_state
@@ -640,94 +503,73 @@ def on_review_card(*args):
                 enemy_attack,
                 mutator_full_reset,
                 new_state,
-                )
+            )
           
-            '''
-            It is important that any changes to pokemon stats are accurately represented
-            in the main_pokemon and enemy_pokemon objects, in order to let them
-            be arguments in the engine function.
-
-            Next, we need an unpacker to ensure that it goes from tuple values under results, to actual variables!
-            '''
+            # 2. Unpack results from the simulation
             battle_info = results[0]
             new_state = copy.deepcopy(results[1])
             dmg_from_enemy_move = results[2]
             dmg_from_user_move = results[3]
-            user_hp_after = new_state.user.active.hp
-            opponent_hp_after = new_state.opponent.active.hp
             mutator_full_reset = results[4]
+            current_battle_info_changes = results[5]
 
-            # Unpacked and ready to go ! This info gives us pretty much ANYTHING we need to know about the battle (other than detailed logging)            
+            # 3. --- IMMEDIATE STATE SYNCHRONIZATION (THE FIX) ---
+            # Update Pokémon objects with the new state from the engine BEFORE any other processing.
+            # This ensures all subsequent functions have the correct HP and status.
+            main_pokemon.hp = new_state.user.active.hp
+            main_pokemon.current_hp = new_state.user.active.hp
+            enemy_pokemon.hp = new_state.opponent.active.hp
+            enemy_pokemon.current_hp = new_state.opponent.active.hp
 
-            process_battle_data(battle_info)
+            # Update statuses based on instructions, now that HP is correct.
+            enemy_status_changed, main_status_changed = update_pokemon_battle_status(
+                battle_info, enemy_pokemon, main_pokemon
+            )
 
-            # For the variables below, calculating early > individually calling multiple times later
+            # Final validation to ensure consistency
+            enemy_pokemon.battle_status = validate_pokemon_status(enemy_pokemon)
+            main_pokemon.battle_status = validate_pokemon_status(main_pokemon)
+            
+            # 4. Generate the battle log message using the now-correct Pokémon states
+            formatted_battle_log = process_battle_data(
+                battle_info=battle_info,
+                multiplier=multiplier,
+                main_pokemon=main_pokemon,
+                enemy_pokemon=enemy_pokemon,
+                user_attack=user_attack,
+                enemy_attack=enemy_attack,
+                dmg_from_user_move=dmg_from_user_move,
+                dmg_from_enemy_move=dmg_from_enemy_move,
+                user_hp_after=main_pokemon.hp, # Use the already updated HP
+                opponent_hp_after=enemy_pokemon.hp, # Use the already updated HP
+                battle_status=main_pokemon.battle_status,
+                pokemon_encounter=ankimon_tracker_obj.pokemon_encouter,
+                dmg_in_reviewer=settings_obj.get("battle.dmg_in_reviewer", True),
+                translator=translator,
+                changes=current_battle_info_changes
+            )
 
-            # Handling enemy attack on main pokemon, when multiplier < 1
-            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:               
-                
-                main_pokemon.hp = user_hp_after
-                main_pokemon.current_hp = user_hp_after
+            # Display the complete message
+            tooltipWithColour(formatted_battle_log, color)
+            
+            # Handle sound effects and animations (existing code)
+            if dmg_from_enemy_move > 0 and multiplier < 1:
+                reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
+                tooltipWithColour(f" -{dmg_from_enemy_move} HP ", "#F06060", x=-200)
+                play_effect_sound("HurtNormal")
 
-                try:
-                    msg += translator.translate("pokemon_chose_attack", pokemon_name=enemy_pokemon.name.capitalize(), pokemon_attack=enemy_attack.capitalize())
+            if dmg_from_user_move > 0:
+                reviewer_obj.seconds = int(settings_obj.compute_special_variable("animate_time"))
+                tooltipWithColour(f" -{dmg_from_user_move} HP ", "#F06060", x=200)
+                if multiplier == 1:
+                    play_effect_sound("HurtNormal")
+                elif multiplier < 1:
+                    play_effect_sound("HurtNotEffective")
+                elif multiplier > 1:
+                    play_effect_sound("HurtSuper")
+            else:
+                reviewer_obj.seconds = 0
 
-                    if dmg_from_enemy_move > 0:
-                        reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
-                        msg += translator.translate("dmg_dealt", dmg=dmg_from_enemy_move, pokemon_name=main_pokemon.name.capitalize())
-                        msg += "\n"
-                        tooltipWithColour(f" -{dmg_from_enemy_move} HP ", "#F06060", x=-200)
-                        if multiplier < 1:
-                            play_effect_sound("HurtNormal")
-                        else:
-                            reviewer_obj.myseconds = 0
-                                                             
-                    '''elif dmg_from_enemy_move == 0:
-                        if results.get('opponent_missed', False):
-                            msg += "\n" + translator.translate("move_has_missed")'''
-                    
-                except Exception as e:
-                    show_warning_with_traceback(parent=mw, exception=e, message="Error rendering enemy attack:")
-
-            # if enemy pokemon hp > 0, attack enemy pokemon
-            if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
-                
-                enemy_pokemon.hp = opponent_hp_after
-                enemy_pokemon.current_hp = opponent_hp_after
-                                
-                msg += translator.translate("pokemon_chose_attack", pokemon_name=main_pokemon.name.capitalize(), pokemon_attack=user_attack.capitalize())
-                
-                if battle_status != "fighting": # dealing with SPECIAL EFFECTS on Pokemon
-                    pass
-               
-                else:
-                    if category == "Status":
-                        pass
-
-                        '''if dmg_from_user_move == 0:
-                            if results.get('user_missed', False):
-                                msg += "\n" + translator.translate("move_has_missed")'''
-                            
-                    else:
-                        msg += translator.translate("dmg_dealt", dmg=dmg_from_user_move, pokemon_name=enemy_pokemon.name.capitalize())
-
-                        if enemy_pokemon.hp < 1:
-                            enemy_pokemon.hp = 0
-                            msg += translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize())
-                            
-                    tooltipWithColour(msg, color)
-                    
-                    if dmg_from_user_move > 0:
-                        reviewer_obj.seconds = int(settings_obj.compute_special_variable("animate_time"))
-                        tooltipWithColour(f" -{dmg_from_user_move} HP ", "#F06060", x=200)
-                        if multiplier == 1:
-                            play_effect_sound("HurtNormal")
-                        elif multiplier < 1:
-                            play_effect_sound("HurtNotEffective")
-                        elif multiplier > 1:
-                            play_effect_sound("HurtSuper")
-                    else:
-                        reviewer_obj.seconds = 0
 
             # if enemy pokemon faints, this handles AUTOMATIC BATTLE
             if enemy_pokemon.hp < 1:
@@ -743,7 +585,7 @@ def on_review_card(*args):
                     achievements
                     )
 
-                mutator_full_reset = 2 # reset opponent state
+                mutator_full_reset = 1 # reset opponent state
 
         if cry_counter == 10 and battle_sounds is True:
             cry_counter = 0
