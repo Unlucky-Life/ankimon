@@ -176,7 +176,13 @@ def draw_stat_boosts(
 
             painter.setBrush(QColor(150, 220, 150))
             painter.setPen(QColor(50, 150, 50))
-            font = QFont("System", 1)
+            font = QFont("Early GameBoy", 8, QFont.Weight.Bold)
+            if val < 0:
+                painter.setBrush(QColor(250, 233, 229))  # Light red background
+                painter.setPen(QColor(211, 73, 41))      # Dark red border
+            elif val > 0:
+                painter.setBrush(QColor(229, 255, 233))  # Light green background
+                painter.setPen(QColor(97, 164, 52))      # Dark green border
             painter.setFont(font)
 
             painter.drawRect(rect)
@@ -191,5 +197,3 @@ def draw_stat_boosts(
     painter.setPen(pen_color_backup)  # Going back to the color we had before drawing gender symbols
     painter.setBrush(brush_color_backup)
     painter.setFont(font_backup)
-            
-            

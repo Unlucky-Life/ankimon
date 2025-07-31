@@ -633,6 +633,31 @@ def MainPokemon(
         reviewer_obj: Reviewer_Manager,
         test_window: TestWindow,
         ):
+    # --- Save the existing mainpokemon to mypokemon before replacing ---
+    try:
+        # Load the current mainpokemon
+        with open(mainpokemon_path, "r", encoding="utf-8") as f:
+            current_main_list = json.load(f)
+        if current_main_list:
+            current_main = current_main_list[0]
+            # Load mypokemon
+            with open(mypokemon_path, "r", encoding="utf-8") as f:
+                mypokemondata = json.load(f)
+            # Update or append the current mainpokemon in mypokemon
+            found = False
+            for idx, pkmn in enumerate(mypokemondata):
+                if pkmn.get("individual_id") == current_main.get("individual_id"):
+                    mypokemondata[idx] = current_main
+                    found = True
+                    break
+            if not found:
+                mypokemondata.append(current_main)
+            with open(mypokemon_path, "w", encoding="utf-8") as f:
+                json.dump(mypokemondata, f, indent=2)
+    except Exception:
+        pass  # If files don't exist, just continue
+
+    # --- Now proceed to set the new mainpokemon as before ---
     pokemon_id = pokemon_data.get("id")
     pokemon_name = search_pokedex_by_id(pokemon_id)
     base_stats = search_pokedex(pokemon_name, "baseStats")
@@ -664,12 +689,27 @@ def MainPokemon(
         status=pokemon_data.get('status', None),
         volatile_status=set(pokemon_data.get('volatile_status', [])),
         xp=pokemon_data.get("xp", 0),
-        tier=pokemon_data.get('tier', 'None'),
+        nickname=pokemon_data.get('nickname', None),
+        # Add common extra fields if constructor supports them
+        friendship=pokemon_data.get('friendship', 0),
         pokemon_defeated=pokemon_data.get('pokemon_defeated', 0),
         everstone=pokemon_data.get('everstone', False),
+        mega=pokemon_data.get('mega', False),
+        special_form=pokemon_data.get('special-form', None),
+        evos=pokemon_data.get('evos', []),
+        tier=pokemon_data.get('tier', None),
         captured_date=pokemon_data.get('captured_date', None),
         is_favorite = pokemon_data.get('is_favorite', False)   
     )
+    # Set any additional fields not in constructor
+    extra_fields = [
+        'captured_date', 'tier', 'friendship', 'pokemon_defeated', 'everstone', 'mega', 'special-form', 'evos', 'current_hp', 'base_experience'
+    ]
+    for key in extra_fields:
+        # Use attribute name 'special_form' for 'special-form'
+        attr = 'special_form' if key == 'special-form' else key
+        if key in pokemon_data:
+            setattr(new_main_pokemon, attr, pokemon_data[key])
     
     # Update existing reference
     main_pokemon.__dict__.update(new_main_pokemon.__dict__)

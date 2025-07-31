@@ -10,8 +10,9 @@ from .helpers import normalize_name
 from .find_state_instructions import get_all_state_instructions
 from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.error_handler import show_warning_with_traceback
+from ..pyobj.InfoLogger import ShowInfoLogger
 
-#logger = ShowInfoLogger()
+logger = ShowInfoLogger()
 
 def reset_stat_boosts(pokemon: Pokemon) -> Pokemon:
     """
@@ -114,14 +115,14 @@ def simulate_battle_with_poke_engine(
     if enemy_move is None and enemy_pokemon.attacks:
         enemy_move = random.choice(enemy_pokemon.attacks)
     if not main_move:
-        main_move = "Struggle"
+        main_move = "Splash"
     if not enemy_move:
-        enemy_move = "Struggle"
+        enemy_move = "Splash"
     
 
     if (state is not None) and (state.user.active.id != main_pokemon.name.lower()):
         mutator_full_reset = 1 # reset AFTER Pokemon is changed !
-    if mutator_full_reset not in (0, 1, 2):
+    if mutator_full_reset not in (0, 1):
         mutator_full_reset = 1
 
     try:
@@ -174,12 +175,34 @@ def simulate_battle_with_poke_engine(
                 state.user.active = reset_stat_boosts(state.user.active)
                 state.user = reset_side(main_pokemon_poke_engine)
                 state.opponent = reset_side(enemy_pokemon_poke_engine)
-            elif mutator_full_reset == 2: # Opponent got KOed, reset the opponent's side
-                state.user.active = reset_stat_boosts(state.user.active)  # reseting the user's stat boosts to avoid snowballing
-                state.opponent = reset_side(enemy_pokemon_poke_engine)
+
+                # Reset battle_status and volatile_status for both engine state Pokémon
+                if hasattr(state.user.active, 'battle_status'):
+                    state.user.active.battle_status = 'fighting'
+                if hasattr(state.user.active, 'volatile_status'):
+                    state.user.active.volatile_status = set()
+                if hasattr(state.opponent.active, 'battle_status'):
+                    state.opponent.active.battle_status = 'fighting'
+                if hasattr(state.opponent.active, 'volatile_status'):
+                    state.opponent.active.volatile_status = set()
+                # Clear Future Sight state on reset - NEW
+                if hasattr(state.user, 'future_sight'):
+                    state.user.future_sight = (0, 0)
+                if hasattr(state.opponent, 'future_sight'):
+                    state.opponent.future_sight = (0, 0)
+                    
+                # Also reset the main_pokemon and enemy_pokemon Python objects
+                main_pokemon.battle_status = 'fighting'
+                main_pokemon.volatile_status = set()
+                enemy_pokemon.battle_status = 'fighting'
+                enemy_pokemon.volatile_status = set()
+                
+                state.weather = None # Reset weather to None
+                state.field = None # Reset field to None
+                state.trick_room = None # Reset trick room to None
+
             else:
                 raise ValueError(f"Wrong mutator_full_reset encountered : {mutator_full_reset}")
-
                 
         mutator = StateMutator(state)
 
@@ -202,10 +225,20 @@ def simulate_battle_with_poke_engine(
         user_hp_before = int(state.user.active.hp)
         opponent_hp_before = int(state.opponent.active.hp)
 
+        # --- Debugging: State changes BEFORE applying instructions
+        state_before = copy.deepcopy(mutator.state)
         mutator.apply(instrs)
+        state_after = mutator.state
+        battle_info_changes = diff_states(state_before, state_after)
+        print_state_changes(battle_info_changes)
+        # --- End Debugging
 
-        # In case the pokemon used a stat enhancing move or a healing move, we need to save those changes from the State into the PokemonObject so that they carry to the next round
-        main_pokemon.current_hp = main_pokemon.hp = state.user.active.hp
+        # Save changes from State to Pokemon objects (enhanced for volatile status)
+        main_pokemon.hp = state.user.active.hp
+        main_pokemon.current_hp = state.user.active.hp
+        enemy_pokemon.hp = state.opponent.active.hp  
+        enemy_pokemon.current_hp = state.opponent.active.hp
+        
         main_pokemon.stat_stages = {
             'atk': state.user.active.attack_boost,
             'def': state.user.active.defense_boost,
@@ -216,8 +249,14 @@ def simulate_battle_with_poke_engine(
             'evasion': state.user.active.evasion_boost
         }
         
-         # In case the pokemon used a stat enhancing move or a healing move, we need to save those changes from the State into the PokemonObject so that they carry to the next round
-        enemy_pokemon.current_hp = enemy_pokemon.hp = state.opponent.active.hp
+        # Save volatile status from poke-engine state to Pokemon object - NEW
+        if hasattr(state.user.active, 'volatile_status'):
+            main_pokemon.volatile_status = state.user.active.volatile_status.copy()
+        elif not hasattr(main_pokemon, 'volatile_status'):
+            main_pokemon.volatile_status = set()
+    
+        
+        # Same for enemy Pokemon
         enemy_pokemon.stat_stages = {
             'atk': state.opponent.active.attack_boost,
             'def': state.opponent.active.defense_boost,
@@ -227,7 +266,13 @@ def simulate_battle_with_poke_engine(
             'accuracy': state.opponent.active.accuracy_boost, 
             'evasion': state.opponent.active.evasion_boost
         }
-
+        
+        # Save volatile status for enemy - NEW
+        if hasattr(state.opponent.active, 'volatile_status'):
+            enemy_pokemon.volatile_status = state.opponent.active.volatile_status.copy()
+        elif not hasattr(enemy_pokemon, 'volatile_status'):
+            enemy_pokemon.volatile_status = set()
+        
         new_state = copy.deepcopy(state)
 
         mutator_full_reset = int(0) # preserve battle state - until something else changes this value
@@ -251,38 +296,156 @@ def simulate_battle_with_poke_engine(
         # the choices in transpose_instructions, based on factors like accuracy rate, the chance to
         # inflict a certain status (like sleep or paralyze), etc.  
 
-        # Did the chosen outcome deal damage?
-        user_did_damage = any(i[0] == 'damage' and i[1] == 'opponent' and i[2] > 0 for i in instrs)
-        opponent_did_damage = any(i[0] == 'damage' and i[1] == 'user' and i[2] > 0 for i in instrs)
-
-        # Could the move have dealt damage in any possible outcome?
-        user_move_can_hit = any(
-            any(i[0] == 'damage' and i[1] == 'opponent' and i[2] > 0 for i in outcome.instructions)
-            for outcome in transpose_instructions
-        )
-        opponent_move_can_hit = any(
-            any(i[0] == 'damage' and i[1] == 'user' and i[2] > 0 for i in outcome.instructions)
-            for outcome in transpose_instructions
-        )
-
-        # Final miss detection: missed if this outcome did not deal damage, but another could have
-        user_missed = user_move_can_hit and not user_did_damage
-        opponent_missed = opponent_move_can_hit and not opponent_did_damage
-
         battle_effects = []
         for instr in chosen_outcome.instructions:
             battle_effects.append(list(instr))  # Convert tuples to lists
 
-        print(f"{unlucky_life * 100}% chance: {battle_effects}")
-
         battle_info = {
             'battle_header': battle_header,
             'instructions': battle_effects,
-            'user_missed': user_missed,
-            'opponent_missed': opponent_missed
+            'state': new_state
             }
 
-        return battle_info, copy.deepcopy(new_state), dmg_from_enemy_move, dmg_from_user_move, mutator_full_reset
+        print(f"{unlucky_life * 100}% chance: {battle_effects}")
+        return battle_info, new_state, dmg_from_enemy_move, dmg_from_user_move, mutator_full_reset, battle_info_changes
     
     except Exception as e:
         show_warning_with_traceback(exception=e, message="Error simulating battle:")
+
+def diff_states(state_before, state_after, path="", changes=None):
+    """
+    Recursively compare two state objects and return a list of changed attributes.
+    Returns changes in format: {'key': path, 'before': value_before, 'after': value_after}
+    """
+    if changes is None:
+        changes = []
+
+    # Handle None cases
+    if state_before is None and state_after is None:
+        return changes
+    if state_before is None or state_after is None:
+        changes.append({
+            'key': path or 'root',
+            'before': state_before,
+            'after': state_after
+        })
+        return changes
+
+    # Handle primitive types (int, float, str, bool)
+    if isinstance(state_before, (int, float, str, bool)) or isinstance(state_after, (int, float, str, bool)):
+        if state_before != state_after:
+            changes.append({
+                'key': path or 'root',
+                'before': state_before,
+                'after': state_after
+            })
+        return changes
+
+    # Handle sets
+    if isinstance(state_before, set) or isinstance(state_after, set):
+        if state_before != state_after:
+            changes.append({
+                'key': path or 'root',
+                'before': state_before,
+                'after': state_after
+            })
+        return changes
+
+    # Handle tuples
+    if isinstance(state_before, tuple) or isinstance(state_after, tuple):
+        if state_before != state_after:
+            changes.append({
+                'key': path or 'root',
+                'before': state_before,
+                'after': state_after
+            })
+        return changes
+
+    # Handle lists
+    if isinstance(state_before, list) and isinstance(state_after, list):
+        # Compare list lengths and elements
+        if len(state_before) != len(state_after):
+            changes.append({
+                'key': f"{path}.length" if path else 'length',
+                'before': len(state_before),
+                'after': len(state_after)
+            })
+        
+        # Compare elements up to the shorter length
+        min_len = min(len(state_before), len(state_after))
+        for i in range(min_len):
+            new_path = f"{path}[{i}]" if path else f"[{i}]"
+            diff_states(state_before[i], state_after[i], new_path, changes)
+        
+        # Handle extra elements in longer list
+        if len(state_before) > min_len:
+            for i in range(min_len, len(state_before)):
+                new_path = f"{path}[{i}]" if path else f"[{i}]"
+                changes.append({
+                    'key': new_path,
+                    'before': state_before[i],
+                    'after': None
+                })
+        elif len(state_after) > min_len:
+            for i in range(min_len, len(state_after)):
+                new_path = f"{path}[{i}]" if path else f"[{i}]"
+                changes.append({
+                    'key': new_path,
+                    'before': None,
+                    'after': state_after[i]
+                })
+        return changes
+
+    # Handle dictionaries
+    if isinstance(state_before, dict) and isinstance(state_after, dict):
+        all_keys = set(state_before.keys()) | set(state_after.keys())
+        for key in all_keys:
+            new_path = f"{path}.{key}" if path else str(key)
+            before_val = state_before.get(key, None)
+            after_val = state_after.get(key, None)
+            diff_states(before_val, after_val, new_path, changes)
+        return changes
+
+    # Handle custom objects - check if they're the same type
+    if type(state_before) != type(state_after):
+        changes.append({
+            'key': path or 'root',
+            'before': state_before,
+            'after': state_after
+        })
+        return changes
+
+    # Custom class: recurse into attributes (__dict__ and __slots__ on the class)
+    attrs = set()
+    for obj in (state_before, state_after):
+        # __dict__ attributes
+        if hasattr(obj, "__dict__"):
+            attrs.update(vars(obj).keys())
+        # __slots__ attributes (check on the class)
+        if hasattr(obj.__class__, "__slots__"):
+            for slot in obj.__class__.__slots__:
+                attrs.add(slot)
+
+    if attrs:
+        for attr in attrs:
+            before_val = getattr(state_before, attr, None)
+            after_val = getattr(state_after, attr, None)
+            new_path = f"{path}.{attr}" if path else attr
+            diff_states(before_val, after_val, new_path, changes)
+
+    return changes
+
+
+def print_state_changes(changes):
+    """
+    Print state changes in a clean format: key: before -> after
+    """
+    if not changes:
+        return
+    
+    for change in changes:
+        key = change['key']
+        before = change['before']
+        after = change['after']
+        print(f"{key}: {before} -> {after}")
+
