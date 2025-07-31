@@ -6,11 +6,10 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from aqt import mw
-from aqt.utils import showWarning, showInfo
+from aqt import mw, gui_hooks
+from aqt.utils import showWarning, showInfo, tooltip
 
 from ..resources import user_path, addon_dir
-
 
 class AnkimonDataSync:
     """
@@ -58,7 +57,7 @@ class AnkimonDataSync:
                 raise RuntimeError("No Anki profile loaded. Cannot initialize sync paths.")
             
             self._media_path = Path(profile_folder) / "collection.media"
-            self._sync_folder_name = f"ankimon_data_{self.addon_name}"
+            self._sync_folder_name = f"Ankimon"
             self._media_sync_path = self._media_path / self._sync_folder_name
     
     @property
@@ -227,7 +226,7 @@ class AnkimonDataSync:
                 media_file = self._get_media_path(filename)
                 
                 # Skip if neither file exists
-                if not source_file.is_file() and not media_file.is_file():
+                if not source_file.is_file() or not media_file.is_file():
                     continue
                     
                 file_diff = {
@@ -275,51 +274,51 @@ class AnkimonDataSync:
             return {}
     
     def force_sync_to_media(self) -> bool:
-        """Force sync all local files to media subfolder."""
+        """Force sync all LOCAL files TO media subfolder (Export to AnkiWeb)."""
         try:
             if not self._ensure_sync_folder_exists():
                 return False
                 
             synced_files = []
             for filename in self.SYNC_FILES.keys():
-                source_file = self._get_source_path(filename)
-                dest_file = self._get_media_path(filename)
+                source_file = self._get_source_path(filename)  # LOCAL file
+                dest_file = self._get_media_path(filename)     # MEDIA file
                 
                 if source_file.is_file():
                     # Remove existing media file if it exists
                     if dest_file.is_file():
                         os.remove(dest_file)
                     
-                    # Copy source to media
+                    # Copy LOCAL to MEDIA (Export direction)
                     shutil.copy2(source_file, dest_file)
                     synced_files.append(filename)
             
-            showInfo(f"Synced {len(synced_files)} files to AnkiWeb subfolder: {', '.join(synced_files)}")
+            showInfo(f"Exported {len(synced_files)} files to AnkiWeb: {', '.join(synced_files)}")
             return True
         except Exception as e:
-            showWarning(f"Failed to sync to AnkiWeb: {str(e)}")
+            showWarning(f"Failed to export to AnkiWeb: {str(e)}")
             return False
-    
+
     def force_sync_from_media(self) -> bool:
-        """Force sync all media files from subfolder to local folder."""
+        """Force sync all MEDIA files FROM subfolder to local folder (Import from AnkiWeb)."""
         try:
             updated_files = []
             for filename in self.SYNC_FILES.keys():
-                source_file = self._get_source_path(filename)
-                media_file = self._get_media_path(filename)
+                media_file = self._get_media_path(filename)    # MEDIA file  
+                source_file = self._get_source_path(filename)  # LOCAL file
                 
                 if media_file.is_file():
                     # Ensure source directory exists
                     source_file.parent.mkdir(parents=True, exist_ok=True)
                     
-                    # Copy media to source
+                    # Copy MEDIA to LOCAL (Import direction)
                     shutil.copy2(media_file, source_file)
                     updated_files.append(filename)
             
-            showInfo(f"Updated {len(updated_files)} files from AnkiWeb subfolder: {', '.join(updated_files)}")
+            showInfo(f"Imported {len(updated_files)} files from AnkiWeb: {', '.join(updated_files)}")
             return True
         except Exception as e:
-            showWarning(f"Failed to sync from AnkiWeb: {str(e)}")
+            showWarning(f"Failed to import from AnkiWeb: {str(e)}")
             return False
     
     def get_sync_folder_info(self) -> Dict[str, str]:
@@ -343,14 +342,12 @@ class AnkimonDataSync:
 # Global instance for easy access - but will be lazy initialized
 _ankimon_sync_instance = None
 
-
 def get_ankimon_sync() -> AnkimonDataSync:
     """Get the global AnkimonDataSync instance, creating it if needed."""
     global _ankimon_sync_instance
     if _ankimon_sync_instance is None:
         _ankimon_sync_instance = AnkimonDataSync()
     return _ankimon_sync_instance
-
 
 def save_ankimon_configs():
     """Convenience function to save configs - called before media sync."""
@@ -360,7 +357,6 @@ def save_ankimon_configs():
         # Gracefully handle errors during startup
         return []
 
-
 def read_ankimon_configs(media_sync_status: bool = False):
     """Convenience function to read configs - called after media sync."""
     try:
@@ -369,10 +365,111 @@ def read_ankimon_configs(media_sync_status: bool = False):
         # Gracefully handle errors during startup
         return []
 
-
 def get_sync_info():
     """Get sync folder information for debugging."""
     try:
         return get_ankimon_sync().get_sync_folder_info()
     except Exception as e:
         return {'error': str(e)}
+
+def check_and_sync_pokemon_data(settings_obj, logger):
+    """
+    Check for Pokemon data differences and show sync dialog ONLY if needed.
+    Returns dialog instance only if differences exist.
+    """
+    try:
+        # Import here to avoid circular import
+        from .sync_pokemon_data import ImprovedPokemonDataSync
+        
+        sync_handler = AnkimonDataSync()
+        differences = sync_handler.get_file_differences()
+        
+        if differences:
+            # Show the sync dialog only if there are differences
+            dialog = ImprovedPokemonDataSync(settings_obj, logger)
+            dialog.show() # Show immediately
+            return dialog
+        else:
+            # No differences found - enable automatic sync
+            enable_automatic_sync()
+            logger.log("info", "No sync differences found - automatic sync enabled")
+            return None
+            
+    except Exception as e:
+        logger.log("error", f"Failed to check Pokemon data sync: {str(e)}")
+        return None
+
+# Global flag to track if automatic sync is enabled
+_automatic_sync_enabled = False
+
+def setup_ankimon_sync_hooks(settings_obj, logger):
+    """Set up hooks for automatic Ankimon data syncing - but disabled by default."""
+    
+    def on_sync_will_start():
+        """Called before sync starts - only auto-sync if enabled."""
+        if not _automatic_sync_enabled:
+            logger.log("info", "Anki sync starting - automatic Ankimon sync disabled (awaiting manual sync)")
+            return
+            
+        try:
+            synced_files = save_ankimon_configs()
+            if synced_files:
+                logger.log("info", f"Prepared {len(synced_files)} files for sync")
+        except Exception as e:
+            logger.log("error", f"Failed to prepare files for sync: {str(e)}")
+
+    def on_sync_did_finish():
+        """Called after sync finishes - only auto-read if enabled."""
+        if not _automatic_sync_enabled:
+            logger.log("info", "Anki sync finished - automatic Ankimon sync disabled (awaiting manual sync)")
+            return
+            
+        try:
+            updated_files = read_ankimon_configs(media_sync_status=False)
+            if updated_files:
+                logger.log("info", f"Updated {len(updated_files)} files from sync")
+                tooltip(f"Updated {len(updated_files)} Ankimon files from AnkiWeb")
+        except Exception as e:
+            logger.log("error", f"Failed to read files after sync: {str(e)}")
+
+    # Register hooks (but they won't auto-sync until enabled)
+    gui_hooks.sync_will_start.append(on_sync_will_start)
+    gui_hooks.sync_did_finish.append(on_sync_did_finish)
+    
+    logger.log("info", "Ankimon sync hooks registered (automatic sync disabled until manual sync)")
+
+def enable_automatic_sync():
+    """Enable automatic sync after user has made their first manual sync decision."""
+    global _automatic_sync_enabled
+    _automatic_sync_enabled = True
+    
+def is_automatic_sync_enabled():
+    """Check if automatic sync is enabled."""
+    return _automatic_sync_enabled
+
+def check_and_sync_pokemon_data(settings_obj, logger):
+    """
+    Check for Pokemon data differences and show sync dialog ONLY if needed.
+    Returns dialog instance only if differences exist.
+    """
+    try:
+        # Import here to avoid circular import
+        from .sync_pokemon_data import ImprovedPokemonDataSync
+        
+        sync_handler = AnkimonDataSync()
+        differences = sync_handler.get_file_differences()
+        
+        if differences:
+            # Show the sync dialog only if there are differences
+            dialog = ImprovedPokemonDataSync(settings_obj, logger)
+            dialog.show() # Show immediately
+            return dialog
+        else:
+            # No differences found - enable automatic sync
+            enable_automatic_sync()
+            logger.log("info", "No sync differences found - automatic sync enabled")
+            return None
+            
+    except Exception as e:
+        logger.log("error", f"Failed to check Pokemon data sync: {str(e)}")
+        return None
