@@ -494,6 +494,7 @@ def on_review_card(*args):
             dmg_from_enemy_move = results[2]
             dmg_from_user_move = results[3]
             mutator_full_reset = results[4]
+            current_battle_info_changes = results[5]
 
             # 3. --- IMMEDIATE STATE SYNCHRONIZATION (THE FIX) ---
             # Update Pokémon objects with the new state from the engine BEFORE any other processing.
@@ -527,7 +528,8 @@ def on_review_card(*args):
                 battle_status=main_pokemon.battle_status,
                 pokemon_encounter=ankimon_tracker_obj.pokemon_encouter,
                 dmg_in_reviewer=settings_obj.get("battle.dmg_in_reviewer", True),
-                translator=translator
+                translator=translator,
+                changes=current_battle_info_changes
             )
 
             # Display the complete message
