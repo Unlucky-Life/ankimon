@@ -129,7 +129,7 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         if captured_date is not None :
             captured_date_label = QLabel(f"Captured: {captured_date.split()[0]}")
         else:
-            captured_date_label = QLabel(f"Captured: no date available")
+            captured_date_label = QLabel(f"Captured: N/A")
 
         level_label.setFont(custom_font)
         type_label = QLabel("Type:")
@@ -451,6 +451,7 @@ def remember_attack(id, attacks, new_attack, logger):
     with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
         main_pokemon_data = json.load(json_file)
     for mainpkmndata in main_pokemon_data:
+
         # Use both id and individual_id for robustness
         if mainpkmndata.get("id") == id or mainpkmndata.get("individual_id") == id:
             attacks = mainpkmndata["attacks"]
@@ -515,6 +516,7 @@ def forget_attack(id: int, attacks: list[str], attack_to_forget: str, logger: Sh
     for mainpkmndata in main_pokemon_data:
         if mainpkmndata["id"] == id:
             mainpokemon_name = mainpkmndata["name"]
+            mainpokemon_individual_id = mainpkmndata["individual_id"]
             attacks = mainpkmndata["attacks"]
             if attack_to_forget:
                 if attack_to_forget in attacks:
@@ -536,7 +538,7 @@ def forget_attack(id: int, attacks: list[str], attack_to_forget: str, logger: Sh
             with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
                 mypokemondata = json.load(output_file)
             for index, pokemon_data in enumerate(mypokemondata):
-                if pokemon_data["name"] == mainpokemon_name:
+                if pokemon_data["individual_id"] == mainpokemon_individual_id:
                     mypokemondata[index] = mypkmndata
                     break
             with open(str(mypokemon_path), "w") as output_file:

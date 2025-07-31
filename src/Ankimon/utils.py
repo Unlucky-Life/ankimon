@@ -42,6 +42,7 @@ from .resources import (
     pokemon_species_mythical_path,
     pokemon_species_normal_path,
     pokemon_species_ultra_path,
+    POKEMON_TIERS
 )
 
 # Load move and pokemon name mapping at startup
@@ -331,23 +332,14 @@ def count_items_and_rewrite(file_path):
 
         aggregated = {}  # maps a frozenset of (key,value) pairs to the merged entry
 
-        for entry in items:
-            # Extract quantity (default 1) and collect the rest of the fields
-            qty = entry.get("quantity", 1)
-            # Build grouping key from all other fields
-            key_fields = {k: v for k, v in entry.items() if k != "quantity"}
-            # Use a frozenset of sorted items for a hashable key
-            key = frozenset(sorted(key_fields.items()))
-
-            if key not in aggregated:
-                # Clone the non-quantity fields, set initial quantity
-                aggregated[key] = dict(key_fields)
-                aggregated[key]["quantity"] = qty
-            else:
-                aggregated[key]["quantity"] += qty
-
-        # Build the list to write back
-        updated_items = list(aggregated.values())
+        updated_items = []
+        for item in items:
+            updated_item = dict()
+            for key in item.keys():
+                updated_item[key] = item[key]  # We try to keep any additional field that the item might ahave
+            updated_item["item"] = item["item"]
+            updated_item["quantity"] = item.get("quantity", 1)
+            updated_items.append(updated_item)
 
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(updated_items, f, indent=4, ensure_ascii=False)
@@ -685,8 +677,8 @@ def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
     """
     Determines the tier category of a Pokémon based on its ID.
 
-    Searches through predefined JSON files representing different Pokémon tiers
-    (Normal, Legendary, Mythical, Baby, Ultra) to find the tier corresponding
+    Searches through lists in resources.py representing different Pokémon tiers
+    (Normal, Legendary, Mythical, Baby, Ultra, Fossil, Hisuian, Starter) to find the tier corresponding
     to the given Pokémon ID.
 
     Args:
@@ -696,20 +688,10 @@ def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
         Union[str, None]: The tier name as a string if the Pokémon ID is found
         in one of the tier lists; otherwise, None.
     """
-    paths = {
-        "Normal": pokemon_species_normal_path,
-        "Legendary": pokemon_species_legendary_path,
-        "Mythical": pokemon_species_mythical_path,
-        "Baby": pokemon_species_baby_path,
-        "Ultra": pokemon_species_ultra_path,
-    }
-
-    for tier, path in paths.items():
-        with open(path, "r", encoding="utf-8") as f:
-            id_list = json.load(f)
-        if pokemon_id in id_list:
+    
+    for tier, ids in POKEMON_TIERS.items():
+        if pokemon_id in ids:
             return tier
-        
     return None
 
 def safe_get_random_move(

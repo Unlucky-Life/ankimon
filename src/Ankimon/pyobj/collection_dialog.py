@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from aqt import mw
+import re
 
 from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.pokemon_obj import PokemonObject
@@ -504,11 +505,12 @@ def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
 
         attacks_ids = []
         for attack in attacks:
-            attack = attack.replace(" ", "").lower()
-            move_details = find_details_move(attack)
-            if move_details:
-                attacks_ids.append(str(move_details["num"]))
-
+            key = re.sub(r'[^a-z0-9]', '', attack.lower())     # “U-turn” → “uturn”
+            move_details = find_details_move(key)
+            if not move_details:
+                raise ValueError(f"Unknown move: {attack}")
+            attacks_ids.append(str(move_details["num"]))
+            
         attacks_id_string = ','.join(attacks_ids)  # Concatenated with a delimiter
 
         # Concatenating details to form a single string
@@ -696,6 +698,8 @@ def MainPokemon(
         special_form=pokemon_data.get('special-form', None),
         evos=pokemon_data.get('evos', []),
         tier=pokemon_data.get('tier', None),
+        captured_date=pokemon_data.get('captured_date', None),
+        is_favorite = pokemon_data.get('is_favorite', False)   
     )
     # Set any additional fields not in constructor
     extra_fields = [

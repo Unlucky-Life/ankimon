@@ -28,23 +28,32 @@ class MovieSplashLabel(QLabel):
         self.movie.stop()
 
 class UpdateNotificationWindow(QDialog):
-    """Custom Dialog class"""
-    def __init__(self, content):
+    """Custom Dialog class with enhanced features."""
+    def __init__(self, content, is_markdown=False):
         super().__init__()
         self.setWindowTitle("Ankimon Notifications")
         self.setGeometry(100, 100, 600, 400)
 
         layout = QVBoxLayout()
-        self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)
-        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # For horizontal scrollbar, if you want it off
-        self.text_edit.setHtml(content)
-        layout.addWidget(self.text_edit)
-        self.setWindowIcon(QIcon(str(icon_path)))
+        self.text_browser = QTextBrowser()
+        self.text_browser.setOpenExternalLinks(True)  # Enable clickable links
+        self.text_browser.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.text_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
+        # If content is markdown, convert to HTML
+        if is_markdown:
+            import markdown
+            html_content = markdown.markdown(content)
+        else:
+            html_content = content
+
+        self.text_browser.setHtml(html_content)
+        layout.addWidget(self.text_browser)
+        self.setWindowIcon(QIcon(str(icon_path)))
         self.setLayout(layout)
 
+    def open(self):
+        self.exec()
 
 class AgreementDialog(QDialog):
     def __init__(self):
@@ -92,7 +101,7 @@ class Version_Dialog(QDialog):
         self.text_browser.setOpenExternalLinks(True)  # Enable clickable links
         self.text_browser.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.text_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.local_file_path = addon_dir / "update_notes.md"
+        self.local_file_path = addon_dir / "updateinfos.md"
         self.local_content = read_local_file(self.local_file_path)
         self.html_content = markdown.markdown(self.local_content)
         self.text_browser.setHtml(self.html_content)
