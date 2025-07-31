@@ -58,7 +58,7 @@ class AnkimonDataSync:
             
             self._media_path = Path(profile_folder) / "collection.media"
             self._sync_folder_name = f"Ankimon"
-            self._media_sync_path = self._media_path / self._sync_folder_name
+            self._media_sync_path = self._media_path
     
     @property
     def media_path(self) -> Path:
@@ -226,7 +226,7 @@ class AnkimonDataSync:
                 media_file = self._get_media_path(filename)
                 
                 # Skip if neither file exists
-                if not source_file.is_file() or not media_file.is_file():
+                if not source_file.is_file() and not media_file.is_file():
                     continue
                     
                 file_diff = {
@@ -446,30 +446,3 @@ def enable_automatic_sync():
 def is_automatic_sync_enabled():
     """Check if automatic sync is enabled."""
     return _automatic_sync_enabled
-
-def check_and_sync_pokemon_data(settings_obj, logger):
-    """
-    Check for Pokemon data differences and show sync dialog ONLY if needed.
-    Returns dialog instance only if differences exist.
-    """
-    try:
-        # Import here to avoid circular import
-        from .sync_pokemon_data import ImprovedPokemonDataSync
-        
-        sync_handler = AnkimonDataSync()
-        differences = sync_handler.get_file_differences()
-        
-        if differences:
-            # Show the sync dialog only if there are differences
-            dialog = ImprovedPokemonDataSync(settings_obj, logger)
-            dialog.show() # Show immediately
-            return dialog
-        else:
-            # No differences found - enable automatic sync
-            enable_automatic_sync()
-            logger.log("info", "No sync differences found - automatic sync enabled")
-            return None
-            
-    except Exception as e:
-        logger.log("error", f"Failed to check Pokemon data sync: {str(e)}")
-        return None
