@@ -72,6 +72,7 @@ class Settings:
                 "misc.language": 9,
                 "misc.ssh": True,
                 "misc.leaderboard": False,
+                "misc.ankiweb_sync": False,
                 "misc.YouShallNotPass_Ankimon_News": False,
                 "misc.discord_rich_presence": False,
                 "misc.discord_rich_presence_text": 1,
