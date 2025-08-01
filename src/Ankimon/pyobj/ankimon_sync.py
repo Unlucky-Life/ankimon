@@ -10,6 +10,7 @@ from aqt import mw, gui_hooks
 from aqt.utils import showWarning, showInfo, tooltip
 
 from ..resources import user_path, addon_dir
+from ..config_var import ankiweb_sync
 
 from PyQt6.QtGui import QTextOption
 from PyQt6.QtWidgets import QLabel, QVBoxLayout, QTextEdit, QPushButton, QDialog, QHBoxLayout, QScrollArea, QWidget
@@ -885,7 +886,7 @@ class AnkimonDataSync:
                     shutil.copy2(media_file, source_file)
                     updated_files.append(filename)
             
-            showInfo(f"Imported {len(updated_files)} files from AnkiWeb: {', '.join(updated_files)}")
+            showInfo(f"Imported {len(updated_files)} files from AnkiWeb: {', '.join(updated_files)}\nPlease restart Anki to apply changes, otherwise Ankimon may get corrupted.")
             return True
         except Exception as e:
             showWarning(f"Failed to import from AnkiWeb: {str(e)}")
@@ -919,22 +920,6 @@ def get_ankimon_sync() -> AnkimonDataSync:
         _ankimon_sync_instance = AnkimonDataSync()
     return _ankimon_sync_instance
 
-def save_ankimon_configs():
-    """Convenience function to save configs - called before media sync."""
-    try:
-        return get_ankimon_sync().save_configs()
-    except Exception as e:
-        # Gracefully handle errors during startup
-        return []
-
-def read_ankimon_configs(media_sync_status: bool = False):
-    """Convenience function to read configs - called after media sync."""
-    try:
-        return get_ankimon_sync().read_configs(media_sync_status)
-    except Exception as e:
-        # Gracefully handle errors during startup
-        return []
-
 def get_sync_info():
     """Get sync folder information for debugging."""
     try:
@@ -947,10 +932,16 @@ def check_and_sync_pokemon_data(settings_obj, logger):
     Check for Pokemon data differences and show sync dialog ONLY if needed.
     Returns dialog instance only if differences exist.
     """
+    
+    # Check if sync is disabled
+    if not ankiweb_sync:
+        logger.log("info", "AnkiWeb sync is disabled in settings - skipping sync check")
+        return None
+    
     try:
         sync_handler = AnkimonDataSync()
         differences = sync_handler.get_file_differences()
-        
+
         if differences:
             # Show the sync dialog only if there are differences
             dialog = ImprovedPokemonDataSync(settings_obj, logger)
@@ -961,10 +952,34 @@ def check_and_sync_pokemon_data(settings_obj, logger):
             enable_automatic_sync()
             logger.log("info", "No sync differences found - automatic sync enabled")
             return None
-            
+
     except Exception as e:
         logger.log("error", f"Failed to check Pokemon data sync: {str(e)}")
         return None
+
+def save_ankimon_configs():
+    """Convenience function to save configs - called before media sync."""
+    # Check if sync is disabled
+    if not ankiweb_sync:
+        return []
+        
+    try:
+        return get_ankimon_sync().save_configs()
+    except Exception as e:
+        # Gracefully handle errors during startup
+        return []
+
+def read_ankimon_configs(media_sync_status: bool = False):
+    """Convenience function to read configs - called after media sync."""
+    # Check if sync is disabled
+    if not ankiweb_sync:
+        return []
+        
+    try:
+        return get_ankimon_sync().read_configs(media_sync_status)
+    except Exception as e:
+        # Gracefully handle errors during startup
+        return []
 
 # Global flag to track if automatic sync is enabled
 _automatic_sync_enabled = False
@@ -972,12 +987,17 @@ _automatic_sync_enabled = False
 def setup_ankimon_sync_hooks(settings_obj, logger):
     """Set up hooks for automatic Ankimon data syncing - but disabled by default."""
     
+    # Check if sync is disabled
+    if not ankiweb_sync:
+        logger.log("info", "AnkiWeb sync is disabled in settings - skipping hook setup")
+        return
+    
     def on_sync_will_start():
         """Called before sync starts - only auto-sync if enabled."""
         if not _automatic_sync_enabled:
             logger.log("info", "Anki sync starting - automatic Ankimon sync disabled (awaiting manual sync)")
             return
-            
+
         try:
             synced_files = save_ankimon_configs()
             if synced_files:
@@ -990,7 +1010,7 @@ def setup_ankimon_sync_hooks(settings_obj, logger):
         if not _automatic_sync_enabled:
             logger.log("info", "Anki sync finished - automatic Ankimon sync disabled (awaiting manual sync)")
             return
-            
+
         try:
             updated_files = read_ankimon_configs(media_sync_status=False)
             if updated_files:
@@ -1002,8 +1022,9 @@ def setup_ankimon_sync_hooks(settings_obj, logger):
     # Register hooks (but they won't auto-sync until enabled)
     gui_hooks.sync_will_start.append(on_sync_will_start)
     gui_hooks.sync_did_finish.append(on_sync_did_finish)
-    
+
     logger.log("info", "Ankimon sync hooks registered (automatic sync disabled until manual sync)")
+
 
 def enable_automatic_sync():
     """Enable automatic sync after user has made their first manual sync decision."""
