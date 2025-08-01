@@ -39,7 +39,6 @@ class ImprovedPokemonDataSync(QDialog):
         
         # Header message
         header_text = (
-            "Ankimon Data Sync:\n"
             "Sync your Pokemon data between devices using AnkiWeb.\n"
             "Choose to export your local data to AnkiWeb or import data from AnkiWeb to your device."
         )
@@ -110,8 +109,7 @@ class ImprovedPokemonDataSync(QDialog):
                 return
             
             self.header_label.setText(
-                f"Ankimon Data Sync:\n"
-                f"⚠️ Found differences in {len(differences)} file(s). Please choose sync direction."
+                f"⚠️ Found differences in {len(differences)} file(s). Please choose sync direction:\n"
             )
             self.export_button.setEnabled(True)
             self.import_button.setEnabled(True)
