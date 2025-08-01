@@ -708,15 +708,20 @@ def DefeatPokemonHook():
 def on_profile_did_open():
     """Initialize sync system after profile is loaded."""
     try:
+        # Import the sync setting
+        from .config_var import ankiweb_sync
+        
+        if not ankiweb_sync:
+            logger.log("info", "AnkiWeb sync is disabled in settings - skipping sync system initialization")
+            return
+            
         # Set up sync hooks now that profile is available
         setup_ankimon_sync_hooks(settings_obj, logger)
         
         # Check for sync conflicts and show dialog if needed
         global sync_dialog
         sync_dialog = check_and_sync_pokemon_data(settings_obj, logger)
-        
         logger.log("info", "Ankimon sync system initialized successfully")
-        
     except Exception as e:
         show_warning_with_traceback(parent=mw, exception=e, message="Error setting up sync system:")
 
