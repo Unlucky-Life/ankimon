@@ -56,6 +56,7 @@ MUTATOR_WISH_START = "wish_start"
 MUTATOR_WISH_DECREMENT = "wish_decrement"
 MUTATOR_FUTURESIGHT_START = "futuresight_start"
 MUTATOR_FUTURESIGHT_DECREMENT = "futuresight_decrement"
+MUTATOR_FUTURESIGHT_END = "futuresight_end"
 MUTATOR_DISABLE_MOVE = "disable_move"
 MUTATOR_ENABLE_MOVE = "enable_move"
 MUTATOR_WEATHER_START = "weather_start"
@@ -67,6 +68,178 @@ MUTATOR_CHANGE_TYPE = "change_type"
 MUTATOR_CHANGE_ITEM = "change_item"
 MUTATOR_CHANGE_STATS = "change_stats"
 
+# Core volatile status action constants (if not already present)
+MUTATOR_APPLY_VOLATILE_STATUS = 'apply_volatile_status'
+MUTATOR_REMOVE_VOLATILE_STATUS = 'remove_volatile_status'
+
+# Charging moves
+VOLATILE_SOLAR_BEAM = 'solar_beam'
+VOLATILE_SKY_ATTACK = 'sky_attack'
+VOLATILE_RAZOR_WIND = 'razor_wind'
+VOLATILE_SKULL_BASH = 'skull_bash'
+VOLATILE_FREEZE_SHOCK = 'freeze_shock'
+VOLATILE_ICE_BURN = 'ice_burn'
+VOLATILE_GEOMANCY = 'geomancy'
+
+# Semi-invulnerable moves
+VOLATILE_FLY = 'fly'
+VOLATILE_DIG = 'dig'
+VOLATILE_DIVE = 'dive'
+VOLATILE_BOUNCE = 'bounce'
+VOLATILE_PHANTOM_FORCE = 'phantom_force'
+VOLATILE_SHADOW_FORCE = 'shadow_force'
+VOLATILE_SKY_DROP = 'sky_drop'
+
+# Binding moves
+VOLATILE_WRAP = 'wrap'
+VOLATILE_BIND = 'bind'
+VOLATILE_FIRE_SPIN = 'fire_spin'
+VOLATILE_WHIRLPOOL = 'whirlpool'
+VOLATILE_SAND_TOMB = 'sand_tomb'
+VOLATILE_MAGMA_STORM = 'magma_storm'
+VOLATILE_INFESTATION = 'infestation'
+VOLATILE_SNAP_TRAP = 'snap_trap'
+
+# Type changes
+VOLATILE_ROOST = 'roost'
+VOLATILE_BURN_UP = 'burn_up'
+VOLATILE_DOUBLE_SHOCK = 'double_shock'
+
+# Move restrictions
+VOLATILE_DISABLE = 'disable'
+VOLATILE_ENCORE = 'encore'
+VOLATILE_TAUNT = 'taunt'
+VOLATILE_TORMENT = 'torment'
+VOLATILE_IMPRISON = 'imprison'
+VOLATILE_THROAT_CHOP = 'throat_chop'
+VOLATILE_HEAL_BLOCK = 'heal_block'
+VOLATILE_EMBARGO = 'embargo'
+
+# Mental effects
+VOLATILE_CONFUSION = 'confusion'
+VOLATILE_INFATUATION = 'infatuation'
+
+# Damage over time
+VOLATILE_LEECH_SEED = 'leech_seed'
+VOLATILE_CURSE_GHOST = 'curse_ghost'
+VOLATILE_NIGHTMARE = 'nightmare'
+VOLATILE_PERISH_SONG = 'perish_song'
+VOLATILE_SALT_CURE = 'salt_cure'
+
+# Protection effects
+VOLATILE_SUBSTITUTE = 'substitute'
+VOLATILE_ENDURE = 'endure'
+VOLATILE_PROTECT = 'protect'
+VOLATILE_BANEFUL_BUNKER = 'baneful_bunker'
+VOLATILE_SPIKY_SHIELD = 'spiky_shield'
+VOLATILE_KINGS_SHIELD = 'kings_shield'
+
+# Positioning effects
+VOLATILE_MAGNET_RISE = 'magnet_rise'
+VOLATILE_TELEKINESIS = 'telekinesis'
+VOLATILE_INGRAIN = 'ingrain'
+VOLATILE_AQUA_RING = 'aqua_ring'
+VOLATILE_SMACK_DOWN = 'smack_down'
+
+# Multi-turn moves
+VOLATILE_OUTRAGE = 'outrage'
+VOLATILE_THRASH = 'thrash'
+VOLATILE_PETAL_DANCE = 'petal_dance'
+VOLATILE_ROLLOUT = 'rollout'
+VOLATILE_ICE_BALL = 'ice_ball'
+VOLATILE_UPROAR = 'uproar'
+
+# Charging effects
+VOLATILE_CHARGE = 'charge'
+VOLATILE_STOCKPILE = 'stockpile'
+VOLATILE_DEFENSE_CURL = 'defense_curl'
+VOLATILE_MINIMIZE = 'minimize'
+
+# Targeting effects
+VOLATILE_LOCK_ON = 'lock_on'
+VOLATILE_MIND_READER = 'mind_reader'
+VOLATILE_FORESIGHT = 'foresight'
+VOLATILE_ODOR_SLEUTH = 'odor_sleuth'
+VOLATILE_MIRACLE_EYE = 'miracle_eye'
+
+# Attention effects
+VOLATILE_FOLLOW_ME = 'follow_me'
+VOLATILE_RAGE_POWDER = 'rage_powder'
+VOLATILE_SPOTLIGHT = 'spotlight'
+
+# Escape prevention
+VOLATILE_MEAN_LOOK = 'mean_look'
+VOLATILE_BLOCK = 'block'
+VOLATILE_SPIDER_WEB = 'spider_web'
+VOLATILE_ANCHOR_SHOT = 'anchor_shot'
+VOLATILE_SPIRIT_SHACKLE = 'spirit_shackle'
+VOLATILE_THOUSAND_WAVES = 'thousand_waves'
+VOLATILE_OCTOLOCK = 'octolock'
+VOLATILE_NO_RETREAT = 'no_retreat'
+VOLATILE_JAW_LOCK = 'jaw_lock'
+
+# Recharge effects
+VOLATILE_HYPER_BEAM = 'hyper_beam'
+VOLATILE_GIGA_IMPACT = 'giga_impact'
+VOLATILE_BLAST_BURN = 'blast_burn'
+VOLATILE_FRENZY_PLANT = 'frenzy_plant'
+VOLATILE_HYDRO_CANNON = 'hydro_cannon'
+VOLATILE_ROCK_WRECKER = 'rock_wrecker'
+VOLATILE_ROAR_OF_TIME = 'roar_of_time'
+
+# Helper set for validation
+# Helper set for validation
+KNOWN_VOLATILE_STATUSES = {
+    # Charging moves
+    'solarbeam', 'skyattack', 'razorwind', 'skullbash', 'freezeshock', 'iceburn', 'geomancy',
+    
+    # Semi-invulnerable moves
+    'fly', 'dig', 'dive', 'bounce', 'phantomforce', 'shadowforce', 'skydrop',
+    
+    # Binding moves
+    'wrap', 'bind', 'firespin', 'whirlpool', 'sandtomb', 'magmastorm', 'infestation', 'snaptrap',
+    
+    # Type changes
+    'roost', 'burnup', 'doubleshock',
+    
+    # Move restrictions
+    'disable', 'encore', 'taunt', 'torment', 'imprison', 'throatchop', 'healblock', 'embargo',
+    
+    # Mental effects
+    'confusion', 'infatuation',
+    
+    # Damage over time
+    'leechseed', 'curseghost', 'nightmare', 'perishsong', 'saltcure',
+    
+    # Protection effects
+    'substitute', 'endure', 'protect', 'banefulbunker', 'spikyshield', 'kingsshield',
+    
+    # Positioning effects
+    'magnetrise', 'telekinesis', 'ingrain', 'aquaring', 'smackdown',
+    
+    # Multi-turn moves
+    'outrage', 'thrash', 'petaldance', 'rollout', 'iceball', 'uproar',
+    
+    # Charging effects
+    'charge', 'stockpile', 'defensecurl', 'minimize',
+    
+    # Targeting effects
+    'lockon', 'mindreader', 'foresight', 'odorsleuth', 'miracleeye',
+    
+    # Attention effects
+    'followme', 'ragepowder', 'spotlight',
+    
+    # Escape prevention
+    'meanlook', 'block', 'spiderweb', 'anchorshot', 'spiritshackle', 'thousandwaves', 'octolock', 'noretreat', 'jawlock',
+    
+}
+
+
+# Known regular status effects
+KNOWN_REGULAR_STATUSES = {
+    'par', 'paralyzed', 'brn', 'burn', 'psn', 'poison', 
+    'tox', 'toxic', 'slp', 'sleep', 'frz', 'frozen'
+}
 
 DAMAGE = 'damage'
 HEAL = "heal"
