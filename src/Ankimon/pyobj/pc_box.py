@@ -31,6 +31,10 @@ from ..functions.sprite_functions import get_sprite_path
 from ..utils import load_custom_font, get_tier_by_id
 from ..resources import mypokemon_path, itembag_path
 
+
+def format_item_name(item_name: str) -> str:
+    return item_name.replace("-", " ").title()
+
 def clear_layout(layout):
     """
     Recursively removes all widgets and nested layouts from a given layout.
@@ -639,7 +643,7 @@ class PokemonPC(QDialog):
         menu.addAction(make_favorite_action)
         menu.addAction(give_held_item)
         if pokemon.get("held_item"):
-            remove_held_item = QAction(f"Remove held item : {pokemon['held_item']}", self)
+            remove_held_item = QAction(f"Remove held item : {format_item_name(pokemon['held_item'])}", self)
             remove_held_item.triggered.connect(lambda: self.remove_held_item(pokemon))
             menu.addAction(remove_held_item)
 
@@ -793,7 +797,7 @@ class PokemonPC(QDialog):
         if pokemon.get('held_item') is None:
             raise ValueError("The pokemon does not hold an item.")
         pokemon_obj.remove_held_item()
-        ShowInfoLogger().log_and_showinfo("info", f"{pokemon['held_item']} was removed from {pokemon.get('name')}.")
+        ShowInfoLogger().log_and_showinfo("info", f"{format_item_name(pokemon['held_item'])} was removed from {pokemon.get('name')}.")
 
         # Refreshing the PC after giving the item is important in order to update the pokemon information without the held item
         self.refresh_gui()
@@ -878,8 +882,8 @@ class GiveItemWindow(QDialog):
         for item in item_list:
             row_layout = QHBoxLayout()
 
-            item_label = QLabel(item)
-            give_button = QPushButton(f"Give {item}")
+            item_label = QLabel(format_item_name(item))
+            give_button = QPushButton(f"Give {format_item_name(item)}")
             give_button.clicked.connect(lambda clicked, i=item: self.expanded_give_item_func(i))
             if item in NOT_YET_IMPLEMENTED_ITEMS or item.endswith("-berry") or item.endswith("-gem"):
                 # NOTE (Axil): As time of writing, single use items are not yet implemented.
