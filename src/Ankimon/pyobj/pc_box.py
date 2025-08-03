@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Callable
 
 from aqt import mw, gui_hooks
 from aqt.qt import (
@@ -15,7 +15,7 @@ from aqt.qt import (
 
 from aqt.theme import theme_manager # Check if light / dark mode in Anki
 
-from PyQt6.QtWidgets import QLineEdit, QComboBox, QCheckBox, QMenu, QWidget
+from PyQt6.QtWidgets import QLineEdit, QComboBox, QCheckBox, QMenu, QWidget, QScrollArea, QFrame
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QIcon, QFont, QAction, QMovie, QCloseEvent
 
@@ -29,7 +29,11 @@ from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.settings import Settings
 from ..functions.sprite_functions import get_sprite_path
 from ..utils import load_custom_font, get_tier_by_id
-from ..resources import mypokemon_path
+from ..resources import mypokemon_path, itembag_path
+
+
+def format_item_name(item_name: str) -> str:
+    return item_name.replace("-", " ").title()
 
 def clear_layout(layout):
     """
@@ -106,6 +110,7 @@ class PokemonPC(QDialog):
         self.generation_combo = None
         self.tier_combo = None
         self.filter_favorites = None
+        self.filter_is_holding_item = None
         self.sort_by_id = None
         self.sort_by_name = None
         self.sort_by_level = None
@@ -326,6 +331,11 @@ class PokemonPC(QDialog):
         self.filter_favorites = QCheckBox("Favorites")
         self.filter_favorites.setChecked(is_checked)
         self.filter_favorites.stateChanged.connect(lambda: self.go_to_box(0))
+        # Filtering Pokemon who hold items
+        is_checked = self.filter_is_holding_item.isChecked() if self.filter_is_holding_item is not None else False
+        self.filter_is_holding_item = QCheckBox("Holds item")
+        self.filter_is_holding_item.setChecked(is_checked)
+        self.filter_is_holding_item.stateChanged.connect(lambda: self.go_to_box(0))
         # Sorting options
         sort_label = QLabel("Sort by:")
         sort_layout = QHBoxLayout()
@@ -352,12 +362,13 @@ class PokemonPC(QDialog):
         sort_widget = QWidget()
         sort_widget.setLayout(sort_layout)
         # Adding the widgets to the layout
-        filters_layout.addWidget(self.search_edit, 0, 0, 1, 3)
-        filters_layout.addWidget(search_button, 0, 3, 1, 1)
+        filters_layout.addWidget(self.search_edit, 0, 0, 1, 4)
+        filters_layout.addWidget(search_button, 0, 4, 1, 1)
         filters_layout.addWidget(self.type_combo, 1, 0)
         filters_layout.addWidget(self.generation_combo, 1, 1)
         filters_layout.addWidget(self.tier_combo, 1, 2)
         filters_layout.addWidget(self.filter_favorites, 1, 3)
+        filters_layout.addWidget(self.filter_is_holding_item, 1, 4)
         filters_layout.addWidget(sort_label, 2, 0)
         filters_layout.addWidget(sort_widget, 2, 1, 1, 3)
         collection_layout.addLayout(filters_layout)
@@ -516,6 +527,10 @@ class PokemonPC(QDialog):
             if self.filter_favorites is not None:
                 if self.filter_favorites.isChecked() and not pokemon.get("is_favorite", False):
                     return False
+            
+            if self.filter_is_holding_item is not None:
+                if self.filter_is_holding_item.isChecked() and not pokemon.get("held_item", False):
+                    return False
                 
             if self.generation_combo is not None:
                 gen_idx = self.generation_combo.currentIndex()
@@ -615,15 +630,22 @@ class PokemonPC(QDialog):
         make_favorite_action = QAction(
             "Unmake favorite" if pokemon.get("is_favorite", False) else "Make favorite"
             )
+        give_held_item = QAction("Give a held item", self)
 
         # Connect actions to methods or lambda functions
         pokemon_details_action.triggered.connect(lambda: self.show_pokemon_details(pokemon))
         main_pokemon_action.triggered.connect(lambda: self.main_pokemon_function_callback(pokemon))
         make_favorite_action.triggered.connect(lambda: self.toggle_favorite(pokemon))
+        give_held_item.triggered.connect(lambda: self.give_held_item(pokemon))
         
         menu.addAction(pokemon_details_action)
         menu.addAction(main_pokemon_action)
         menu.addAction(make_favorite_action)
+        menu.addAction(give_held_item)
+        if pokemon.get("held_item"):
+            remove_held_item = QAction(f"Remove held item : {format_item_name(pokemon['held_item'])}", self)
+            remove_held_item.triggered.connect(lambda: self.remove_held_item(pokemon))
+            menu.addAction(remove_held_item)
 
         # Show the menu at the button's position, aligned below the button
         menu.exec(button.mapToGlobal(button.rect().topRight()))
@@ -710,6 +732,76 @@ class PokemonPC(QDialog):
         if self.logger is not None:
             self.logger.log("info", f"Could not make/unmake {pokemon['name']} favorite")
 
+    def give_held_item(self, pokemon: dict[list, Any]):
+        """
+        Opens a window to select and give a held item to the specified Pokémon.
+
+        This function reads the available items from the item bag, filters out
+        non-holdable items (items with a non-None "type"), and presents the user with a
+        selection window. Once an item is selected, it is assigned to the Pokémon, a
+        confirmation message is shown, and the GUI is refreshed to reflect the change.
+
+        Args:
+            pokemon (dict[list, Any]): A dictionary representing the Pokémon's data.
+
+        Returns:
+            None
+
+        Side Effects:
+            - Opens a modal `GiveItemWindow` for item selection.
+            - Updates the Pokémon's held item via `PokemonObject.give_held_item`.
+            - Logs and displays an info message using `ShowInfoLogger`.
+            - Refreshes the GUI via `self.refresh_gui()`.
+        """
+        with open(itembag_path, "r", encoding="utf-8") as f:
+            items_list = json.load(f)
+        items_names = [item_data["item"] for item_data in items_list if item_data.get("type") is None]
+        pokemon_obj = PokemonObject.from_dict(pokemon)
+
+        def func(item_name: str):
+            # small intermediary function. This allows me to display a confirmation message after giving the item and refresh the PC after giving the item.
+            # Refreshing the PC after giving the item is important in order to update the pokemon information with the new held item
+            pokemon_obj.give_held_item(item_name)
+            ShowInfoLogger().log_and_showinfo("info", f"{item_name} was given to {pokemon.get('name')}.")
+            self.refresh_gui()
+
+        give_item_window = GiveItemWindow(
+            item_list=items_names,
+            give_item_func=lambda item_name: func(item_name),
+        )
+        give_item_window.exec()
+
+    def remove_held_item(self, pokemon: dict[list, Any]):
+        """
+        Removes the held item from the specified Pokémon.
+
+        Converts the Pokémon dictionary into a `PokemonObject`, removes the held item,
+        logs the change, and refreshes the GUI. If the Pokémon does not have a held item,
+        raises a `ValueError`.
+
+        Args:
+            pokemon (dict[list, Any]): A dictionary representing the Pokémon's data.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the Pokémon does not currently hold an item.
+
+        Side Effects:
+            - Updates the Pokémon's data to remove the held item.
+            - Logs and displays an info message using `ShowInfoLogger`.
+            - Refreshes the GUI via `self.refresh_gui()`.
+        """
+        pokemon_obj = PokemonObject.from_dict(pokemon)
+        if pokemon.get('held_item') is None:
+            raise ValueError("The pokemon does not hold an item.")
+        pokemon_obj.remove_held_item()
+        ShowInfoLogger().log_and_showinfo("info", f"{format_item_name(pokemon['held_item'])} was removed from {pokemon.get('name')}.")
+
+        # Refreshing the PC after giving the item is important in order to update the pokemon information without the held item
+        self.refresh_gui()
+
     def ensure_all_pokemon_have_tier_info(self):
         """
         Ensures all Pokémon in the saved collection have tier information.
@@ -753,4 +845,76 @@ class PokemonPC(QDialog):
         self.on_window_close()
         super().reject()
 
+
+class GiveItemWindow(QDialog):
+    """
+    Small window that opens up when the user gives an item to the Pokemon from a PC box
+    """
+    def __init__(self, item_list: list[str], give_item_func: Callable):
+        super().__init__()
+        self.setWindowTitle("Give an Item")
+        self.resize(400, 400)
+
+        # Outer layout for the dialog
+        main_layout = QVBoxLayout(self)
+
+        # Scroll area
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+
+        # Container widget inside scroll area
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+
+        self.give_item_func = give_item_func
+
+        NOT_YET_IMPLEMENTED_ITEMS = [
+            "focus-sash",
+            "focus-band",
+            "white-herb",
+            "mental-herb",
+            "power-herb",
+            "throat-spray",
+            "weakness-policy",
+        ]
+
+        # Add item rows
+        for item in item_list:
+            row_layout = QHBoxLayout()
+
+            item_label = QLabel(format_item_name(item))
+            give_button = QPushButton(f"Give {format_item_name(item)}")
+            give_button.clicked.connect(lambda clicked, i=item: self.expanded_give_item_func(i))
+            if item in NOT_YET_IMPLEMENTED_ITEMS or item.endswith("-berry") or item.endswith("-gem"):
+                # NOTE (Axil): As time of writing, single use items are not yet implemented.
+                # It seems to me that, actually, they are not even implemented in the Poke-engine. Although
+                # I haven't dug too much.
+                # Therefore, for now, and hopefully as a not too permanent temporary fix, I will prevent the
+                # user from giving out single-use items.
+                give_button.setToolTip("Single use held items are not yet implemented.")
+                give_button.setEnabled(False)
+                give_button.clicked.connect(
+                    lambda clicked: ShowInfoLogger().log_and_showinfo("Single use held items are not yet implemented.")
+                    )
+
+            row_layout.addWidget(item_label)
+            row_layout.addStretch()
+            row_layout.addWidget(give_button)
+
+            # Optional: separate rows with a line
+            row_frame = QFrame()
+            row_frame.setLayout(row_layout)
+            scroll_layout.addWidget(row_frame)
+
+        scroll_content.setLayout(scroll_layout)
+        scroll.setWidget(scroll_content)
+
+        # Add scroll area to main layout
+        main_layout.addWidget(scroll)
+        self.setLayout(main_layout)
+
+    def expanded_give_item_func(self, item_name: str):
+        # small intermediary function. This allows me to display a confirmation message after giving the item.
+        self.give_item_func(item_name)
+        self.close()
     

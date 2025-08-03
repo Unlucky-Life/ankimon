@@ -508,7 +508,7 @@ def on_review_card(*args):
             # 2. Unpack results from the simulation
             battle_info = results[0]
             new_state = copy.deepcopy(results[1])
-            dmg_from_enemy_move = results[2]
+            dmg_from_enemy_move = results[2]  # NOTE : This is ACTUALLY the sum of all damages and heals that occured to the user during the turn
             dmg_from_user_move = results[3]
             mutator_full_reset = results[4]
             current_battle_info_changes = results[5]
@@ -569,7 +569,6 @@ def on_review_card(*args):
                     play_effect_sound("HurtSuper")
             else:
                 reviewer_obj.seconds = 0
-
 
             # if enemy pokemon faints, this handles AUTOMATIC BATTLE
             if enemy_pokemon.hp < 1:

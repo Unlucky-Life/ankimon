@@ -699,7 +699,8 @@ def MainPokemon(
         evos=pokemon_data.get('evos', []),
         tier=pokemon_data.get('tier', None),
         captured_date=pokemon_data.get('captured_date', None),
-        is_favorite = pokemon_data.get('is_favorite', False)   
+        is_favorite = pokemon_data.get('is_favorite', False),
+        held_item = pokemon_data.get('held_item'),
     )
     # Set any additional fields not in constructor
     extra_fields = [
