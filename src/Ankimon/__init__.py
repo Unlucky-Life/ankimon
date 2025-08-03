@@ -273,18 +273,15 @@ online_connectivity = test_online_connectivity()
 try:           
     if online_connectivity and ssh != False:
         # URL of the file on GitHub
-        github_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/main/update_txt.md"
-        
-        if IS_EXPERIMENTAL_BUILD == True:
-            github_url = f"https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/changelogs/{addon_ver}.md"
+        github_url = f"https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/changelogs/{addon_ver}.md"
         
         # Path to the local file
         local_file_path = addon_dir / "updateinfos.md"
         # Read content from GitHub
         github_content, github_html_content = read_github_file(github_url)
         
-        # If experimental build and content is None, try unknown.md
-        if IS_EXPERIMENTAL_BUILD == True and github_content is None:
+        # If changelog content is None, try unknown.md as a fallback for all builds
+        if github_content is None:
             github_url = "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/changelogs/unknown.md"
             github_content, github_html_content = read_github_file(github_url)
             
