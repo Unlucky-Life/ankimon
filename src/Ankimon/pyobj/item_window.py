@@ -9,7 +9,7 @@ from aqt.qt import (
     Qt,
     QVBoxLayout,
     QWidget,
-    )
+)
 from aqt.utils import showWarning
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QLineEdit,
     QScrollArea, 
-    )
+)
 
 from ..business import (
     get_id_and_description_by_item_name
@@ -52,7 +52,7 @@ class ItemWindow(QWidget):
             ):
         super().__init__()
         self.itembag_path = itembagpath
-        self.logger=logger
+        self.logger = logger
         self.read_item_file()
         self.initUI()
         self.main_pokemon = main_pokemon
@@ -102,7 +102,7 @@ class ItemWindow(QWidget):
             'nest-ball': 12,      # Works better on lower-level Pokémon
             'net-ball': 12,       # Higher chance for Water- and Bug-type Pokémon
             'poke-ball': 8,       # Increased chance from 5 to 8
-            'premier-ball': 8,    # Same as Poké Ball, but it’s a special ball
+            'premier-ball': 8,    # Same as Poké Ball, but it's a special ball
             'quick-ball': 13,     # High chance if used at the start of battle
             'repeat-ball': 12,    # Higher chance on Pokémon that have been caught before
             'safari-ball': 8,     # Used in Safari Zone, with a fixed catch rate
@@ -145,6 +145,22 @@ class ItemWindow(QWidget):
         # Create a widget and layout for content inside the scroll area
         self.contentWidget = QWidget()
         self.contentLayout = QGridLayout()  # The layout for items
+        
+        # FIX 1: Set equal column stretches for consistent column widths
+        self.contentLayout.setColumnStretch(0, 1)  # Column 0 gets stretch factor 1
+        self.contentLayout.setColumnStretch(1, 1)  # Column 1 gets stretch factor 1  
+        self.contentLayout.setColumnStretch(2, 1)  # Column 2 gets stretch factor 1
+        
+        # FIX 2: Set minimum column widths to ensure consistent sizing
+        min_column_width = 200  # Adjust this value as needed
+        self.contentLayout.setColumnMinimumWidth(0, min_column_width)
+        self.contentLayout.setColumnMinimumWidth(1, min_column_width) 
+        self.contentLayout.setColumnMinimumWidth(2, min_column_width)
+        
+        # Set uniform spacing
+        self.contentLayout.setHorizontalSpacing(10)
+        self.contentLayout.setVerticalSpacing(10)
+        
         self.contentWidget.setLayout(self.contentLayout)
 
         # Add the content widget to the scroll area
@@ -153,7 +169,12 @@ class ItemWindow(QWidget):
         # Add the scroll area to the main layout
         self.layout.addWidget(self.scrollArea)
         self.setLayout(self.layout)
-        self.resize(600, 500)
+        
+        # FIX 3: Increase initial window size to better accommodate 3 columns
+        # Calculate appropriate width: 3 columns * min_width + spacing + margins
+        initial_width = 3 * min_column_width + 2 * 10 + 40  # 3 cols + 2 spacings + margins
+        initial_height = 600  # Increased from 500
+        self.resize(initial_width, initial_height)
 
     def renewWidgets(self):
         self.read_item_file()
@@ -171,6 +192,8 @@ class ItemWindow(QWidget):
         else:
             for item in self.itembag_list:
                 item_widget = self.ItemLabel(item["item"], item["quantity"], item_type=item.get("type"))
+                # FIX 4: Set consistent size policy for all item widgets
+                item_widget.setMinimumWidth(180)  # Ensure minimum width for each item
                 self.contentLayout.addWidget(item_widget, row, col)
                 col += 1
                 if col >= max_items_per_row:
@@ -229,6 +252,8 @@ class ItemWindow(QWidget):
 
         for item in filtered_items:
             item_widget = self.ItemLabel(item["item"], item["quantity"], item_type=item.get("type"))
+            # FIX 5: Ensure consistent sizing for filtered items too
+            item_widget.setMinimumWidth(180)
             self.contentLayout.addWidget(item_widget, row, col)
             col += 1
             if col >= max_items_per_row:
@@ -270,12 +295,19 @@ class ItemWindow(QWidget):
             use_item_button.clicked.connect(lambda: self.Handle_Pokeball(item_name))
         elif kwargs.get("item_type") == "TM":
             use_item_button = QLabel()
-            info_item_button = QLabel(
-                f"""
-                Allows the user to teach {item_name.replace('-', ' ').title()} to Pokémon that can learn this move. \n
-                Teaching the move doesn't consume the TM.
-                """
-                )
+            
+            # FIX: Remove indentation by using textwrap.dedent() or reformatting the string
+            import textwrap
+            
+            description_text = f"""Allows the user to teach {item_name.replace('-', ' ').title()} to Pokémon that can learn this move.\n\nTeaching the move doesn't consume the TM."""
+            
+            info_item_button = QLabel(textwrap.dedent(description_text).strip())
+            
+            # Enable word wrapping for TM description
+            info_item_button.setWordWrap(True)
+            # Optional: Set alignment for better appearance
+            info_item_button.setAlignment(Qt.AlignmentFlag.AlignTop)
+
         else:
             use_item_button = QPushButton("Evolve Pokemon")
             use_item_button.clicked.connect(
@@ -304,7 +336,7 @@ class ItemWindow(QWidget):
                         pokemon_name = pokemon['name']
                         individual_id = pokemon.get('individual_id', None)
                         id_ = pokemon.get('id', None)
-                        if individual_id and id:  # Ensure the ID exists
+                        if individual_id and id_:  # Ensure the ID exists
                             # Add Pokémon name to comboBox
                             comboBox.addItem(pokemon_name)
                             # Store both individual_id and id as separate data using roles
@@ -322,15 +354,15 @@ class ItemWindow(QWidget):
         # Adjust catch chance based on Pokémon type and Poké Ball
         if item_name == 'net-ball' and ('water' in self.enemy_pokemon.type or 'bug' in self.enemy_pokemon.type):
             catch_chance += 10  # Additional 10% for Water or Bug-type Pokémon
-            self.logger.log("game",f"{item_name} gets a bonus for Water/Bug-type Pokémon!")
+            self.logger.log("game", f"{item_name} gets a bonus for Water/Bug-type Pokémon!")
         
         elif item_name == 'iron-ball' and 'steel' in self.enemy_pokemon.type:
             catch_chance += 10  # Additional 10% for Steel-type Pokémon
-            self.logger.log("game",f"{item_name} gets a bonus for Steel-type Pokémon!")
+            self.logger.log("game", f"{item_name} gets a bonus for Steel-type Pokémon!")
         
         elif item_name == 'dive-ball' and 'water' in self.enemy_pokemon.type:
             catch_chance += 10  # Additional 10% for Water-type Pokémon
-            self.logger.log("game",f"{item_name} gets a bonus for Water-type Pokémon!")
+            self.logger.log("game", f"{item_name} gets a bonus for Water-type Pokémon!")
 
         return catch_chance
 
@@ -343,14 +375,14 @@ class ItemWindow(QWidget):
             # Simulate catching the Pokémon based on the catch chance
             if random.randint(1, 100) <= catch_chance:
                 # Pokémon caught successfully
-                self.logger.log_and_showinfo("info",f"{item_name} successfully caught the Pokémon!")
+                self.logger.log_and_showinfo("info", f"{item_name} successfully caught the Pokémon!")
                 self.delete_item(item_name)  # Delete the Poké Ball after use
             else:
                 # Pokémon was not caught
-                self.logger.log_and_showinfo("info",f"{item_name} failed to catch the Pokémon.")
+                self.logger.log_and_showinfo("info", f"{item_name} failed to catch the Pokémon.")
                 self.delete_item(item_name)  # Still delete the Poké Ball after use
         else:
-            self.logger.log_and_showinfo("error",f"{item_name} is not a valid Poké Ball!")
+            self.logger.log_and_showinfo("error", f"{item_name} is not a valid Poké Ball!")
 
     def delete_item(self, item_name):
         self.read_item_file()
@@ -369,18 +401,17 @@ class ItemWindow(QWidget):
         self.renewWidgets()
 
     def Check_Heal_Item(self, prevo_name, heal_points, item_name, achievements):
-        global achievments
-        check = check_for_badge(achievements,20)
+        check = check_for_badge(achievements, 20)
         if check is False:
             receive_badge(20, achievements)
-        if item_name == "fullrestore" or "maxpotion":
+        if item_name == "fullrestore" or item_name == "maxpotion":
             heal_points = self.main_pokemon.max_hp
         self.main_pokemon.hp += heal_points
         if self.main_pokemon.hp > (self.main_pokemon.max_hp):
             self.main_pokemon.hp = self.main_pokemon.max_hp
         self.delete_item(item_name)
         play_effect_sound("HpHeal")
-        self.logger.log_and_showinfo("info",f"{prevo_name} was healed for {heal_points}")
+        self.logger.log_and_showinfo("info", f"{prevo_name} was healed for {heal_points}")
 
     def Check_Evo_Item(self, individual_id, prevo_id, item_name):
         try:
@@ -388,10 +419,10 @@ class ItemWindow(QWidget):
             evo_id = check_evolution_by_item(prevo_id, item_id)
             if evo_id is not None:
                 # Perform your action when the item matches the Pokémon's evolution item
-                self.logger.log_and_showinfo("info","Pokemon Evolution is fitting !")
-                self.evo_window.display_pokemon_evo(individual_id, prevo_id, evo_id )
+                self.logger.log_and_showinfo("info", "Pokemon Evolution is fitting !")
+                self.evo_window.display_pokemon_evo(individual_id, prevo_id, evo_id)
             else:
-                self.logger.log_and_showinfo("info","This Pokemon does not need this item.")
+                self.logger.log_and_showinfo("info", "This Pokemon does not need this item.")
         except Exception as e:
             showWarning(f"{e}")
     
@@ -472,4 +503,4 @@ class ItemWindow(QWidget):
 
     def more_info_button_act(self, item_name):
         description = get_id_and_description_by_item_name(item_name)
-        self.logger.log_and_showinfo("info",f"{description}")
+        self.logger.log_and_showinfo("info", f"{description}")
