@@ -5,7 +5,7 @@ import json
 from typing import Union
 
 from aqt import mw
-from aqt.qt import (
+from aqt.qt (
     Qt,
     QDialog,
     QHBoxLayout,
@@ -515,14 +515,12 @@ class PokemonShopManager:
         self.set_callback('trainer.cash', int(self.get_callback('trainer.cash', 0) - cost))
         self.currency_qlabel.setText(f"MONEY: ${self.settings_obj.get('trainer.cash', 0)}")
 
-        random.seed()
+        # Generate new random items
+        random.seed()  # Use current time for truly random reroll
         self.todays_daily_items = random.sample(DAILY_ITEMS_POOL, self.number_of_daily_items)
         self.todays_daily_tms = random.sample(self.get_tm_pool(), self.number_of_daily_items)
 
-        # Refresh the window to apply new theme
-        self.toggle_window()
-        self.toggle_window()
-
+        # SAVE IMMEDIATELY - before GUI refresh
         with open(self.shop_save_file, 'w', encoding='utf-8') as f:
             data = {
                 "items": self.todays_daily_items,
@@ -530,3 +528,7 @@ class PokemonShopManager:
                 "date": datetime.now().strftime("%Y-%m-%d"),
             }
             json.dump(data, f, ensure_ascii=False, indent=4)
+
+        # Now refresh the window - it will load from the updated JSON file
+        self.toggle_window()
+        self.toggle_window()
