@@ -513,6 +513,15 @@ def on_review_card(*args):
             heals_to_user = sum([inst[2] for inst in instructions if inst[0:2] == ['heal', 'user']])
             heals_to_opponent = sum([inst[2] for inst in instructions if inst[0:2] == ['heal', 'opponent']])
             true_dmg_from_enemy_move = sum([inst[2] for inst in instructions if inst[0:2] == ['damage', 'user']])
+            true_dmg_from_user_move = sum([inst[2] for inst in instructions if inst[0:2] == ['damage', 'opponent']])
+
+            # workaround for the DAMAGE being negative in some cases
+            if true_dmg_from_enemy_move < 0:
+                true_dmg_from_enemy_move = 0
+                heals_to_user += abs(true_dmg_from_enemy_move)  # Add the negative damage as a heal
+            if true_dmg_from_user_move < 0:
+                true_dmg_from_user_move = 0
+                heals_to_opponent += abs(true_dmg_from_user_move)
 
             # 3. --- IMMEDIATE STATE SYNCHRONIZATION (THE FIX) ---
             # Update Pokémon objects with the new state from the engine BEFORE any other processing.
@@ -539,7 +548,7 @@ def on_review_card(*args):
                 enemy_pokemon=enemy_pokemon,
                 user_attack=user_attack,
                 enemy_attack=enemy_attack,
-                dmg_from_user_move=dmg_from_user_move,
+                dmg_from_user_move=true_dmg_from_user_move,
                 dmg_from_enemy_move=true_dmg_from_enemy_move,
                 user_hp_after=main_pokemon.hp, # Use the already updated HP
                 opponent_hp_after=enemy_pokemon.hp, # Use the already updated HP
@@ -559,9 +568,9 @@ def on_review_card(*args):
                 tooltipWithColour(f" -{true_dmg_from_enemy_move} HP ", "#F06060", x=-200)
                 play_effect_sound("HurtNormal")
 
-            if dmg_from_user_move > 0:
+            if true_dmg_from_user_move > 0:
                 reviewer_obj.seconds = int(settings_obj.compute_special_variable("animate_time"))
-                tooltipWithColour(f" -{dmg_from_user_move} HP ", "#F06060", x=200)
+                tooltipWithColour(f" -{true_dmg_from_user_move} HP ", "#F06060", x=200)
                 if multiplier == 1:
                     play_effect_sound("HurtNormal")
                 elif multiplier < 1:
