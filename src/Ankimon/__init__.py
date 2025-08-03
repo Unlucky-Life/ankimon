@@ -99,8 +99,8 @@ from .functions.encounter_functions import (
 from .functions.pokedex_functions import find_details_move
 from .gui_entities import UpdateNotificationWindow, CheckFiles
 from .pyobj.help_window import HelpWindow
-from .pyobj.sync_pokemon_data import CheckPokemonData
 from .pyobj.backup_files import run_backup
+from .pyobj.ankimon_sync import save_ankimon_configs, read_ankimon_configs, setup_ankimon_sync_hooks, check_and_sync_pokemon_data
 from .classes.choose_move_dialog import MoveSelectionDialog
 from .poke_engine.ankimon_hooks_to_poke_engine import simulate_battle_with_poke_engine
 from .poke_engine import constants
@@ -165,7 +165,7 @@ try:
     run_backup()
 except Exception as e:
     show_warning_with_traceback(parent=mw, exception=e, message="Backup error:")
-
+    
 # Initialize mutator and mutator_full_reset
 global new_state
 global mutator_full_reset 
@@ -245,7 +245,7 @@ if mainpokemon_path.is_file():
         else:
             mainpokemon_empty = False
 
-check_data = CheckPokemonData(settings_obj, logger)
+sync_dialog = None
 
 #If reviewer showed question; start card_timer for answering card
 def on_show_question(Card):
@@ -265,7 +265,7 @@ def on_show_answer(Card):
 gui_hooks.reviewer_did_show_question.append(on_show_question)
 gui_hooks.reviewer_did_show_answer.append(on_show_answer)
 
-setupHooks(check_data , ankimon_tracker_obj, prepare)
+setupHooks(None, ankimon_tracker_obj, prepare)  
 
 online_connectivity = test_online_connectivity()
 
@@ -704,6 +704,26 @@ def DefeatPokemonHook():
     for hook in defeat_pokemon_hooks:
         hook()
 
+def on_profile_did_open():
+    """Initialize sync system after profile is loaded."""
+    try:
+        # Import the sync setting
+        from .config_var import ankiweb_sync
+        
+        if not ankiweb_sync:
+            logger.log("info", "AnkiWeb sync is disabled in settings - skipping sync system initialization")
+            return
+            
+        # Set up sync hooks now that profile is available
+        setup_ankimon_sync_hooks(settings_obj, logger)
+        
+        # Check for sync conflicts and show dialog if needed
+        global sync_dialog
+        sync_dialog = check_and_sync_pokemon_data(settings_obj, logger)
+        logger.log("info", "Ankimon sync system initialized successfully")
+    except Exception as e:
+        show_warning_with_traceback(parent=mw, exception=e, message="Error setting up sync system:")
+
 # Hook to expose the function
 def on_profile_loaded():
     mw.defeatpokemon = DefeatPokemonHook
@@ -713,6 +733,8 @@ def on_profile_loaded():
 
 # Add hook to run on profile load
 addHook("profileLoaded", on_profile_loaded)
+
+gui_hooks.profile_did_open.append(on_profile_did_open)
 
 def catch_shorcut_function():
     if enemy_pokemon.hp >= 1:
