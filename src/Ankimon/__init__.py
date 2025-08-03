@@ -509,6 +509,10 @@ def on_review_card(*args):
             dmg_from_user_move = results[3]
             mutator_full_reset = results[4]
             current_battle_info_changes = results[5]
+            instructions = results[0]["instructions"]
+            heals_to_user = sum([inst[2] for inst in instructions if inst[0:2] == ['heal', 'user']])
+            heals_to_opponent = sum([inst[2] for inst in instructions if inst[0:2] == ['heal', 'opponent']])
+            true_dmg_from_enemy_move = sum([inst[2] for inst in instructions if inst[0:2] == ['damage', 'user']])
 
             # 3. --- IMMEDIATE STATE SYNCHRONIZATION (THE FIX) ---
             # Update Pokémon objects with the new state from the engine BEFORE any other processing.
@@ -536,7 +540,7 @@ def on_review_card(*args):
                 user_attack=user_attack,
                 enemy_attack=enemy_attack,
                 dmg_from_user_move=dmg_from_user_move,
-                dmg_from_enemy_move=dmg_from_enemy_move,
+                dmg_from_enemy_move=true_dmg_from_enemy_move,
                 user_hp_after=main_pokemon.hp, # Use the already updated HP
                 opponent_hp_after=enemy_pokemon.hp, # Use the already updated HP
                 battle_status=main_pokemon.battle_status,
@@ -550,9 +554,9 @@ def on_review_card(*args):
             tooltipWithColour(formatted_battle_log, color)
             
             # Handle sound effects and animations (existing code)
-            if dmg_from_enemy_move > 0 and multiplier < 1:
+            if true_dmg_from_enemy_move > 0 and multiplier < 1:
                 reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
-                tooltipWithColour(f" -{dmg_from_enemy_move} HP ", "#F06060", x=-200)
+                tooltipWithColour(f" -{true_dmg_from_enemy_move} HP ", "#F06060", x=-200)
                 play_effect_sound("HurtNormal")
 
             if dmg_from_user_move > 0:
@@ -566,6 +570,18 @@ def on_review_card(*args):
                     play_effect_sound("HurtSuper")
             else:
                 reviewer_obj.seconds = 0
+
+            if int(heals_to_user) != 0:
+                # "Negative heal" can happen sometimes. That's how the Life Orb item deals its damage for instance
+                heal_color = "#68FA94" if heals_to_user > 0 else "#F06060"
+                sign = "+" if heals_to_user > 0 else ""
+                tooltipWithColour(f" {sign}{int(heals_to_user)} HP ", heal_color, x=-250)
+
+            if int(heals_to_opponent) != 0:
+                # "Negative heal" can happen sometimes. That's how the Life Orb item deals its damage for instance
+                heal_color = "#68FA94" if heals_to_opponent > 0 else "#F06060"
+                sign = "+" if heals_to_opponent > 0 else ""
+                tooltipWithColour(f" {sign}{int(heals_to_opponent)} HP ", heal_color, x=250)
 
             # if enemy pokemon faints, this handles AUTOMATIC BATTLE
             if enemy_pokemon.hp < 1:
