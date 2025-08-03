@@ -116,7 +116,7 @@ class PokemonShopManager:
         """Create the retro Pokemon-style shop GUI with theme support."""
         self.window = QDialog(parent=mw)
         self.window.setWindowTitle("Ankimon Mart")
-        self.window.setGeometry(100, 100, 1050, 450)
+        self.window.setGeometry(100, 100, 750, 450)
 
         colors = self._get_theme_colors()
 
