@@ -21,6 +21,10 @@ class Settings:
         # Check if "misc.leaderboard" exists; if not, add it
         if "misc.leaderboard" not in config:
             config["misc.leaderboard"] = False  # Add the new setting with its default value
+            self.save_config(config)
+        if "misc.ankiweb_sync" not in config:
+            config["misc.ankiweb_sync"] = False  # Default to disabled
+            self.save_config(config)
 
         if not config:
             #Card max time in Seconds
@@ -68,6 +72,7 @@ class Settings:
                 "misc.language": 9,
                 "misc.ssh": True,
                 "misc.leaderboard": False,
+                "misc.ankiweb_sync": False,
                 "misc.YouShallNotPass_Ankimon_News": False,
                 "misc.discord_rich_presence": False,
                 "misc.discord_rich_presence_text": 1,
