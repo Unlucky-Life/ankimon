@@ -30,11 +30,11 @@ from ..resources import items_path, user_path, pokemon_tm_learnset_path
 DAILY_ITEMS_POOL = daily_item_list()
 
 # Standard Items
-STANDARD_ITEMS = [
+"""STANDARD_ITEMS = [
     {"name": "poke-ball"},
     {"name": "potion"},
     {"name": "rare-candy"},
-]
+]"""
 
 class PokemonShopManager:
     def __init__(self, logger, settings_obj, set_callback, get_callback):
@@ -146,14 +146,14 @@ class PokemonShopManager:
         shop_layout = QHBoxLayout()
         shop_layout.setSpacing(15)
 
-        # Create the three shop sections with theme colors
+        # Create the two shop sections with theme colors
         daily_section = self._create_shop_section("Daily Items", self.get_daily_items(), colors['accent_red'])
         tm_section = self._create_shop_section("Daily TMs", self.get_daily_tms(), colors['accent_teal'], is_tm=True)
-        standard_section = self._create_shop_section("Standard Items", STANDARD_ITEMS, colors['accent_yellow'])
+        #standard_section = self._create_shop_section("Standard Items", STANDARD_ITEMS, colors['accent_yellow'])
 
         shop_layout.addWidget(daily_section)
         shop_layout.addWidget(tm_section)
-        shop_layout.addWidget(standard_section)
+        #shop_layout.addWidget(standard_section)
 
         main_layout.addLayout(shop_layout)
 
