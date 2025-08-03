@@ -5,7 +5,7 @@ import json
 from typing import Union
 
 from aqt import mw
-from aqt.qt (
+from aqt.qt import (
     Qt,
     QDialog,
     QHBoxLayout,
