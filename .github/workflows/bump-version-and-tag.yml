@@ -19,6 +19,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check for changelog file
+        run: |
+          version=${{ github.event.inputs.version }}
+          # Remove leading 'v' if present
+          version_no_prefix=$(echo $version | sed 's/^v//')
+
+          if [ ! -f assets/changelogs/$version_no_prefix.md ]; then
+            echo "Changelog file assets/changelogs/$version_no_prefix.md is missing. Stopping the workflow."
+            exit 1
+          fi
+
       - name: Bump version in manifest.json
         run: |
           jq '.version = "${{ github.event.inputs.version }}"' src/Ankimon/manifest.json > tmp.json && mv tmp.json src/Ankimon/manifest.json
@@ -32,7 +43,7 @@ jobs:
             Automated PR to bump version to ${{ github.event.inputs.version }}.
 
             ---
-            **@h0tp: After merging this PR, create the tag and push it with:**
+            **@h0tp-ftw: After merging this PR, create the tag and push it with:**
 
             ```
             git fetch origin
