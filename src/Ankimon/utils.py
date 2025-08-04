@@ -216,17 +216,127 @@ def random_item():
 
 # Function to get the list of daily items
 def daily_item_list():
+    """
+    Generates a list of items available for the daily shop, filtering out certain categories.
+    """
+    # Items with these suffixes will be excluded from the daily shop
+    excluded_suffixes = ["dust", "-piece", "-nugget", "-berry"]
+    # Add full item names here to exclude them from the daily shop, e.g., ["master-ball"]
+    excluded_full_names = [
+    "Bag_TM_Normal_SV_Sprite", #not a real item
+    # items that are sold for cash
+    "balm-mushroom",
+    "big-mushroom",
+    "big-pearl",
+    "comet-shard",
+    "nugget",
+    "pearl",
+    "pearl-string",
+    "pretty-wing",
+    "rare-bone",
+    "relic-gold",
+    "tiny-mushroom",
+    # catching / escape / encounter rate items
+    "dive-ball",
+    "dusk-ball",
+    "great-ball",
+    "heal-ball",
+    "luxury-ball",
+    "master-ball",
+    "nest-ball",
+    "net-ball",
+    "poke-ball",
+    "premier-ball",
+    "quick-ball",
+    "repeat-ball",
+    "safari-ball",   
+    "timer-ball",
+    "ultra-ball",
+    "smoke-ball",     # escape from wild battles
+    "fluffy-tail",    # escape from wild battles
+    "repel",
+    "max-repel",
+    "super-repel",
+    # Flutes and scarves, that work outside battle
+    "black-flute",
+    "blue-flute",
+    "red-flute",
+    "white-flute",
+    "yellow-flute",
+    "blue-scarf",
+    "green-scarf",
+    "pink-scarf",
+    "red-scarf",
+    "yellow-scarf",
+    # Collectible shards
+    "blue-shard",
+    "green-shard",
+    "red-shard",
+    "yellow-shard",
+    # Contest / Grooming / Friendship items outside battle
+    "soothe-bell",
+    "luxury-ball",
+    "pretty-wing"
+    # Miscellaneous items for info
+    "heart-scale",
+    "honey",
+    "heart-scale",
+    "shoal-salt",
+    "shoal-shell",
+    # Non-heal status items that only work out of battle
+    "antidote",
+    "awakening",
+    "burn-heal",
+    "full-heal",
+    "ice-heal",
+    "lava-cookie",
+    "old-gateau",
+    "heal-powder",
+    "paralyze-heal",
+    # Non-battle stat=ups or contests
+    "calcium",
+    "carbos",
+    "clever-wing",
+    "genius-wing",
+    "health-wing",
+    "hp-up",
+    "iron",
+    "muscle-wing",
+    "protein",
+    "resist-wing",
+    "swift-wing",
+    "zinc",
+    # Rare candy and PP / elixirs
+    "rare-candy",
+    "pp-max",
+    "pp-up",
+    "max-elixir",
+    "max-ether",
+    "elixir",
+    "ether"    
+]
+
+
     item_names = []
-    # You may want to fetch more information, such as description and price
     for file in os.listdir(items_path):
-        if file.endswith(".png"):
-            item_name = file[:-4]
-            if not item_name.endswith("dust") and not item_name.endswith("-piece") and not item_name.endswith("-nugget") and get_item_price(item_name) != 0:
-                item_names.append({
-                    "name": item_name,
-                    "description": f"Item: {item_name}",
-                    "price": get_item_price(item_name)  # You need to ensure this returns the correct price
-                })
+        if not file.endswith(".png"):
+            continue
+
+        item_name = file[:-4]
+
+        # Filter out excluded items
+        if (
+                get_item_price(item_name) == 0 or
+                item_name in excluded_full_names or
+                any(item_name.endswith(suffix) for suffix in excluded_suffixes)):
+            continue
+
+        item_names.append({
+            "name": item_name,
+            "description": f"Item: {item_name}",
+            "price": get_item_price(item_name)
+        })
+
     return item_names
 
 # Function to give an item to the player
