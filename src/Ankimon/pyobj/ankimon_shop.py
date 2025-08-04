@@ -30,11 +30,11 @@ from ..resources import items_path, user_path, pokemon_tm_learnset_path
 DAILY_ITEMS_POOL = daily_item_list()
 
 # Standard Items
-STANDARD_ITEMS = [
+"""STANDARD_ITEMS = [
     {"name": "poke-ball"},
     {"name": "potion"},
     {"name": "rare-candy"},
-]
+]"""
 
 class PokemonShopManager:
     def __init__(self, logger, settings_obj, set_callback, get_callback):
@@ -116,7 +116,7 @@ class PokemonShopManager:
         """Create the retro Pokemon-style shop GUI with theme support."""
         self.window = QDialog(parent=mw)
         self.window.setWindowTitle("Ankimon Mart")
-        self.window.setGeometry(100, 100, 1050, 450)
+        self.window.setGeometry(100, 100, 750, 450)
 
         colors = self._get_theme_colors()
 
@@ -146,14 +146,14 @@ class PokemonShopManager:
         shop_layout = QHBoxLayout()
         shop_layout.setSpacing(15)
 
-        # Create the three shop sections with theme colors
+        # Create the two shop sections with theme colors
         daily_section = self._create_shop_section("Daily Items", self.get_daily_items(), colors['accent_red'])
         tm_section = self._create_shop_section("Daily TMs", self.get_daily_tms(), colors['accent_teal'], is_tm=True)
-        standard_section = self._create_shop_section("Standard Items", STANDARD_ITEMS, colors['accent_yellow'])
+        #standard_section = self._create_shop_section("Standard Items", STANDARD_ITEMS, colors['accent_yellow'])
 
         shop_layout.addWidget(daily_section)
         shop_layout.addWidget(tm_section)
-        shop_layout.addWidget(standard_section)
+        #shop_layout.addWidget(standard_section)
 
         main_layout.addLayout(shop_layout)
 
@@ -515,14 +515,12 @@ class PokemonShopManager:
         self.set_callback('trainer.cash', int(self.get_callback('trainer.cash', 0) - cost))
         self.currency_qlabel.setText(f"MONEY: ${self.settings_obj.get('trainer.cash', 0)}")
 
-        random.seed()
+        # Generate new random items
+        random.seed()  # Use current time for truly random reroll
         self.todays_daily_items = random.sample(DAILY_ITEMS_POOL, self.number_of_daily_items)
         self.todays_daily_tms = random.sample(self.get_tm_pool(), self.number_of_daily_items)
 
-        # Refresh the window to apply new theme
-        self.toggle_window()
-        self.toggle_window()
-
+        # SAVE IMMEDIATELY - before GUI refresh
         with open(self.shop_save_file, 'w', encoding='utf-8') as f:
             data = {
                 "items": self.todays_daily_items,
@@ -530,3 +528,7 @@ class PokemonShopManager:
                 "date": datetime.now().strftime("%Y-%m-%d"),
             }
             json.dump(data, f, ensure_ascii=False, indent=4)
+
+        # Now refresh the window - it will load from the updated JSON file
+        self.toggle_window()
+        self.toggle_window()
