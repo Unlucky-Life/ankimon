@@ -13,6 +13,8 @@ from ..functions.pokedex_functions import search_pokeapi_db_by_id
 
 
 class PokemonTrade:
+    TRADE_VERSION = "01"
+
     def __init__(self, name, id, level, ability, iv, ev, gender, attacks, individual_id, logger, refresh_callback, parent_window=None):
         self.name = name
         self.id = id
@@ -164,126 +166,144 @@ class PokemonTrade:
         separator.setFrameShadow(QFrame.Shadow.Sunken)
         main_layout.addWidget(separator)
 
-        # Trade Code Section
-        trade_code_layout = QVBoxLayout()
-        trade_code_layout.setSpacing(5)
+        # --- Trade Code Interface ---
+        self.trade_code_layout = QVBoxLayout()
+        self.trade_code_layout.setSpacing(5)
 
-        your_code_label = QLabel("Your Trade Code:")
-        your_code_label.setFont(QFont("Arial", 11, QFont.Weight.Bold))
-        trade_code_layout.addWidget(your_code_label)
+        self.your_code_label = QLabel("Your Trade Code:")
+        self.your_code_label.setFont(QFont("Arial", 11, QFont.Weight.Bold))
+        self.trade_code_layout.addWidget(self.your_code_label)
 
-        code_display_layout = QHBoxLayout()
+        self.code_display_layout = QHBoxLayout()
         clipboard_info = f"{self.id},{self.level},{self.format_gender()},{self.ev_string()},{self.iv_string()},{self.attack_ids()}"
         self.trade_code_display = QLineEdit(clipboard_info)
         self.trade_code_display.setReadOnly(True)
         self.trade_code_display.setFont(QFont("Courier New", 10))
-        code_display_layout.addWidget(self.trade_code_display)
+        self.code_display_layout.addWidget(self.trade_code_display)
 
-        copy_button = QPushButton("Copy")
-        copy_button.setToolTip("Copy the trade code to your clipboard")
-        copy_button.clicked.connect(lambda: self.copy_to_clipboard(clipboard_info))
-        code_display_layout.addWidget(copy_button)
-        trade_code_layout.addLayout(code_display_layout)
+        self.copy_button = QPushButton("Copy")
+        self.copy_button.setToolTip("Copy the trade code to your clipboard")
+        self.copy_button.clicked.connect(lambda: self.copy_to_clipboard(clipboard_info))
+        self.code_display_layout.addWidget(self.copy_button)
+        self.trade_code_layout.addLayout(self.code_display_layout)
 
-        main_layout.addLayout(trade_code_layout)
+        main_layout.addLayout(self.trade_code_layout)
 
-        # Input for other's code
-        their_code_label = QLabel("Enter Their Trade Code:")
-        their_code_label.setFont(QFont("Arial", 11, QFont.Weight.Bold))
-        main_layout.addWidget(their_code_label)
+        self.their_code_label = QLabel("Enter Their Trade Code:")
+        self.their_code_label.setFont(QFont("Arial", 11, QFont.Weight.Bold))
+        main_layout.addWidget(self.their_code_label)
 
         self.trade_code_input = QLineEdit()
         self.trade_code_input.setPlaceholderText("Paste the code from the other person here")
         self.trade_code_input.textChanged.connect(self.update_other_pokemon_sprite)
         main_layout.addWidget(self.trade_code_input)
 
-        # Password system UI
-        password_layout = QVBoxLayout()
-        password_layout.setSpacing(5)
-
-        self.password_label = QLabel("")
-        self.password_label.setFont(QFont("Courier New", 10))
-        password_layout.addWidget(self.password_label)
-
-        # Input for the other user's password part
-        self.password_input = QLineEdit()
-        self.password_input.setPlaceholderText("Enter the password part from the other user")
-        password_layout.addWidget(self.password_input)
-
-        main_layout.addLayout(password_layout)
-
         # Trade Button
-        trade_button = QPushButton("Perform Trade")
-        trade_button.setFont(QFont("Arial", 14, QFont.Weight.Bold))
-        trade_button.setStyleSheet("padding: 10px;")
-        trade_button.clicked.connect(lambda: self.handle_trade_with_password(window))
-        main_layout.addWidget(trade_button)
-
-        # When both codes are present, generate and show password parts
-        self.trade_code_input.textChanged.connect(self.update_password_parts)
-        self.update_password_parts()
+        self.trade_button = QPushButton("Generate Trade Password")
+        self.trade_button.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        self.trade_button.setStyleSheet("padding: 10px;")
+        self.trade_button.clicked.connect(lambda: self.generate_and_show_passwords(window))
+        main_layout.addWidget(self.trade_button)
 
         window.exec()
 
-    def update_password_parts(self):
-        """
-        Generate a unique password from both codes, split it, and show the user's part.
-        """
-        code1 = self.trade_code_display.text().strip()
-        code2 = self.trade_code_input.text().strip()
-        if not code1 or not code2 or len(code2) < 15:
-            self.password_label.setText("")
-            return
-        # Always sort codes to ensure both users get the same password regardless of order
-        codes = sorted([code1, code2])
-        combo = codes[0] + "|" + codes[1]
-        hash_digest = hashlib.sha256(combo.encode()).hexdigest()
-        # Split into two parts
-        part1 = hash_digest[:len(hash_digest)//2]
-        part2 = hash_digest[len(hash_digest)//2:]
-        # Decide which part to show based on which code is 'self' (user 1 or 2)
-        if code1 < code2:
-            my_part = part1
-            their_part = part2
-        else:
-            my_part = part2
-            their_part = part1
-        self._my_password_part = my_part
-        self._their_password_part = their_part
-        self._full_password = hash_digest
-        self.password_label.setText(f"Your password part: {my_part}\nGive this to the other user.\nYou need their part to complete the trade.")
-
-    def handle_trade_with_password(self, parent_window):
-        """
-        Require the other user's password part to complete the trade.
-        """
-        # Check that both codes are present
+    def generate_and_show_passwords(self, window):
+        # Validate codes before switching
         code1 = self.trade_code_display.text().strip()
         code2 = self.trade_code_input.text().strip()
         if not code1 or not code2 or len(code2) < 15:
             showWarning("Please enter a valid trade code from the other user.")
             return
-        # Check password part
-        their_part = self.password_input.text().strip()
-        if not their_part:
-            showWarning("Please enter the password part from the other user.")
-            return
-        # Recompute the full password
+
+        # Hide code entry widgets
+        self.your_code_label.hide()
+        self.trade_code_display.hide()
+        self.copy_button.hide()
+        self.their_code_label.hide()
+        self.trade_code_input.hide()
+        self.trade_button.hide()
+
+        # Generate and display passwords
         codes = sorted([code1, code2])
         combo = codes[0] + "|" + codes[1]
         hash_digest = hashlib.sha256(combo.encode()).hexdigest()
-        part1 = hash_digest[:len(hash_digest)//2]
-        part2 = hash_digest[len(hash_digest)//2:]
-        # Accept if their_part matches the other half
+        part1 = hash_digest[:len(hash_digest) // 2]
+        part2 = hash_digest[len(hash_digest) // 2:]
+
         if code1 < code2:
-            expected_their_part = part2
+            my_part = part1
+            self._their_password_part = part2
         else:
-            expected_their_part = part1
-        if their_part != expected_their_part:
+            my_part = part2
+            self._their_password_part = part1
+
+        my_part += self.TRADE_VERSION
+        self._their_password_part += self.TRADE_VERSION
+
+        # --- Password Interface ---
+        self.password_interface = QFrame()
+        self.password_layout = QVBoxLayout(self.password_interface)
+        self.password_layout.setSpacing(5)
+
+        # Your password part
+        your_password_label = QLabel("Your Password (To Send to Trade Partner):")
+        your_password_label.setFont(QFont("Arial", 11, QFont.Weight.Bold))
+        self.password_layout.addWidget(your_password_label)
+
+        your_password_display_layout = QHBoxLayout()
+        your_password_display = QLineEdit(my_part)
+        your_password_display.setReadOnly(True)
+        your_password_display.setFont(QFont("Courier New", 10))
+        your_password_display_layout.addWidget(your_password_display)
+
+        copy_password_button = QPushButton("Copy")
+        copy_password_button.setToolTip("Copy your password part to the clipboard")
+        copy_password_button.clicked.connect(lambda: self.copy_to_clipboard(my_part))
+        your_password_display_layout.addWidget(copy_password_button)
+        self.password_layout.addLayout(your_password_display_layout)
+
+        # Their password part
+        their_password_label = QLabel("Enter Trade Partner's Password:")
+        their_password_label.setFont(QFont("Arial", 11, QFont.Weight.Bold))
+        self.password_layout.addWidget(their_password_label)
+
+        self.other_password_input = QLineEdit()
+        self.other_password_input.setPlaceholderText("Enter the other person's password part")
+        self.password_layout.addWidget(self.other_password_input)
+
+        # Password Button
+        self.password_button = QPushButton("Perform Trade")
+        self.password_button.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        self.password_button.setStyleSheet("padding: 10px;")
+        self.password_button.clicked.connect(lambda: self.handle_trade_with_password(window))
+        self.password_layout.addWidget(self.password_button)
+
+        # Add to main layout
+        window.layout().addWidget(self.password_interface)
+
+    def handle_trade_with_password(self, parent_window):
+        """
+        Require the other user's password part to complete the trade.
+        """
+        their_part_entered = self.other_password_input.text().strip()
+        if not their_part_entered:
+            showWarning("Please enter the password part from the other user.")
+            return
+
+        if len(their_part_entered) < 34:
+            showWarning("Incorrect password format.")
+            return
+
+        their_version = their_part_entered[-2:]
+        if their_version != self.TRADE_VERSION:
+            showWarning(f"Trade incompatible due to Ankimon trade versions. \n\nYour verison: {self.TRADE_VERSION}, partner's version: {their_version}.\n\nPlease get the latest version of Ankimon for both users!")
+            return
+
+        if their_part_entered == self._their_password_part:
+            self.confirm_trade(parent_window)
+        else:
             showWarning("Incorrect password part. Please check with the other user.")
             return
-        # If correct, proceed with trade confirmation
-        self.confirm_trade(parent_window)
 
     def copy_to_clipboard(self, text):
         clipboard = mw.app.clipboard()
