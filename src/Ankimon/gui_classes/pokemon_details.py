@@ -42,7 +42,8 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         if gif_in_collection:
             pkmnimage_label = MovieSplashLabel(pkmnimage_path)
         else:
-            pkmnpixmap.load(str(pkmnimage_path))
+            if not pkmnpixmap.load(str(pkmnimage_path)):
+                logger.log_and_showinfo("warning", f"Failed to load Pokémon image: {pkmnimage_path}")
             max_width = 150
             original_width = pkmnpixmap.width()
             original_height = pkmnpixmap.height()
@@ -50,17 +51,30 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
             new_height = (original_height * max_width) // original_width
             pkmnpixmap = pkmnpixmap.scaled(new_width, new_height)
             pkmnimage_label.setPixmap(pkmnpixmap)
-        typeimage_file = f"{type[0]}.png"
+        
+        # Load and set type icons
+        typeimage_file = f"{type[0].lower()}.png"
         typeimage_path = addon_dir / "addon_sprites" / "Types" / typeimage_file
         pkmntype_label = QLabel()
         pkmntypepixmap = QPixmap()
-        pkmntypepixmap.load(str(typeimage_path))
+        if pkmntypepixmap.load(str(typeimage_path)):
+            # Optional: Scale type icon to a fixed size (e.g., 50x50) to fit nicely
+            pkmntypepixmap = pkmntypepixmap.scaled(50, 50, Qt.AspectRatioMode.KeepAspectRatio)
+            pkmntype_label.setPixmap(pkmntypepixmap)
+        else:
+            logger.log_and_showinfo("warning", f"Failed to load type icon: {typeimage_path}")
+        
         if len(type) > 1:
-            type_image_file2 = f"{type[1]}.png"
+            type_image_file2 = f"{type[1].lower()}.png"
             typeimage_path2 = addon_dir / "addon_sprites" / "Types" / type_image_file2
             pkmntype_label2 = QLabel()
             pkmntypepixmap2 = QPixmap()
-            pkmntypepixmap2.load(str(typeimage_path2))
+            if pkmntypepixmap2.load(str(typeimage_path2)):
+                # Optional: Scale second type icon similarly
+                pkmntypepixmap2 = pkmntypepixmap2.scaled(50, 50, Qt.AspectRatioMode.KeepAspectRatio)
+                pkmntype_label2.setPixmap(pkmntypepixmap2)
+            else:
+                logger.log_and_showinfo("warning", f"Failed to load type icon: {typeimage_path2}")
         
         # Custom font
         custom_font = load_custom_font(int(20), language)
@@ -228,7 +242,6 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
 
     except Exception as e:
         show_warning_with_traceback(exception=e, message="Error occured in Pokemon Details Button:")
-
         return QVBoxLayout()  # Return empty layout on error
 
 
