@@ -34,6 +34,7 @@ from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.translator import Translator
 from ..pyobj.test_window import TestWindow
 from ..pyobj.reviewer_obj import Reviewer_Manager
+from ..pyobj.error_handler import show_warning_with_traceback
 from ..business import resize_pixmap_img
 from ..resources import (
     addon_dir,
@@ -301,7 +302,8 @@ class EvoWindow(QWidget):
                                         json.dump(mypokemondata, output_file, indent=2)
                                 self.logger.log_and_showinfo("info", self.translator.translate("mainpokemon_has_evolved", prevo_name=prevo_name, evo_name=evo_name))
         except Exception as e:
-            showWarning(f"{e}")
+            show_warning_with_traceback(parent=mw, exception=e, message=f"Error occured in evolving pokemon")
+            self.logger.log(f"{e}")
             
         try:  # Update Main Pokemon Object and sync with file
             if main_pokemon is not None and main_pokemon.individual_id == individual_id:
@@ -316,7 +318,7 @@ class EvoWindow(QWidget):
                 if self.test_window.isVisible() is True:
                     self.test_window.display_first_encounter()
         except Exception as e:
-            showWarning(f"Error occured in updating main_pokemon obj. {e}")
+            show_warning_with_traceback(parent=mw, exception=e, message=f"Error occured in updating main_pokemon obj")
         self.display_evo_pokemon(prevo_id, evo_id)
         check = check_for_badge(self.achievements, 16)
         if check is False:
