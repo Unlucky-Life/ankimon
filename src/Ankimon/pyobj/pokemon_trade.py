@@ -1,14 +1,19 @@
 import json
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFrame
+from PyQt6.QtGui import QPixmap, QFont, QIcon
+from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtGui import QClipboard
 from aqt.utils import showWarning
 from aqt import mw
 from ..resources import mainpokemon_path, mypokemon_path, pokeapi_db_path, moves_file_path, pokedex_path
+from ..functions.sprite_functions import get_sprite_path
 from datetime import datetime
 import uuid
 from ..functions.pokedex_functions import search_pokeapi_db_by_id
 
+
 class PokemonTrade:
-    def __init__(self, name, id, level, ability, iv, ev, gender, attacks, individual_id, logger, refresh_callback):
+    def __init__(self, name, id, level, ability, iv, ev, gender, attacks, individual_id, logger, refresh_callback, parent_window=None):
         self.name = name
         self.id = id
         self.level = level
@@ -20,6 +25,7 @@ class PokemonTrade:
         self.individual_id = individual_id
         self.refresh_callback = refresh_callback
         self.logger = logger
+        self.parent_window = parent_window  # The collection window or None
 
         # File paths
         self.mainpokemon_path = mainpokemon_path
@@ -35,53 +41,228 @@ class PokemonTrade:
             with open(self.mainpokemon_path, "r", encoding="utf-8") as file:
                 return json.load(file)
         except FileNotFoundError:
-            self.logger.log_and_showinfo("warning","Main Pokémon file not found!")
+            self.logger.log_and_showinfo("warning", "Main Pokémon file not found!")
             return []
 
     def check_and_trade(self):
         pokemon_data = self.load_pokemon_data()
         for pokemon in pokemon_data:
             if self._match_main_pokemon(pokemon):
-                self.logger.log_and_showinfo("warning","You can't trade your Main Pokémon! \nPlease pick a different Main Pokémon.")
+                self.logger.log_and_showinfo("warning", "You can't trade your Main Pokémon! \nPlease pick a different Main Pokémon.")
                 return
         self.open_trade_window()
 
     def _match_main_pokemon(self, pokemon):
         return (
-            pokemon["name"] == self.name
-            and pokemon["id"] == self.id
-            and pokemon["level"] == self.level
-            and pokemon["ability"] == self.ability
-            and pokemon["iv"] == self.iv
-            and pokemon["ev"] == self.ev
-            and pokemon["gender"] == self.gender
-            and pokemon["attacks"] == self.attacks
+                pokemon["name"] == self.name
+                and pokemon["id"] == self.id
+                and pokemon["level"] == self.level
+                and pokemon["ability"] == self.ability
+                and pokemon["iv"] == self.iv
+                and pokemon["ev"] == self.ev
+                and pokemon["gender"] == self.gender
+                and pokemon["attacks"] == self.attacks
+                and pokemon["shiny"] == self.shiny
         )
 
-    def open_trade_window(self):
-        window = QDialog()
-        window.setWindowTitle(f"Trade Pokémon {self.name}")
 
-        # Trade Code Input Field
-        trade_code_input = QLineEdit()
-        trade_code_input.setPlaceholderText("Enter Pokémon Code you want to trade for")
+    def open_trade_window(self):
+        # Use the collection window as parent if provided, else mw
+        parent = self.parent_window if self.parent_window is not None else mw
+        window = QDialog(parent)
+        window.setWindowTitle(f"Trade Pokémon: {self.name}")
+        window.setWindowModality(Qt.WindowModality.ApplicationModal)
+        window.setMinimumSize(350, 450)
+
+        main_layout = QVBoxLayout(window)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(15)
+
+        # Title
+        title_label = QLabel(f"Trading Away: {self.name}")
+        title_label.setFont(QFont("Arial", 18, QFont.Weight.Bold))
+        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(title_label)
+
+        # Pokémon Sprites Layout
+        sprites_layout = QHBoxLayout()
+        sprites_layout.setSpacing(20)
+
+        # Your Pokémon
+        your_pokemon_layout = QVBoxLayout()
+        your_pokemon_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        from PyQt6.QtGui import QMovie
+        your_pokemon_sprite_label = QLabel()
+        sprite_size = QSize(64, 64)
+        your_pokemon_sprite_label.setFixedSize(sprite_size)
+        your_pokemon_sprite_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        your_pokemon_gif_path = get_sprite_path(
+            side="front",
+            sprite_type="gif",
+            id=self.id,
+            shiny=getattr(self, "shiny", False),
+            gender=self.gender
+        )
+        your_pokemon_movie = QMovie(your_pokemon_gif_path)
+        your_pokemon_movie.setScaledSize(sprite_size)
+        your_pokemon_sprite_label.setMovie(your_pokemon_movie)
+        your_pokemon_movie.start()
+        your_pokemon_name_label = QLabel(f"{self.name}")
+        your_pokemon_name_label.setFont(QFont("Arial", 12))
+        your_pokemon_layout.addWidget(your_pokemon_sprite_label)
+        your_pokemon_layout.addWidget(your_pokemon_name_label)
+        sprites_layout.addLayout(your_pokemon_layout)
+
+        # Trade Icon
+        trade_icon_label = QLabel()
+        trade_icon = QIcon.fromTheme("go-next")  # Using a system theme icon
+        if trade_icon.isNull():
+            trade_icon_label.setText("->")  # Fallback text
+        else:
+            trade_icon_label.setPixmap(trade_icon.pixmap(QSize(64, 64)))
+        trade_icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sprites_layout.addWidget(trade_icon_label)
+
+        # Other Pokémon (placeholder)
+        other_pokemon_layout = QVBoxLayout()
+        other_pokemon_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.other_pokemon_sprite_label = QLabel()
+        self.other_pokemon_sprite_label.setFixedSize(sprite_size)
+        self.other_pokemon_sprite_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.other_pokemon_sprite_label.setPixmap(
+            QPixmap(":/icons/pokeball.png").scaled(sprite_size.width(), sprite_size.height(), Qt.AspectRatioMode.KeepAspectRatio,
+                                                   Qt.TransformationMode.SmoothTransformation))
+        self.other_pokemon_name_label = QLabel("")  # Will be set dynamically
+        self.other_pokemon_name_label.setFont(QFont("Arial", 12))
+        other_pokemon_layout.addWidget(self.other_pokemon_sprite_label)
+        other_pokemon_layout.addWidget(self.other_pokemon_name_label)
+        sprites_layout.addLayout(other_pokemon_layout)
+
+        main_layout.addLayout(sprites_layout)
+
+        # Separator
+        separator = QFrame()
+        separator.setFrameShape(QFrame.Shape.HLine)
+        separator.setFrameShadow(QFrame.Shadow.Sunken)
+        main_layout.addWidget(separator)
+
+        # Trade Code Section
+        trade_code_layout = QVBoxLayout()
+        trade_code_layout.setSpacing(5)
+
+        your_code_label = QLabel("Your Trade Code:")
+        your_code_label.setFont(QFont("Arial", 11, QFont.Weight.Bold))
+        trade_code_layout.addWidget(your_code_label)
+
+        code_display_layout = QHBoxLayout()
+        clipboard_info = f"{self.id},{self.level},{self.format_gender()},{self.ev_string()},{self.iv_string()},{self.attack_ids()}"
+        self.trade_code_display = QLineEdit(clipboard_info)
+        self.trade_code_display.setReadOnly(True)
+        self.trade_code_display.setFont(QFont("Courier New", 10))
+        code_display_layout.addWidget(self.trade_code_display)
+
+        copy_button = QPushButton("Copy")
+        copy_button.setToolTip("Copy the trade code to your clipboard")
+        copy_button.clicked.connect(lambda: self.copy_to_clipboard(clipboard_info))
+        code_display_layout.addWidget(copy_button)
+        trade_code_layout.addLayout(code_display_layout)
+
+        main_layout.addLayout(trade_code_layout)
+
+        # Input for other's code
+        their_code_label = QLabel("Enter Their Trade Code:")
+        their_code_label.setFont(QFont("Arial", 11, QFont.Weight.Bold))
+        main_layout.addWidget(their_code_label)
+
+        self.trade_code_input = QLineEdit()
+        self.trade_code_input.setPlaceholderText("Paste the code from the other person here")
+        self.trade_code_input.textChanged.connect(self.update_other_pokemon_sprite)
+        main_layout.addWidget(self.trade_code_input)
 
         # Trade Button
-        trade_button = QPushButton("Trade Pokémon")
-        trade_button.clicked.connect(lambda: self.trade_pokemon_in(trade_code_input.text()))
+        trade_button = QPushButton("Perform Trade")
+        trade_button.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        trade_button.setStyleSheet("padding: 10px;")
+        trade_button.clicked.connect(lambda: self.confirm_trade(window))
+        main_layout.addWidget(trade_button)
 
-        # Generate Clipboard Content
-        clipboard_info = f"{self.id},{self.level},{self.format_gender()},{self.ev_string()},{self.iv_string()},{self.attack_ids()}"
-        mw.app.clipboard().setText(clipboard_info)
-
-        # Layout Setup
-        layout = QVBoxLayout()
-        layout.addWidget(QLabel(f"{self.name} Code: {clipboard_info}"))
-        layout.addWidget(trade_code_input)
-        layout.addWidget(trade_button)
-
-        window.setLayout(layout)
         window.exec()
+
+    def copy_to_clipboard(self, text):
+        clipboard = mw.app.clipboard()
+        clipboard.setText(text)
+        showWarning("Trade code copied to clipboard!")
+
+    def update_other_pokemon_sprite(self, code):
+        from PyQt6.QtGui import QMovie
+        try:
+            sprite_size = QSize(64, 64)
+            parts = code.split(',')
+            if len(parts) > 0 and parts[0].isdigit():
+                pokemon_id = int(parts[0])
+                # Default values
+                other_gender = "M"
+                other_shiny = False
+                # Parse gender if present (3rd value in code)
+                if len(parts) > 2:
+                    gender_map = {"0": "M", "1": "F", "2": "N"}
+                    other_gender = gender_map.get(parts[2], "M")
+                # If you add shiny info to the code, parse it here (e.g., as 4th or last value)
+                # For now, default to False
+                sprite_path = get_sprite_path(
+                    side="front",
+                    sprite_type="gif",
+                    id=pokemon_id,
+                    shiny=other_shiny,
+                    gender=other_gender
+                )
+                other_pokemon_movie = QMovie(sprite_path)
+                other_pokemon_movie.setScaledSize(sprite_size)
+                self.other_pokemon_sprite_label.setMovie(other_pokemon_movie)
+                other_pokemon_movie.start()
+                # Set the Pokémon name label
+                name = self.get_pokemon_name_by_id(pokemon_id)
+                self.other_pokemon_name_label.setText(name if name else "Unknown Pokémon")
+            else:
+                self.other_pokemon_name_label.setText("")
+        except Exception:
+            # In case of invalid format, reset to placeholder
+            self.other_pokemon_sprite_label.setPixmap(
+                QPixmap(":/icons/pokeball.png").scaled(96, 96, Qt.AspectRatioMode.KeepAspectRatio,
+                                                       Qt.TransformationMode.SmoothTransformation))
+            self.other_pokemon_name_label.setText("")
+
+    def get_pokemon_name_by_id(self, pokemon_id):
+        try:
+            with open(self.pokedex_path, 'r', encoding='utf-8') as file:
+                pokedex = json.load(file)
+                for details in pokedex.values():
+                    if details.get('num') == pokemon_id:
+                        return details.get('name', str(pokemon_id))
+        except Exception:
+            pass
+        return str(pokemon_id)
+
+    def confirm_trade(self, parent_window):
+        """
+        Show a confirmation dialog before finalizing the trade.
+        """
+        from PyQt6.QtWidgets import QMessageBox
+        code = self.trade_code_input.text()
+        # Try to get the Pokémon name from the code
+        name = "the other Pokémon"
+        parts = code.split(',')
+        if len(parts) > 0 and parts[0].isdigit():
+            pokemon_id = int(parts[0])
+            name = self.get_pokemon_name_by_id(pokemon_id)
+        msg = QMessageBox(parent_window)
+        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setWindowTitle("Confirm Trade")
+        msg.setText(f"Are you sure you want to trade your {self.name} for {name}?")
+        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        result = msg.exec()
+        if result == QMessageBox.StandardButton.Yes:
+            self.trade_pokemon_in(code)
 
     def format_gender(self):
         gender_map = {"M": 0, "F": 1, "N": 2}
@@ -100,12 +281,20 @@ class PokemonTrade:
         try:
             numbers = [int(num) for num in number_code.split(',')]
             if len(numbers) < 15:
-                raise ValueError("Code is incomplete.")
+                showWarning("Code is incomplete.")
+                return
+            # Prevent trading with a Pokémon of the same ID (not individual_id)
+            incoming_id = numbers[0]
+            if incoming_id == self.id:
+                showWarning("You cannot trade with a Pokémon of the same species (ID) as the one you're trading away!")
+                return
             self.process_trade(numbers)
         except ValueError:
             showWarning("Please enter a valid Pokémon Code!")
 
     def process_trade(self, numbers):
+        from ..functions.pokedex_functions import search_pokedex, search_pokeapi_db_by_id, get_all_pokemon_moves
+        import random
         pokemon_id, level, gender_id = numbers[0], numbers[1], numbers[2]
         ev_stats = dict(zip(['hp', 'atk', 'def', 'spa', 'spd', 'spe'], numbers[3:9]))
         iv_stats = dict(zip(['hp', 'atk', 'def', 'spa', 'spd', 'spe'], numbers[9:15]))
@@ -117,11 +306,27 @@ class PokemonTrade:
 
         base_experience = search_pokeapi_db_by_id(pokemon_id, "base_experience")
 
-        # Create new Pokémon object for incoming trade code pokemon
+        # --- Ability generation logic (like encounter_functions) ---
+        ability = "No Ability"
+        possible_abilities = search_pokedex(details["name"], "abilities")
+        if possible_abilities:
+            numeric_abilities = {k: v for k, v in possible_abilities.items() if k.isdigit()}
+            if numeric_abilities:
+                ability = random.choice(list(numeric_abilities.values()))
+
+        # --- Move generation logic (like encounter_functions) ---
+        # If no valid moves are provided, generate them as in wild encounters
+        if not attacks or any(a == "Unknown Move" for a in attacks):
+            all_possible_moves = get_all_pokemon_moves(details["name"], level)
+            if len(all_possible_moves) <= 4:
+                attacks = all_possible_moves
+            else:
+                attacks = random.sample(all_possible_moves, 4)
+
         new_pokemon = {
             "name": details["name"],
             "nickname": "",
-            "ability": "No Ability",
+            "ability": ability,
             "id": pokemon_id,
             "gender": self.gender_from_id(gender_id),
             "level": level,
@@ -142,10 +347,7 @@ class PokemonTrade:
             "capture_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "individual_id": str(uuid.uuid4())
         }
-
-        #new_pokemon["stats"]["xp"] = 0
         new_pokemon["xp"] = 0
-
         self.replace_pokemon(new_pokemon)
 
     def calculate_max_hp(self, base_hp, level, ev, iv):
