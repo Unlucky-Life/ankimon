@@ -214,6 +214,15 @@ class PokemonTrade:
             showWarning("Please enter a valid trade code from the other user.")
             return
 
+        # Prevent trading for a Pokémon of the same species (ID)
+        # code2 is the incoming Pokémon code
+        parts = code2.split(',')
+        if len(parts) > 0 and parts[0].isdigit():
+            incoming_id = int(parts[0])
+            if incoming_id == self.id:
+                showWarning("You cannot trade with a Pokémon of the same species (ID) as the one you're trading away!")
+                return
+
         # Hide code entry widgets
         self.your_code_label.hide()
         self.trade_code_display.hide()
@@ -322,6 +331,10 @@ class PokemonTrade:
         try:
             sprite_size = QSize(64, 64)
             parts = code.split(',')
+            # Always clear previous movie and label
+            self.other_pokemon_sprite_label.clear()
+            self.other_pokemon_sprite_label.setPixmap(QPixmap())
+            self.other_pokemon_name_label.setText("")
             if len(parts) > 0 and parts[0].isdigit():
                 pokemon_id = int(parts[0])
                 # Default values
@@ -340,7 +353,13 @@ class PokemonTrade:
                     shiny=other_shiny,
                     gender=other_gender
                 )
+                # Stop and delete any previous QMovie
+                if hasattr(self, '_other_pokemon_movie') and self._other_pokemon_movie is not None:
+                    self._other_pokemon_movie.stop()
+                    self._other_pokemon_movie.deleteLater()
+                    self._other_pokemon_movie = None
                 other_pokemon_movie = QMovie(sprite_path)
+                self._other_pokemon_movie = other_pokemon_movie
                 # Do not use setScaledSize; instead, scale the frame for aspect ratio
                 def set_other_frame():
                     frame = other_pokemon_movie.currentImage()
@@ -355,9 +374,12 @@ class PokemonTrade:
                 name = self.get_pokemon_name_by_id(pokemon_id)
                 self.other_pokemon_name_label.setText(name if name else "Unknown Pokémon")
             else:
+                # In case of invalid format, reset to placeholder
+                self.other_pokemon_sprite_label.setPixmap(
+                    QPixmap(":/icons/pokeball.png").scaled(QSize(64, 64), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
                 self.other_pokemon_name_label.setText("")
         except Exception:
-            # In case of invalid format, reset to placeholder
+            # In case of error, reset to placeholder
             self.other_pokemon_sprite_label.setPixmap(
                 QPixmap(":/icons/pokeball.png").scaled(QSize(64, 64), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
             self.other_pokemon_name_label.setText("")
