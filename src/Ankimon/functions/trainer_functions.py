@@ -127,13 +127,6 @@ def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp, xp
                 json.dump(mypokemon_data, json_file, indent=4)
             
             # Now call evolution (which will read the updated file and handle the evolution)
-            evo_window.evolve_pokemon(
-                pokemon['individual_id'],
-                pokemon['name'],
-                evo_id,
-                return_name_for_id(evo_id),
-                None  # main_pokemon is None for XP share evolution
-            )
             break  # Exit the loop since we found and processed the Pokemon
 
     # Only write to file if no evolution was triggered (since evolution already wrote to file)
