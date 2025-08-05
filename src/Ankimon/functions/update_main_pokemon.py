@@ -85,6 +85,7 @@ def update_main_pokemon(main_pokemon: Optional[PokemonObject] = None):
                     main_pokemon_data[0]["base_stats"] = search_pokedex(pokemon_name, "baseStats")
                     del main_pokemon_data[0]["stats"]  # For legacy code, i.e. for when "stats" in the JSON actually meant "base_stat"
                     main_pokemon.update_stats(**main_pokemon_data[0])
+                    save_main_pokemon(main_pokemon) # Save the updated main Pokémon data
                 # if file does load or is empty use default value
                 else:
                     main_pokemon = PokemonObject(**MAIN_POKEMON_DEFAULT)
@@ -96,10 +97,26 @@ def update_main_pokemon(main_pokemon: Optional[PokemonObject] = None):
                     main_pokemon.hp = main_pokemon_data[0].get("current_hp", max_hp)
                 return main_pokemon, mainpokemon_empty
 
+
             except json.JSONDecodeError:
                 main_pokemon = PokemonObject(**MAIN_POKEMON_DEFAULT)
                 return main_pokemon, mainpokemon_empty
     else:
         return PokemonObject(**MAIN_POKEMON_DEFAULT), mainpokemon_empty
+    
+def save_main_pokemon(main_pokemon: PokemonObject):
+    """
+    Saves the main Pokémon object to the mainpokemon.json file.
+    Args:
+        main_pokemon (PokemonObject): The Pokémon object to save.
+    """
+    # If the object has a to_dict method, use it; otherwise, use __dict__
+    if hasattr(main_pokemon, 'to_dict'):
+        data = main_pokemon.to_dict()
+    else:
+        data = main_pokemon.__dict__
+    # Write as a single-element list for compatibility
+    with open(mainpokemon_path, "w", encoding="utf-8") as f:
+        json.dump([data], f, indent=4)
 
 
