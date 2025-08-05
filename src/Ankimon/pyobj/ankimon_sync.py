@@ -886,7 +886,7 @@ class AnkimonDataSync:
                     shutil.copy2(media_file, source_file)
                     updated_files.append(filename)
             
-            showInfo(f"Imported {len(updated_files)} files from AnkiWeb: {', '.join(updated_files)}\nPlease restart Anki to apply changes, otherwise Ankimon may get corrupted.")
+            showInfo(f"Imported {len(updated_files)} files from AnkiWeb: {', '.join(updated_files)}\n\nPlease restart Anki to apply changes, otherwise Ankimon may get corrupted.")
             return True
         except Exception as e:
             showWarning(f"Failed to import from AnkiWeb: {str(e)}")
