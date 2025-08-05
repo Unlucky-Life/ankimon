@@ -96,7 +96,7 @@ class PokemonTrade:
         from PyQt6.QtGui import QMovie, QImage, QPixmap
         your_pokemon_sprite_label = QLabel()
         sprite_size = QSize(64, 64)
-        your_pokemon_sprite_label.setFixedSize(sprite_size)
+        your_pokemon_sprite_label.setMaximumSize(sprite_size)
         your_pokemon_sprite_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         your_pokemon_gif_path = get_sprite_path(
             side="front",
@@ -107,10 +107,7 @@ class PokemonTrade:
         )
         # Load the GIF and convert to grayscale for black-and-white effect
         your_pokemon_movie = QMovie(your_pokemon_gif_path)
-        your_pokemon_movie.setScaledSize(sprite_size)
-        your_pokemon_sprite_label.setMovie(your_pokemon_movie)
-        your_pokemon_movie.start()
-        # Overlay a black-and-white effect using a QPixmap snapshot
+        # Do not use setScaledSize; instead, scale the frame for aspect ratio
         def set_bw_frame():
             frame = your_pokemon_movie.currentImage()
             if not frame.isNull():
@@ -123,9 +120,12 @@ class PokemonTrade:
                         # Compute grayscale value using luminosity method
                         gray_value = int(0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue())
                         gray.setPixelColor(x, y, QColor(gray_value, gray_value, gray_value, alpha))
-                your_pokemon_sprite_label.setPixmap(QPixmap.fromImage(gray).scaled(sprite_size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
-        # Connect to frameChanged to update the grayscale image
+                # Scale with aspect ratio
+                scaled = QPixmap.fromImage(gray).scaled(sprite_size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                your_pokemon_sprite_label.setPixmap(scaled)
         your_pokemon_movie.frameChanged.connect(lambda _: set_bw_frame())
+        your_pokemon_sprite_label.setMovie(your_pokemon_movie)
+        your_pokemon_movie.start()
         set_bw_frame()
         your_pokemon_name_label = QLabel(f"{self.name}")
         your_pokemon_name_label.setFont(QFont("Arial", 12))
@@ -147,11 +147,10 @@ class PokemonTrade:
         other_pokemon_layout = QVBoxLayout()
         other_pokemon_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.other_pokemon_sprite_label = QLabel()
-        self.other_pokemon_sprite_label.setFixedSize(sprite_size)
+        self.other_pokemon_sprite_label.setMaximumSize(sprite_size)
         self.other_pokemon_sprite_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.other_pokemon_sprite_label.setPixmap(
-            QPixmap(":/icons/pokeball.png").scaled(sprite_size.width(), sprite_size.height(), Qt.AspectRatioMode.KeepAspectRatio,
-                                                   Qt.TransformationMode.SmoothTransformation))
+            QPixmap(":/icons/pokeball.png").scaled(sprite_size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         self.other_pokemon_name_label = QLabel("")  # Will be set dynamically
         self.other_pokemon_name_label.setFont(QFont("Arial", 12))
         other_pokemon_layout.addWidget(self.other_pokemon_sprite_label)
@@ -300,6 +299,14 @@ class PokemonTrade:
             return
 
         if their_part_entered == self._their_password_part:
+            # Prevent trading for a Pokémon of the same species (ID)
+            code = self.trade_code_input.text().strip()
+            parts = code.split(',')
+            if len(parts) > 0 and parts[0].isdigit():
+                incoming_id = int(parts[0])
+                if incoming_id == self.id:
+                    showWarning("You cannot trade with a Pokémon of the same species (ID) as the one you're trading away!")
+                    return
             self.confirm_trade(parent_window)
         else:
             showWarning("Incorrect password part. Please check with the other user.")
@@ -334,9 +341,16 @@ class PokemonTrade:
                     gender=other_gender
                 )
                 other_pokemon_movie = QMovie(sprite_path)
-                other_pokemon_movie.setScaledSize(sprite_size)
+                # Do not use setScaledSize; instead, scale the frame for aspect ratio
+                def set_other_frame():
+                    frame = other_pokemon_movie.currentImage()
+                    if not frame.isNull():
+                        scaled = QPixmap.fromImage(frame).scaled(sprite_size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                        self.other_pokemon_sprite_label.setPixmap(scaled)
+                other_pokemon_movie.frameChanged.connect(lambda _: set_other_frame())
                 self.other_pokemon_sprite_label.setMovie(other_pokemon_movie)
                 other_pokemon_movie.start()
+                set_other_frame()
                 # Set the Pokémon name label
                 name = self.get_pokemon_name_by_id(pokemon_id)
                 self.other_pokemon_name_label.setText(name if name else "Unknown Pokémon")
@@ -345,8 +359,7 @@ class PokemonTrade:
         except Exception:
             # In case of invalid format, reset to placeholder
             self.other_pokemon_sprite_label.setPixmap(
-                QPixmap(":/icons/pokeball.png").scaled(96, 96, Qt.AspectRatioMode.KeepAspectRatio,
-                                                       Qt.TransformationMode.SmoothTransformation))
+                QPixmap(":/icons/pokeball.png").scaled(QSize(64, 64), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
             self.other_pokemon_name_label.setText("")
 
     def get_pokemon_name_by_id(self, pokemon_id):
