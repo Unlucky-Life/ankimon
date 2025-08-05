@@ -1,8 +1,8 @@
 import json
+import hashlib
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFrame
-from PyQt6.QtGui import QPixmap, QFont, QIcon
+from PyQt6.QtGui import QPixmap, QFont, QIcon, QColor
 from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtGui import QClipboard
 from aqt.utils import showWarning
 from aqt import mw
 from ..resources import mainpokemon_path, mypokemon_path, pokeapi_db_path, moves_file_path, pokedex_path
@@ -67,7 +67,7 @@ class PokemonTrade:
 
 
     def open_trade_window(self):
-        # Use the collection window as parent if provided, else mw
+        # Always use the collection window as parent if provided, else mw
         parent = self.parent_window if self.parent_window is not None else mw
         window = QDialog(parent)
         window.setWindowTitle(f"Trade Pokémon: {self.name}")
@@ -91,7 +91,7 @@ class PokemonTrade:
         # Your Pokémon
         your_pokemon_layout = QVBoxLayout()
         your_pokemon_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        from PyQt6.QtGui import QMovie
+        from PyQt6.QtGui import QMovie, QImage, QPixmap
         your_pokemon_sprite_label = QLabel()
         sprite_size = QSize(64, 64)
         your_pokemon_sprite_label.setFixedSize(sprite_size)
@@ -103,10 +103,28 @@ class PokemonTrade:
             shiny=getattr(self, "shiny", False),
             gender=self.gender
         )
+        # Load the GIF and convert to grayscale for black-and-white effect
         your_pokemon_movie = QMovie(your_pokemon_gif_path)
         your_pokemon_movie.setScaledSize(sprite_size)
         your_pokemon_sprite_label.setMovie(your_pokemon_movie)
         your_pokemon_movie.start()
+        # Overlay a black-and-white effect using a QPixmap snapshot
+        def set_bw_frame():
+            frame = your_pokemon_movie.currentImage()
+            if not frame.isNull():
+                # Convert to grayscale while preserving alpha
+                gray = QImage(frame.size(), QImage.Format.Format_ARGB32)
+                for y in range(frame.height()):
+                    for x in range(frame.width()):
+                        color = frame.pixelColor(x, y)
+                        alpha = color.alpha()
+                        # Compute grayscale value using luminosity method
+                        gray_value = int(0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue())
+                        gray.setPixelColor(x, y, QColor(gray_value, gray_value, gray_value, alpha))
+                your_pokemon_sprite_label.setPixmap(QPixmap.fromImage(gray).scaled(sprite_size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        # Connect to frameChanged to update the grayscale image
+        your_pokemon_movie.frameChanged.connect(lambda _: set_bw_frame())
+        set_bw_frame()
         your_pokemon_name_label = QLabel(f"{self.name}")
         your_pokemon_name_label.setFont(QFont("Arial", 12))
         your_pokemon_layout.addWidget(your_pokemon_sprite_label)
@@ -179,14 +197,93 @@ class PokemonTrade:
         self.trade_code_input.textChanged.connect(self.update_other_pokemon_sprite)
         main_layout.addWidget(self.trade_code_input)
 
+        # Password system UI
+        password_layout = QVBoxLayout()
+        password_layout.setSpacing(5)
+
+        self.password_label = QLabel("")
+        self.password_label.setFont(QFont("Courier New", 10))
+        password_layout.addWidget(self.password_label)
+
+        # Input for the other user's password part
+        self.password_input = QLineEdit()
+        self.password_input.setPlaceholderText("Enter the password part from the other user")
+        password_layout.addWidget(self.password_input)
+
+        main_layout.addLayout(password_layout)
+
         # Trade Button
         trade_button = QPushButton("Perform Trade")
         trade_button.setFont(QFont("Arial", 14, QFont.Weight.Bold))
         trade_button.setStyleSheet("padding: 10px;")
-        trade_button.clicked.connect(lambda: self.confirm_trade(window))
+        trade_button.clicked.connect(lambda: self.handle_trade_with_password(window))
         main_layout.addWidget(trade_button)
 
+        # When both codes are present, generate and show password parts
+        self.trade_code_input.textChanged.connect(self.update_password_parts)
+        self.update_password_parts()
+
         window.exec()
+
+    def update_password_parts(self):
+        """
+        Generate a unique password from both codes, split it, and show the user's part.
+        """
+        code1 = self.trade_code_display.text().strip()
+        code2 = self.trade_code_input.text().strip()
+        if not code1 or not code2 or len(code2) < 15:
+            self.password_label.setText("")
+            return
+        # Always sort codes to ensure both users get the same password regardless of order
+        codes = sorted([code1, code2])
+        combo = codes[0] + "|" + codes[1]
+        hash_digest = hashlib.sha256(combo.encode()).hexdigest()
+        # Split into two parts
+        part1 = hash_digest[:len(hash_digest)//2]
+        part2 = hash_digest[len(hash_digest)//2:]
+        # Decide which part to show based on which code is 'self' (user 1 or 2)
+        if code1 < code2:
+            my_part = part1
+            their_part = part2
+        else:
+            my_part = part2
+            their_part = part1
+        self._my_password_part = my_part
+        self._their_password_part = their_part
+        self._full_password = hash_digest
+        self.password_label.setText(f"Your password part: {my_part}\nGive this to the other user.\nYou need their part to complete the trade.")
+
+    def handle_trade_with_password(self, parent_window):
+        """
+        Require the other user's password part to complete the trade.
+        """
+        # Check that both codes are present
+        code1 = self.trade_code_display.text().strip()
+        code2 = self.trade_code_input.text().strip()
+        if not code1 or not code2 or len(code2) < 15:
+            showWarning("Please enter a valid trade code from the other user.")
+            return
+        # Check password part
+        their_part = self.password_input.text().strip()
+        if not their_part:
+            showWarning("Please enter the password part from the other user.")
+            return
+        # Recompute the full password
+        codes = sorted([code1, code2])
+        combo = codes[0] + "|" + codes[1]
+        hash_digest = hashlib.sha256(combo.encode()).hexdigest()
+        part1 = hash_digest[:len(hash_digest)//2]
+        part2 = hash_digest[len(hash_digest)//2:]
+        # Accept if their_part matches the other half
+        if code1 < code2:
+            expected_their_part = part2
+        else:
+            expected_their_part = part1
+        if their_part != expected_their_part:
+            showWarning("Incorrect password part. Please check with the other user.")
+            return
+        # If correct, proceed with trade confirmation
+        self.confirm_trade(parent_window)
 
     def copy_to_clipboard(self, text):
         clipboard = mw.app.clipboard()
