@@ -74,7 +74,7 @@ class PokemonTrade:
         window = QDialog(parent)
         window.setWindowTitle(f"Trade Pokémon: {self.name}")
         window.setWindowModality(Qt.WindowModality.ApplicationModal)
-        window.setMinimumSize(350, 450)
+        window.setMinimumSize(380, 450)
 
         main_layout = QVBoxLayout(window)
         main_layout.setContentsMargins(20, 20, 20, 20)
