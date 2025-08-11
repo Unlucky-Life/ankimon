@@ -589,7 +589,7 @@ class AnkimonDataSync:
     This leverages Anki's built-in media sync to AnkiWeb while keeping files organized.
     """
     
-    _OBFUSCATION_KEY = "ankimon_secret_key"
+    _OBFUSCATION_KEY = "H0tP-!s-N0t-4-C@tG!rL_v2"
     
     # Files to sync and their locations
     SYNC_FILES = {
