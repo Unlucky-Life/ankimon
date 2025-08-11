@@ -80,7 +80,7 @@ class SettingsWindow(QMainWindow):
         # Track label-based settings
         self.label_settings = {}
 
-        keys_to_skip = {"debug_mode", "deprecated_setting", "trainer.cash", "trainer.xp", "trainer.id", "trainer.sprite"}
+        keys_to_skip = {"debug_mode", "deprecated_setting", "trainer.cash", "trainer.xp", "trainer.id", "trainer.sprite", "misc.last_tip_index"}
 
         # Handle different setting types
         for key, value in self.config.items():
@@ -156,7 +156,7 @@ class SettingsWindow(QMainWindow):
 
     def on_save(self):
         excluded_patterns = {
-        'mypokemon', 'mainpokemon', 'pokemon_collection', 'trainer.cash'
+        'mypokemon', 'mainpokemon', 'pokemon_collection', 'trainer.cash', 'misc.last_tip_index'
         }
 
         # Check for changes, excluding 'mypokemon' and 'mainpokemon'
