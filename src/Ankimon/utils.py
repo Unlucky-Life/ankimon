@@ -9,6 +9,7 @@ import csv
 from collections import Counter
 from typing import Union
 
+from aqt import mw
 from aqt.utils import showWarning, showInfo
 from PyQt6.QtGui import QFontDatabase, QFont
 
@@ -907,3 +908,6 @@ def substract_item_from_itembag(item: str, quantity: int=1) -> None:
         with open(str(itembag_path), "w") as f:
             json.dump(items_list, f, indent=2)
         return
+    
+def close_anki():
+    mw.close()
