@@ -818,11 +818,19 @@ class AnkimonDataSync:
                         with open(media_file, 'r', encoding='utf-8') as f:
                             file_diff['media_data'] = json.load(f)
                         
+                        # First, compare the loaded data. This is the most reliable check.
+                        if file_diff['local_data'] != file_diff['media_data']:
+                            file_diff['files_differ'] = True
+                        else:
+                            # If data is semantically the same, we don't need to check further.
+                            file_diff['files_differ'] = False
+
+                    except (json.JSONDecodeError, Exception) as e:
+                        # If we can't parse the JSON, we can't compare data.
+                        # Fall back to the binary file comparison.
+                        file_diff['error'] = f"Could not parse JSON, falling back to binary comparison: {e}"
                         file_diff['files_differ'] = not filecmp.cmp(source_file, media_file, shallow=False)
-                    except json.JSONDecodeError as e:
-                        file_diff['error'] = f"JSON decode error: {str(e)}"
-                    except Exception as e:
-                        file_diff['error'] = f"Error reading file: {str(e)}"
+
                 elif file_diff['local_exists']:
                     try:
                         with open(source_file, 'r', encoding='utf-8') as f:
