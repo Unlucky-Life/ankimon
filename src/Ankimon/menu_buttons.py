@@ -31,6 +31,9 @@ help_menu = mw.pokemenu.addMenu(mw.translator.translate("ankimon_help_button_tit
 if debug is True:
     debug_menu = mw.pokemenu.addMenu(mw.translator.translate("ankimon_debug_button_title"))
 
+#Creating In-App Showdown Menu
+from .showdown import main
+
 def create_menu_actions(
     database_complete: bool,
     online_connectivity: bool,
