@@ -3,7 +3,6 @@ from .import_export_team import export_team, import_opp, import_mine
 from aqt import mw
 from aqt.qt import QAction, qconnect
 from PyQt6.QtGui import QAction
-#from PyQt6.QtWidgets import QMenu
 
 def run():
     show = Showdown()
@@ -27,4 +26,3 @@ qconnect(save_btn.triggered, import_mine)
 shw_dn_menu.addAction(save_btn)
 
 
-#create_in_app_showdown_menu()
