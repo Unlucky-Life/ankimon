@@ -8,19 +8,18 @@ from ..pyobj.pokemon_obj import PokemonObject
 from ..pyobj.translator import Translator
 from ..pyobj.settings import Settings
 from ..pyobj.ankimon_tracker import AnkimonTracker
-from ..resources import (pkmnimgfolder, addon_dir, icon_path, battlescene_path,
-                       battlescene_path_without_dialog, battle_ui_path, opponent_team, my_team)
+from ..resources import (addon_dir, opponent_team, my_team)
 from ..business import bP_none_moves, get_multiplier_stats
 from aqt.qt import (QAction, QDialog, QFont, QGridLayout, QLabel, QPainter,
                     QPixmap, Qt, QVBoxLayout, QWidget, qconnect)
-from PyQt6.QtCore import QPoint, QTimer, QThread, QEvent, QObject, QUrl, pyqtSignal
-from PyQt6.QtGui import QPixmap, QColor, QPalette, QDesktopServices, QPen, QFontDatabase
+from PyQt6.QtCore import QPoint, QTimer, pyqtSignal
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel,
-                             QInputDialog, QVBoxLayout, QWidget, QComboBox, QPushButton, QTextEdit, QHBoxLayout, QComboBox, QLineEdit, QScrollArea,
-                             QFrame, QMenu, QLayout, QProgressBar)
+                             QInputDialog, QVBoxLayout, QPushButton,
+                             QFrame,)
 from aqt import mw
 from aqt.utils import showWarning
-from PyQt6.QtGui import QPalette, QColor, QIcon, QImage
+from PyQt6.QtGui import QPalette, QColor
 import random
 
 settings_obj = Settings()
@@ -312,6 +311,7 @@ class Win(QDialog):
         self.main_lay.addWidget(self.btn)
         self.setModal(True)
         self.open()
+
 
 
 
