@@ -95,3 +95,7 @@ backup_root = addon_dir / "user_files" / "backups"
 backup_folder_1 = backup_root / "backup_1"
 backup_folder_2 = backup_root / "backup_2"
 backup_folders = [os.path.join(backup_root, f"backup_{i}") for i in range(1, 4)]
+
+#In-App Showdown Team Files
+my_team = addon_dir / "user_files" / "showdown" / "mine.json"
+opponent_team = addon_dir / "user_files" / "showdown" / "opponent.json"
