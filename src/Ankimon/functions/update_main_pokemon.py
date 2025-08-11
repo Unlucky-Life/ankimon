@@ -98,7 +98,7 @@ def update_main_pokemon(main_pokemon: Optional[PokemonObject] = None):
                 return main_pokemon, mainpokemon_empty
 
 
-            except json.JSONDecodeError:
+            except Exception as e:
                 main_pokemon = PokemonObject(**MAIN_POKEMON_DEFAULT)
                 return main_pokemon, mainpokemon_empty
     else:
