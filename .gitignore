@@ -5,6 +5,7 @@ src/Ankimon/user_files/mypokemon.json
 src/Ankimon/user_files/data.json
 src/Ankimon/user_files/team.json
 src/Ankimon/user_files/rate_this.json
+src/Ankimon/user_files/config.obf
 # ^ in case user makes changes
 src/Ankimon/addon_sprites/trainers/h0tp.png
 # ^ to ignore my custom sprite xD
@@ -13,6 +14,7 @@ src/Ankimon/user_files/backups
 *.log
 *.pyc
 .vscode
+.gemini
 debug_console.py
 src/Ankimon/user_files/todays_shop.json
 src/Ankimon/user_files/meta.json
