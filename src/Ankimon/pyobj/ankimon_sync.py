@@ -569,7 +569,7 @@ class ImprovedPokemonDataSync(QDialog):
                 
                 tooltip("Data imported from AnkiWeb successfully! Automatic sync is now enabled.")
                 self.close()
-                close_anki
+                close_anki()
             else:
                 showWarning("Failed to import data from AnkiWeb.")
         except Exception as e:
