@@ -657,7 +657,7 @@ class AnkimonDataSync:
     def _get_source_path(self, filename: str) -> Path:
         """Get the source path for a file based on its location."""
         location = self.SYNC_FILES.get(filename)
-        if location == "addon_root":
+        if location == "addon_root" or filename == "meta.json":
             return self.addon_path / filename
         elif location == "user_files":
             return self.user_files_path / filename
