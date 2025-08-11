@@ -29,7 +29,7 @@ from ..functions.badges_functions import check_for_badge, receive_badge
 from ..functions.battle_functions import calculate_hp
 from ..functions.pokedex_functions import search_pokedex, search_pokeapi_db_by_id
 from ..functions.pokemon_functions import get_random_moves_for_pokemon, pick_random_gender
-from ..utils import load_custom_font
+from ..utils import load_custom_font, close_anki
 from ..resources import starters_path, addon_dir, frontdefault, mainpokemon_path, mypokemon_path
 
 
@@ -160,6 +160,8 @@ class StarterWindow(QWidget):
         self.logger.log_and_showinfo("info",f"{name.capitalize()} has been chosen as Starter Pokemon !")
 
         self.display_chosen_starter_pokemon(starter_name)
+        
+        close_anki()
 
     def get_random_starter(self):
         category = "Starter"
