@@ -11,6 +11,7 @@ from aqt.utils import showWarning, showInfo, tooltip
 
 from ..resources import user_path, addon_dir
 from ..config_var import ankiweb_sync
+from ..utils import close_anki
 
 from PyQt6.QtGui import QTextOption
 from PyQt6.QtWidgets import QLabel, QVBoxLayout, QTextEdit, QPushButton, QDialog, QHBoxLayout, QScrollArea, QWidget
@@ -567,6 +568,7 @@ class ImprovedPokemonDataSync(QDialog):
                 
                 tooltip("Data imported from AnkiWeb successfully! Automatic sync is now enabled.")
                 self.close()
+                close_anki
             else:
                 showWarning("Failed to import data from AnkiWeb.")
         except Exception as e:
@@ -886,7 +888,7 @@ class AnkimonDataSync:
                     shutil.copy2(media_file, source_file)
                     updated_files.append(filename)
             
-            showInfo(f"Imported {len(updated_files)} files from AnkiWeb: {', '.join(updated_files)}\n\nPlease restart Anki to apply changes, otherwise Ankimon may get corrupted.")
+            showInfo(f"Imported {len(updated_files)} files from AnkiWeb: {', '.join(updated_files)}\n\nAnki will now close. Please reopen Anki to apply changes!")
             return True
         except Exception as e:
             showWarning(f"Failed to import from AnkiWeb: {str(e)}")
