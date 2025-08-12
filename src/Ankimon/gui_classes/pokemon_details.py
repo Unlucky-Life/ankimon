@@ -681,7 +681,7 @@ def rename_pkmn(nickname, pkmn_name, individual_id, logger, refresh_callback):
             else:
                 showWarning("Pokémon not found.")
     except Exception as e:
-        showWarning(f"An error occurred: {e}")
+        show_warning_with_traceback(parent=mw, exception=e, message=f"An error occurred: {e}")
 
 def PokemonFree(individual_id, name, logger, refresh_callback):
     # Confirmation dialog

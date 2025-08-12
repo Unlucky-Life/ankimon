@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import Dict, List, Any
 
 from aqt import mw, gui_hooks
-from aqt.utils import showWarning, showInfo, tooltip
+from aqt.utils import showInfo, tooltip
+from ..pyobj.error_handler import show_warning_with_traceback
 
 from ..resources import user_path, addon_dir
 from ..config_var import ankiweb_sync
@@ -122,7 +123,7 @@ class ImprovedPokemonDataSync(QDialog):
             
         except Exception as e:
             self.logger.log("error", f"Failed to check for differences: {str(e)}")
-            showWarning(f"Error checking for differences: {str(e)}")
+            show_warning_with_traceback(parent=self, exception=e, message="Error checking for differences")
     
     def _display_differences(self, differences: Dict[str, Dict]):
         """Display improved JSON differences, showing only what changed per file with specific key differences."""
@@ -553,10 +554,10 @@ class ImprovedPokemonDataSync(QDialog):
                 tooltip("Data exported to AnkiWeb successfully! Automatic sync is now enabled.")
                 self.close()
             else:
-                showWarning("Failed to export data to AnkiWeb.")
+                raise Exception("Failed to export data to AnkiWeb.")
         except Exception as e:
             self.logger.log("error", f"Failed to export to AnkiWeb: {str(e)}")
-            showWarning(f"Error exporting to AnkiWeb: {str(e)}")
+            show_warning_with_traceback(parent=self, exception=e, message="Error exporting to AnkiWeb")
 
     def import_from_ankiweb(self):
         """Import data from AnkiWeb to local storage."""
@@ -571,10 +572,10 @@ class ImprovedPokemonDataSync(QDialog):
                 self.close()
                 close_anki()
             else:
-                showWarning("Failed to import data from AnkiWeb.")
+                raise Exception("Failed to import data from AnkiWeb.")
         except Exception as e:
             self.logger.log("error", f"Failed to import from AnkiWeb: {str(e)}")
-            showWarning(f"Error importing from AnkiWeb: {str(e)}")
+            show_warning_with_traceback(parent=self, exception=e, message="Error importing from AnkiWeb")
 
     def auto_sync_on_close(self):
         """Automatically sync data when Anki closes."""
@@ -633,7 +634,7 @@ class AnkimonDataSync:
                 raise RuntimeError("No Anki profile loaded. Cannot initialize sync paths.")
             
             self._media_path = Path(profile_folder) / "collection.media"
-            self._sync_folder_name = f"Ankimon"
+            self._sync_folder_name = "Ankimon"
             self._media_sync_path = self._media_path
     
     @property
@@ -678,7 +679,7 @@ class AnkimonDataSync:
             self.media_sync_path.mkdir(parents=True, exist_ok=True)
             return True
         except Exception as e:
-            showWarning(f"Failed to create sync folder: {str(e)}")
+            show_warning_with_traceback(parent=mw, exception=e, message="Failed to create sync folder")
             return False
     
     def _migrate_legacy_files(self) -> List[str]:
@@ -697,7 +698,7 @@ class AnkimonDataSync:
                         os.remove(legacy_path)  # Remove old file
                         migrated_files.append(filename)
                 except Exception as e:
-                    showWarning(f"Failed to migrate {filename}: {str(e)}")
+                    show_warning_with_traceback(parent=mw, exception=e, message=f"Failed to migrate {filename}")
                     
         return migrated_files
     
@@ -821,7 +822,7 @@ class AnkimonDataSync:
                         synced_files.append(filename)
                         
                 except Exception as e:
-                    showWarning(f"Failed to sync {filename}: {str(e)}")
+                    show_warning_with_traceback(parent=mw, exception=e, message=f"Failed to sync {filename}")
                     continue
                     
             return synced_files
@@ -861,7 +862,7 @@ class AnkimonDataSync:
                         updated_files.append(filename)
                         
                 except Exception as e:
-                    showWarning(f"Failed to read {filename}: {str(e)}")
+                    show_warning_with_traceback(parent=mw, exception=e, message=f"Failed to read {filename}")
                     continue
                     
             return updated_files
@@ -979,7 +980,7 @@ class AnkimonDataSync:
             showInfo(f"Exported {len(synced_files)} files to AnkiWeb: {', '.join(synced_files)}")
             return True
         except Exception as e:
-            showWarning(f"Failed to export to AnkiWeb: {str(e)}")
+            show_warning_with_traceback(parent=mw, exception=e, message="Failed to export to AnkiWeb")
             return False
 
     def force_sync_from_media(self) -> bool:
@@ -1001,7 +1002,7 @@ class AnkimonDataSync:
             showInfo(f"Imported {len(updated_files)} files from AnkiWeb: {', '.join(updated_files)}\n\nAnki will now close. Please reopen Anki to apply changes!")
             return True
         except Exception as e:
-            showWarning(f"Failed to import from AnkiWeb: {str(e)}")
+            show_warning_with_traceback(parent=mw, exception=e, message="Failed to import from AnkiWeb")
             return False
     
     def get_sync_folder_info(self) -> Dict[str, str]:

@@ -42,6 +42,8 @@ from ..pyobj.InfoLogger import ShowInfoLogger
 
 from ..pyobj.translator import Translator
 
+from .error_handler import show_warning_with_traceback
+
 from ..resources import (
     pkmnimgfolder,
     addon_dir,
@@ -648,7 +650,7 @@ class TestWindow(QWidget):
             return image_label
 
         except Exception as e:
-            showWarning(f"An error occured in badges window {e}")
+            show_warning_with_traceback(parent=self, exception=e, message=f"An error occured in badges window {e}")
 
     def pokemon_display_dead_pokemon(self):
         caught = self.ankimon_tracker_obj.caught

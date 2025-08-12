@@ -35,6 +35,7 @@ from ..resources import mypokemon_path, icon_path, items_path, itembag_path
 from ..functions.badges_functions import check_for_badge, receive_badge
 from ..functions.pokemon_functions import save_fossil_pokemon
 from ..utils import play_effect_sound
+from .error_handler import show_warning_with_traceback
 
 # At the moment when I write this line, "UserRole" is defined as UserRole 1000 in the Ankimon __init__.py file. IDK what it's about.
 UserRole = 1000 
@@ -424,7 +425,7 @@ class ItemWindow(QWidget):
             else:
                 self.logger.log_and_showinfo("info", "This Pokemon does not need this item.")
         except Exception as e:
-            showWarning(f"{e}")
+            show_warning_with_traceback(parent=self, exception=e, message=f"{e}")
     
     def write_item_file(self):
         with open(itembag_path, 'w') as json_file:

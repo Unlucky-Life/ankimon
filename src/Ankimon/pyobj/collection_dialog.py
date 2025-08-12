@@ -3,6 +3,7 @@ from collections import defaultdict
 import uuid
 
 from aqt.utils import showInfo, showWarning
+from ..pyobj.error_handler import show_warning_with_traceback
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
@@ -623,7 +624,7 @@ def trade_pokemon(old_pokemon_name, pokemon_trade, position):
             json.dump(pokemon_list, file, indent=2)
         showWarning(f"{old_pokemon_name} has been traded successfully!")
     except Exception as e:
-        showWarning(f"An error occurred while writing to the file: {e}")
+        show_warning_with_traceback(parent=mw, exception=e, message=f"An error occurred while writing to the file: {e}")
 
 def MainPokemon(
         pokemon_data: dict,

@@ -411,11 +411,15 @@ def save_main_pokemon_progress(
     elif main_pokemon.level != 100:
         main_pokemon.xp += exp
         level_cap = 100
-    if mainpokemon_path.is_file():
-        with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
-            main_pokemon_data = json.load(json_file)
-    else:
-        showWarning(translator.translate("missing_mainpokemon_data"))
+    try:
+        if mainpokemon_path.is_file():
+            with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
+                main_pokemon_data = json.load(json_file)
+        else:
+            showWarning(translator.translate("missing_mainpokemon_data"))
+    except Exception as e:
+        show_warning_with_traceback(parent=mw, exception=e, message="Error loading main pokemon data.")
+        return
     while int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap", False))) < int(main_pokemon.xp) and (level_cap is None or main_pokemon.level < level_cap):
         main_pokemon.level += 1
         msg = ""

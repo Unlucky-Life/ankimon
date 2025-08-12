@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QRadioButton, QHBoxLayout, QMainWindow, QScrollArea,
 from PyQt6.QtWidgets import QMessageBox
 from aqt.utils import showWarning, showInfo
 from aqt import mw
+from .error_handler import show_warning_with_traceback
 
 class SettingsWindow(QMainWindow):
     def __init__(self, config, set_config_callback, save_config_callback, load_config_callback):
@@ -56,11 +57,15 @@ class SettingsWindow(QMainWindow):
     def load_friendly_names(self):
         # Load the friendly names from a JSON file one level above the root of the add-on directory
         names_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lang', 'setting_name.json')
-        if os.path.exists(names_file):
-            with open(names_file, "r", encoding="utf-8") as f:
-                return json.load(f)
-        showWarning("Friendly names file not found. Using default names.")
-        return {}
+        try:
+            if os.path.exists(names_file):
+                with open(names_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            else:
+                showWarning("Friendly names file not found.")
+        except FileNotFoundError as e:
+            show_warning_with_traceback(parent=self, exception=e, message="Friendly names file not found. Using default names.")
+            return {}
 
     def setup_ui(self):
         self.setMinimumSize(400, 300)
