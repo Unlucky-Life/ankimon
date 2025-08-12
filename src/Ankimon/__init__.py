@@ -442,10 +442,10 @@ def on_review_card(*args):
              
                 if enemy_move_category == "Status":
                     color = "#F7DC6F"
-                elif enemy_move_category == "Physical":
-                    color = "#F0B27A"
                 elif enemy_move_category == "Special":
                     color = "#D2B4DE"
+                else:
+                    color = "#F0B27A"
 
             else:
                 enemy_attack = "splash" # if enemy will NOT attack, it uses SPLASH
@@ -464,12 +464,11 @@ def on_review_card(*args):
                 if category == "Status":
                     color = "#F7DC6F"
 
-                if category == "Physical":
-                    color = "#F0B27A"
-
                 elif category == "Special":
                     color = "#D2B4DE"
-
+                
+                else:
+                    color = "#F0B27A"
 
             try:
                 new_state
