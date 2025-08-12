@@ -31,7 +31,7 @@ from ..functions.pokedex_functions import search_pokedex, search_pokeapi_db_by_i
 from ..functions.pokemon_functions import get_random_moves_for_pokemon, pick_random_gender
 from ..utils import load_custom_font, close_anki
 from ..resources import starters_path, addon_dir, frontdefault, mainpokemon_path, mypokemon_path
-
+from .error_handler import show_warning_with_traceback
 
 class StarterWindow(QWidget):
     def __init__(
@@ -191,7 +191,7 @@ class StarterWindow(QWidget):
                 grass_start = f"{grass_starter[random_gen]}"
                 return water_start, fire_start, grass_start
         except Exception as e:
-            showWarning(f"Error in get_random_starter: {e}")
+            show_warning_with_traceback(parent=mw, exception=e, message=f"Error in get_random_starter: {e}")
             return None, None, None
 
     def display_starter_pokemon(self):

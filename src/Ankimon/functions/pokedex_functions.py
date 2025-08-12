@@ -1,5 +1,6 @@
 from ..resources import pokedex_path, pokedesc_lang_path, pokeapi_db_path, pokenames_lang_path, mypokemon_path, learnset_path, moves_file_path, poke_evo_path, poke_species_path, csv_file_items_cost, pokemon_csv
 from aqt.utils import showWarning
+from aqt import mw
 import json
 import random
 import csv
@@ -55,7 +56,6 @@ def special_pokemon_names_for_min_level(name):
     elif name == "type: null":
         return "typenull"
     else:
-        #showWarning("Error in Handling Pokémon name")
         return name
 
 def search_pokedex(pokemon_name,variable):
@@ -155,7 +155,7 @@ def extract_ids_from_file():
             #showWarning(f"Owned Pokémon IDs: {owned_pokemon_ids}")
             return owned_pokemon_ids
     except Exception as e:
-        showWarning(f"Error: {e} with function extract_ids_from_file")
+        show_warning_with_traceback(parent=mw, exception=e, message="Error extracting IDs from file")
         return []
 
 
@@ -235,14 +235,9 @@ def find_details_move(move_name):
                 #logger.log_and_showinfo("info",f"Can't find the attack {move_name} in the database.")
                 move = moves_data.get("tackle")
                 return move
-    except FileNotFoundError:
-        #logger.log_and_showinfo("info","Moves Data File Missing!\nPlease Download Moves Data")
-        return None
-    except json.JSONDecodeError as e:
-        #logger.log_and_showinfo("info",f"Error decoding JSON: {e}")
-        return None
     except Exception as e:
-        showWarning(f"There is an issue in find_details_move{e}")
+        show_warning_with_traceback(parent=mw, exception=e, message=f"There is an issue in find_details_move for move: {move_name}")
+        return None
 
 def get_pokemon_evolution_data_all(pokemon_id, file_path=poke_evo_path):
     # Open the CSV file
@@ -351,31 +346,34 @@ def check_evolution_for_pokemon(individual_id, pokemon_id, level, evo_window, ev
         int | None: The evolution ID if an evolution is found, or None otherwise.
     """
     if not everstone:
-        # Get the evolution data for the given Pokémon ID
-        possible_evos = pokemon_evolves_from_id(pokemon_id)  # Ensure this returns a list of possible evolutions
-        if not possible_evos:
-            #showWarning("No possible evolutions found")
+        try:
+            # Get the evolution data for the given Pokémon ID
+            possible_evos = pokemon_evolves_from_id(pokemon_id)  # Ensure this returns a list of possible evolutions
+            if not possible_evos:
+                #showWarning("No possible evolutions found")
+                return None
+
+            # Check each possible evolution
+            for evos in possible_evos:
+                evo_data = get_pokemon_evolution_data(int(evos))
+                # Only handle level-up evolutions (trigger_id == 1)
+                if evo_data and int(evo_data.get("evolution_trigger_id", 0)) == 1:
+                    min_level_str = evo_data.get("minimum_level", "")
+                    # Only proceed if min_level_str represents a valid integer
+                    if not min_level_str or not str(min_level_str).isdigit():
+                        continue  # Skip this evolution if minimum_level is missing or not a number
+                    min_level = int(min_level_str)
+                    if min_level <= level:
+                        evo_window.display_pokemon_evo(individual_id, pokemon_id, int(evos))
+                        return int(evos)  # Return the evolution ID
+
+            # If no evolutions fit the criteria
+            #showWarning("No fitting evolution found for the given level")
             return None
-
-        # Check each possible evolution
-        for evos in possible_evos:
-            evo_data = get_pokemon_evolution_data(int(evos))
-            # Only handle level-up evolutions (trigger_id == 1)
-            if evo_data and int(evo_data.get("evolution_trigger_id", 0)) == 1:
-                min_level_str = evo_data.get("minimum_level", "")
-                # Only proceed if min_level_str represents a valid integer
-                if not min_level_str or not str(min_level_str).isdigit():
-                    continue  # Skip this evolution if minimum_level is missing or not a number
-                min_level = int(min_level_str)
-                if min_level <= level:
-                    evo_window.display_pokemon_evo(individual_id, pokemon_id, int(evos))
-                    return int(evos)  # Return the evolution ID
-
-        # If no evolutions fit the criteria
-        #showWarning("No fitting evolution found for the given level")
-        return None
+        except Exception as e:
+            show_warning_with_traceback(parent=mw, exception=e, message=f"Error checking evolution for Pokémon ID {pokemon_id}")
+            return None
     else:
-        # Everstone prevents evolution
         return None
 
 def check_if_evolution_exists(pokemon_id):
@@ -443,15 +441,11 @@ def get_pokemon_evolution_data(pokemon_id):
         # Check if evolution data was found, log a message if not
         if not evolution_data:
             showWarning(f"No evolution data found for Pokémon ID '{pokemon_id}'")
-    
-    except FileNotFoundError:
-        # Handle case where the CSV file is not found
-        showWarning(f"The file '{poke_evo_path}' was not found.")
+            pass
+    except FileNotFoundError as e:
+        show_warning_with_traceback(parent=mw, exception=e, message=f"The evolution data file was not found.")
     except Exception as e:
-        # Handle any unexpected errors
-        showWarning(f"Error retrieving evolution data for Pokémon ID '{pokemon_id}': {e}")
-    
-    # Return the evolution data or None if no match is found
+        show_warning_with_traceback(parent=mw, exception=e, message=f"Error retrieving evolution data for Pokémon ID {pokemon_id}")
     return evolution_data
 
 def check_key_in_table(column_name, value, file_path):
@@ -504,7 +498,7 @@ def return_name_for_id(pokemon_id):
         return None
     except Exception as e:
         # Log any unexpected errors
-        showWarning(f"Error retrieving name for Pokémon ID '{pokemon_id}': {e}")
+        show_warning_with_traceback(parent=mw, exception=e, message=f"No evolution data found for Pokémon ID '{pokemon_id}'")(f"Error retrieving name for Pokémon ID '{pokemon_id}': {e}")
         return None
 
 def return_id_for_item_name(item_name):
@@ -532,6 +526,5 @@ def return_id_for_item_name(item_name):
         showWarning("warning", f"Item '{item_name}' not found in the CSV.")
         return None
     except Exception as e:
-        # Log any unexpected errors
-        showWarning(f"Error retrieving ID for item '{item_name}': {e}")
+        show_warning_with_traceback(parent=mw, exception=e, message=f"Error retrieving ID for item '{item_name}'")
         return None

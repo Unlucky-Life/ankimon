@@ -409,14 +409,14 @@ def get_item_id(item_name, file_path=csv_file_items_cost):
                 if row['identifier'] == item_name:
                     id = row['id']
                     return int(id)
-    except FileNotFoundError:
-        showWarning(f"Error: File {file_path} not found.")
+    except FileNotFoundError as e:
+        show_warning_with_traceback(parent=mw, exception=e, message=f"Error: File {file_path} not found.")
         return int(4)
-    except KeyError:
-        showWarning("Error: CSV file does not contain the expected headers.")
+    except KeyError as e:
+        show_warning_with_traceback(parent=mw, exception=e, message="Error: CSV file does not contain the expected headers.")
         return int(4)
     except Exception as e:
-        showWarning(f"Unexpected error: {e}")
+        show_warning_with_traceback(parent=mw, exception=e, message=f"Unexpected error: {e}")
         return int(4)
 
 #Function to return a random fossil

@@ -10,6 +10,7 @@ from ..functions.sprite_functions import get_sprite_path
 from datetime import datetime
 import uuid
 from ..functions.pokedex_functions import search_pokeapi_db_by_id
+from .error_handler import show_warning_with_traceback
 
 
 class PokemonTrade:
@@ -42,8 +43,12 @@ class PokemonTrade:
         try:
             with open(self.mainpokemon_path, "r", encoding="utf-8") as file:
                 return json.load(file)
-        except FileNotFoundError:
-            self.logger.log_and_showinfo("warning", "Main Pokémon file not found!")
+        except FileNotFoundError as e:
+            show_warning_with_traceback(
+                parent=self.parent_window,
+                exception=e,
+                message="Main Pokémon file not found!"
+            )
             return []
 
     def check_and_trade(self):
@@ -391,8 +396,12 @@ class PokemonTrade:
                 for details in pokedex.values():
                     if details.get('num') == pokemon_id:
                         return details.get('name', str(pokemon_id))
-        except Exception:
-            pass
+        except Exception as e:
+            show_warning_with_traceback(
+                parent=self.parent_window,
+                exception=e,
+                message=f"An error occurred while getting the Pokémon name for ID {pokemon_id}."
+            )
         return str(pokemon_id)
 
     def confirm_trade(self, parent_window):
@@ -447,60 +456,67 @@ class PokemonTrade:
     def process_trade(self, numbers):
         from ..functions.pokedex_functions import search_pokedex, search_pokeapi_db_by_id, get_all_pokemon_moves
         import random
-        pokemon_id, level, gender_id = numbers[0], numbers[1], numbers[2]
-        ev_stats = dict(zip(['hp', 'atk', 'def', 'spa', 'spd', 'spe'], numbers[3:9]))
-        iv_stats = dict(zip(['hp', 'atk', 'def', 'spa', 'spd', 'spe'], numbers[9:15]))
-        attacks = [self.find_move_by_num(attack_id)['name'] for attack_id in numbers[15:]]
+        try:
+            pokemon_id, level, gender_id = numbers[0], numbers[1], numbers[2]
+            ev_stats = dict(zip(['hp', 'atk', 'def', 'spa', 'spd', 'spe'], numbers[3:9]))
+            iv_stats = dict(zip(['hp', 'atk', 'def', 'spa', 'spd', 'spe'], numbers[9:15]))
+            attacks = [self.find_move_by_num(attack_id)['name'] for attack_id in numbers[15:]]
 
-        details = self.find_pokemon_by_id(pokemon_id)
-        if not details:
-            return
+            details = self.find_pokemon_by_id(pokemon_id)
+            if not details:
+                raise ValueError(f"Could not find Pokémon details for ID {pokemon_id}")
 
-        base_experience = search_pokeapi_db_by_id(pokemon_id, "base_experience")
+            base_experience = search_pokeapi_db_by_id(pokemon_id, "base_experience")
 
-        # --- Ability generation logic (like encounter_functions) ---
-        ability = "No Ability"
-        possible_abilities = search_pokedex(details["name"], "abilities")
-        if possible_abilities:
-            numeric_abilities = {k: v for k, v in possible_abilities.items() if k.isdigit()}
-            if numeric_abilities:
-                ability = random.choice(list(numeric_abilities.values()))
+            # --- Ability generation logic (like encounter_functions) ---
+            ability = "No Ability"
+            possible_abilities = search_pokedex(details["name"], "abilities")
+            if possible_abilities:
+                numeric_abilities = {k: v for k, v in possible_abilities.items() if k.isdigit()}
+                if numeric_abilities:
+                    ability = random.choice(list(numeric_abilities.values()))
 
-        # --- Move generation logic (like encounter_functions) ---
-        # If no valid moves are provided, generate them as in wild encounters
-        if not attacks or any(a == "Unknown Move" for a in attacks):
-            all_possible_moves = get_all_pokemon_moves(details["name"], level)
-            if len(all_possible_moves) <= 4:
-                attacks = all_possible_moves
-            else:
-                attacks = random.sample(all_possible_moves, 4)
+            # --- Move generation logic (like encounter_functions) ---
+            # If no valid moves are provided, generate them as in wild encounters
+            if not attacks or any(a == "Unknown Move" for a in attacks):
+                all_possible_moves = get_all_pokemon_moves(details["name"], level)
+                if len(all_possible_moves) <= 4:
+                    attacks = all_possible_moves
+                else:
+                    attacks = random.sample(all_possible_moves, 4)
 
-        new_pokemon = {
-            "name": details["name"],
-            "nickname": "",
-            "ability": ability,
-            "id": pokemon_id,
-            "gender": self.gender_from_id(gender_id),
-            "level": level,
-            "type": details["types"],
-            "stats": details["baseStats"],
-            "ev": ev_stats,
-            "iv": iv_stats,
-            "attacks": attacks,
-            "growth_rate": self.get_growth_rate(pokemon_id),
-            "current_hp": self.calculate_max_hp(details["baseStats"]["hp"], level, ev_stats, iv_stats),
-            "base_experience": base_experience,
-            "friendship": 0,
-            "pokemon_defeated": 0,
-            "everstone": False,
-            "shiny": False,
-            "mega": False,
-            "special-form": None,
-            "capture_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "individual_id": str(uuid.uuid4())
-        }
-        new_pokemon["xp"] = 0
-        self.replace_pokemon(new_pokemon)
+            new_pokemon = {
+                "name": details["name"],
+                "nickname": "",
+                "ability": ability,
+                "id": pokemon_id,
+                "gender": self.gender_from_id(gender_id),
+                "level": level,
+                "type": details["types"],
+                "stats": details["baseStats"],
+                "ev": ev_stats,
+                "iv": iv_stats,
+                "attacks": attacks,
+                "growth_rate": self.get_growth_rate(pokemon_id),
+                "current_hp": self.calculate_max_hp(details["baseStats"]["hp"], level, ev_stats, iv_stats),
+                "base_experience": base_experience,
+                "friendship": 0,
+                "pokemon_defeated": 0,
+                "everstone": False,
+                "shiny": False,
+                "mega": False,
+                "special-form": None,
+                "capture_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "individual_id": str(uuid.uuid4())
+            }
+            new_pokemon["xp"] = 0
+            self.replace_pokemon(new_pokemon)
+        except Exception as e:
+            show_warning_with_traceback(
+                parent=self.parent_window,
+                exception=e,
+                message="An error occurred while processing the trade."
+            )
 
     def calculate_max_hp(self, base_hp, level, ev, iv):
         ev_value = ev["hp"] / 4
@@ -522,21 +538,37 @@ class PokemonTrade:
                 return int(33)  # Return a default message if not found
 
     def find_pokemon_by_id(self, pokemon_id):
-        with open(self.pokedex_path, 'r', encoding='utf-8') as file:
-            pokedex = json.load(file)
-            for details in pokedex.values():
-                if details.get('num') == pokemon_id:
-                    return details
-        self.logger.log_and_showinfo("warning",f"No Pokémon found with ID: {pokemon_id}")
-        return None
+        try:
+            with open(self.pokedex_path, 'r', encoding='utf-8') as file:
+                pokedex = json.load(file)
+                for details in pokedex.values():
+                    if details.get('num') == pokemon_id:
+                        return details
+            self.logger.log_and_showinfo("warning",f"No Pokémon found with ID: {pokemon_id}")
+            return None
+        except FileNotFoundError as e:
+            show_warning_with_traceback(
+                parent=self.parent_window,
+                exception=e,
+                message=f"Pokedex file not found."
+            )
+            return None
 
     def gender_from_id(self, gender_id):
         return {0: "M", 1: "F", 2: "N"}.get(gender_id, "N/A")
 
     def get_growth_rate(self, pokemon_id):
-        with open(self.pokeapi_db_path, "r", encoding="utf-8") as file:
-            pokemon_data = json.load(file)
-            return next((p["growth_rate"] for p in pokemon_data if p["id"] == pokemon_id), None)
+        try:
+            with open(self.pokeapi_db_path, "r", encoding="utf-8") as file:
+                pokemon_data = json.load(file)
+                return next((p["growth_rate"] for p in pokemon_data if p["id"] == pokemon_id), None)
+        except FileNotFoundError as e:
+            show_warning_with_traceback(
+                parent=self.parent_window,
+                exception=e,
+                message="PokeAPI DB file not found."
+            )
+            return None
 
     def replace_pokemon(self, new_pokemon):
         try:
@@ -560,5 +592,9 @@ class PokemonTrade:
             self.logger.log_and_showinfo("warning",f"Successfully traded for {new_pokemon['name']}!")
             self.refresh_callback()
 
-        except (FileNotFoundError, json.JSONDecodeError):
-            self.logger.log_and_showinfo("warning","Error updating Pokémon data.")
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            show_warning_with_traceback(
+                parent=self.parent_window,
+                exception=e,
+                message="Error updating Pokémon data."
+            )

@@ -2,6 +2,7 @@ from PyQt6.QtCore import QTimer
 from .pokemon_obj import PokemonObject
 from datetime import datetime, timedelta
 from aqt.utils import showWarning
+from .error_handler import show_warning_with_traceback
 from ..functions.pokedex_functions import extract_ids_from_file
 from ..utils import random_battle_scene
 import random
@@ -244,8 +245,8 @@ class AnkimonTracker:
             owned_pokemon_ids = []
             owned_pokemon_ids = extract_ids_from_file()
             self.owned_pokemon_ids = owned_pokemon_ids
-        except:
-            showWarning("Error: from AnkimonTracker with function extract_ids_from_file")
+        except Exception as e:
+            show_warning_with_traceback(parent=mw, exception=e, message="Error: from AnkimonTracker with function extract_ids_from_file")
     
     def get_badges(self):
         pass

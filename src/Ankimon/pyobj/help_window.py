@@ -7,6 +7,7 @@ from PyQt6.QtWebChannel import QWebChannel  # Add this import
 
 from ..resources import icon_path, addon_dir
 from ..utils import read_local_file, read_github_file, compare_files, write_local_file, test_online_connectivity
+from ..pyobj.error_handler import show_warning_with_traceback
 
 class ExternalLinkWebEnginePage(QWebEnginePage):
     def acceptNavigationRequest(self, url, nav_type, isMainFrame):
@@ -142,7 +143,7 @@ class HelpWindow(QDialog):
                 local_content = read_local_file(help_local_file_path)
                 html_content = local_content
         except Exception as e:
-            showWarning(f"Failed to retrieve Ankimon HelpGuide: {str(e)}")
+            show_warning_with_traceback(parent=self, exception=e, message=f"Failed to retrieve Ankimon HelpGuide: {str(e)}")
             local_content = read_local_file(help_local_file_path)
             html_content = local_content
             
