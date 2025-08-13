@@ -41,12 +41,12 @@ def create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_ba
         }}
         #ankimon-hud #PokeImage {{
             position: fixed;
-            bottom: {30 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
+            bottom: {50 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
             left: 3px;
             z-index: 9999;
-            width: 100px; /* Adjust as needed */
-            height: 100px; /* Adjust as needed */
-            background-size: cover; /* Cover the div area with the image */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom;
             transform: scaleX(-1);
         }}
         """
@@ -148,13 +148,14 @@ def create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_ba
         }}
         #ankimon-hud #PokeImage {{
             position: fixed;
-            bottom: {30 + xp_bar_spacer}px; /* Adjust as needed */
-            right: 3px;
+            bottom: {50 + xp_bar_spacer}px; /* Adjust as needed */
+            right: 15px;
             z-index: 9999;
-            width: 100px; /* Adjust as needed */
-            height: 100px; /* Adjust as needed */
-            background-size: cover; /* Cover the div area with the image */
-        }}"""
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom;
+        }}
+        """
         css += f"""
             #ankimon-hud #PokeIcon {{
                 position: fixed;
@@ -254,13 +255,14 @@ def create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_ba
         }}
         #ankimon-hud #PokeImage {{
             position: fixed;
-            bottom: {30 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
-            right: 3px;
+            bottom: {50 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
+            right: 15px;
             z-index: 9999;
-            width: 100px; /* Adjust as needed */
-            height: 100px; /* Adjust as needed */
-            background-size: cover; /* Cover the div area with the image */
-        }}"""
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom;
+        }}
+        """
         css += f"""
             #ankimon-hud #PokeIcon {{
                 position: fixed;
