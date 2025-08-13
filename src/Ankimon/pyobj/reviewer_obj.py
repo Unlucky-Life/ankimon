@@ -149,7 +149,7 @@ class Reviewer_Manager:
             pokemon_hp_percent,
             self.settings.get("battle.hp_bar_thickness", 2) * 4,
             int(self.settings.compute_special_variable('xp_bar_spacer')),
-            self.settings.compute_special_variable('view_main_front'),
+            -1 if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) == 1 else self.settings.compute_special_variable('view_main_front'),
             int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50),
             int(self.settings.compute_special_variable('hp_only_spacer')),
             int(self.settings.compute_special_variable('wild_hp_spacer')),
@@ -160,6 +160,7 @@ class Reviewer_Manager:
         )
         hud_css += """
         #ankimon-hud #name-display, #ankimon-hud #myname-display, #ankimon-hud #hp-display, #ankimon-hud #myhp-display, #ankimon-hud #next_lvl_text, #ankimon-hud #xp_text {
+            font-family: Arial, sans-serif;
             background: white !important;
             color: var(--text-fg, #6D6D6E);
             border-radius: 5px !important;
@@ -168,6 +169,7 @@ class Reviewer_Manager:
 
         @media (prefers-color-scheme: dark) {
             #ankimon-hud #name-display, #ankimon-hud #myname-display, #ankimon-hud #hp-display, #ankimon-hud #myhp-display, #ankimon-hud #next_lvl_text, #ankimon-hud #xp_text {
+                font-family: Arial, sans-serif;
                 background: #2C2C2C !important;
                 color: white !important;
                 border-radius: 5px !important;
@@ -177,6 +179,7 @@ class Reviewer_Manager:
 
         .night_mode #ankimon-hud #name-display, .night_mode #ankimon-hud #myname-display, .night_mode #ankimon-hud #hp-display, 
         .night_mode #ankimon-hud #myhp-display, .night_mode #ankimon-hud #next_lvl_text, .night_mode #ankimon-hud #xp_text {
+            font-family: Arial, sans-serif;
             background: #2C2C2C !important;
             color: white !important;
             border-radius: 5px !important;

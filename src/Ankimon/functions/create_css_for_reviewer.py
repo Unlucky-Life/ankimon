@@ -47,6 +47,7 @@ def create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_ba
             width: 100px; /* Adjust as needed */
             height: 100px; /* Adjust as needed */
             background-size: cover; /* Cover the div area with the image */
+            transform: scaleX(-1);
         }}
         """
         css += f"""
@@ -122,6 +123,7 @@ def create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_ba
             background-size: contain;
             background-repeat: no-repeat;
             background-position: bottom;
+            transform: scaleX(-1);
         }}
         #ankimon-hud #hp-display {{
         position: fixed;
@@ -227,7 +229,7 @@ def create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_ba
             background-size: contain;
             background-repeat: no-repeat;
             background-position: bottom;
-            transform: scaleX({view_main_front});
+            transform: scaleX(-1);
         }}
         #ankimon-hud #hp-display {{
         position: fixed;
