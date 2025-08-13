@@ -41,7 +41,7 @@ def create_status_html(status_name, settings_obj):
         if show_mainpkmn_in_reviewer == 2:
             html = f"""
             <div id=pokestatus class="Ankimon" style="
-                position: fixed;
+                                position: fixed;
                 bottom: {140 + xp_bar_spacer + hp_bar_thickness}px; /* Adjust as needed */
                 right: 1%;
                 z-index: 9999;
@@ -50,18 +50,19 @@ def create_status_html(status_name, settings_obj):
                 border-radius: 5px;
                 padding: 5px 10px;
                 font-size: 8px;
-                font-weight: bold;
+                font-weight: bold !important;
                 display: inline-block;
                 color: {colors.get('text_color', '#000000')};
                 text-transform: uppercase;
                 text-align: center;
                 margin: 4px;
+                font-family: Arial, sans-serif;
             ">{colors['name']}</div>
             """
         elif show_mainpkmn_in_reviewer == 1:
             html = f"""
             <div id=pokestatus class="Ankimon" style="
-                position: fixed;
+                                position: fixed;
                 bottom: {40 + hp_bar_thickness + xp_bar_spacer}px; /* Adjust as needed */
                 right: 15%;
                 z-index: 9999;
@@ -70,18 +71,19 @@ def create_status_html(status_name, settings_obj):
                 border-radius: 5px;
                 padding: 5px 10px;
                 font-size: 8px;
-                font-weight: bold;
+                font-weight: bold !important;
                 display: inline-block;
                 color: {colors.get('text_color', '#000000')};
                 text-transform: uppercase;
                 text-align: center;
                 margin: 4px;
+                font-family: Arial, sans-serif;
             ">{colors['name']}</div>
             """
         elif show_mainpkmn_in_reviewer == 0:
             html = f"""
             <div id=pokestatus class="Ankimon" style="
-                position: fixed;
+                                position: fixed;
                 bottom: {40 + hp_bar_thickness}px; /* Adjust as needed */
                 left: 160px;
                 z-index: 9999;
@@ -90,12 +92,13 @@ def create_status_html(status_name, settings_obj):
                 border-radius: 5px;
                 padding: 5px 10px;
                 font-size: 8px;
-                font-weight: bold;
+                font-weight: bold !important;
                 display: inline-block;
                 color: {colors.get('text_color', '#000000')};
                 text-transform: uppercase;
                 text-align: center;
                 margin: 4px;
+                font-family: Arial, sans-serif;
             ">{colors['name']}</div>
             """
     else:

@@ -58,16 +58,12 @@
         box-sizing: border-box !important;
         animation: none !important;
         transition: none !important;
-        transform: none !important;
-        text-transform: none !important;
         filter: none !important;
         /* Explicitly unset filter and transform for all elements inside shadow DOM */
         filter: none !important;
-        transform: none !important;
       }
       img { /* Target images specifically within the shadow DOM */
         filter: none !important;
-        transform: none !important;
       }
     `;
 
