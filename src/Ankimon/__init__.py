@@ -106,6 +106,7 @@ from .classes.choose_move_dialog import MoveSelectionDialog
 from .poke_engine.ankimon_hooks_to_poke_engine import simulate_battle_with_poke_engine
 from .poke_engine import constants
 from .singletons import (
+    reviewer_obj,
     logger,
     settings_obj,
     settings_window,
@@ -204,20 +205,12 @@ get web exports ready for special reviewer look
 mw.addonManager.setWebExports(__name__, r"user_files/.*\.(css|js|jpg|gif|html|ttf|png|mp3)")
 
 def on_webview_will_set_content(web_content: WebContent, context) -> None:
+    if not isinstance(context, aqt.reviewer.Reviewer):
+        return
     ankimon_package = mw.addonManager.addonFromModule(__name__)
-    general_url = f"""/_addons/{ankimon_package}/user_files/web/"""
-    head_code = create_head_code(general_url)
-    web_content.head += f"<style>{head_code}</style>"
-    #add function to reviewer to toggle iframe
-    web_content.js.append(f"/_addons/{ankimon_package}/user_files/web/transparent.js")
-    web_content.css.append(f"/_addons/{ankimon_package}/user_files/web/styles.css")
+    web_content.js.append(f"/_addons/{ankimon_package}/user_files/web/ankimon_hud_portal.js")
 
-def prepare(html, content, context):
-    if int(settings_obj.get("gui.show_mainpkmn_in_reviewer", 1)) == 3:
-        html_code = create_iframe_html(main_pokemon, enemy_pokemon, settings_obj, textmsg="")
-    else:
-        html_code = ""
-    return html + html_code
+
 
 webview_will_set_content.append(on_webview_will_set_content)
 
@@ -263,10 +256,14 @@ def on_show_answer(Card):
     """
     ankimon_tracker_obj.stop_card_timer()  # This line should have 4 spaces of indentation
 
+def on_reviewer_did_show_question(card):
+    reviewer_obj.update_life_bar(mw.reviewer, None, None)
+
 gui_hooks.reviewer_did_show_question.append(on_show_question)
 gui_hooks.reviewer_did_show_answer.append(on_show_answer)
+gui_hooks.reviewer_did_show_question.append(on_reviewer_did_show_question)
 
-setupHooks(None, ankimon_tracker_obj, prepare)  
+setupHooks(None, ankimon_tracker_obj)  
 
 online_connectivity = test_online_connectivity()
 
