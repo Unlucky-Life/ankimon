@@ -124,7 +124,7 @@ class Reviewer_Manager:
         hud_html += f'<div id="PokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64}" alt="PokeImage" style="animation: shake {self.seconds}s ease;"></div>'
         
         if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
-            hud_html += f'<div id="MyPokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage" style="animation: shake {self.myseconds}s ease;"></div>'
+            hud_html += f'<div id="MyPokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage" style="transform: scaleX(-1); animation: shake {self.myseconds}s ease;"></div>'
             main_lang_name = (get_pokemon_diff_lang_name(int(self.main_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
             if self.main_pokemon.shiny:
                 main_lang_name += " ⭐ "
