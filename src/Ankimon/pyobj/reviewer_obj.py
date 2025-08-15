@@ -4,8 +4,8 @@ from ..functions.pokemon_functions import find_experience_for_level
 from ..business import get_image_as_base64
 from ..functions.create_css_for_reviewer import create_css_for_reviewer
 import json
+import os
 from ..functions.create_gui_functions import create_status_html
-from ..resources import icon_path
 from ..functions.pokedex_functions import get_pokemon_diff_lang_name
 
 from .pokemon_obj import PokemonObject
@@ -28,20 +28,7 @@ class Reviewer_Manager:
         self.life_bar_injected = False
 
     def get_boost_values_string(self, pokemon: PokemonObject, display_neutral_boost: bool=False) -> str:
-        """Generates a formatted string representing the stat boost multipliers of a Pokémon.
-        
-        This function retrieves the stat boost values of a given Pokémon, converts them into their
-        corresponding multiplier strings (e.g., x1.5 for +1), and compiles them into a single
-        display string. Neutral boosts (value of 0) can optionally be omitted from the output.
-        
-        Args:
-            pokemon (PokemonObject): The Pokémon object containing current stat boost information.
-            display_neutral_boost (bool, optional): If False, stat boosts with a value of 0 (neutral)
-                are omitted from the output. Defaults to False.
-        
-        Returns:
-            str: A string representing the stat boost multipliers.
-        """
+        """Generates a formatted string representing the stat boost multipliers of a Pokémon."""
         pokemon_dict = pokemon.to_engine_format()
         boosts = {
             "atk": pokemon_dict.get('attack_boost', 0),
@@ -61,7 +48,7 @@ class Reviewer_Manager:
         boost_display = " "
         for key, boost_val in boosts.items():
             if display_neutral_boost is False and boost_val == 0:
-                continue  # Do no display a neutral boost
+                continue
             mult_str = boost_to_mult[boost_val]
             boost_display += f" | {key} {mult_str} | "
         
@@ -76,27 +63,50 @@ class Reviewer_Manager:
             reviewer.web.eval("if(window.__ankimonHud) window.__ankimonHud.clear();")
             return
 
-        # Keep existing logic to compute all values
-        self.ankimon_tracker.check_pokecoll_in_list()
-        if self.settings.get('gui.reviewer_image_gif', 1) == False:
-            pokemon_image_file = self.enemy_pokemon.get_sprite_path("front", "png")
-            if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
-                main_pkmn_imagefile_path = self.main_pokemon.get_sprite_path("back", "png")
-        else:
-            pokemon_image_file = self.enemy_pokemon.get_sprite_path("front", "gif")
-            if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
+        # Check if the enemy pokemon is in the user's collection
+        enemy_name_lower = self.enemy_pokemon.name.lower()
+        is_pokemon_owned = False
+        try:
+            addon_package = mw.addonManager.addonFromModule(__name__)
+            collection_path = os.path.join(mw.addonManager.addonsFolder(), addon_package, "user_files", "mypokemon.json")
+            if os.path.exists(collection_path):
+                with open(collection_path, 'r', encoding='utf-8') as f:
+                    my_pokemon_list = json.load(f)
+                for p in my_pokemon_list:
+                    if p.get('name', '').lower() == enemy_name_lower:
+                        is_pokemon_owned = True
+                        break
+        except Exception:
+            pass
+
+        image_format = "gif" if self.settings.get('gui.reviewer_image_gif', 1) else "png"
+        mime_type = f"image/{image_format}"
+
+        pokemon_image_file = self.enemy_pokemon.get_sprite_path("front", image_format)
+        
+        main_pkmn_imagefile_path = None
+        side = "back" # Default side
+        if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
+            if image_format == "gif":
                 if self.settings.compute_special_variable('view_main_front') == -1:
                     side = "front"
                 else:
                     side = "back"
-                main_pkmn_imagefile_path = self.main_pokemon.get_sprite_path(side, "gif")
+            else: # png
+                side = "back"
+            main_pkmn_imagefile_path = self.main_pokemon.get_sprite_path(side, image_format)
 
         if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
-            pokemon_hp_percent = int((self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 50)
+            pokemon_hp_percent = int((self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 50) if self.enemy_pokemon.max_hp > 0 else 0
+            mainpkmn_hp_percent = int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50) if self.main_pokemon.max_hp > 0 else 0
             image_base64_mainpkmn = get_image_as_base64(main_pkmn_imagefile_path)
         else:
-            pokemon_hp_percent = int((self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 100)
+            pokemon_hp_percent = int((self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 100) if self.enemy_pokemon.max_hp > 0 else 0
+            mainpkmn_hp_percent = 0 # Not used in this mode
         
+        enemy_hp_true_percent = (self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 100 if self.enemy_pokemon.max_hp > 0 else 0
+        main_hp_true_percent = (self.main_pokemon.hp / self.main_pokemon.max_hp) * 100 if self.main_pokemon.max_hp > 0 else 0
+
         image_base64 = get_image_as_base64(pokemon_image_file)
 
         # Build hud_html
@@ -105,7 +115,6 @@ class Reviewer_Manager:
             hud_html += '<div id="life-bar" class="Ankimon"></div>'
         if self.settings.get("gui.xp_bar_config", False) is True:
             hud_html += '<div id="xp-bar" class="Ankimon"></div>'
-            hud_html += '<div id="next_lvl_text" class="Ankimon">Next Level</div>'
             hud_html += '<div id="xp_text" class="Ankimon">XP</div>'
         
         enemy_lang_name = (get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
@@ -121,10 +130,32 @@ class Reviewer_Manager:
             hud_html += f'{create_status_html("fainted", settings_obj=self.settings)}'
 
         hud_html += f'<div id="hp-display" class="Ankimon">HP: {self.enemy_pokemon.hp}/{self.enemy_pokemon.max_hp}</div>'
-        hud_html += f'<div id="PokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64}" alt="PokeImage" style="animation: shake {self.seconds}s ease;"></div>'
+        
+        indicator_html = ''
+        if is_pokemon_owned:
+            addon_package = mw.addonManager.addonFromModule(__name__)
+            pokeball_url = f"/_addons/{addon_package}/user_files/web/images/pokeball.png"
+            indicator_html = f'<img id="owned-indicator-badge" src="{pokeball_url}">'
+        
+        enemy_poke_animation_style = f"animation: ankimon-shake-normal {self.seconds}s ease;"
+        hud_html += f'<div id="PokeImage" class="Ankimon">{indicator_html}<img src="data:{mime_type};base64,{image_base64}" alt="PokeImage" style="{enemy_poke_animation_style}"></div>'
         
         if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
-            hud_html += f'<div id="MyPokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage" style="transform: scaleX(-1); animation: shake {self.myseconds}s ease;"></div>'
+            
+            my_poke_html_attributes = ""
+            # SPECIAL CASE: For front-facing GIFs, the animation conflicts with the transform.
+            # We will sacrifice the animation in this case to force the flip using a static class.
+            if image_format == "gif" and side == "front":
+                my_poke_html_attributes = 'class="force-flip"'
+            else:
+                # For all other cases, the flipped animation works correctly.
+                animation_style = f"animation: ankimon-shake-flipped {self.myseconds}s ease;"
+                my_poke_html_attributes = f'style="{animation_style}"'
+
+            hud_html += (f'<div id="MyPokeImage" class="Ankimon">'
+                         f'<img src="data:{mime_type};base64,{image_base64_mainpkmn}" alt="MyPokeImage" {my_poke_html_attributes}>'
+                         f'</div>')
+
             main_lang_name = (get_pokemon_diff_lang_name(int(self.main_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
             if self.main_pokemon.shiny:
                 main_lang_name += " ⭐ "
@@ -135,12 +166,6 @@ class Reviewer_Manager:
             if self.settings.get("gui.hp_bar_config", True) is True:
                 hud_html += '<div id="mylife-bar" class="Ankimon"></div>'
 
-        if self.ankimon_tracker.pokemon_in_collection == True:
-            icon_base_64 = get_image_as_base64(icon_path)
-            hud_html += f'<div id="PokeIcon" class="Ankimon"><img src="data:image/png;base64,{icon_base_64}" alt="PokeIcon"></div>'
-        else:
-            hud_html += '<div id="PokeIcon" class="Ankimon"></div>'
-        
         hud_html += '</div>'
 
         # Build hud_css
@@ -150,16 +175,18 @@ class Reviewer_Manager:
             self.settings.get("battle.hp_bar_thickness", 2) * 4,
             int(self.settings.compute_special_variable('xp_bar_spacer')),
             -1 if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) == 1 else self.settings.compute_special_variable('view_main_front'),
-            int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50),
+            mainpkmn_hp_percent,
             int(self.settings.compute_special_variable('hp_only_spacer')),
             int(self.settings.compute_special_variable('wild_hp_spacer')),
             self.settings.get("gui.xp_bar_config", False),
             self.main_pokemon,
             int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings.get("remove_levelcap", False))),
-            self.settings.compute_special_variable('xp_bar_location')
+            self.settings.compute_special_variable('xp_bar_location'),
+            enemy_hp_true_percent,
+            main_hp_true_percent
         )
         hud_css += """
-        #ankimon-hud #name-display, #ankimon-hud #myname-display, #ankimon-hud #hp-display, #ankimon-hud #myhp-display, #ankimon-hud #next_lvl_text, #ankimon-hud #xp_text {
+        #ankimon-hud #name-display, #ankimon-hud #myname-display, #ankimon-hud #hp-display, #ankimon-hud #myhp-display, #ankimon-hud #xp_text {
             font-family: Arial, sans-serif;
             background: white !important;
             color: var(--text-fg, #6D6D6E);
@@ -168,9 +195,9 @@ class Reviewer_Manager:
         }
 
         @media (prefers-color-scheme: dark) {
-            #ankimon-hud #name-display, #ankimon-hud #myname-display, #ankimon-hud #hp-display, #ankimon-hud #myhp-display, #ankimon-hud #next_lvl_text, #ankimon-hud #xp_text {
+            #ankimon-hud #name-display, #ankimon-hud #myname-display, #ankimon-hud #hp-display, #ankimon-hud #myhp-display, #ankimon-hud #xp_text {
                 font-family: Arial, sans-serif;
-                background: #2C2C2C !important;
+                background: #1f1f1f !important;
                 color: white !important;
                 border-radius: 5px !important;
                 padding: 4px 8px !important;
@@ -178,10 +205,18 @@ class Reviewer_Manager:
         }
 
         .night_mode #ankimon-hud #name-display, .night_mode #ankimon-hud #myname-display, .night_mode #ankimon-hud #hp-display, 
-        .night_mode #ankimon-hud #myhp-display, .night_mode #ankimon-hud #next_lvl_text, .night_mode #ankimon-hud #xp_text {
+        .night_mode #ankimon-hud #myhp-display, .night_mode #ankimon-hud{
             font-family: Arial, sans-serif;
-            background: #2C2C2C !important;
+            background: #1f1f1f !important;
             color: white !important;
+            border-radius: 5px !important;
+            padding: 4px 8px !important;
+        }
+
+        .night_mode #xp_text {
+            font-color: rgba(0, 191, 255, 0.85)
+            font-family: Arial, sans-serif;
+            background: #1f1f1f !important;
             border-radius: 5px !important;
             padding: 4px 8px !important;
         }
