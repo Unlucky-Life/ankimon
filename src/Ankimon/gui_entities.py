@@ -111,7 +111,7 @@ class Version_Dialog(QDialog):
 
     def open(self):
         self.exec()
-        
+
 class License(QWidget):
     def __init__(self):
         super().__init__()
@@ -220,7 +220,7 @@ class HelpWindow(QDialog):
                 github_content, github_html_content = read_github_file(help_github_url)
                 if local_content is not None and compare_files(local_content, github_content):
                     html_content = github_html_content
-                else: 
+                else:
                     # Download new content from GitHub
                     if github_content is not None:
                         # Write new content to the local file
@@ -334,7 +334,7 @@ class Pokedex_Widget(QWidget):
             <td><img src="{pokedex_number}.png" alt="{name}" class="pokemon-image {image_class}" /></td>
         </tr>
         '''
-        
+
     def show_pokedex(self):
         self.read_poke_coll()
         self.show()

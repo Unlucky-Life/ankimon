@@ -155,7 +155,7 @@ def _calculate_damage(attacker, defender, move, conditions=None, calc_type='aver
     damage *= calculate_modifier(attacker, defender, defending_types, attacking_move, conditions)
 
     damage_rolls = get_damage_rolls(damage, calc_type)
-    
+
     # Allow for multiplier adjustments to the damage rolls
     modified_damage_rolls = [math.floor(dmg * ankimon_tracker_obj.multiplier) for dmg in damage_rolls]
 

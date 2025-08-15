@@ -1,6 +1,6 @@
 #This Source Code is not from me, its from audiovisualfeedback
 #https://github.com/AnKing-VIP/anki-audiovisual-feedback/blob/master/addon/audios.py
-#right now there is no clear license in this, therefore I see this as 
+#right now there is no clear license in this, therefore I see this as
 #open as MIT License or atleast opensource due to posting on GitHub
 #audiovisualfeedback is an addon developed with the help of the Anking or Atleast under his Account
 #The Code here was commited from BlueGreenMagick  https://github.com/BlueGreenMagick

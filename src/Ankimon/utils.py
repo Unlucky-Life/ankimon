@@ -68,7 +68,7 @@ def format_move_name(move: str) -> str:
     """
     key = move.replace(" ", "").replace("-", "").replace("_", "").lower()
     return MOVE_NAME_LOOKUP.get(key, " ".join(word.capitalize() for word in move.replace("_", " ").split()))
-    
+
 def check_folders_exist(parent_directory, folder):
     folder_path = os.path.join(parent_directory, folder)
     return os.path.isdir(folder_path)
@@ -88,17 +88,17 @@ def test_online_connectivity(url='https://raw.githubusercontent.com/Unlucky-Life
     except:
         # Connection error means no internet connectivity
         return False
-    
+
 
 # Define the hook function
 def addon_config_editor_will_display_json(text: str) -> str:
     """
     This function modifies the JSON configuration text before displaying it to the user.
     It replaces the values for the keys "pokemon_collection" and "mainpokemon".
-    
+
     Args:
         text (str): The JSON configuration text.
-    
+
     Returns:
         str: The modified JSON configuration text.
     """
@@ -116,8 +116,8 @@ def addon_config_editor_will_display_json(text: str) -> str:
                 del config["mainpokemon"]
             if "trainer.cash" in config:
                 del config["trainer.cash"]
-        
-        
+
+
             # Convert back to JSON string
             modified_text = json.dumps(config, indent=4)
             return modified_text
@@ -125,7 +125,7 @@ def addon_config_editor_will_display_json(text: str) -> str:
     except json.JSONDecodeError:
         # Handle JSON parsing error
         return text
-    
+
 # Function to read the content of the local file
 def read_local_file(file_path):
     try:
@@ -133,11 +133,11 @@ def read_local_file(file_path):
             return file.read()
     except FileNotFoundError:
         return None
-    
+
 # Function to check if the file exists on GitHub and read its content
 def read_github_file(url):
     response = requests.get(url)
-        
+
     if response.status_code == 200:
         # File exists, parse the Markdown content
         content = response.text
@@ -159,7 +159,7 @@ def read_html_file(file_path):
     """Reads an HTML file and returns its content as a string."""
     with open(file_path, 'r', encoding='utf-8') as file:
         return file.read()
-    
+
 def random_battle_scene():
     # TODO: choice?
     # TODO: merge with random_berries and
@@ -250,7 +250,7 @@ def daily_item_list():
     "premier-ball",
     "quick-ball",
     "repeat-ball",
-    "safari-ball",   
+    "safari-ball",
     "timer-ball",
     "ultra-ball",
     "smoke-ball",     # escape from wild battles
@@ -314,7 +314,7 @@ def daily_item_list():
     "max-elixir",
     "max-ether",
     "elixir",
-    "ether"    
+    "ether"
 ]
 
 
@@ -476,21 +476,21 @@ def get_item_description(item_name, language_id):
         # Open the CSV file and read the contents
         with open(file_path, mode='r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
-            
+
             # Iterate through each row in the CSV
             for row in reader:
                 # Check if the current row matches the item_id, version_group_id, and language_id
                 if (int(row['item_id']) == item_id and
                         int(row['language_id']) == language_id):
                     return row['flavor_text']  # Return the matching flavor text
-        
+
         # If no match is found, return None
         return None
-    
+
     except Exception as e:
         show_warning_with_traceback(exception=e, message="An error occurred:")
         return None
-    
+
 def load_custom_font(font_size, language):
     if language == 1:
         font_file = "pkmn_w.ttf"
@@ -518,7 +518,7 @@ def get_all_sprites(directory):
     """
     Returns a list of trainer sprite names without the '.png' extension
     from the specified directory.
-    
+
     :param directory: Path to the directory containing trainer sprite images.
     :return: List of sprite names without '.png'.
     """
@@ -532,7 +532,7 @@ def get_all_sprites(directory):
     except FileNotFoundError:
         print(f"Error: The directory '{directory}' does not exist.")
         return []
-    
+
 def play_effect_sound(sound_type):
     sound_effects = Settings().get("audio.sound_effects", False)
     if sound_effects is True:
@@ -552,7 +552,7 @@ def play_effect_sound(sound_type):
 
         if not audio_path.is_file():
             return
-        else:   
+        else:
             audio_path = Path(audio_path)
             #threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
             audios.will_use_audio_player()
@@ -626,7 +626,7 @@ def get_main_pokemon_data():
         _base_experience = main_pokemon_data["base_experience"]
         _growth_rate = main_pokemon_data["growth_rate"]
         _gender = main_pokemon_data["gender"]
-        
+
         return (
             _name,
             _id,
@@ -660,7 +660,7 @@ def play_sound(enemy_pokemon_id: int, settings_obj: Settings):
 def load_collected_pokemon_ids() -> set:
     if not mypokemon_path.is_file():
         return set()
-    
+
     collected_pokemon_ids = set()
     try:
         with open(mypokemon_path, "r", encoding="utf-8") as f:
@@ -668,7 +668,7 @@ def load_collected_pokemon_ids() -> set:
             collected_pokemon_ids = {pkmn["id"] for pkmn in collection}
     except Exception as e:
         show_warning_with_traceback(exception=e, message="Error loading collection cache")
-    
+
     return collected_pokemon_ids
 
 def limit_ev_yield(current_pokemon_ev: dict[str, int], ev_yield: dict[str, int]) -> dict[str, int]:
@@ -680,9 +680,9 @@ def limit_ev_yield(current_pokemon_ev: dict[str, int], ev_yield: dict[str, int])
     stats and reducing EVs randomly if the total would exceed the maximum allowed.
 
     Args:
-        current_pokemon_ev (dict[str, int]): Current EVs of the Pokémon, with keys as stat abbreviations 
+        current_pokemon_ev (dict[str, int]): Current EVs of the Pokémon, with keys as stat abbreviations
             ("hp", "atk", "def", "spa", "spd", "spe") and values as their EV amounts.
-        ev_yield (dict[str, int]): Proposed EV yields from a defeated Pokémon, with keys as full stat names 
+        ev_yield (dict[str, int]): Proposed EV yields from a defeated Pokémon, with keys as full stat names
             ("hp", "attack", "defense", "special-attack", "special-defense", "speed") and values as EV amounts.
 
     Raises:
@@ -696,18 +696,18 @@ def limit_ev_yield(current_pokemon_ev: dict[str, int], ev_yield: dict[str, int])
     for stat in current_pokemon_ev.keys():
         if stat not in ("hp", "atk", "def", "spa", "spd", "spe"):
             raise ValueError(f"Unknown EV : {stat}")
-        
+
     for stat in ev_yield.keys():
         if stat not in ("hp", "attack", "defense", "special-attack", "special-defense", "speed"):
             raise ValueError(f"Unknown EV : {stat}")
-        
+
     zipped_keys = zip(
         ["hp", "atk", "def", "spa", "spd", "spe"],
         ["hp", "attack", "defense", "special-attack", "special-defense", "speed"]
     )
-        
+
     new_ev_yield = {"hp": 0, "attack": 0, "defense": 0, "special-attack": 0, "special-defense": 0, "speed": 0}
-    
+
     for key_1, key_2 in zipped_keys:
         # For each stat, we yield an amount of EVs that will not exceed the value of 252
         new_ev_yield[key_2] = min(ev_yield[key_2], 252 - current_pokemon_ev[key_1])
@@ -781,7 +781,7 @@ def get_ev_spread(mode: str="random") -> dict[str, int]:
         return {"hp": 4, "atk": 0, "def": 252, "spa": 0, "spd": 252, "spe": 0}
     elif mode == "uniform":
         return {"hp": 84, "atk": 84, "def": 84, "spa": 84, "spd": 84, "spe": 84}
-    
+
     raise ValueError(f"Received unknown value for 'mode': {mode}")
 
 def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
@@ -799,7 +799,7 @@ def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
         Union[str, None]: The tier name as a string if the Pokémon ID is found
         in one of the tier lists; otherwise, None.
     """
-    
+
     for tier, ids in POKEMON_TIERS.items():
         if pokemon_id in ids:
             return tier
@@ -881,14 +881,14 @@ def substract_item_from_itembag(item: str, quantity: int=1) -> None:
     if item not in [item_data["item"] for item_data in items_list]:
         ShowInfoLogger().log_and_showinfo("error", f"Could not find {item} in the item bag.")
         return
-    
+
     # Now that we know the item is in the item bag, we retrieve its index
     index = None
     for i in range(len(items_list)):
         if items_list[i]["item"] == item:
             index = i
             break
-    
+
     # Now we check whether we can actually substract the chosen amount
     if items_list[index].get("quantity") is None:
         ShowInfoLogger().log_and_showinfo("error", f"{item} does not seem to have a 'quantity' attribute in the item bag.")
@@ -896,7 +896,7 @@ def substract_item_from_itembag(item: str, quantity: int=1) -> None:
     if items_list[index].get("quantity") < quantity:
         ShowInfoLogger().log_and_showinfo("error", f"There are {items_list[index].get('quantity')} instances of {item} in the item bag, but you are trying to remove {quantity}.")
         return
-    
+
     # Finally, we substract the given amount
     if items_list[index].get("quantity") == quantity:
         del items_list[index]
@@ -908,6 +908,6 @@ def substract_item_from_itembag(item: str, quantity: int=1) -> None:
         with open(str(itembag_path), "w") as f:
             json.dump(items_list, f, indent=2)
         return
-    
+
 def close_anki():
     mw.close()

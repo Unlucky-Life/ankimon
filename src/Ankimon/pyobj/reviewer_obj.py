@@ -19,7 +19,7 @@ class Reviewer_Manager:
         self.life_bar_injected = False
         self.seconds = 0
         self.myseconds = 0
-        
+
         # Register the functions for the hooks
         gui_hooks.reviewer_will_end.append(self.reviewer_reset_life_bar_inject)
         gui_hooks.reviewer_did_answer_card.append(self.update_life_bar)
@@ -39,19 +39,19 @@ class Reviewer_Manager:
             "ACC": pokemon_dict.get('accuracy_boost', 0),
             "EVD": pokemon_dict.get('evasion_boost', 0),
         }
-        
+
         boost_to_mult = {
             0: "x1", 1: "x1.5", 2: "x2", 3: "x2.5", 4: "x3", 5: "x3.5", 6: "x4",
             -1: "x0.67", -2: "x0.5", -3: "x0.4", -4: "x0.33", -5: "x0.29", -6: "x0.25",
         }
-        
+
         boost_display = " "
         for key, boost_val in boosts.items():
             if display_neutral_boost is False and boost_val == 0:
                 continue
             mult_str = boost_to_mult[boost_val]
             boost_display += f" | {key} {mult_str} | "
-        
+
         return boost_display
 
     def inject_life_bar(self, web_content, context):
@@ -83,7 +83,7 @@ class Reviewer_Manager:
         mime_type = f"image/{image_format}"
 
         pokemon_image_file = self.enemy_pokemon.get_sprite_path("front", image_format)
-        
+
         main_pkmn_imagefile_path = None
         side = "back" # Default side
         if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
@@ -103,7 +103,7 @@ class Reviewer_Manager:
         else:
             pokemon_hp_percent = int((self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 100) if self.enemy_pokemon.max_hp > 0 else 0
             mainpkmn_hp_percent = 0 # Not used in this mode
-        
+
         enemy_hp_true_percent = (self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 100 if self.enemy_pokemon.max_hp > 0 else 0
         main_hp_true_percent = (self.main_pokemon.hp / self.main_pokemon.max_hp) * 100 if self.main_pokemon.max_hp > 0 else 0
 
@@ -116,14 +116,14 @@ class Reviewer_Manager:
         if self.settings.get("gui.xp_bar_config", False) is True:
             hud_html += '<div id="xp-bar" class="Ankimon"></div>'
             hud_html += '<div id="xp_text" class="Ankimon">XP</div>'
-        
+
         enemy_lang_name = (get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
         if self.enemy_pokemon.shiny is True:
             enemy_lang_name += " ⭐ "
         name_display_text = f"{enemy_lang_name} LvL: {self.enemy_pokemon.level}"
         name_display_text += self.get_boost_values_string(self.enemy_pokemon, display_neutral_boost=False)
         hud_html += f'<div id="name-display" class="Ankimon">{name_display_text}</div>'
-        
+
         try:
             addon_package = mw.addonManager.addonFromModule(__name__)
         except Exception:
@@ -135,20 +135,20 @@ class Reviewer_Manager:
                 if os.path.exists(os.path.join(mw.addonManager.addonsFolder(), name)):
                     addon_package = name
                     break
-        
+
         if self.enemy_pokemon.hp > 0:
             hud_html += create_status_html(f"{self.enemy_pokemon.battle_status}", self.settings, is_pokemon_owned, addon_package)
         else:
             hud_html += create_status_html("fainted", self.settings, is_pokemon_owned, addon_package)
 
         hud_html += f'<div id="hp-display" class="Ankimon">HP: {self.enemy_pokemon.hp}/{self.enemy_pokemon.max_hp}</div>'
-        
-        
+
+
         enemy_poke_animation_style = f"animation: ankimon-shake-normal {self.seconds}s ease;"
         hud_html += f'<div id="PokeImage" class="Ankimon"><img src="data:{mime_type};base64,{image_base64}" alt="PokeImage" style="{enemy_poke_animation_style}"></div>'
-        
+
         if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
-            
+
             my_poke_html_attributes = ""
             # SPECIAL CASE: For front-facing GIFs, the animation conflicts with the transform.
             # We will sacrifice the animation in this case to force the flip using a static class.
@@ -211,7 +211,7 @@ class Reviewer_Manager:
             }
         }
 
-        .night_mode #ankimon-hud #name-display, .night_mode #ankimon-hud #myname-display, .night_mode #ankimon-hud #hp-display, 
+        .night_mode #ankimon-hud #name-display, .night_mode #ankimon-hud #myname-display, .night_mode #ankimon-hud #hp-display,
         .night_mode #ankimon-hud #myhp-display, .night_mode #ankimon-hud{
             font-family: Arial, sans-serif;
             background: #1f1f1f !important;

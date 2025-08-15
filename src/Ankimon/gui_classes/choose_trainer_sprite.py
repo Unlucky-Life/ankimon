@@ -12,7 +12,7 @@ class TrainerSpriteDialog(QDialog):
         self.setWindowTitle("Choose Your Trainer Sprite")
         self.settings = settings_obj
         self.trainer_sprites = get_all_sprites(trainer_sprites_path)
-        
+
         # Layout
         layout = QVBoxLayout()
 
@@ -29,7 +29,7 @@ class TrainerSpriteDialog(QDialog):
         self.dropdown.addItems(self.trainer_sprites)
         self.dropdown.currentTextChanged.connect(self.update_preview)
         layout.addWidget(self.dropdown)
-        
+
         # OK Button
         ok_button = QPushButton("OK")
         ok_button.clicked.connect(self.on_ok)

@@ -192,52 +192,52 @@ VOLATILE_ROAR_OF_TIME = 'roar_of_time'
 KNOWN_VOLATILE_STATUSES = {
     # Charging moves
     'solarbeam', 'skyattack', 'razorwind', 'skullbash', 'freezeshock', 'iceburn', 'geomancy',
-    
+
     # Semi-invulnerable moves
     'fly', 'dig', 'dive', 'bounce', 'phantomforce', 'shadowforce', 'skydrop',
-    
+
     # Binding moves
     'wrap', 'bind', 'firespin', 'whirlpool', 'sandtomb', 'magmastorm', 'infestation', 'snaptrap',
-    
+
     # Type changes
     'roost', 'burnup', 'doubleshock',
-    
+
     # Move restrictions
     'disable', 'encore', 'taunt', 'torment', 'imprison', 'throatchop', 'healblock', 'embargo',
-    
+
     # Mental effects
     'confusion', 'infatuation',
-    
+
     # Damage over time
     'leechseed', 'curseghost', 'nightmare', 'perishsong', 'saltcure',
-    
+
     # Protection effects
     'substitute', 'endure', 'protect', 'banefulbunker', 'spikyshield', 'kingsshield',
-    
+
     # Positioning effects
     'magnetrise', 'telekinesis', 'ingrain', 'aquaring', 'smackdown',
-    
+
     # Multi-turn moves
     'outrage', 'thrash', 'petaldance', 'rollout', 'iceball', 'uproar',
-    
+
     # Charging effects
     'charge', 'stockpile', 'defensecurl', 'minimize',
-    
+
     # Targeting effects
     'lockon', 'mindreader', 'foresight', 'odorsleuth', 'miracleeye',
-    
+
     # Attention effects
     'followme', 'ragepowder', 'spotlight',
-    
+
     # Escape prevention
     'meanlook', 'block', 'spiderweb', 'anchorshot', 'spiritshackle', 'thousandwaves', 'octolock', 'noretreat', 'jawlock',
-    
+
 }
 
 
 # Known regular status effects
 KNOWN_REGULAR_STATUSES = {
-    'par', 'paralyzed', 'brn', 'burn', 'psn', 'poison', 
+    'par', 'paralyzed', 'brn', 'burn', 'psn', 'poison',
     'tox', 'toxic', 'slp', 'sleep', 'frz', 'frozen'
 }
 

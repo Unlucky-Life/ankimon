@@ -296,7 +296,7 @@ def save_fossil_pokemon(pokemon_id):
     # Save the caught Pokémon's data to a JSON file
     with open(str(mypokemon_path), "w") as json_file:
         json.dump(caught_pokemon_data, json_file, indent=2)
-    
+
 def get_levelup_move_for_pokemon(pokemon_name, level):
     """
     Get a random move learned by a Pokémon at a specific level and lower, excluding moves that can be learned at a higher level.

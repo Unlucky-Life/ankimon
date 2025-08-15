@@ -122,7 +122,7 @@ class PokemonShopManager:
 
         # Apply Anki's theme class to inherit theme colors
         self.window.setProperty("class", "ankimon-shop")
-        
+
         # Theme-aware background using Anki's CSS variables
         self.window.setStyleSheet(f"""
             QDialog {{
@@ -401,7 +401,7 @@ class PokemonShopManager:
         seed = datetime.now().strftime("%Y-%m-%d")
         random.seed(seed)
         return random.sample(DAILY_ITEMS_POOL, self.number_of_daily_items)
-    
+
     def get_daily_tms(self):
         """Works like get_daily_items, but for TMs"""
         if os.path.isfile(self.shop_save_file):
@@ -409,12 +409,12 @@ class PokemonShopManager:
                 data = json.load(f)
                 if data.get("technical_machines") and data.get("date") == datetime.now().strftime("%Y-%m-%d"):
                     return data.get("technical_machines")
-        
+
         tm_pool = self.get_tm_pool()
         seed = datetime.now().strftime("%Y-%m-%d")
         random.seed(seed)
         return random.sample(tm_pool, self.number_of_daily_items)
-    
+
     def get_tm_pool(self) -> list[str]:
         with open(pokemon_tm_learnset_path, "r") as f:
             pokemon_tm_learnset = json.load(f)
@@ -435,7 +435,7 @@ class PokemonShopManager:
     def buy_item(self, item, item_type: Union[str, None]=None):
         """Handle item purchase with theme-aware retro-style messages."""
         colors = self._get_theme_colors()
-        
+
         try:
             if self.settings_obj.get('trainer.cash', 0) < item['price']:
                 msg = QMessageBox(mw)
@@ -458,10 +458,10 @@ class PokemonShopManager:
                 """)
                 msg.exec()
                 return
-                
+
             self.set_callback('trainer.cash', int(self.get_callback('trainer.cash', 0) - item['price']))
             self.currency_qlabel.setText(f"MONEY: ${self.settings_obj.get('trainer.cash', 0)}")
-            
+
             msg = QMessageBox(mw)
             msg.setWindowTitle("Ankimon Mart")
             msg.setText(f"Thank you!\nYou bought {item.get('UI_NAME', 'Unknown')} for ${item['price']}!")
@@ -481,7 +481,7 @@ class PokemonShopManager:
                 }}
             """)
             msg.exec()
-            
+
             give_item(item['name'], item_type)
         except Exception as e:
             self.logger.log_and_showinfo("error", f"Failed to purchase item: {e}")
@@ -489,7 +489,7 @@ class PokemonShopManager:
     def reroll_daily_items(self, cost: int = 0) -> None:
         """Rerolls the daily items in the shop with theme-aware messaging"""
         colors = self._get_theme_colors()
-        
+
         if self.settings_obj.get('trainer.cash', 0) < cost:
             msg = QMessageBox(mw)
             msg.setWindowTitle("Ankimon Mart")
@@ -511,7 +511,7 @@ class PokemonShopManager:
             """)
             msg.exec()
             return
-        
+
         self.set_callback('trainer.cash', int(self.get_callback('trainer.cash', 0) - cost))
         self.currency_qlabel.setText(f"MONEY: ${self.settings_obj.get('trainer.cash', 0)}")
 

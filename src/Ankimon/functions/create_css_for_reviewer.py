@@ -156,7 +156,7 @@ body.dark #ankimon-hud #MyPokeImage,
   box-shadow: none !important;
   filter: none !important;
   outline: 1.5px solid var(--ankimon-outline);
-  max-width: calc(50% - 7px); 
+  max-width: calc(50% - 7px);
 }}
 
 #ankimon-hud #hp-display {{
@@ -215,7 +215,7 @@ body.dark #ankimon-hud #MyPokeImage,
   box-shadow: none !important;
   filter: none !important;
   outline: 1.5px solid var(--ankimon-outline);
-  max-width: calc(50% - 7px); 
+  max-width: calc(50% - 7px);
 }}
 
 /* My life bar (bottom-left) */
@@ -231,7 +231,7 @@ body.dark #ankimon-hud #MyPokeImage,
   box-shadow: none !important;
   filter: none !important;
   outline: 1.5px solid var(--ankimon-outline);
-  max-width: calc(50% - 7px); 
+  max-width: calc(50% - 7px);
 }}
 
 /* My HP display */
@@ -331,7 +331,7 @@ body.dark #ankimon-hud #MyPokeImage,
   box-shadow: none !important;
   filter: none !important;
   outline: 1.5px solid var(--ankimon-outline);
-  max-width: calc(50% - 7px); 
+  max-width: calc(50% - 7px);
 }}
 
 /* My life bar (bottom-left) */
@@ -347,7 +347,7 @@ body.dark #ankimon-hud #MyPokeImage,
   box-shadow: none !important;
   filter: none !important;
   outline: 1.5px solid var(--ankimon-outline);
-  max-width: calc(50% - 7px); 
+  max-width: calc(50% - 7px);
 }}
 
 #ankimon-hud #myhp-display {{
@@ -456,7 +456,7 @@ body.dark #ankimon-hud #MyPokeImage,
   left: 15px;
   z-index: 9999;
   font-color: rgba(0, 191, 255, 0.85);
-  font-size: 10px; 
+  font-size: 10px;
   font-weight: bold;
   text-align: center;
   background-color: rgba(0, 0, 0, 0.85);

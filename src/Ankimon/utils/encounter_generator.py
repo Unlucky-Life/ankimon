@@ -25,10 +25,10 @@ def get_pokemon_id_by_tier(tier):
 def get_tier(card_counter, cards_per_round, player_level=None, event_modifier=None):
     percentages = get_base_percentages(card_counter, cards_per_round)
     percentages = modify_percentages(percentages, player_level, event_modifier)
-    
+
     tiers = list(percentages.keys())
     probabilities = list(percentages.values())
-    
+
     choice = random.choices(tiers, probabilities, k=1)
     return choice[0]
 
@@ -73,7 +73,7 @@ def modify_percentages(percentages, player_level=None, event_modifier=None):
                     percentages[tier] = max(percentages[tier] - adjustment, 0)
                 else:
                     percentages[tier] = percentages.get(tier, 0) + adjustment
-    
+
     # Example modification based on special event
     if event_modifier:
         for tier in percentages:

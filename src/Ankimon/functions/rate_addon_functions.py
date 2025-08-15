@@ -22,7 +22,7 @@ from ..utils import give_item
 from ..singletons import logger, test_window
 
 def rate_this_addon():
-    
+
     # Load rate data
     try:
         with open(rate_path, "r", encoding="utf-8") as file:
@@ -35,19 +35,19 @@ def rate_this_addon():
         rate_data = default_data
         with open(rate_path, "w", encoding="utf-8") as f:
             json.dump(default_data, f, indent=4)
-            
+
     rate_this = rate_data.get("rate_this", False)
-    
+
     # Check if rating is needed
     if not rate_this:
         rate_window = QDialog()
         rate_window.setWindowTitle("Please Rate this Addon!")
-        
+
         layout = QVBoxLayout(rate_window)
-        
+
         text_label = QLabel(rate_addon_text_label)
         layout.addWidget(text_label)
-        
+
         # Rate button
         rate_button = QPushButton("Rate Now")
         dont_show_button = QPushButton("I dont want to rate this addon.")
@@ -55,10 +55,10 @@ def rate_this_addon():
         def support_button_click():
             support_url = "https://ko-fi.com/unlucky99"
             QDesktopServices.openUrl(QUrl(support_url))
-        
+
         def thankyou_message():
             thankyou_window = QDialog()
-            thankyou_window.setWindowTitle("Thank you !") 
+            thankyou_window.setWindowTitle("Thank you !")
             thx_layout = QVBoxLayout(thankyou_window)
             thx_label = QLabel(thankyou_message_text)
             thx_layout.addWidget(thx_label)
@@ -68,7 +68,7 @@ def rate_this_addon():
             thx_layout.addWidget(support_button)
             thankyou_window.setModal(True)
             thankyou_window.exec()
-        
+
         def dont_show_this_button():
             rate_window.close()
             rate_data["rate_this"] = True
@@ -94,14 +94,14 @@ def rate_this_addon():
 
         dont_show_button.clicked.connect(dont_show_this_button)
         layout.addWidget(dont_show_button)
-        
+
         # Support button
         support_button = QPushButton("Support the Author")
         support_button.clicked.connect(support_button_click)
         layout.addWidget(support_button)
-        
+
         # Make the dialog modal to wait for user interaction
         rate_window.setModal(True)
-        
+
         # Execute the dialog
         rate_window.exec()

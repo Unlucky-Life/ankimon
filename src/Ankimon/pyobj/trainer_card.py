@@ -39,10 +39,10 @@ class TrainerCard:
         self.league = league
         cash = int(settings_obj.get("trainer.cash", 0))
         self.cash = cash
-        
+
         #Sync Data to ankimon leaderboard
         data = {
-            'trainerRank': f"{league}",  # Example rank 
+            'trainerRank': f"{league}",  # Example rank
             'trainerName': trainer_name,  # Example trainer name
             'level': max(1, int(settings_obj.get("trainer.level", 1))),
             'pokedex': get_unique_pokemon(),  # Example Pokedex
@@ -64,10 +64,10 @@ class TrainerCard:
             # Read the Pokémon data from the file
             with open(mypokemon_path, "r", encoding="utf-8") as file:
                 pokemon_data = json.load(file)
-            
+
             if not pokemon_data:
                 return None  # Return None if the data is empty
-            
+
             # Find the Pokémon with the highest level and return its name
             highest_pokemon = max(pokemon_data, key=lambda p: p.get("level", 0))
             return f"{highest_pokemon.get('name', 'None')} (Level {highest_pokemon.get('level', 0)})"
@@ -77,17 +77,17 @@ class TrainerCard:
         except json.JSONDecodeError:
             showInfo(f"Error decoding JSON from file: {mypokemon_path}")
             return "None"
-    
+
     def get_highest_level_pokemon(self):
         """Method to find the name of the highest-level Pokémon from the mypokemon_path."""
         try:
             # Read the Pokémon data from the file
             with open(mypokemon_path, "r", encoding="utf-8") as file:
                 pokemon_data = json.load(file)
-            
+
             if not pokemon_data:
                 return None  # Return None if the data is empty
-            
+
             # Find the Pokémon with the highest level and return its name
             highest_pokemon = max(pokemon_data, key=lambda p: p.get("level", 0))
             return f"{highest_pokemon.get('level', 0)}"
@@ -97,17 +97,17 @@ class TrainerCard:
         except json.JSONDecodeError:
             showInfo(f"Error decoding JSON from file: {mypokemon_path}")
             return "None"
-    
+
     def highest_pokemon_level(self):
         """Method to find the name of the highest-level Pokémon from the mypokemon_path."""
         try:
             # Read the Pokémon data from the file
             with open(mypokemon_path, "r", encoding="utf-8") as file:
                 pokemon_data = json.load(file)
-            
+
             if not pokemon_data:
                 return int(0)  # Return None if the data is empty
-            
+
             # Find the Pokémon with the highest level and return its name
             highest_pokemon = max(pokemon_data, key=lambda p: p.get("level", 0))
             return int(highest_pokemon.get('level', 0))

@@ -41,11 +41,11 @@ def reset_side(pokemon: Pokemon, side_conditions: Union[dict, None]=None) -> Sid
 
     Args:
         pokemon (Pokemon): The active Pokemon for the side.
-        side_conditions (Union[dict, None], optional): A dictionary of side conditions to apply. 
+        side_conditions (Union[dict, None], optional): A dictionary of side conditions to apply.
             If None, defaults to all conditions set to zero.
 
     Returns:
-        Side: A new Side object with the specified active Pokemon, an empty reserve, 
+        Side: A new Side object with the specified active Pokemon, an empty reserve,
               default wish and future sight settings, and the given or default side conditions.
     """
     if side_conditions is None:
@@ -77,10 +77,10 @@ def simulate_battle_with_poke_engine(
     state: Union[State, None]=None,
     ):
     """
-    Simulates a battle between two Pokémon using the poke-engine if available. 
-    The function selects the Pokémon moves (either provided or random), handles state changes, 
-    and applies battle instructions based on the current battle state. The function then 
-    computes and returns the battle results, including damage dealt, missed moves, 
+    Simulates a battle between two Pokémon using the poke-engine if available.
+    The function selects the Pokémon moves (either provided or random), handles state changes,
+    and applies battle instructions based on the current battle state. The function then
+    computes and returns the battle results, including damage dealt, missed moves,
     and the updated battle state.
 
     Args:
@@ -118,7 +118,7 @@ def simulate_battle_with_poke_engine(
         main_move = "Splash"
     if not enemy_move:
         enemy_move = "Splash"
-    
+
 
     if (state is not None) and (state.user.active.id != main_pokemon.name.lower()):
         mutator_full_reset = 1 # reset AFTER Pokemon is changed !
@@ -129,7 +129,7 @@ def simulate_battle_with_poke_engine(
         main_move_normalized = normalize_name(main_move)
         enemy_move_normalized = normalize_name(enemy_move)
 
-                
+
         # Store only the chosen outcome
         battle_header = {
             'user': {
@@ -147,7 +147,7 @@ def simulate_battle_with_poke_engine(
         # Create Pokemon objects
         main_pokemon_poke_engine = main_pokemon.to_poke_engine_Pokemon()
         enemy_pokemon_poke_engine = enemy_pokemon.to_poke_engine_Pokemon()
-        
+
         # Default side_conditions with all needed keys
         side_conditions = defaultdict(int, {
             'stealthrock': 0,
@@ -190,20 +190,20 @@ def simulate_battle_with_poke_engine(
                     state.user.future_sight = (0, 0)
                 if hasattr(state.opponent, 'future_sight'):
                     state.opponent.future_sight = (0, 0)
-                    
+
                 # Also reset the main_pokemon and enemy_pokemon Python objects
                 main_pokemon.battle_status = 'fighting'
                 main_pokemon.volatile_status = set()
                 enemy_pokemon.battle_status = 'fighting'
                 enemy_pokemon.volatile_status = set()
-                
+
                 state.weather = None # Reset weather to None
                 state.field = None # Reset field to None
                 state.trick_room = None # Reset trick room to None
 
             else:
                 raise ValueError(f"Wrong mutator_full_reset encountered : {mutator_full_reset}")
-                
+
         mutator = StateMutator(state)
 
         if state.opponent.active.hp == 0:
@@ -219,7 +219,7 @@ def simulate_battle_with_poke_engine(
         # e.g. if P(outcome 1):P(outcome 2) = 20% : 80%, then 20% chance to pick outcome 1 (picks randomly)
         weights = [outcome.percentage for outcome in transpose_instructions]
         chosen_outcome = random.choices(transpose_instructions, weights=weights, k=1)[0]
-        
+
         instrs = chosen_outcome.instructions
 
         user_hp_before = int(state.user.active.hp)
@@ -236,26 +236,26 @@ def simulate_battle_with_poke_engine(
         # Save changes from State to Pokemon objects (enhanced for volatile status)
         main_pokemon.hp = state.user.active.hp
         main_pokemon.current_hp = state.user.active.hp
-        enemy_pokemon.hp = state.opponent.active.hp  
+        enemy_pokemon.hp = state.opponent.active.hp
         enemy_pokemon.current_hp = state.opponent.active.hp
-        
+
         main_pokemon.stat_stages = {
             'atk': state.user.active.attack_boost,
             'def': state.user.active.defense_boost,
             'spa': state.user.active.special_attack_boost,
             'spd': state.user.active.special_defense_boost,
             'spe': state.user.active.speed_boost,
-            'accuracy': state.user.active.accuracy_boost, 
+            'accuracy': state.user.active.accuracy_boost,
             'evasion': state.user.active.evasion_boost
         }
-        
+
         # Save volatile status from poke-engine state to Pokemon object - NEW
         if hasattr(state.user.active, 'volatile_status'):
             main_pokemon.volatile_status = state.user.active.volatile_status.copy()
         elif not hasattr(main_pokemon, 'volatile_status'):
             main_pokemon.volatile_status = set()
-    
-        
+
+
         # Same for enemy Pokemon
         enemy_pokemon.stat_stages = {
             'atk': state.opponent.active.attack_boost,
@@ -263,16 +263,16 @@ def simulate_battle_with_poke_engine(
             'spa': state.opponent.active.special_attack_boost,
             'spd': state.opponent.active.special_defense_boost,
             'spe': state.opponent.active.speed_boost,
-            'accuracy': state.opponent.active.accuracy_boost, 
+            'accuracy': state.opponent.active.accuracy_boost,
             'evasion': state.opponent.active.evasion_boost
         }
-        
+
         # Save volatile status for enemy - NEW
         if hasattr(state.opponent.active, 'volatile_status'):
             enemy_pokemon.volatile_status = state.opponent.active.volatile_status.copy()
         elif not hasattr(enemy_pokemon, 'volatile_status'):
             enemy_pokemon.volatile_status = set()
-        
+
         new_state = copy.deepcopy(state)
 
         mutator_full_reset = int(0) # preserve battle state - until something else changes this value
@@ -284,17 +284,17 @@ def simulate_battle_with_poke_engine(
         dmg_from_enemy_move = int(user_hp_before - user_hp_after)
 
         # Reference to the founder and creator of Ankimon, Unlucky-life.
-        # Unlucky, we are very proud of you for your work. You are a legend. 
+        # Unlucky, we are very proud of you for your work. You are a legend.
         # It's been a pleasure being part of this journey. -- h0tp (and friends)
 
         if int(chosen_outcome.percentage) == 0:
             unlucky_life = int(1)
         else:
             unlucky_life = int(chosen_outcome.percentage)
-        
+
         # On a serious note, the function above is the CHANCE that the chosen_outcome was picked out of ALL
         # the choices in transpose_instructions, based on factors like accuracy rate, the chance to
-        # inflict a certain status (like sleep or paralyze), etc.  
+        # inflict a certain status (like sleep or paralyze), etc.
 
         battle_effects = []
         for instr in chosen_outcome.instructions:
@@ -308,7 +308,7 @@ def simulate_battle_with_poke_engine(
 
         print(f"{unlucky_life * 100}% chance: {battle_effects}")
         return battle_info, new_state, dmg_from_enemy_move, dmg_from_user_move, mutator_full_reset, battle_info_changes
-    
+
     except Exception as e:
         show_warning_with_traceback(exception=e, message="Error simulating battle:")
 
@@ -370,13 +370,13 @@ def diff_states(state_before, state_after, path="", changes=None):
                 'before': len(state_before),
                 'after': len(state_after)
             })
-        
+
         # Compare elements up to the shorter length
         min_len = min(len(state_before), len(state_after))
         for i in range(min_len):
             new_path = f"{path}[{i}]" if path else f"[{i}]"
             diff_states(state_before[i], state_after[i], new_path, changes)
-        
+
         # Handle extra elements in longer list
         if len(state_before) > min_len:
             for i in range(min_len, len(state_before)):
@@ -442,7 +442,7 @@ def print_state_changes(changes):
     """
     if not changes:
         return
-    
+
     for change in changes:
         key = change['key']
         before = change['before']

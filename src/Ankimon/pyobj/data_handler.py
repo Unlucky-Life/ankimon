@@ -36,7 +36,7 @@ class DataHandler:
     def read_files(self):
         # Specify the files to read
         files = ['mypokemon.json', 'mainpokemon.json', 'items.json', 'team.json', 'data.json', 'badges.json']
-        
+
         # Loop through each file and attempt to read it from the specified path
 
         for file in files:
@@ -48,11 +48,11 @@ class DataHandler:
                 os.makedirs(os.path.dirname(file_path), exist_ok=True)  # Ensure directory exists
                 with open(file_path, 'w', encoding='utf-8') as f:
                     json.dump([], f, indent=2)
-                
+
             try:
                 with open(file_path, "r", encoding="utf-8") as f:
                     content = json.load(f)
-                    
+
                     # Validate list structure
                     if attr_name in ['mypokemon', 'mainpokemon'] and isinstance(content, list):
                         valid_content = []
@@ -75,7 +75,7 @@ class DataHandler:
         """
         if not isinstance(pokemon_list, list):
             raise ValueError("Expected list of Pokémon dictionaries")
-        
+
         unique_ids = set()
         for idx, entry in enumerate(pokemon_list):
             if not isinstance(entry, dict):
@@ -99,7 +99,7 @@ class DataHandler:
                         break
         except:
             print("Unique ID assignment failed")
-    
+
     def assign_new_variables(self, pokemon_list):
         """
         Adds new fields to each Pokémon in the provided list.
@@ -111,7 +111,7 @@ class DataHandler:
             for field, default_value in self.new_values.items():
                 if field not in pokemon:  # Check if the field is not already set
                     pokemon[field] = default_value
- 
+
     def save_file(self, attr_name):
         """
         Save the updated content back to its respective JSON file.

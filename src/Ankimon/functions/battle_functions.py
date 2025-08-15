@@ -6,7 +6,7 @@ from ..pyobj.error_handler import show_warning_with_traceback
 
 with open(move_names_file_path, "r", encoding="utf-8") as f:
     MOVE_NAME_LOOKUP = json.load(f)
-    
+
 def format_move_name(move: str) -> str:
     """
     Look up the official move name using the normalized key.
@@ -23,29 +23,29 @@ def update_pokemon_battle_status(battle_info: dict, enemy_pokemon, main_pokemon)
     """
     if not isinstance(battle_info, dict) or 'instructions' not in battle_info:
         return False, False
-    
+
     instructions = battle_info.get('instructions', [])
     if not instructions:
         return False, False
-    
+
     enemy_status_changed = False
     main_status_changed = False
-    
+
     try:
         # Initialize volatile_status sets if they don't exist
         if not hasattr(enemy_pokemon, 'volatile_status'):
             enemy_pokemon.volatile_status = set()
         if not hasattr(main_pokemon, 'volatile_status'):
             main_pokemon.volatile_status = set()
-            
+
         for instr in instructions:
             # Skip malformed instructions or instructions this function doesn't handle
             if not isinstance(instr, (list, tuple)) or len(instr) < 2:
                 continue
-            
+
             action = instr[0]
             target = instr[1]
-            
+
             # This function only handles status, not damage or heal
             if action in [constants.MUTATOR_DAMAGE, constants.MUTATOR_HEAL]:
                 continue
@@ -62,7 +62,7 @@ def update_pokemon_battle_status(battle_info: dict, enemy_pokemon, main_pokemon)
                     if main_pokemon.battle_status != status_value:
                         main_pokemon.battle_status = status_value
                         main_status_changed = True
-            
+
             # Handle regular status removal
             elif action == constants.MUTATOR_REMOVE_STATUS:
                 if target == 'opponent':
@@ -73,7 +73,7 @@ def update_pokemon_battle_status(battle_info: dict, enemy_pokemon, main_pokemon)
                     if main_pokemon.battle_status != 'fighting':
                         main_pokemon.battle_status = 'fighting'
                         main_status_changed = True
-            
+
             # Handle volatile status application
             elif action == constants.MUTATOR_APPLY_VOLATILE_STATUS and status_value:
                 if target == 'opponent':
@@ -84,7 +84,7 @@ def update_pokemon_battle_status(battle_info: dict, enemy_pokemon, main_pokemon)
                     if status_value not in main_pokemon.volatile_status:
                         main_pokemon.volatile_status.add(status_value)
                         main_status_changed = True
-            
+
             # Handle volatile status removal
             elif action == constants.MUTATOR_REMOVE_VOLATILE_STATUS and status_value:
                 if target == 'opponent':
@@ -95,22 +95,22 @@ def update_pokemon_battle_status(battle_info: dict, enemy_pokemon, main_pokemon)
                     if status_value in main_pokemon.volatile_status:
                         main_pokemon.volatile_status.discard(status_value)
                         main_status_changed = True
-                        
+
         # Final check for fainted status based on the already-updated HP from the main loop
         if hasattr(enemy_pokemon, 'hp') and enemy_pokemon.hp <= 0:
             if enemy_pokemon.battle_status != 'fainted':
                 enemy_pokemon.battle_status = 'fainted'
                 enemy_pokemon.volatile_status = set() # Clear volatiles on faint
                 enemy_status_changed = True
-                
+
         if hasattr(main_pokemon, 'hp') and main_pokemon.hp <= 0:
             if main_pokemon.battle_status != 'fainted':
                 main_pokemon.battle_status = 'fainted'
                 main_pokemon.volatile_status = set() # Clear volatiles on faint
                 main_status_changed = True
-        
+
         return enemy_status_changed, main_status_changed
-        
+
     except Exception as e:
         # Use the existing error handler if available, otherwise print
         try:
@@ -166,18 +166,18 @@ def _process_battle_effects(
     # Track newly applied statuses/volatiles from changes
     newly_applied_statuses = set()
     newly_applied_volatiles = set()
-    
+
     # First pass: identify newly applied effects
     for change in changes:
         key = change['key']
         before = change['before']
         after = change['after']
-        
+
         # Track status applications
         if key.endswith('.status') and before in ('fighting', None) and after not in ('fighting', None):
             target = 'user' if key.startswith('user.') else 'opponent'
             newly_applied_statuses.add((target, normalize_status_name(after)))
-        
+
         # Track volatile status applications
         elif key.endswith('.volatile_status') and isinstance(after, set) and isinstance(before, set):
             target = 'user' if key.startswith('user.') else 'opponent'
@@ -260,21 +260,21 @@ def _process_battle_effects(
             key = change['key']
             before = change['before']
             after = change['after']
-            
+
             # Skip if no actual change
             if before == after:
                 continue
-            
+
             # Handle status changes
             if key.endswith('.status'):
                 target = 'user' if key.startswith('user.') else 'opponent'
                 pokemon_name = get_pokemon_name(target)
-                
+
                 # Status applied
                 if before in ('fighting', None) and after not in ('fighting', None):
                     normalized_status = normalize_status_name(after)
                     translation_key = f"status_{normalized_status}_apply"
-                    
+
                     if after.lower() in constants.KNOWN_REGULAR_STATUSES:
                         message = safe_translate(
                             translation_key,
@@ -289,12 +289,12 @@ def _process_battle_effects(
                             status_name=status_name
                         )
                     effect_messages.append(message)
-                
+
                 # Status removed
                 elif before not in ('fighting', None) and after in ('fighting', None):
                     normalized_status = normalize_status_name(before)
                     translation_key = f"status_{normalized_status}_remove"
-                    
+
                     if before.lower() in constants.KNOWN_REGULAR_STATUSES:
                         message = safe_translate(
                             translation_key,
@@ -309,19 +309,19 @@ def _process_battle_effects(
                             status_name=status_name
                         )
                     effect_messages.append(message)
-            
+
             # Handle volatile status changes
             elif key.endswith('.volatile_status'):
                 target = 'user' if key.startswith('user.') else 'opponent'
                 pokemon_name = get_pokemon_name(target)
-                
+
                 if isinstance(after, set) and isinstance(before, set):
                     # New volatile statuses added
                     added_volatiles = after - before if before else after
                     for volatile_status in added_volatiles:
                         normalized_status = normalize_status_name(volatile_status)
                         translation_key = f"volatile_{normalized_status}_apply"
-                        
+
                         if normalized_status in constants.KNOWN_VOLATILE_STATUSES:
                             message = safe_translate(
                                 translation_key,
@@ -336,13 +336,13 @@ def _process_battle_effects(
                                 status_name=status_name
                             )
                         effect_messages.append(message)
-                    
+
                     # Volatile statuses removed
                     removed_volatiles = before - after if before else set()
                     for volatile_status in removed_volatiles:
                         normalized_status = normalize_status_name(volatile_status)
                         translation_key = f"volatile_{normalized_status}_remove"
-                        
+
                         if normalized_status in constants.KNOWN_VOLATILE_STATUSES:
                             message = safe_translate(
                                 translation_key,
@@ -357,12 +357,12 @@ def _process_battle_effects(
                                 status_name=status_name
                             )
                         effect_messages.append(message)
-            
+
             # Handle HP changes (healing detection)
             elif key.endswith('.hp'):
                 target = 'user' if key.startswith('user.') else 'opponent'
                 pokemon_name = get_pokemon_name(target)
-                
+
                 # Only show healing messages (HP increased)
                 if isinstance(before, (int, float)) and isinstance(after, (int, float)) and after > before:
                     heal_amount = after - before
@@ -372,12 +372,12 @@ def _process_battle_effects(
                         heal_amount=heal_amount
                     )
                     effect_messages.append(message)
-            
+
             # Handle stat boost changes
             elif any(key.endswith(f'.{stat}_boost') for stat in ['attack', 'defense', 'special_attack', 'special_defense', 'speed', 'accuracy', 'evasion']):
                 target = 'user' if key.startswith('user.') else 'opponent'
                 pokemon_name = get_pokemon_name(target)
-                
+
                 # Extract stat name from key
                 stat_part = key.split('.')[-1].replace('_boost', '')
                 stat_names = {
@@ -386,20 +386,20 @@ def _process_battle_effects(
                     'speed': "Speed", 'accuracy': "Accuracy", 'evasion': "Evasion"
                 }
                 stat_name = stat_names.get(stat_part, stat_part.replace('_', ' ').title())
-                
+
                 if isinstance(before, (int, float)) and isinstance(after, (int, float)):
                     change_amount = after - before
                     if change_amount != 0:
                         direction = "increased" if change_amount > 0 else "decreased"
                         message = safe_translate(
-                            "effect_stat_change", 
-                            pokemon_name=pokemon_name, 
+                            "effect_stat_change",
+                            pokemon_name=pokemon_name,
                             stat=stat_name,
-                            direction=direction, 
+                            direction=direction,
                             amount=abs(change_amount)
                         )
                         effect_messages.append(message)
-            
+
             # Handle weather changes
             elif key == 'weather':
                 if before != after:
@@ -421,12 +421,12 @@ def _process_battle_effects(
                         effect_messages.append(message)
                         message = safe_translate("battle_effect_weather_start", weather=new_weather)
                         effect_messages.append(message)
-            
+
             # Handle side condition changes
             elif '.side_conditions.' in key:
                 target = 'user' if key.startswith('user.') else 'opponent'
                 condition_name = key.split('.')[-1]
-                
+
                 # Side condition started or increased
                 if isinstance(before, (int, float)) and isinstance(after, (int, float)) and after > before:
                     message = safe_translate(
@@ -435,12 +435,12 @@ def _process_battle_effects(
                         side="your team" if target == 'user' else "the opposing team"
                     )
                     effect_messages.append(message)
-            
+
             # Handle wish changes
             elif key.endswith('.wish'):
                 target = 'user' if key.startswith('user.') else 'opponent'
                 pokemon_name = get_pokemon_name(target)
-                
+
                 # Wish started (assuming tuple format: (turns, heal_amount))
                 if isinstance(after, tuple) and len(after) >= 2 and after[1] > 0:
                     if not isinstance(before, tuple) or before[1] == 0:
@@ -451,11 +451,11 @@ def _process_battle_effects(
                             heal_amount=heal_amount
                         )
                         effect_messages.append(message)
-            
+
             # Handle future sight changes
             elif key.endswith('.future_sight'):
                 target = 'user' if key.startswith('user.') else 'opponent'
-                
+
                 # Future sight started
                 if isinstance(after, tuple) and len(after) >= 2 and after[0] > 0:
                     if not isinstance(before, tuple) or before[0] == 0:
@@ -466,7 +466,7 @@ def _process_battle_effects(
                             target_pokemon="the opposing Pokemon"
                         )
                         effect_messages.append(message)
-                
+
                 # Future sight decremented (still active)
                 elif isinstance(before, tuple) and isinstance(after, tuple) and len(before) >= 1 and len(after) >= 1:
                     if before[0] > after[0] and after[0] > 0:
@@ -475,7 +475,7 @@ def _process_battle_effects(
                             side="your team" if target == 'user' else "the opposing team"
                         )
                         effect_messages.append(message)
-                
+
                 # Future sight ended (hit)
                 elif isinstance(before, tuple) and isinstance(after, tuple) and len(before) >= 1 and len(after) >= 1:
                     if before[0] > 0 and after[0] == 0:
@@ -496,33 +496,33 @@ def validate_pokemon_status(pokemon):
     """
     Ensure Pokemon has valid battle_status and volatile_status.
     """
-    
+
     # Valid status codes from const.py
     valid_statuses = {
-        "brn", "frz", "par", "psn", "tox", "slp", 
+        "brn", "frz", "par", "psn", "tox", "slp",
         "confusion", "flinching", "fainted", "fighting"
     }
-    
+
     current_status = getattr(pokemon, 'battle_status', 'fighting')
-    
+
     # Ensure volatile_status exists
     if not hasattr(pokemon, 'volatile_status'):
         pokemon.volatile_status = set()
-    
+
     # If status is not valid, default to fighting (or fainted if HP <= 0)
     if current_status not in valid_statuses:
         if hasattr(pokemon, 'hp') and pokemon.hp <= 0:
             return 'fainted'
         else:
             return 'fighting'
-    
+
     # If Pokemon is fainted but status isn't fainted, override
     if hasattr(pokemon, 'hp') and pokemon.hp <= 0 and current_status != 'fainted':
         return 'fainted'
-        
+
     return current_status
 
-        
+
 def process_battle_data(
     battle_info: dict,
     multiplier: float,
@@ -542,40 +542,40 @@ def process_battle_data(
 ) -> str:
     """
     Generate complete battle message from battle data.
-    
+
     This function centralizes all battle message generation and now uses
     format_move_name to display official move names.
     """
-    
+
     if not isinstance(battle_info, dict):
         return translator.translate("invalid_battle_data_error")
-    
+
     # Initialize message components
     message_parts = []
-    
+
     try:
         # 1. Multiplier display
         formatted_multiplier = f"{multiplier:.1f}"
         message_parts.append(
             translator.translate("battle_multiplier_display", multiplier=formatted_multiplier)
         )
-        
+
         # 2. Enemy attack section
         if enemy_attack is not "splash" or None:
-            
+
             # --- NEW: Format enemy move name ---
             formatted_enemy_attack = format_move_name(enemy_attack)
-            
+
             enemy_attack_msg = translator.translate(
                 "enemy_attack_announcement",
                 pokemon_name=enemy_pokemon.name.capitalize(),
                 attack_name=formatted_enemy_attack  # Use the formatted name
             )
             message_parts.append(enemy_attack_msg)
-        
+
         # 3. User attack section
         if user_attack is not "splash" or None:
-            
+
             # Handle special battle statuses first
             if battle_status and battle_status != "fighting":
                 status_msg = _handle_special_battle_status(
@@ -586,7 +586,7 @@ def process_battle_data(
             else:
                 # --- NEW: Format user move name ---
                 formatted_user_attack = format_move_name(user_attack)
-                
+
                 # Normal attack resolution
                 user_attack_msg = translator.translate(
                     "player_attack_announcement",
@@ -594,12 +594,12 @@ def process_battle_data(
                     attack_name=formatted_user_attack  # Use the formatted name
                 )
                 message_parts.append(user_attack_msg)
-        
+
         # 4. Process all other battle effect instructions
         if isinstance(battle_info, dict) and 'instructions' in battle_info:
             try:
                 effects_messages = _process_battle_effects(
-                    battle_info['instructions'], 
+                    battle_info['instructions'],
                     translator,
                     main_pokemon=main_pokemon,
                     enemy_pokemon=enemy_pokemon,
@@ -612,15 +612,15 @@ def process_battle_data(
                 message_parts.append(
                     translator.translate("battle_effects_error", error=str(e)[:50])
                 )
-        
+
         # Join all message parts with newlines
         final_message = "\n".join(filter(None, message_parts))
-        
+
         if not final_message:
             return translator.translate("battle_message_empty_fallback")
-        
+
         return final_message
-        
+
     except Exception as e:
         show_warning_with_traceback(
             exception=e,
@@ -632,12 +632,12 @@ def process_battle_data(
 
 def _handle_special_battle_status(main_pokemon, battle_status: str, translator) -> str:
     """Handle special battle status conditions using the provided constants."""
-    
+
     try:
-        
+
         status_messages = {
             constants.SLEEP: "pokemon_is_sleeping",
-            constants.PARALYZED: "pokemon_is_paralyzed", 
+            constants.PARALYZED: "pokemon_is_paralyzed",
             constants.FROZEN: "pokemon_is_frozen",
             constants.BURN: "pokemon_is_burned",
             constants.POISON: "pokemon_is_poisoned",
@@ -646,7 +646,7 @@ def _handle_special_battle_status(main_pokemon, battle_status: str, translator) 
             constants.FLINCH: "pokemon_flinched",
             constants.TAUNT: "pokemon_is_taunted"
         }
-        
+
         # Check if we have a predefined message for this status
         if battle_status in status_messages:
             return translator.translate(
@@ -660,7 +660,7 @@ def _handle_special_battle_status(main_pokemon, battle_status: str, translator) 
                 pokemon_name=main_pokemon.name.capitalize(),
                 condition=battle_status.replace('_', ' ').title()
             )
-            
+
     except Exception as e:
         # Non‐fatal: return generic message
         show_warning_with_traceback(

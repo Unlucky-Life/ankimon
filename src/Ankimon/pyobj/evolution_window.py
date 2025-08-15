@@ -148,7 +148,7 @@ class EvoWindow(QWidget):
         # Update mainpokemon_evolution and handle evolution logic
         prevo_name = return_name_for_id(prevo_id)
         evo_name = return_name_for_id(evo_id)
-        
+
         # Display the Pokémon image
         pkmnimage_path = frontdefault / f"{prevo_id}.png"
         pkmnimage_path2 = frontdefault / f"{(evo_id)}.png"
@@ -304,7 +304,7 @@ class EvoWindow(QWidget):
         except Exception as e:
             show_warning_with_traceback(parent=mw, exception=e, message=f"Error occured in evolving pokemon")
             self.logger.log(f"{e}")
-            
+
         try:  # Update Main Pokemon Object and sync with file
             if main_pokemon is not None and main_pokemon.individual_id == individual_id:
                 # Update the in-memory main_pokemon object with the evolved data                # Call update_main_pokemon to ensure file and object are in sync (this will also save to disk)

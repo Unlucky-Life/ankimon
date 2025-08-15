@@ -47,7 +47,7 @@ def get_ipc_path(pipe=None):
         paths = ['.']
     else:
         return
-    
+
     for path in paths:
         full_path = os.path.abspath(os.path.join(tempdir, path))
         if sys.platform == 'win32' or os.path.isdir(full_path):

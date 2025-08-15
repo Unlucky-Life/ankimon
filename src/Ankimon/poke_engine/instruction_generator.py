@@ -1159,7 +1159,7 @@ def get_end_of_turn_instructions(mutator, instruction, bot_move, opponent_move, 
         ):
             move_used = move[constants.ID]
             for m in filter(
-                lambda x: x[constants.ID] != move_used and not x.get(constants.DISABLED, False), 
+                lambda x: x[constants.ID] != move_used and not x.get(constants.DISABLED, False),
                 pkmn.moves
             ):
                 disable_instruction = (
@@ -1351,8 +1351,8 @@ def immune_to_status(state, defending_pkmn, attacking_pkmn, status):
 
 def is_immune_to_freeze(state, pkmn):
     return (
-        'ice' in pkmn.types or 
-        pkmn.ability in constants.IMMUNE_TO_FROZEN_ABILITIES or 
+        'ice' in pkmn.types or
+        pkmn.ability in constants.IMMUNE_TO_FROZEN_ABILITIES or
         state.weather == constants.DESOLATE_LAND
     )
 
@@ -1380,6 +1380,6 @@ def is_immune_to_poison(attacking, defending):
 
 def is_immune_to_paralysis(pkmn):
     return (
-        'electric' in pkmn.types or 
+        'electric' in pkmn.types or
         pkmn.ability in constants.IMMUNE_TO_PARALYSIS_ABILITIES
     )

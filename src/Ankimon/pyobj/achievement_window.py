@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QVBoxLayout,
     QWidget,
-    QScrollArea, 
+    QScrollArea,
     )
 from PyQt6.QtGui import QIcon, QColor
 
@@ -131,12 +131,12 @@ class AchievementWindow(QWidget):
     def show_window(self):
         # Get the geometry of the main screen
         main_screen_geometry = mw.geometry()
-        
+
         # Calculate the position to center the ItemWindow on the main screen
         x = int(main_screen_geometry.center().x() - self.width() // 2)
         y = int(main_screen_geometry.center().y() - self.height() // 2)
-        
+
         # Move the ItemWindow to the calculated position
         self.move(x, y)
-        
+
         self.show()

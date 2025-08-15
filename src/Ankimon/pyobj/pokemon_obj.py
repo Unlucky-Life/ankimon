@@ -91,11 +91,11 @@ class PokemonObject:
         # HP calculation
         self.max_hp = self.calculate_max_hp()
         self.hp = int(kwargs.get('hp', self.max_hp))
-        self.current_hp = current_hp or 15 
-        
+        self.current_hp = current_hp or 15
+
         self.is_favorite = bool(is_favorite)
         self.captured_date = captured_date or None
-        
+
     @classmethod
     def calc_stat(
         cls,
@@ -200,7 +200,7 @@ class PokemonObject:
     def get_stats(self):
         """Return the stats of the Pokémon."""
         return vars(self)
-    
+
     def update_stats(self, **kwargs):
         """Update the attributes of the Pokémon object with keyword arguments."""
         for key, value in kwargs.items():
@@ -227,17 +227,17 @@ class PokemonObject:
         hp = 10 + self.level + int((2 * self.base_stats["hp"] + iv + int(ev / 4)) * self.level / 100)
         hp = int(hp)
         return hp
-    
+
     def get_sprite_path(self, side, sprite_type):
         """Return the path to the sprite of the Pokémon."""
         base_path = f"{side}_default_gif" if sprite_type == "gif" else f"{side}_default"
-        
+
         shiny_path = "shiny/" if self.shiny else ""
         gender_path = "female/" if self.gender == "F" else ""
-        
+
         path = f"{pkmnimgfolder}/{base_path}/{shiny_path}{gender_path}{self.id}.{sprite_type}"
         default_path = f"{pkmnimgfolder}/front_default/substitute.png"
-        
+
         # Check if the file exists at the given path
         if os.path.exists(path):
             return path
@@ -252,7 +252,7 @@ class PokemonObject:
                 return path
             else:
                 return default_path
-    
+
     def to_engine_format(self):
         from ..poke_engine.helpers import normalize_name
         return {
@@ -329,7 +329,7 @@ class PokemonObject:
             nature=engine_data.get('nature', 'serious'),
             held_item=engine_data.get('item', '')
         )
-    
+
     def to_poke_engine_Pokemon(self) -> Pokemon:
         _dict = self.to_engine_format()
         pokemon = Pokemon(
@@ -352,7 +352,7 @@ class PokemonObject:
             special_attack_boost=_dict.get('special_attack_boost', 0),
             special_defense_boost=_dict.get('special_defense_boost', 0),
             speed_boost=_dict.get('speed_boost', 0),
-            accuracy_boost=_dict.get('accuracy_boost', 0), 
+            accuracy_boost=_dict.get('accuracy_boost', 0),
             evasion_boost=_dict.get('evasion_boost', 0),
             status=_dict.get('status', None),
             terastallized=_dict.get('terastallized', False),
@@ -360,14 +360,14 @@ class PokemonObject:
             moves=_dict.get('moves', [])
         )
         return pokemon
-    
+
     def reset_bonuses(self):
         """
         This method resets various bonuses and status effects currently applied
         to the pokemon.
 
         This method is typically used to reset the stat boosts of the main
-        Pokemon when the opponent gets KOed, preventing the user from 
+        Pokemon when the opponent gets KOed, preventing the user from
         steamrolling every wild pokemon once the main pokemon is setup with
         stat boosts.
 
@@ -386,13 +386,13 @@ class PokemonObject:
             'accuracy': 0,
             'evasion': 0
             }
-        
+
     def give_held_item(self, held_item: str) -> None:
         """
         Assigns a held item to the Pokémon and updates relevant data files.
 
         If the Pokémon is already holding an item, it is removed first. The specified
-        item is subtracted from the item bag, assigned as the Pokémon's held item, 
+        item is subtracted from the item bag, assigned as the Pokémon's held item,
         and then saved in the user's Pokémon data files.
 
         This method updates both `mypokemon_path` (the full Pokémon list) and
@@ -459,7 +459,7 @@ class PokemonObject:
         """
         if self.held_item is None:
             return
-        
+
         give_item(self.held_item)  # We put the item back in the item bag
         self.held_item = None
 

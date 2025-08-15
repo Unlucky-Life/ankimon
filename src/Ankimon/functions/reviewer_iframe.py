@@ -4,22 +4,22 @@ import fnmatch
 def list_audio_files(folder_path):
     # Define common audio file extensions
     audio_extensions = ['*.mp3', '*.wav', '*.flac', '*.aac', '*.ogg', '*.wma', '*.m4a', '*.aiff']
-    
+
     # List to store audio files
     audio_files = []
-    
+
     # Walk through the directory
     for root, dirs, files in os.walk(folder_path):
         for extension in audio_extensions:
             for filename in fnmatch.filter(files, extension):
                 audio_files.append(filename)
-    
+
     return audio_files
 
 from aqt import mw
 from .pokemon_functions import find_experience_for_level
 
-def create_html_code(genderTop, genderBottom, nameTop, nameBottom, levelTop, levelBottom, current_health_bottom, max_hp_bottom, max_hp_top, current_health_top, text, general_url, font_url, bottom_pokemon_sprite, top_pokemon_sprite, display, main_attack, enemy_attack, xp_bar_width = 0):    
+def create_html_code(genderTop, genderBottom, nameTop, nameBottom, levelTop, levelBottom, current_health_bottom, max_hp_bottom, max_hp_top, current_health_top, text, general_url, font_url, bottom_pokemon_sprite, top_pokemon_sprite, display, main_attack, enemy_attack, xp_bar_width = 0):
     html_code = """<div id="spacer">&nbsp;</div>"""
     html_code += """<div id="AnkimonWindow"></div>"""
     html_code += f"""<iframe id="myIframe" class="Ankimon" src='{general_url}index.html?bottomPokemonSprite={bottom_pokemon_sprite}&topPokemonSprite={top_pokemon_sprite}&text={text}&levelTop={levelTop}&levelBottom={levelBottom}&nameTop={nameTop}&nameBottom={nameBottom}&genderTop={genderTop}&genderBottom={genderBottom}&current_health_bottom={current_health_bottom}&max_hp_bottom={max_hp_bottom}&max_hp_top={max_hp_top}&fontUrl={font_url}&current_health_top={current_health_top}&main_attack={main_attack}&enemy_attack={enemy_attack}' width=100% style="display:{display};"></iframe>"""
@@ -65,7 +65,7 @@ def create_head_code(generalurl):
 	:root {{
         --background_music: "{generalurl}/"
 	}}
-    
+
 	@keyframes attack {{
     0% {{ transform: translate(0px, 0px); }}
     50% {{ transform: translate(300px, -10px); width: 60%; height: 70%}}
@@ -73,9 +73,9 @@ def create_head_code(generalurl):
 	}}
 
     @font-face {{
-        font-family: 'Pokemon'; 
+        font-family: 'Pokemon';
         src: url("{generalurl}Early_GameBoy.ttf");
-    }}  
+    }}
 
     #bottomPokemon {{
         width: 50%  ;
@@ -220,7 +220,7 @@ def create_head_code(generalurl):
 }}
 
 .rectangleInner {{
-	z-index: 4 ; 
+	z-index: 4 ;
 	width: 95% ;
 	height: 90% ;
 	background: rgb(240,240,208) ;
@@ -460,7 +460,7 @@ def create_head_code(generalurl):
 .menuHalf {{
 	width: 45% ;
 	font-size: 3.5vw ;
-	padding: 2% ; 
+	padding: 2% ;
 	border: 2px solid transparent ;
 }}
 
@@ -468,12 +468,12 @@ def create_head_code(generalurl):
 .theFocus {{
     border-radius: 5px ;
     border: 2px solid rgb(207,81,50) ;
-    padding: 2% ; 
+    padding: 2% ;
 }}
 
 
-.clearBoth {{ 
-	clear:both ; 
+.clearBoth {{
+	clear:both ;
 }}
     """
     return css_code

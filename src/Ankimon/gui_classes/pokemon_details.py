@@ -51,7 +51,7 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
             new_height = (original_height * max_width) // original_width
             pkmnpixmap = pkmnpixmap.scaled(new_width, new_height)
             pkmnimage_label.setPixmap(pkmnpixmap)
-        
+
         # Load and set type icons
         typeimage_file = f"{type[0].lower()}.png"
         typeimage_path = addon_dir / "addon_sprites" / "Types" / typeimage_file
@@ -63,7 +63,7 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
             pkmntype_label.setPixmap(pkmntypepixmap)
         else:
             logger.log_and_showinfo("warning", f"Failed to load type icon: {typeimage_path}")
-        
+
         if len(type) > 1:
             type_image_file2 = f"{type[1].lower()}.png"
             typeimage_path2 = addon_dir / "addon_sprites" / "Types" / type_image_file2
@@ -75,7 +75,7 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
                 pkmntype_label2.setPixmap(pkmntypepixmap2)
             else:
                 logger.log_and_showinfo("warning", f"Failed to load type icon: {typeimage_path2}")
-        
+
         # Custom font
         custom_font = load_custom_font(int(20), language)
         namefont = load_custom_font(int(30), language)
@@ -201,9 +201,9 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         forget_attacks_details_button = QPushButton("Forget Attacks")
         qconnect(forget_attacks_details_button.clicked, lambda: forget_attack_details_window(id, attacks, logger))
 
-        tm_attacks_details_button = QPushButton("Learn attacks from TMs") 
+        tm_attacks_details_button = QPushButton("Learn attacks from TMs")
         qconnect(tm_attacks_details_button.clicked, lambda: tm_attack_details_window(id, attacks, logger))
-        
+
         #free_pokemon_button = QPushButton("Release Pokemon") #add Details to Moves unneeded button
         TopR_layout_Box.addWidget(attacks_label)
         TopR_layout_Box.addWidget(attacks_details_button)
@@ -270,7 +270,7 @@ def PokemonDetailsStats(detail_stats, growth_rate, level, remove_levelcap, langu
         # Skip unknown stats that are not in stat_colors
         if stat not in stat_colors:
             continue
-            
+
         stat_item2 = QLabel(stat.capitalize())
         max_width_stat_item = 200
         stat_item2.setFixedWidth(max_width_stat_item)
@@ -302,11 +302,11 @@ def PokemonDetailsStats(detail_stats, growth_rate, level, remove_levelcap, langu
 def createStatBar(color, value):
     pixmap = QPixmap(200, 10)
     pixmap.fill(QColor(0, 0, 0, 0))  # RGBA where A (alpha) is 0 for full transparency
-    
+
     # Default to gray if color is None
     if color is None:
         color = QColor(128, 128, 128)  # Gray
-    
+
     painter = QPainter(pixmap)
 
     # Draw bar in the background
@@ -591,7 +591,7 @@ def tm_attack_details_window(id: int, current_pokemon_moveset: list[str], logger
     from pathlib import Path
     with open(pokemon_tm_learnset_path, "r") as f:
         pokemon_tm_learnset = json.load(f)
-    
+
     pokemon_name = search_pokedex_by_id(id)
     tm_learnset = pokemon_tm_learnset.get(pokemon_name, [])  # TMs that can be learnt by the Pokemon
     with open(itembag_path, "r", encoding="utf-8") as json_file:
@@ -686,10 +686,10 @@ def rename_pkmn(nickname, pkmn_name, individual_id, logger, refresh_callback):
 def PokemonFree(individual_id, name, logger, refresh_callback):
     # Confirmation dialog
     reply = QMessageBox.question(
-        None, 
-        "Confirm Release", 
-        f"Are you sure you want to release {name}?", 
-        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, 
+        None,
+        "Confirm Release",
+        f"Are you sure you want to release {name}?",
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         QMessageBox.StandardButton.No
     )
 
@@ -729,5 +729,5 @@ def PokemonFree(individual_id, name, logger, refresh_callback):
         logger.log_and_showinfo("info",f"{name.capitalize()} has been let free.")
     else:
         logger.log_and_showinfo("info","No Pokémon found with the specified ID.")
-    
+
     refresh_callback()

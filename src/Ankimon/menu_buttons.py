@@ -81,7 +81,7 @@ def create_menu_actions(
     join_discord_url: Callable,
     open_leaderboard_url: Callable,
     settings_obj: Settings,
-    addon_dir: Path,           
+    addon_dir: Path,
     data_handler_obj: DataHandler,
     pokemon_pc: PokemonPC,
 ):
@@ -285,4 +285,3 @@ def create_menu_actions(
     help_menu.addAction(downloader_action)
 
     mw.form.menubar.addMenu(mw.pokemenu)
-    

@@ -21,20 +21,20 @@ class AnkimonTracker:
         self.hard_count = 0
         self.easy_count = 0
         self.current_mode = "idle"
-        
+
         # Session and card timers
         self.session_timer = QTimer()
         self.session_timer.timeout.connect(self.update_session_timer)
         self.card_timer = QTimer()
         self.card_timer.timeout.connect(self.update_card_timer)
         self.cards_battle_round = 0
-        
+
         # Time tracking
         self.session_time_elapsed = 0
         self.card_time_elapsed = 0
         self.session_time = 0
         self.card_counter = -1
-        
+
         # Tracking additional stats
         self.card_ratings_count = {"Again": 0, "Hard": 0, "Good": 0, "Easy": 0}
         self.multiplier = 1
@@ -63,7 +63,7 @@ class AnkimonTracker:
         self.pokemon_encouter = 0 #mode for pokemon encounter
         self.general_card_count_for_battle = 0 #count for general card count for battle
         self.caught = 0 #check if pokemon is caught
-        
+
         # Start the session timer when the object is initialized
         self.start_session_timer()
 
@@ -71,7 +71,7 @@ class AnkimonTracker:
         """Set the main Pokémon being used."""
         if isinstance(pokemon, PokemonObject):
             self.main_pokemon = pokemon
-    
+
     def set_enemy_pokemon(self, pokemon):
         """Set the enemy Pokémon being fought against."""
         if isinstance(pokemon, PokemonObject):
@@ -147,7 +147,7 @@ class AnkimonTracker:
         # Increase the number of cards reviewed and update session time
         self.card_counter += 1
         self.card_ratings_count[answer.capitalize()] += 1
-        
+
         self.check_achievements(self.total_reviews)
 
         # Stop the card timer after answering and calculate multiplier
@@ -219,7 +219,7 @@ class AnkimonTracker:
         multiply_sum = (self.card_ratings_count['Easy'] * 20 +
                         self.card_ratings_count['Hard'] * 5 +
                         self.card_ratings_count['Good'] * 10)
-        
+
         self.multiplier = multiply_sum / max_points
         # Reset card ratings count for next round
         self.card_ratings_count = {"Again": 0, "Hard": 0, "Good": 0, "Easy": 0}
@@ -239,7 +239,7 @@ class AnkimonTracker:
         for num in owned_pokemon_ids:
             if num == id:
                 self.pokemon_in_collection = True
-    
+
     def get_ids_in_collection(self):
         try:
             owned_pokemon_ids = []
@@ -247,7 +247,7 @@ class AnkimonTracker:
             self.owned_pokemon_ids = owned_pokemon_ids
         except Exception as e:
             show_warning_with_traceback(parent=mw, exception=e, message="Error: from AnkimonTracker with function extract_ids_from_file")
-    
+
     def get_badges(self):
         pass
 

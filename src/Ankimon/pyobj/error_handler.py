@@ -28,7 +28,7 @@ def get_environment_info() -> str:
         addon_ver = manifest.get("version", "unknown")
     except Exception:
         addon_ver = "unknown"
-    
+
     py_ver = sys.version.split()[0]
     os_info = platform.platform()
     return f"Ankimon v{addon_ver} | Anki {anki_version} | Python {py_ver} | {os_info}"
@@ -94,7 +94,7 @@ def create_credit_label(chosen_image: Dict[str, str]) -> Optional[QLabel]:
     """Create image credit label with optional link."""
     if not chosen_image.get("credit") or not chosen_image.get("url"):
         return None
-        
+
     label = QLabel(f'<a href="{chosen_image["url"]}">{chosen_image["credit"]}</a>')
     label.setTextFormat(Qt.TextFormat.RichText)
     label.setOpenExternalLinks(True)
@@ -105,7 +105,7 @@ def create_credit_label(chosen_image: Dict[str, str]) -> Optional[QLabel]:
     label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding)
     return label
 
-def build_dialog_ui(dialog: QDialog, message: str, exception: Exception, 
+def build_dialog_ui(dialog: QDialog, message: str, exception: Exception,
                    chosen_image: Dict[str, str]) -> None:
     """Construct dialog UI layout without environment info display."""
     main_layout = QHBoxLayout(dialog)
@@ -116,7 +116,7 @@ def build_dialog_ui(dialog: QDialog, message: str, exception: Exception,
     left_layout = QVBoxLayout()
     left_layout.setSpacing(10)
     left_layout.addWidget(create_error_label(message, exception))
-    
+
     # Friendly message
     friendly_label = QLabel("<i>But no worries, just stay cool!</i> 😎")
     friendly_label.setStyleSheet("color: #a6dcef; font-size: 13px; margin-bottom: 2px;")
@@ -170,7 +170,7 @@ def build_dialog_ui(dialog: QDialog, message: str, exception: Exception,
         right_layout.addWidget(credit_label, alignment=Qt.AlignmentFlag.AlignRight)
 
     right_layout.addStretch()
-    
+
     # Combine layouts
     main_layout.addLayout(left_layout)
     main_layout.addLayout(right_layout)
@@ -229,20 +229,20 @@ def show_warning_with_traceback(
     dialog = QDialog(parent)
     dialog.setWindowTitle("Ankimon Error")
     dialog.setModal(True)
-    
+
     # Build UI components (without env_info parameter)
     build_dialog_ui(dialog, message, exception, chosen_image)
     setup_dialog_style(dialog)
-    
+
     # Configure button actions
     copy_button = dialog.findChild(QPushButton, "copy")
     ok_button = dialog.findChild(QPushButton, "ok")
-    
+
     def copy_debug_info():
         # Wrap in triple backticks for markdown code block formatting
         full_debug = f"```python\n{env_info}\n\n{tb_text}\n```"
         mw.app.clipboard().setText(full_debug)
-        
+
         # Update dialog to show copy confirmation (without env_info)
         dialog.findChild(QLabel).setText(
             f"<span style='font-size:32px; color:#ffcc00; vertical-align:middle;'>&#9888;</span> "
@@ -250,7 +250,7 @@ def show_warning_with_traceback(
             f"<pre style='font-size:12px; margin-top:6px; color:#a0a0a0;'>{str(exception)}</pre>"
             "<br><span style='color:#43d675; font-size:12px;'>Debug info copied!</span>"
         )
-    
+
     copy_button.clicked.connect(copy_debug_info)
     ok_button.clicked.connect(dialog.accept)
 

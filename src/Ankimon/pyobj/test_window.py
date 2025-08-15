@@ -243,7 +243,7 @@ class TestWindow(QWidget):
 
         # merge both images together
         painter = QPainter(merged_pixmap)
-        
+
         # Create rounded rectangle path for clipping
         path = QPainterPath()
         path.addRoundedRect(0, 0, merged_pixmap.width(), merged_pixmap.height(), 10, 10)
@@ -410,7 +410,7 @@ class TestWindow(QWidget):
 
         # merge both images together
         painter = QPainter(merged_pixmap)
-        
+
         # Create rounded rectangle path for clipping
         path = QPainterPath()
         path.addRoundedRect(0, 0, merged_pixmap.width(), merged_pixmap.height(), 10, 10)

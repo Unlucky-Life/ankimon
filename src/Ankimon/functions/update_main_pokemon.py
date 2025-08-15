@@ -53,20 +53,20 @@ def update_main_pokemon(main_pokemon: Optional[PokemonObject] = None):
     """
     Updates or initializes the main Pokémon object using data from a JSON file.
 
-    This function attempts to read the main Pokémon's stats from a JSON file 
-    located at `mainpokemon_path`. If the file exists and contains valid data, 
-    the given `main_pokemon` object is updated with those stats. If the file is 
-    missing, empty, or contains invalid JSON, a new `PokemonObject` is created 
+    This function attempts to read the main Pokémon's stats from a JSON file
+    located at `mainpokemon_path`. If the file exists and contains valid data,
+    the given `main_pokemon` object is updated with those stats. If the file is
+    missing, empty, or contains invalid JSON, a new `PokemonObject` is created
     using default values.
 
     Args:
-        main_pokemon (Optional[PokemonObject]): An optional existing Pokémon object 
+        main_pokemon (Optional[PokemonObject]): An optional existing Pokémon object
             to update. If None, a new object is created using `MAIN_POKEMON_DEFAULT`.
 
     Returns:
         tuple:
             PokemonObject: The updated or newly created Pokémon object.
-            bool: True if the file was empty or invalid (i.e., default was used), 
+            bool: True if the file was empty or invalid (i.e., default was used),
                   False if the object was successfully updated with file data.
     """
 
@@ -103,7 +103,7 @@ def update_main_pokemon(main_pokemon: Optional[PokemonObject] = None):
                 return main_pokemon, mainpokemon_empty
     else:
         return PokemonObject(**MAIN_POKEMON_DEFAULT), mainpokemon_empty
-    
+
 def save_main_pokemon(main_pokemon: PokemonObject):
     """
     Saves the main Pokémon object to the mainpokemon.json file.

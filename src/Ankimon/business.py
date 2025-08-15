@@ -2,7 +2,7 @@ import base64
 import csv
 
 from .resources import csv_file_items, csv_file_descriptions
-    
+
 def get_image_as_base64(path):
     with open(path, 'rb') as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
@@ -83,7 +83,7 @@ def bP_none_moves(move):
         if damage is None:
             damage = 5
         return damage
-    
+
 def type_colors(type_str):
     _type_colors = {
         "Normal": "#A8A77A",
@@ -142,7 +142,7 @@ def get_id_and_description_by_item_name(item_name: str) -> str:
     """
     Retrieve the item ID and description based on the given item name.
 
-    This function normalizes the item name by capitalizing each word, 
+    This function normalizes the item name by capitalizing each word,
     then looks up the item ID from a CSV mapping. If found, it retrieves
     the item description from a descriptions CSV using a fixed version group
     and language ID.
