@@ -157,8 +157,11 @@ class Settings:
             xp_bar_config = self.config.get("gui.xp_bar_config", False)
             xp_bar_location = self.config.get("gui.xp_bar_location", 0)
 
-            if xp_bar_config and xp_bar_location == 2:
-                return 20
+            if xp_bar_config:
+                if xp_bar_location == '2': # Bottom
+                    return 20
+                elif xp_bar_location == '1': # Top
+                    return 0
             return 0  # Default spacer
 
         elif key == "hp_only_spacer":
