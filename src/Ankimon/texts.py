@@ -193,12 +193,12 @@ terms_text = """§1 Disclaimer of Liability
 §2 Copyright Infringements
 (1) The user agrees to respect copyright and other protective rights of third parties. \n It is prohibited for the user to download, reproduce, distribute, or make publicly available any copyrighted works \n without the required permission of the rights holder.
 (2) In the event of a violation of copyright provisions, the user bears full responsibility and the resulting consequences. \n The provider reserves the right to take appropriate legal action \n in the event of becoming aware of any rights violations and to block access to the services.
-                       
+
 Check out https://pokeapi.co/docs/v2#fairuse and https://github.com/smogon/pokemon-showdown for more information.
                        """
 
-rate_addon_text_label = """Thanks for using Ankimon! 
-                            \nI would like Ankimon to be known even more in the community, 
+rate_addon_text_label = """Thanks for using Ankimon!
+                            \nI would like Ankimon to be known even more in the community,
                             \nand a rating would be amazing. Letting others know what you think of the addon.
                             \nThis takes less than a minute.
 
@@ -231,7 +231,7 @@ inject_life_bar_css_2 = """
 
 thankyou_message_text = """
             Thank you for Rating this Addon !
-                               
+
             Please exit this window!
             """
 

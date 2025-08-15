@@ -12,7 +12,7 @@ files_to_backup = [mypokemon_path, mainpokemon_path, itembag_path, badgebag_path
 def create_backup_folder(folder_path):
     """Creates a backup folder and places a timestamped text file inside."""
     os.makedirs(folder_path, exist_ok=True)
-    
+
     # Create a timestamp file
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(os.path.join(folder_path, "backup_info.txt"), "w") as f:
@@ -25,9 +25,9 @@ def create_backup_folder(folder_path):
 
 def rotate_backups():
     """Manages the rolling backup system (backup_3 is deleted, 2 becomes 3, etc.)."""
-    if os.path.exists(backup_folders[-1]):  
+    if os.path.exists(backup_folders[-1]):
         shutil.rmtree(backup_folders[-1])  # Delete oldest backup
-    
+
     # Shift backups (backup_2 → backup_3, backup_1 → backup_2)
     for i in range(len(backup_folders) - 1, 0, -1):
         if os.path.exists(backup_folders[i - 1]):
@@ -41,7 +41,7 @@ def is_backup_needed():
     with open(os.path.join(backup_folders[0], "backup_info.txt"), "r") as f:
         date_str = f.readline().replace("Backup created on: ", "").strip()
         last_backup_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-    
+
     return (datetime.now() - last_backup_date).days >= 14  # Check if 2 weeks have passed
 
 def run_backup():

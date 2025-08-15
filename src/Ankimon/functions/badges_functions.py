@@ -16,7 +16,7 @@ def check_for_badge(achievements, rec_badge_num):
     else:
         got_badge = True
     return got_badge
-        
+
 def save_badges(badges_collection):
     with open(badgebag_path, 'w') as json_file:
         json.dump(badges_collection, json_file)

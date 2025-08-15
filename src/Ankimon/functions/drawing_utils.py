@@ -19,7 +19,7 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, heigh
     aw = parent or QApplication.activeWindow()
     if aw is None:
         return
-    
+
     if color == "#6A4DAC":
         y_offset = 40
     elif color == "#F7DC6F":
@@ -40,18 +40,18 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, heigh
         lab.setWindowFlags(Qt.WindowType.ToolTip)
         lab.setText(msg)
         lab.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
-        
+
         if width > 0:
             lab.setFixedWidth(width)
         if height > 0:
             lab.setFixedHeight(height)
-        
+
         p = QPalette()
         p.setColor(QPalette.ColorRole.Window, QColor(color))
         p.setColor(QPalette.ColorRole.WindowText, QColor("#000000"))
         lab.setPalette(p)
         lab.show()
-        lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))    
+        lab.move(QPoint(x - round(lab.width() * 0.5 * xref), y))
         try:
             QTimer.singleShot(period, lambda: lab.hide())
         except:
@@ -85,12 +85,12 @@ def draw_gender_symbols(
     """
     get_gender_symbol = lambda gender: {"M": "♂", "F": "♀"}.get(gender, "")  # Gets gender symbol. Returns "" by default
     get_pen_color = lambda gender: QColor(20, 100, 210) if gender == "M" else QColor(210, 20, 20)  # Blue if "M", else Red
-    
+
     enemy_pokemon_gender_symbol = get_gender_symbol(enemy_pokemon.gender)
     main_pokemon_gender_symbol = get_gender_symbol(main_pokemon.gender)
 
     color_backup = painter.pen().color()  # Saving the pen's color to reset it after drawing gender symbols
-    
+
     painter.setPen(get_pen_color(enemy_pokemon.gender))  # Text color of the gender symbol
     pos = pos_enemy or (175, 64)
     painter.drawText(pos[0], pos[1], enemy_pokemon_gender_symbol)
@@ -111,7 +111,7 @@ def draw_stat_boosts(
     """Draws visual indicators of stat boosts for two Pokémon using QPainter.
 
     This function displays the stat boosts (e.g., ATK, DEF, SpA) for both a main Pokémon
-    and an enemy Pokémon on a GUI. Each non-neutral boost is represented as a colored rectangle 
+    and an enemy Pokémon on a GUI. Each non-neutral boost is represented as a colored rectangle
     containing an abbreviated stat name and its corresponding multiplier.
 
     Args:
@@ -131,7 +131,7 @@ def draw_stat_boosts(
         - The function temporarily modifies the painter's pen, brush, and font,
           which are restored to their original state before returning.
     """
-    
+
     boost_to_mult = {
         0: "x1",
         1: "x1.5",
@@ -147,7 +147,7 @@ def draw_stat_boosts(
         -5: "x0.29",
         -6: "x0.25",
         }
-    
+
     boost_name_to_abbreviation = {
         'atk': "ATK",
         'def': "DEF",
@@ -171,7 +171,7 @@ def draw_stat_boosts(
         for key, val in boosts.items():
             if val == 0:  # Don't draw neutral boost values
                 continue
-            
+
             rect = QRect(QPoint(x + counter * (w + 3), y), QSize(w, h))
 
             painter.setBrush(QColor(150, 220, 150))
@@ -188,12 +188,12 @@ def draw_stat_boosts(
             painter.drawRect(rect)
             painter.drawText(
                 rect,
-                Qt.AlignmentFlag.AlignCenter, 
+                Qt.AlignmentFlag.AlignCenter,
                 f"{boost_name_to_abbreviation[key]} {boost_to_mult[val]}"
                 )
 
             counter += 1
-    
+
     painter.setPen(pen_color_backup)  # Going back to the color we had before drawing gender symbols
     painter.setBrush(brush_color_backup)
     painter.setFont(font_backup)

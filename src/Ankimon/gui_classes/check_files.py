@@ -15,11 +15,11 @@ from aqt.utils import showWarning
 def check_files_in_json(json_file=json_file_structure, root_directory=addon_dir):
     """
     Checks if the files listed in the JSON file exist in the root directory.
-    
+
     Args:
         json_file (str): Path to the JSON file.
         root_directory (str): The root directory to verify files against.
-    
+
     Returns:
         list: A list of missing files.
     """

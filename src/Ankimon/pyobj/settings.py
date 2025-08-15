@@ -54,7 +54,7 @@ class Settings:
                 "gui.view_main_front": True,
                 "gui.xp_bar_config": True,
                 "gui.xp_bar_location": 2,
-                
+
                 "audio.sound_effects": False,
                 "audio.sounds": True,
                 "audio.battle_sounds": False,
@@ -85,7 +85,7 @@ class Settings:
                 }
             self.save_config(config)
         return config
-    
+
     def save_config(self, config):
         mw.addonManager.writeConfig(__name__, config)
 
@@ -103,7 +103,7 @@ class Settings:
         sound_effects = config.get("audio.sound_effects", False)
         if sound_effects:
             from .. import playsound
-            
+
         view_main_front = config.get("gui.view_main_front", True)
         reviewer_image_gif = config.get("gui.reviewer_image_gif", False)
         self.view_main_front = -1 if view_main_front and reviewer_image_gif else 1
@@ -130,7 +130,7 @@ class Settings:
         else:
             self.hp_only_spacer = 0
             self.wild_hp_spacer = 0
-    
+
     def compute_special_variable(self, key):
         # Dynamically compute and return the requested GUI variable
         if key == "view_main_front":

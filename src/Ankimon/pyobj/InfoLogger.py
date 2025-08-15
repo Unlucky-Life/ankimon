@@ -8,7 +8,7 @@ class ShowInfoLogger:
         # Determine the path of the current script and set log file path
         script_directory = os.path.dirname(os.path.abspath(__file__))
         self.log_file = os.path.join(script_directory, log_filename)
-        
+
         # Check if log file exists, and create it if it doesn't
         if not os.path.exists(self.log_file):
             with open(self.log_file, 'w') as f:
@@ -33,10 +33,10 @@ class ShowInfoLogger:
 
         # Track the log viewer dialog
         self.log_dialog = None
-        
+
         # Track the log viewer dialog
         self.log_dialog = None
-        
+
     def log_and_showinfo(self, level, message):
         # Log the message
         if level == 'info':
@@ -55,7 +55,7 @@ class ShowInfoLogger:
             msg_box.setText(message)
             msg_box.setIcon(QMessageBox.Icon.Information)
             msg_box.exec()
-    
+
     def log(self, level, message):
         # Log the message
         if level == 'info':
@@ -70,7 +70,7 @@ class ShowInfoLogger:
     def game_log(self, message):
         # Log a game-specific message with the GAME- prefix
         self.game_logger.info(message)
-    
+
     def toggle_log_window(self):
         if self.log_dialog and self.log_dialog.isVisible():
             # Close the dialog if it's open and currently focused
@@ -81,23 +81,23 @@ class ShowInfoLogger:
             self.log_dialog = QDialog()
             self.log_dialog.setWindowTitle("Log Viewer")
             self.log_dialog.resize(400, 300)
-            
+
             # Set dialog as a tool window to prevent it from taking focus from the main window
             self.log_dialog.setWindowFlag(Qt.WindowType.Tool)
 
             # Text edit widget for displaying log content with scroll functionality
             text_edit = QTextEdit()
             text_edit.setReadOnly(True)
-            
+
             # Load and display the log file contents
             with open(self.log_file, "r", encoding="utf-8") as f:
                 log_content = f.read()
                 text_edit.setPlainText(log_content)
-            
+
             # Add a refresh button to reload the log content
             refresh_button = QPushButton("Refresh")
             refresh_button.clicked.connect(lambda: text_edit.setPlainText(open(self.log_file).read()))
-            
+
             # Add a clear button to clear the log file content
             clear_button = QPushButton("Clear")
             clear_button.clicked.connect(self.clear_log_file)
@@ -108,7 +108,7 @@ class ShowInfoLogger:
             layout.addWidget(refresh_button)
             layout.addWidget(clear_button)  # Add the Clear button
             self.log_dialog.setLayout(layout)
-            
+
             # Show the dialog without taking focus away from other windows
             self.log_dialog.show()
 

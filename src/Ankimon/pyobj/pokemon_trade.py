@@ -527,7 +527,7 @@ class PokemonTrade:
         with open(self.moves_file_path, 'r', encoding='utf-8') as file:
             moves_data = json.load(file)
             return next((move for move in moves_data.values() if move.get('num') == move_num), {"name": "Unknown Move"})
-    
+
     def find_move_by_name(self, move_name):
         with open(self.moves_file_path, 'r', encoding='utf-8') as file:
             moves_data = json.load(file)
@@ -574,7 +574,7 @@ class PokemonTrade:
         try:
             with open(self.mypokemon_path, 'r+') as file:
                 pokemon_list = json.load(file)
-                
+
                 # Find and replace the Pokémon by individual ID
                 for idx, pokemon in enumerate(pokemon_list):
                     if pokemon.get("individual_id") == self.individual_id:  # Match individual_id
@@ -588,7 +588,7 @@ class PokemonTrade:
                 file.seek(0)
                 file.truncate()
                 json.dump(pokemon_list, file, indent=2)
-            
+
             self.logger.log_and_showinfo("warning",f"Successfully traded for {new_pokemon['name']}!")
             self.refresh_callback()
 

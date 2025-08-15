@@ -13,10 +13,10 @@ class PokemonTeamDialog(QDialog):
         self.setWindowTitle("Choose Your Pokémon Team (Max 6 Pokémon)")
         self.settings = settings_obj
         self.logger = logger
-        
+
         # Set the minimum size of the dialog
         self.setMinimumSize(900, 500)  # Minimum size of 400x300 pixels
-        
+
         # Load the Pokémon team data
         self.my_pokemon = self.load_my_pokemon()
         self.team_pokemon = [None] * 6  # Assuming a team can hold 6 Pokémon
@@ -24,7 +24,7 @@ class PokemonTeamDialog(QDialog):
 
         # Layout
         layout = QVBoxLayout()
-        
+
         # Label
         label = QLabel("Choose your Pokémon team (up to 6 Pokémon):")
         layout.addWidget(label)
@@ -32,7 +32,7 @@ class PokemonTeamDialog(QDialog):
         # Team selection area (scrollable)
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
-        
+
         team_widget = QGroupBox()
         team_layout = QGridLayout()  # Change this to QGridLayout for grid arrangement
 
@@ -41,21 +41,21 @@ class PokemonTeamDialog(QDialog):
         for i in range(6):
             row = i // 3  # Determine the row (0 or 1)
             col = i % 3  # Determine the column (0, 1, or 2)
-            
+
             frame = QFrame()
             frame.setFrameShape(QFrame.Shape.StyledPanel)
             frame.setFrameShadow(QFrame.Shadow.Raised)
-            
+
             pokemon_layout = QVBoxLayout()
-            
+
             # Label for Pokémon name and level
             pokemon_label = QLabel(f"Pokémon {i+1}: Not Selected")
             pokemon_layout.addWidget(pokemon_label)
-            
+
             # Add Pokémon sprite preview
             sprite_label = QLabel()
             pokemon_layout.addWidget(sprite_label)
-            
+
             # "Switch out Pokémon" button
             switch_button = QPushButton(f"Switch out Pokémon {i+1}")
             switch_button.clicked.connect(lambda _, i=i: self.switch_out_pokemon(i))
@@ -65,7 +65,7 @@ class PokemonTeamDialog(QDialog):
             remove_button = QPushButton(f"Remove Pokémon {i+1}")
             remove_button.clicked.connect(lambda _, i=i: self.remove_pokemon(i))
             pokemon_layout.addWidget(remove_button)
-            
+
             frame.setLayout(pokemon_layout)
             team_layout.addWidget(frame, row, col)  # Add frame to grid layout at specific row and column
             self.pokemon_frames.append({'frame': frame, 'label': pokemon_label, 'sprite': sprite_label, 'switch_button': switch_button, 'remove_button': remove_button})
@@ -79,13 +79,13 @@ class PokemonTeamDialog(QDialog):
         self.xp_share_combo.addItem("No XP Share")
         for pokemon in self.my_pokemon:
             self.xp_share_combo.addItem(f"{pokemon['name']} (Level {pokemon['level']})", pokemon['individual_id'])
-        
+
         # Set the initial XP Share Pokémon (based on settings)
         xp_share_pokemon_individual_id = self.settings.get("trainer.xp_share", None)
         if xp_share_pokemon_individual_id:
             xp_share_index = next((i for i, p in enumerate(self.my_pokemon) if p['individual_id'] == xp_share_pokemon_individual_id), 0) + 1
             self.xp_share_combo.setCurrentIndex(xp_share_index)
-        
+
         layout.addWidget(QLabel("Choose Pokémon with XP Share:"))
         layout.addWidget(self.xp_share_combo)
 
@@ -93,10 +93,10 @@ class PokemonTeamDialog(QDialog):
         ok_button = QPushButton("OK")
         ok_button.clicked.connect(self.on_ok)
         layout.addWidget(ok_button)
-        
+
         # Set layout
         self.setLayout(layout)
-        
+
         # Initialize team with current Pokémon data
         self.update_team_display()
 
@@ -108,7 +108,7 @@ class PokemonTeamDialog(QDialog):
         with open(mypokemon_path, "r", encoding="utf-8") as file:
             pokemon_data = json.load(file)
         return pokemon_data
-    
+
     def load_pokemon_team(self):
         """Load the player's Pokémon Team from a JSON string (in this case, hardcoded)"""
         with open(team_pokemon_path, "r", encoding="utf-8") as file:
@@ -157,7 +157,7 @@ class PokemonTeamDialog(QDialog):
             else:
                 frame_data['label'].setText("Pokémon Not Selected")
                 frame_data['sprite'].clear()  # Clear the sprite if not selected
-                
+
     def switch_out_pokemon(self, slot):
         """Allow the player to switch out a Pokémon for the selected slot"""
 
@@ -229,10 +229,10 @@ class PokemonTeamDialog(QDialog):
 
         if selected_pokemon:
             self.team_pokemon[slot] = selected_pokemon  # Replace the Pokémon in the team slot
-            
+
             # Update the team display
             self.update_team_display()
-        
+
         dialog.accept()
 
     def remove_pokemon(self, slot):
@@ -242,17 +242,17 @@ class PokemonTeamDialog(QDialog):
             # Check if the Pokémon in this slot is the one with XP Share
             pokemon_individual_id = self.team_pokemon[slot]['individual_id']
             xp_share_pokemon_individual_id = self.settings.get("trainer.xp_share")
-            
+
             if xp_share_pokemon_individual_id == pokemon_individual_id:
                 # Remove XP Share from the Pokémon if it exists
                 self.settings.set("trainer.xp_share", None)
-            
+
             # Remove the Pokémon from the team slot
             self.team_pokemon[slot] = None
 
             # Update the display after removal
             self.update_team_display()
-            
+
     def on_ok(self):
         """Store the selected Pokémon team and XP Share setting, then close the dialog"""
         #team = [frame_data['label'].text() for frame_data in self.pokemon_frames if frame_data['label'].text() != "Pokémon Not Selected"]
@@ -286,7 +286,7 @@ class PokemonTeamDialog(QDialog):
                 xp_share_individual_id = self.xp_share_combo.itemData(current_index)
             else:
                 xp_share_individual_id = None
-            
+
             # Update settings with the selected team and XP Share setting
             self.settings.set("trainer.team", team_data)
             self.settings.set("trainer.xp_share", xp_share_individual_id)  # Save XP Share Pokémon
@@ -294,15 +294,15 @@ class PokemonTeamDialog(QDialog):
             try:
                 with open(team_pokemon_path, "w") as json_file:
                     json.dump(team_data, json_file, indent=4)
-            
+
                 self.logger.log_and_showinfo("info", f"Trainer settings saved to {team_pokemon_path}.")
             except Exception as e:
                 self.logger.log_and_showinfo("error", f"Failed to save trainer settings: {e}")
-        
+
 
         if self.team_pokemon:
             self.logger.log_and_showinfo("info", f"You chose the following team: {', '.join([pokemon['name'] for pokemon in pokemon_names])}")
         else:
             self.logger.log_and_showinfo("error", "No Pokémon team data found!")
-                
+
         self.accept()  # Close the dialog

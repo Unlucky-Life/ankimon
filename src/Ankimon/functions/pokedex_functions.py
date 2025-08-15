@@ -82,7 +82,7 @@ def search_pokedex_by_name_for_id(pokemon_name, variable):
 
 def search_pokedex_by_id(pokemon_id):
     with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
-            pokedex_data = json.load(json_file) 
+            pokedex_data = json.load(json_file)
             for entry_name, attributes in pokedex_data.items():
                 if attributes['num'] == pokemon_id:
                     return entry_name
@@ -269,7 +269,7 @@ def get_pokemon_evolution_data_all(pokemon_id, file_path=poke_evo_path):
                     'needs_overworld_rain': row['needs_overworld_rain'],
                     'turn_upside_down': row['turn_upside_down']
                 }
-                
+
                 # Add the evolution trigger ID description
                 evolution_trigger_map = {
                     1: "level-up",
@@ -286,19 +286,19 @@ def get_pokemon_evolution_data_all(pokemon_id, file_path=poke_evo_path):
                     12: "strong-style-move",
                     13: "recoil-damage"
                 }
-                
+
                 #trigger_id = int(row['evolution_trigger_id'])
                 #evolution_data['evolution_trigger_description'] = evolution_trigger_map.get(trigger_id, "Unknown Trigger ID")
-                
+
                 return evolution_data
-        
+
         # Return None if the Pokémon ID is not found
         return None
 
 def check_evolution_by_item(pokemon_id, item_id, file_path=poke_evo_path):
     """
     Check if a Pokémon evolves using a specific item.
-    
+
     Args:
         pokemon_id (int): The ID of the Pokémon.
         item_id (int): The ID of the item.
@@ -383,7 +383,7 @@ def check_if_evolution_exists(pokemon_id):
         return False
     else:
         return possible_evos
-    
+
 def pokemon_evolves_from_id(pokemon_id):
     """Get the list of Pokémon IDs that evolve into the given Pokémon ID
     from the pokemon_species.csv file.
@@ -404,13 +404,13 @@ def pokemon_evolves_from_id(pokemon_id):
                     except ValueError:
                         # Handle the case where 'evolves_from_species_id' is not a valid integer
                         continue
-        
+
         # Return the list of evolves_from_species_id or an empty list if no matches
         #if evolves_from_ids:
         #showWarning(f"Evolves from IDs: {evolves_from_ids}")
         #else:
         #    showWarning(f"No evolutions found for Pokémon ID '{pokemon_id}'")
-        
+
         return evolves_from_ids
     except Exception as e:
         # Use a more specific error message
@@ -420,12 +420,12 @@ def pokemon_evolves_from_id(pokemon_id):
 def get_pokemon_evolution_data(pokemon_id):
     """Returns the evolution data for a given Pokémon ID by matching evolved_species_id."""
     evolution_data = None  # Initialize variable to hold evolution data
-    
+
     try:
         # Open the CSV file
         with open(poke_evo_path, mode="r", encoding="utf-8") as file:
             reader = csv.DictReader(file)
-            
+
             # Search for the given Pokémon ID in the evolved_species_id column
             for row in reader:
                 try:
@@ -437,7 +437,7 @@ def get_pokemon_evolution_data(pokemon_id):
                 except ValueError:
                     # Handle case where evolved_species_id is not a valid integer
                     continue
-        
+
         # Check if evolution data was found, log a message if not
         if not evolution_data:
             showWarning(f"No evolution data found for Pokémon ID '{pokemon_id}'")
@@ -451,34 +451,34 @@ def get_pokemon_evolution_data(pokemon_id):
 def check_key_in_table(column_name, value, file_path):
     """Checks if a given value exists in the specified column and returns the matching row."""
     matching_row = None  # Initialize variable to hold matching row
-    
+
     try:
         # Open the CSV file
         with open(file_path, mode="r", encoding="utf-8") as file:
             reader = csv.DictReader(file)
-            
+
             # Search for the value in the specified column
             for row in reader:
                 # Use .get() to prevent KeyError if the column doesn't exist
                 if row.get(column_name) and str(row[column_name]) == str(value):  # Compare as string for consistency
                     matching_row = row
                     break  # Exit the loop once the matching row is found
-        
+
     except FileNotFoundError:
         print(f"Error: The file {file_path} does not exist.")
     except Exception as e:
         print(f"Error: {e}")
-    
+
     # Return the matching row or None if no match is found
     return matching_row
 
 def return_name_for_id(pokemon_id):
     """
     For National Pokedex Pokémon ID, return the name (identifier).
-    
+
     Parameters:
         pokemon_id (int): The ID of the Pokémon to search for.
-    
+
     Returns:
         str: The name (identifier) of the Pokémon if found.
         None: If no matching Pokémon is found or an error occurs.
@@ -487,12 +487,12 @@ def return_name_for_id(pokemon_id):
         # Open the CSV file
         with open(pokemon_csv, mode="r", encoding="utf-8") as file:
             reader = csv.DictReader(file)  # Read the file as a dictionary
-            
+
             # Search for the value in the "id" column
             for row in reader:
                 if int(row['id']) == int(pokemon_id):  # Convert CSV id to integer for comparison
                     return row['identifier']  # Return the identifier from the CSV row
-            
+
         # Log a message if the item is not found
         showWarning(f"Name for Pokemon with ID '{pokemon_id}' not found in the CSV.")
         return None
@@ -504,10 +504,10 @@ def return_name_for_id(pokemon_id):
 def return_id_for_item_name(item_name):
     """
     Returns the ID of an item based on its name (identifier) from a CSV file.
-    
+
     Parameters:
         item_name (str): The name of the item to search for.
-    
+
     Returns:
         str: The ID of the item if found.
         None: If no matching item is found or an error occurs.
@@ -516,12 +516,12 @@ def return_id_for_item_name(item_name):
         # Open the CSV file
         with open(csv_file_items_cost, mode="r", encoding="utf-8") as file:
             reader = csv.DictReader(file)  # Read the file as a dictionary
-            
+
             # Search for the value in the "identifier" column
             for row in reader:
                 if row['identifier'] == item_name:  # Check if the identifier matches the item name
                     return row['id']  # Return the id from the CSV row
-            
+
         # Log a message if the item is not found
         showWarning("warning", f"Item '{item_name}' not found in the CSV.")
         return None

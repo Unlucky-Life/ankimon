@@ -142,7 +142,7 @@ class PokemonCollectionDialog(QDialog):
     def move_paginator_to_bottom(self):
         # Temporary list to store all widgets except the paginator
         widgets = []
-        
+
         # Loop through the layout to collect all widgets
         for i in reversed(range(self.layout.count())):
             item = self.layout.itemAt(i)
@@ -152,14 +152,14 @@ class PokemonCollectionDialog(QDialog):
             else:
                 # Save the widget or layout for re-adding
                 widgets.append(self.layout.takeAt(i))
-        
+
         # Add back all other widgets in the correct order
         for widget in reversed(widgets):
             if widget.widget():
                 self.layout.addWidget(widget.widget())
             elif widget.layout():
                 self.layout.addLayout(widget.layout())
-        
+
         # Add the paginator layout at the bottom
         self.layout.addLayout(self.paginator_layout)
 
@@ -284,7 +284,7 @@ class PokemonCollectionDialog(QDialog):
 
     def create_button(self, text, pokemon_data, button_type):
         pkmn_image_path = frontdefault / f"{pokemon_data['id']}.png"
-        
+
         # Ensure the image path exists, else fallback
         if not pkmn_image_path.exists():
             pkmn_image_path = frontdefault / "placeholder.png"
@@ -302,7 +302,7 @@ class PokemonCollectionDialog(QDialog):
                 small_icon_size = QSize(32, 32)  # Change 32 to your preferred size
                 button.setIconSize(small_icon_size)
             button.clicked.connect(lambda state: self.main_pokemon_function_callback(pokemon_data))
-        
+
         return button
 
     def show_pokemon_details(self, pokemon, **kwargs):
@@ -339,7 +339,7 @@ class PokemonCollectionDialog(QDialog):
             return "♀"
         else:
             return ""
-        
+
     def filter_pokemon(self):
         filtered_pokemon = []
         pokemon_list = self.pokemon_list
@@ -348,8 +348,8 @@ class PokemonCollectionDialog(QDialog):
             type_text = self.type_combo.currentText()
             search_text = self.search_edit.text().lower()
             generation_index = self.generation_combo.currentIndex()
-            
-            try:                  
+
+            try:
                 if pokemon_list:
                     for position, pokemon in enumerate(pokemon_list):
                         pokemon_id = pokemon['id']
@@ -360,10 +360,10 @@ class PokemonCollectionDialog(QDialog):
                         if pokemon.get("shiny", False):
                             pokemon_nickname += " (shiny) "
                         pokemon_type = pokemon.get("type", " ")
-                        
+
                         # Check if the Pokémon matches the search text and generation filter
                         if (
-                            search_text.lower() in pokemon_name.lower() or 
+                            search_text.lower() in pokemon_name.lower() or
                             (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower())
                         ) and \
                         0 <= generation_index <= 8 and \
@@ -390,7 +390,7 @@ class PokemonCollectionDialog(QDialog):
                 self.layout.addWidget(QLabel(f"Can't open the Saving File. {mypokemon_path}"))
         else:
             self.sort_pokemon()
-    
+
     def sort_pokemon(self):
         filtered_pokemon = []
         pokemon_list = self.pokemon_list
@@ -416,7 +416,7 @@ class PokemonCollectionDialog(QDialog):
                     pokemon_type = pokemon.get("type", " ")
                     # Check if the Pokémon matches the search text and generation filter
                     if (
-                        search_text.lower() in pokemon_name.lower() or 
+                        search_text.lower() in pokemon_name.lower() or
                         (pokemon_nickname is not None and search_text.lower() in pokemon_nickname.lower())
                     ) and \
                     0 <= generation_index <= 8 and \
@@ -442,7 +442,7 @@ class PokemonCollectionDialog(QDialog):
                 self.current_page=0
         except FileNotFoundError:
             self.layout.addWidget(QLabel(f"Can't open the Saving File. {mypokemon_path}"))
-        
+
 
     def add_pagination_controls(self, pokemon_list=[]):
         self.pagination_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -458,7 +458,7 @@ class PokemonCollectionDialog(QDialog):
             next_button = QPushButton("Next")
             next_button.clicked.connect(lambda: self.next_page(pokemon_list))  # Passing pokemon_list to next_page
             self.pagination_layout.addWidget(next_button)
-    
+
     def next_page(self, pokemon_list):
         self.current_page += 1
         self.refresh_collection(pokemon_list)
@@ -511,7 +511,7 @@ def PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, position):
             if not move_details:
                 raise ValueError(f"Unknown move: {attack}")
             attacks_ids.append(str(move_details["num"]))
-            
+
         attacks_id_string = ','.join(attacks_ids)  # Concatenated with a delimiter
 
         # Concatenating details to form a single string
@@ -712,10 +712,10 @@ def MainPokemon(
         attr = 'special_form' if key == 'special-form' else key
         if key in pokemon_data:
             setattr(new_main_pokemon, attr, pokemon_data[key])
-    
+
     # Update existing reference
     main_pokemon.__dict__.update(new_main_pokemon.__dict__)
-    
+
     # Save to JSON using the object's native serialization
     main_pokemon_data = [main_pokemon.to_dict()]
     with open(mainpokemon_path, "w") as f:
@@ -725,12 +725,12 @@ def MainPokemon(
         "info",
         translator.translate("picked_main_pokemon",main_pokemon_name=main_pokemon.name.capitalize())
         )
-    
+
     # Update UI components
     class Container(object): pass
     reviewer = Container()
     reviewer.web = mw.reviewer.web
     reviewer_obj.update_life_bar(reviewer, 0, 0)
-    
+
     if test_window.isVisible():
         test_window.display_first_encounter()

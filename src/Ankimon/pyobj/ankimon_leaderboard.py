@@ -5,7 +5,7 @@ from aqt.utils import showInfo
 from ..resources import user_path_credentials, mypokemon_path
 import json
 import requests
-from aqt import mw # import setting values direct from init file 
+from aqt import mw # import setting values direct from init file
 
 #ANKIMON_LEADERBOARD_API_URL = "https://ankimon.com/api/leaderboard"  # Replace with the actual API URL
 ANKIMON_LEADERBOARD_API_URL = "https://leaderboard-api.ankimon.com/update_stats"  # Replace with the actual API URL
@@ -13,39 +13,39 @@ ANKIMON_LEADERBOARD_API_URL = "https://leaderboard-api.ankimon.com/update_stats"
 class ApiKeyDialog(QDialog):
     def __init__(self):
         super().__init__()
-        
+
         self.setWindowTitle("Enter API Key and Username")
         self.setGeometry(100, 100, 300, 200)
-        
+
         # Layout
         layout = QVBoxLayout()
-        
+
         # Username input
         self.username_label = QLabel("Username:")
         self.username_input = QLineEdit(self)
         self.username_input.setPlaceholderText("Enter your username")
         layout.addWidget(self.username_label)
         layout.addWidget(self.username_input)
-        
+
         # API Key input
         self.api_key_label = QLabel("API Key:")
         self.api_key_input = QLineEdit(self)
         self.api_key_input.setPlaceholderText("Paste your API key")
         layout.addWidget(self.api_key_label)
         layout.addWidget(self.api_key_input)
-        
+
         # Submit button
         self.submit_button = QPushButton("Submit", self)
         self.submit_button.clicked.connect(self.submit)
         layout.addWidget(self.submit_button)
-        
+
         # Set layout
         self.setLayout(layout)
 
     def submit(self):
         username = self.username_input.text()
         api_key = self.api_key_input.text()
-        
+
         if username and api_key:
             credentials = {
                 "username": username,
@@ -55,7 +55,7 @@ class ApiKeyDialog(QDialog):
             self.accept()  # Close the dialog if everything is entered
         else:
             showInfo("Both fields must be filled out.")
-            
+
     def save_credentials(self, credentials):
         try:
             # Save the new credentials as a single object
@@ -66,7 +66,7 @@ class ApiKeyDialog(QDialog):
             showInfo(f"Error saving credentials: {e}")
 
 def sync_data_to_leaderboard(data):
-        
+
         # First check if leaderboard is enabled in config
         if not mw.settings_obj.get("misc.leaderboard",False):
             return
@@ -126,22 +126,22 @@ def get_unique_pokemon():
             pokemon_data = json.load(file)
             pokemon_info = {}  # Define as a dictionary
             id_list = []  # Initialize id_list as an empty list
-            
+
             for pokemon in pokemon_data:
                 pokemon_id = int(pokemon.get("id"))
-                
+
                 # Check if the pokemon_id is already in id_list
                 if pokemon_id not in id_list:
                     id_list.append(pokemon_id)  # Add the ID to the list
-                    
+
                     # Extract the name and individual_id
                     individual_id = pokemon.get("individual_id")
                     name = pokemon.get("name")
-                    
+
                     # Add the extracted information to the dictionary with name as the key
                     if individual_id:  # Make sure individual_id exists
                         pokemon_info[name] = individual_id
-            
+
         return len(pokemon_info)
     except Exception as e:
         showInfo(f"File not found: {mypokemon_path} or {e}")
@@ -165,7 +165,7 @@ def get_shinies():
             for pokemon in pokemon_data:
                 if pokemon.get("shiny") is True:
                     shinies += 1
-            
+
             return shinies
     except:
         showInfo(f"File not found: {mypokemon_path}")

@@ -46,7 +46,7 @@ class Translator:
         # Track which translation file is being used
         source_file = self.filepath
         template = self.translations.get(key, None)
-        
+
         # Fallback to English if key not found
         if template is None:
             try:

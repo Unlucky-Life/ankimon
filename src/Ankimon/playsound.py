@@ -196,7 +196,7 @@ def _playsoundNix(sound, block = True):
             bus.poll(Gst.MessageType.EOS, Gst.CLOCK_TIME_NONE)
         finally:
             playbin.set_state(Gst.State.NULL)
-            
+
     logger.debug('Finishing play')
 
 def _playsoundAnotherPython(otherPython, sound, block = True, macOS = False):

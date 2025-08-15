@@ -111,7 +111,7 @@ class AnkimonTrackerWindow:
         stats = self.tracker.get_stats()
         main_pokemon_stats = self.tracker.get_main_pokemon_stats()
         enemy_pokemon_stats = self.tracker.get_enemy_pokemon_stats()
-        
+
         # Combine all stats into a single dictionary
         current_stats = {
             **{f"{k}": v for k, v in stats.items() if k not in ['main_pokemon', 'enemy_pokemon']},

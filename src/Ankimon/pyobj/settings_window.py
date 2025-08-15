@@ -53,7 +53,7 @@ class SettingsWindow(QMainWindow):
                 return {}
         showWarning("Descriptions file not found. Using empty descriptions.")
         return {}
-        
+
     def load_friendly_names(self):
         # Load the friendly names from a JSON file one level above the root of the add-on directory
         names_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lang', 'setting_name.json')
@@ -97,7 +97,7 @@ class SettingsWindow(QMainWindow):
             if isinstance(value, bool):
                 label = QLabel(friendly_name)
                 description_label = QLabel(self.descriptions.get(key, "No description available."))
-                
+
                 # Enable word wrap and set maximum width for the description label
                 description_label.setWordWrap(True)
                 description_label.setMaximumWidth(self.width() - 50)  # Subtracting a bit for padding

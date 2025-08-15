@@ -27,12 +27,12 @@ class TipOfTheDayDialog(QDialog):
 
         self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         self.next_tip_button = self.button_box.addButton("Next Tip", QDialogButtonBox.ButtonRole.ActionRole)
-        
+
         self.next_tip_button.clicked.connect(self.show_new_tip)
         self.button_box.accepted.connect(self.accept)
-        
+
         self.layout.addWidget(self.button_box)
-        
+
         self.tips = self._load_tips()
         self.current_tip_index = tip_number
 
@@ -82,12 +82,12 @@ def show_tip_of_the_day():
             tips = json.load(f).get("tips", [])
     except (json.JSONDecodeError, Exception):
         return
-        
+
     if not tips:
         return
 
     last_tip_index = settings.get("misc.last_tip_index", -1)
     next_tip_index = (last_tip_index + 1) % len(tips)
-    
+
     dialog = TipOfTheDayDialog(tips[next_tip_index], next_tip_index, len(tips), mw)
     dialog.exec()

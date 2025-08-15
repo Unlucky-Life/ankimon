@@ -179,7 +179,7 @@ class TestWindow(QWidget):
             lvl = (f"{level}")
             #gender_text = (f"{gender}")
             mainlvl = (f"{mainpokemon_level}")
-            
+
             # Convert gender name to symbol - this function is from Foxy-null
             if gender == "M":
                 gender_symbol = "♂"
@@ -561,7 +561,7 @@ class TestWindow(QWidget):
         Receive_Window.setMaximumHeight(320)
         Receive_Window.setLayout(layout)
         Receive_Window.show()
-    
+
     def display_item(self):
         Receive_Window = QDialog(mw)
         layout = QHBoxLayout()

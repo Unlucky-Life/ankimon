@@ -49,7 +49,7 @@ def pokemon_is_similar(normalized_name, list_of_pkmn_names):
 
 def get_pokemon_information(smogon_stats_url, pkmn_names=None):
     r = requests.get(smogon_stats_url)
-    
+
     # Modified fallback calculation without relativedelta
     if r.status_code == 404:
         base_name = ntpath.basename(smogon_stats_url.replace('-0.json', ''))
@@ -58,7 +58,7 @@ def get_pokemon_information(smogon_stats_url, pkmn_names=None):
 
     infos = r.json()['data']
     final_infos = {}
-    
+
     # Rest of the original implementation remains unchanged
     for pkmn_name, pkmn_information in infos.items():
         normalized_name = normalize_name(pkmn_name)

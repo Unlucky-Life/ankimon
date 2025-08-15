@@ -39,7 +39,7 @@ def clear_layout(layout):
     """
     Recursively removes all widgets and nested layouts from a given layout.
 
-    This function iterates through all items in the provided layout, removes 
+    This function iterates through all items in the provided layout, removes
     each widget or sub-layout, and ensures proper deletion and memory cleanup.
 
     Args:
@@ -121,7 +121,7 @@ class PokemonPC(QDialog):
 
         self.ensure_all_pokemon_have_tier_info()  # Necessary for legacy reasons
         self.create_gui()
-    
+
     def on_theme_change(self):
         """
         Callback function triggered when Anki's theme changes (light to dark or vice versa).
@@ -259,7 +259,7 @@ class PokemonPC(QDialog):
                 pkmn_image_path = get_sprite_path("front", "gif" if self.gif_in_collection else "png", pokemon['id'], pokemon.get("shiny", False), pokemon["gender"])
                 pokemon_button = QPushButton("")
                 pokemon_button.setFixedSize(self.slot_size, self.slot_size)
-                
+
                 if pokemon.get("is_favorite", False):
                     slot_style_bg = favorite_color
                     slot_style_hover_bg = favorite_hover_color # Favorite color doesn't change on hover
@@ -278,10 +278,10 @@ class PokemonPC(QDialog):
                         background-color: {slot_style_hover_bg};
                     }}
                 """
-                pokemon_button.setStyleSheet(style_sheet_str)     
-                           
+                pokemon_button.setStyleSheet(style_sheet_str)
+
                 pokemon_button.clicked.connect(lambda checked, pb=pokemon_button, pkmn=pokemon: self.show_actions_submenu(pb, pkmn))
-                
+
                 if self.gif_in_collection:
                     scaled_movie_label = ScaledMovieLabel(pkmn_image_path, self.slot_size - 10, self.slot_size - 10)
                     scaled_movie_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
@@ -397,7 +397,7 @@ class PokemonPC(QDialog):
             self.main_layout.addWidget(self.details_widget, 2)
 
         self.setLayout(self.main_layout)
-        
+
     def refresh_gui(self):
         """
         Refreshes the entire graphical user interface by rebuilding its layout.
@@ -488,7 +488,7 @@ class PokemonPC(QDialog):
             self.logger.log("error","mypokemon.json file not found.")
 
         return []
-    
+
     def filter_pokemon_list(self, pokemon_list: list) -> list:
         """
         Filters a list of Pokémon dictionaries based on multiple UI-selected criteria.
@@ -511,27 +511,27 @@ class PokemonPC(QDialog):
             if self.search_edit is not None:
                 if self.search_edit.text().lower() not in pokemon.get("name").lower():
                     return False
-                
+
             if self.type_combo is not None:
                 if self.type_combo.currentIndex() != 0 and self.type_combo.currentText() not in pokemon.get("type", ""):
                     return False
-                
+
             if self.tier_combo is not None:
                 if (
-                    self.tier_combo.currentIndex() != 0 
+                    self.tier_combo.currentIndex() != 0
                     and pokemon.get("tier") is not None
-                    and self.tier_combo.currentText() != pokemon.get("tier") 
+                    and self.tier_combo.currentText() != pokemon.get("tier")
                 ):
                     return False
-                
+
             if self.filter_favorites is not None:
                 if self.filter_favorites.isChecked() and not pokemon.get("is_favorite", False):
                     return False
-            
+
             if self.filter_is_holding_item is not None:
                 if self.filter_is_holding_item.isChecked() and not pokemon.get("held_item", False):
                     return False
-                
+
             if self.generation_combo is not None:
                 gen_idx = self.generation_combo.currentIndex()
                 if gen_idx != 0 and (
@@ -545,11 +545,11 @@ class PokemonPC(QDialog):
                     (810 <= pokemon["id"] <= 898 and gen_idx != 8)
                 ):
                     return False
-            
+
             return True
 
         return list(filter(filtering_func, pokemon_list.copy()))
-    
+
     def sort_pokemon_list(self, pokemon_list: list) -> list:
         """
         Sorts a list of Pokémon dictionaries based on selected sorting criteria and order.
@@ -587,7 +587,7 @@ class PokemonPC(QDialog):
             reverse=reverse,
             key=lambda x: tuple(x[key] for key in filters)
             )
-    
+
     def show_actions_submenu(self, button: QPushButton, pokemon: dict[str, Any]):
         """
         Displays a context menu with actions related to a specific Pokémon.
@@ -637,7 +637,7 @@ class PokemonPC(QDialog):
         main_pokemon_action.triggered.connect(lambda: self.main_pokemon_function_callback(pokemon))
         make_favorite_action.triggered.connect(lambda: self.toggle_favorite(pokemon))
         give_held_item.triggered.connect(lambda: self.give_held_item(pokemon))
-        
+
         menu.addAction(pokemon_details_action)
         menu.addAction(main_pokemon_action)
         menu.addAction(make_favorite_action)
@@ -728,7 +728,7 @@ class PokemonPC(QDialog):
 
                 self.refresh_gui()
                 return
-        
+
         if self.logger is not None:
             self.logger.log("info", f"Could not make/unmake {pokemon['name']} favorite")
 
@@ -836,7 +836,7 @@ class PokemonPC(QDialog):
             clear_layout(self.pokemon_details_layout)
             self.details_widget.setFixedSize(0, 0)
             self.pokemon_details_layout = None
-            
+
     def closeEvent(self, event: QCloseEvent):
         self.on_window_close()
         event.accept()  # Accept the close event
@@ -917,4 +917,3 @@ class GiveItemWindow(QDialog):
         # small intermediary function. This allows me to display a confirmation message after giving the item.
         self.give_item_func(item_name)
         self.close()
-    

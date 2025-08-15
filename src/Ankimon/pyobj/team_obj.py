@@ -7,7 +7,7 @@ class TeamPokemonObject:
         self.pokemon_4 = pokemon_4
         self.pokemon_5 = pokemon_5
         self.pokemon_6 = pokemon_6
-    
+
     def trade_pokemon(self, team_position, PokemonObject):
         if team_position not in {1, 2, 3, 4, 5, 6}:
             raise ValueError("Invalid team position, must be 1 through 6")
@@ -18,9 +18,9 @@ class TeamPokemonObject:
         self.save_team()
         #if team_position == 1:
         #    MainPokemonObject = pokemon_1
-    
+
     def save_team(self):
-        # Save the TeamPokemonObject as a JSON file       
+        # Save the TeamPokemonObject as a JSON file
         team_pokemon_dict = {
             "pokemon_1": self.pokemon_1,
             "pokemon_2": self.pokemon_2,

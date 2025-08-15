@@ -76,8 +76,8 @@ class StarterWindow(QWidget):
             # If self.starter is True, simply pass (do nothing)
             else:
                 pass
-    
-    def choose_pokemon(self, starter_name): 
+
+    def choose_pokemon(self, starter_name):
         # Create a dictionary to store the Pokémon's data
         # add all new values like hp as max_hp, evolution_data, description and growth rate
         name = search_pokedex(starter_name, "name")
@@ -160,7 +160,7 @@ class StarterWindow(QWidget):
         self.logger.log_and_showinfo("info",f"{name.capitalize()} has been chosen as Starter Pokemon !")
 
         self.display_chosen_starter_pokemon(starter_name)
-        
+
         close_anki()
 
     def get_random_starter(self):
@@ -213,7 +213,7 @@ class StarterWindow(QWidget):
         self.setStyleSheet("background-color: rgb(14,14,14);")
         self.setLayout(layout)
         self.show()
-        
+
     def display_chosen_starter_pokemon(self, starter_name):
         self.clear_layout(self.layout())
         layout = self.layout()
@@ -230,7 +230,7 @@ class StarterWindow(QWidget):
         #check = check_for_badge(achievements, 7)
         #if check is False:
         #    receive_badge(7, achievements)
-    
+
     def display_fossil_pokemon(self, fossil_id, fossil_name):
         self.clear_layout(self.layout())
         layout = self.layout()
@@ -383,7 +383,7 @@ class StarterWindow(QWidget):
         starter_label.setPixmap(merged_pixmap)
 
         return starter_label
-    
+
     def pokemon_display_fossil_pokemon(self, fossil_id, fossil_name):
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         id = fossil_id
