@@ -124,21 +124,28 @@ class Reviewer_Manager:
         name_display_text += self.get_boost_values_string(self.enemy_pokemon, display_neutral_boost=False)
         hud_html += f'<div id="name-display" class="Ankimon">{name_display_text}</div>'
         
+        try:
+            addon_package = mw.addonManager.addonFromModule(__name__)
+        except Exception:
+            addon_package = None
+
+        if not addon_package:
+            # Try fallback addon folder names
+            for name in ["1908235722", "Ankimon"]:
+                if os.path.exists(os.path.join(mw.addonManager.addonsFolder(), name)):
+                    addon_package = name
+                    break
+        
         if self.enemy_pokemon.hp > 0:
-            hud_html += f'{create_status_html(f"{self.enemy_pokemon.battle_status}", settings_obj=self.settings)}'
+            hud_html += create_status_html(f"{self.enemy_pokemon.battle_status}", self.settings, is_pokemon_owned, addon_package)
         else:
-            hud_html += f'{create_status_html("fainted", settings_obj=self.settings)}'
+            hud_html += create_status_html("fainted", self.settings, is_pokemon_owned, addon_package)
 
         hud_html += f'<div id="hp-display" class="Ankimon">HP: {self.enemy_pokemon.hp}/{self.enemy_pokemon.max_hp}</div>'
         
-        indicator_html = ''
-        if is_pokemon_owned:
-            addon_package = mw.addonManager.addonFromModule(__name__)
-            pokeball_url = f"/_addons/{addon_package}/user_files/web/images/pokeball.png"
-            indicator_html = f'<img id="owned-indicator-badge" src="{pokeball_url}">'
         
         enemy_poke_animation_style = f"animation: ankimon-shake-normal {self.seconds}s ease;"
-        hud_html += f'<div id="PokeImage" class="Ankimon">{indicator_html}<img src="data:{mime_type};base64,{image_base64}" alt="PokeImage" style="{enemy_poke_animation_style}"></div>'
+        hud_html += f'<div id="PokeImage" class="Ankimon"><img src="data:{mime_type};base64,{image_base64}" alt="PokeImage" style="{enemy_poke_animation_style}"></div>'
         
         if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
             

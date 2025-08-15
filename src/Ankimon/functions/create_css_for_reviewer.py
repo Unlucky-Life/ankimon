@@ -138,19 +138,7 @@ body.dark #ankimon-hud #MyPokeImage,
   padding: 2px 4px;
 }
 
-/* Indicator for owned Pokémon */
-#ankimon-hud #PokeImage img#owned-indicator-badge {
-    position: absolute;
-    bottom: 5px;
-    left: 5px;
-    width: 22px;
-    height: 22px;
-    z-index: 10001;
-    background-color: var(--ankimon-outline);
-    border-radius: 50%;
-    padding: 2px;
-    box-sizing: border-box;
-}
+
 """
 
     if show_mainpkmn_in_reviewer == 0:
