@@ -238,3 +238,33 @@ class Reviewer_Manager:
         }})({json.dumps(hud_html)}, {json.dumps(hud_css)});
         """
         reviewer.web.eval(js_code)
+
+        # Add keydown listener to toggle HUD visibility
+        reviewer.web.eval("""
+            (function() {
+                if (window.ankimonKeyListener) return;
+                window.ankimonKeyListener = true;
+                let originalParent = null; // To store the parent element
+                let hudHost = null; // To store the ankimon-hud-host element
+
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === '8') {
+                        if (!hudHost) { // First time '8' is pressed, find the element
+                            hudHost = document.getElementById('ankimon-hud-host');
+                            if (hudHost) {
+                                originalParent = hudHost.parentNode; // Store its parent
+                            } else {
+                                console.error('Ankimon: ankimon-hud-host not found for removal.');
+                                return;
+                            }
+                        }
+
+                        if (hudHost.parentNode) { // If it has a parent, it's currently in the DOM, so remove it
+                            hudHost.parentNode.removeChild(hudHost);
+                        } else if (originalParent) { // If it has no parent but we have an original parent, re-add it
+                            originalParent.appendChild(hudHost);
+                        }
+                    }
+                });
+            })();
+        """)
