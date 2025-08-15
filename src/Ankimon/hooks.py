@@ -1,9 +1,7 @@
 from aqt import gui_hooks
 from .utils import addon_config_editor_will_display_json
 
-
-#Hook Classes for the setup
-def setupHooks(check_data, ankimon_tracker_obj, prepare):
+def setupHooks(check_data, ankimon_tracker_obj):
     """Set up Ankimon hooks - updated to handle None check_data"""
     
     # Only set up sync hooks if check_data exists and has the required methods
@@ -16,4 +14,3 @@ def setupHooks(check_data, ankimon_tracker_obj, prepare):
     
     # Always set up these hooks regardless of check_data
     gui_hooks.addon_config_editor_will_display_json.append(addon_config_editor_will_display_json)
-    gui_hooks.card_will_show.append(prepare)
