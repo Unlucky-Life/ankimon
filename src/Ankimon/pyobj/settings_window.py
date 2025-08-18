@@ -263,11 +263,11 @@ class SettingsWindow(QMainWindow):
         scroll_area_layout = QVBoxLayout(scroll_area_content)
         scroll_area.setWidget(scroll_area_content)
         hierarchical_groups = {
-            "Basic settings": { "settings": ["Trainer Name", "Language", "Show tip of the day on startup"], "subgroups": { "Technical settings": {"settings": ["SSH Access", "Receive Ankimon News", "AnkiWeb Sync"]}, "Discord settings": {"settings": ["Discord Rich Presence - Ankimon", "Discord Rich Presence - Quote Type"]} } },
-            "Fight preferences": { "settings": ["Damage in reviewer", "Automatic Battle", "Cards per round", "Show Main Pokémon in Reviewer", "Show Pokémon buttons", "Pop-Up on Defeat", "Show Text Message Box in Reviewer", "Message Box Display Time"], "subgroups": { "Fight Hotkeys": {"settings": ["Key for Defeat", "Key for Catching", "Key for Opening/Closing Ankimon", "Allow Choosing Moves"]}, "Level settings, HP and XP bars": {"settings": ["HP Bar Configuration", "XP Bar Configruation", "XP Bar Location", "Remove Level Cap"]} } },
-            "Styling settings": {"settings": ["Styling in Reviewer", "Animate Time", "HP Bar Thickness", "Reviewer Image as GIF", "View Main Pokémon Front"]},
-            "Sound settings": {"settings": ["Enable Sound Effects", "Enable Sounds", "Enable Battle Sounds"]},
-            "Studies settings": {"settings": ["Goal of Daily Average", "Card Max Time"]},
+            "General": { "settings": ["Trainer Name", "Language", "Show tip of the day on startup"], "subgroups": { "Technical Settings": {"settings": ["SSH Access", "Receive Ankimon News", "AnkiWeb Sync"]}, "Discord Integration": {"settings": ["Discord Rich Presence - Ankimon", "Discord Rich Presence - Quote Type"]} } },
+            "Battle": { "settings": ["Damage in reviewer", "Automatic Battle", "Cards per round", "Show Main Pokémon in Reviewer", "Show Pokémon buttons", "Pop-Up on Defeat", "Show Text Message Box in Reviewer", "Message Box Display Time"], "subgroups": { "Fight Hotkeys": {"settings": ["Key for Defeat", "Key for Catching", "Key for Opening/Closing Ankimon", "Allow Choosing Moves"]}, "HP, XP and Level Settings": {"settings": ["HP Bar Configuration", "XP Bar Configruation", "XP Bar Location", "Remove Level Cap"]} } },
+            "Styling": {"settings": ["Styling in Reviewer", "Animate Time", "HP Bar Thickness", "Reviewer Image as GIF", "View Main Pokémon Front"]},
+            "Sound": {"settings": ["Enable Sound Effects", "Enable Sounds", "Enable Battle Sounds"]},
+            "Study": {"settings": ["Goal of Daily Average", "Card Max Time"]},
             "Generations": {"settings": ["Generation 1", "Generation 2", "Generation 3", "Generation 4", "Generation 5", "Generation 6", "Generation 7", "Generation 8", "Generation 9"]}
         }
         for l1_title, l1_data in hierarchical_groups.items():
@@ -358,7 +358,7 @@ class SettingsWindow(QMainWindow):
             self.set_config_callback(key, value)
 
     def on_save(self):
-        excluded_patterns = { 'mypokemon', 'mainpokemon', 'pokemon_collection', 'trainer.cash', 'misc.last_tip_index' }
+        excluded_patterns = { 'mypokemon', 'mainpokemon', 'pokemon_collection', 'trainer.cash', 'misc.last_tip_index', 'trainer.xp_share', 'misc.last_tip_index'}
         changed_settings = { key: self.config[key] for key in self.config if not any(pattern in key for pattern in excluded_patterns) and self.config[key] != self.original_config.get(key) }
         self.save_config_callback(self.config)
         if changed_settings:
