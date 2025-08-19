@@ -1,4 +1,5 @@
 import json
+import uuid
 from typing import Any, Callable
 
 from aqt import mw, gui_hooks
@@ -119,7 +120,7 @@ class PokemonPC(QDialog):
         # Subscribe to theme change hook to update UI dynamically
         gui_hooks.theme_did_change.append(self.on_theme_change)
 
-        self.ensure_all_pokemon_have_tier_info()  # Necessary for legacy reasons
+        self.ensure_data_integrity()  # Necessary for legacy reasons
         self.create_gui()
 
     def on_theme_change(self):
@@ -802,32 +803,61 @@ class PokemonPC(QDialog):
         # Refreshing the PC after giving the item is important in order to update the pokemon information without the held item
         self.refresh_gui()
 
-    def ensure_all_pokemon_have_tier_info(self):
+    def ensure_data_integrity(self):
         """
-        Ensures all Pokémon in the saved collection have tier information.
-
-        Since tier data was not saved for caught Pokémon when this class was first implemented,
-        filtering by tier would be impossible. This method updates the saved Pokémon data
-        file to include missing tier information by looking up each Pokémon’s tier based on its ID.
-
-        It updates the persistent storage file with corrected tier data and logs warnings
-        if tier information cannot be found for any Pokémon.
-
-        Side Effects:
-            - Modifies the saved Pokémon data file to include tier information where missing.
-            - Logs warnings for Pokémon whose tier information is unavailable.
+        Iterates through all Pokémon to ensure they have required non-stat fields,
+        adding default values if fields are missing. This handles data
+        from older addon versions. Stat-related fields are ignored.
         """
         pokemon_list = self.load_pokemon_data()
-        pokemon_tiers = [p.get("tier") for p in pokemon_list]
-        if None in pokemon_tiers:  # If at least 1 pokémon does not have tier information
-            for i, pokemon in enumerate(pokemon_list):
-                if pokemon.get("tier") is not None:
-                    continue
-                tier = get_tier_by_id(pokemon["id"])
-                if tier is None:
-                    self.logger.log("warning", f"Could not find the tier information of {pokemon['name']}")
-                pokemon_list[i]["tier"] = tier
+        if not pokemon_list:
+            return
 
+        # --- QUICK CHECK ---
+        # First, quickly determine if any migration is needed at all.
+        default_keys = {
+            "nickname", "gender", "ability", "type", "attacks", "base_experience", 
+            "growth_rate", "everstone", "shiny", "captured_date", "individual_id", 
+            "mega", "special-form", "evos", "xp", "friendship", "pokemon_defeated", 
+            "tier", "is_favorite", "held_item"
+        }
+        
+        is_migration_needed = any(
+            key not in pokemon
+            for pokemon in pokemon_list
+            if isinstance(pokemon, dict)
+            for key in default_keys
+        )
+
+        if not is_migration_needed:
+            return  # All Pokémon are up-to-date, exit early.
+
+        # --- FULL MIGRATION (only if needed) ---
+        needs_update = False
+        default_values = {
+            "nickname": "", "gender": "N", "ability": "Illuminate", "type": ["Normal"],
+            "attacks": ["Struggle"], "base_experience": 0, "growth_rate": "medium",
+            "everstone": False, "shiny": False, "captured_date": None,
+            "individual_id": lambda p: str(uuid.uuid4()), "mega": False,
+            "special-form": None, "evos": [], "xp": 0, "friendship": 0,
+            "pokemon_defeated": 0, "tier": lambda p: get_tier_by_id(p.get("id", 0)) or "Normal",
+            "is_favorite": False, "held_item": None
+        }
+
+        for i, pokemon in enumerate(pokemon_list):
+            if not isinstance(pokemon, dict):
+                continue
+
+            for key, default_generator in default_values.items():
+                if key not in pokemon:
+                    needs_update = True
+                    if callable(default_generator):
+                        value = default_generator(pokemon)
+                    else:
+                        value = default_generator
+                    pokemon_list[i][key] = value
+
+        if needs_update:
             with open(str(mypokemon_path), "w", encoding="utf-8") as json_file:
                 json.dump(pokemon_list, json_file, indent=2)
 
