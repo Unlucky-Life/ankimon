@@ -301,6 +301,7 @@ class SettingsWindow(QMainWindow):
                     l2_button.clicked.connect(lambda _, t=l2_title, b=l2_button: self._toggle_group_visibility(t, b))
             self.group_widgets[l1_title] = l1_widgets
             l1_button.clicked.connect(lambda _, t=l1_title, b=l1_button: self._toggle_group_visibility(t, b))
+        scroll_area_layout.addStretch()
         layout.addWidget(scroll_area)
         save_button = QPushButton("Save")
         save_button.setToolTip("Click to save your settings.")
@@ -328,22 +329,31 @@ class SettingsWindow(QMainWindow):
                 is_expanded = self.group_states.get(title, True)
                 for w in self.group_widgets.get(title, []): w.setVisible(is_expanded)
             return
+        
+        # Hide all settings and titles initially
         for setting in self.searchable_settings:
-            for widget in setting["widgets"]: widget.setVisible(False)
-        for button in self.title_buttons.values(): button.setVisible(False)
+            for widget in setting["widgets"]:
+                widget.setVisible(False)
+        for button in self.title_buttons.values():
+            button.setVisible(False)
+
         titles_to_show = set()
+        # Show only the settings that match
         for setting in self.searchable_settings:
             name = setting["friendly_name"].lower()
             desc = setting["description"].lower()
             if search_term in name or search_term in desc:
-                for widget in setting["widgets"]: widget.setVisible(True)
+                for widget in setting["widgets"]:
+                    widget.setVisible(True)
+                # Mark parent titles for visibility
                 titles_to_show.add(setting["l1_title"])
-                if setting["l2_title"]: titles_to_show.add(setting["l2_title"])
+                if setting["l2_title"]:
+                    titles_to_show.add(setting["l2_title"])
+
+        # Show the titles that have matching children
         for title in titles_to_show:
             if title in self.title_buttons:
-                button = self.title_buttons[title]
-                button.setVisible(True)
-                for widget in self.group_widgets.get(title, []): widget.setVisible(True)
+                self.title_buttons[title].setVisible(True)
 
     def _toggle_group_visibility(self, title, button):
         is_expanded = not self.group_states.get(title, True)
