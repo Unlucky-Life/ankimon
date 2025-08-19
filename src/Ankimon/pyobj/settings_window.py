@@ -32,7 +32,6 @@ class SettingsWindow(QMainWindow):
         super().__init__()
         self.config = config
         self.original_config = config.copy()
-        self.set_config_callback = set_config_callback
         self.save_config_callback = save_config_callback
         self.load_config = load_config_callback
         self.setWindowTitle("Settings")
@@ -47,7 +46,8 @@ class SettingsWindow(QMainWindow):
         self.group_widgets = {}
         self.group_states = {}
         self.searchable_settings = []
-        self.title_buttons = {}
+        self.title_buttons = {}  # To store references to title buttons
+        self.input_widgets = {}  # To store references to input widgets
 
         self.setup_ui()
 
@@ -56,7 +56,6 @@ class SettingsWindow(QMainWindow):
         """Checks if Anki is in dark mode."""
         return theme_manager.night_mode
 
-    # --- CHANGE #1: The styling logic is now in its own dedicated method. ---
     def _apply_stylesheet(self):
         """Applies the appropriate stylesheet based on the current theme."""
         if self.is_dark_mode:
@@ -212,16 +211,16 @@ class SettingsWindow(QMainWindow):
             button_group = QButtonGroup(self)
             button_group.addButton(true_radio)
             button_group.addButton(false_radio)
-            true_radio.toggled.connect(lambda checked, k=key: self.handle_radio_selection(checked, k, True))
             h_layout.addWidget(true_radio)
             h_layout.addWidget(false_radio)
             layout.addWidget(radio_container)
             created_widgets.append(radio_container)
+            self.input_widgets[key] = button_group
         elif isinstance(value, (int, str)):
             line_edit = QLineEdit(str(value))
-            line_edit.editingFinished.connect(lambda k=key, le=line_edit: self.update_config(k, le.text()))
             layout.addWidget(line_edit)
             created_widgets.append(line_edit)
+            self.input_widgets[key] = line_edit
 
         return created_widgets, friendly_name, description
 
@@ -238,7 +237,6 @@ class SettingsWindow(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         
-        # --- CHANGE #2: setup_ui now calls the new method for initial styling. ---
         self._apply_stylesheet()
         
         layout = QVBoxLayout(central_widget)
@@ -308,17 +306,12 @@ class SettingsWindow(QMainWindow):
         save_button.clicked.connect(self.on_save)
         layout.addWidget(save_button)
     
-    # --- CHANGE #3: show_window now re-applies the stylesheet every time it's called. ---
     def show_window(self):
-        self._apply_stylesheet() # Re-check the theme and apply styles
+        self._apply_stylesheet()
         self.config = self.load_config()
         self.show()
         self.raise_()
 
-    def update_config(self, key, value):
-        self.config[key] = value
-        self.set_config_callback(key, value)
-        
     def _on_search_changed(self, text):
         search_term = text.lower().strip()
         if not search_term:
@@ -330,7 +323,6 @@ class SettingsWindow(QMainWindow):
                 for w in self.group_widgets.get(title, []): w.setVisible(is_expanded)
             return
         
-        # Hide all settings and titles initially
         for setting in self.searchable_settings:
             for widget in setting["widgets"]:
                 widget.setVisible(False)
@@ -338,19 +330,16 @@ class SettingsWindow(QMainWindow):
             button.setVisible(False)
 
         titles_to_show = set()
-        # Show only the settings that match
         for setting in self.searchable_settings:
             name = setting["friendly_name"].lower()
             desc = setting["description"].lower()
             if search_term in name or search_term in desc:
                 for widget in setting["widgets"]:
                     widget.setVisible(True)
-                # Mark parent titles for visibility
                 titles_to_show.add(setting["l1_title"])
                 if setting["l2_title"]:
                     titles_to_show.add(setting["l2_title"])
 
-        # Show the titles that have matching children
         for title in titles_to_show:
             if title in self.title_buttons:
                 self.title_buttons[title].setVisible(True)
@@ -362,19 +351,36 @@ class SettingsWindow(QMainWindow):
             for widget in self.group_widgets[title]:
                 widget.setVisible(is_expanded)
 
-    def handle_radio_selection(self, checked, key, value):
-        if checked:
-            self.config[key] = value
-            self.set_config_callback(key, value)
-
     def on_save(self):
-        excluded_patterns = { 'mypokemon', 'mainpokemon', 'pokemon_collection', 'trainer.cash', 'misc.last_tip_index', 'trainer.xp_share', 'misc.last_tip_index'}
-        changed_settings = { key: self.config[key] for key in self.config if not any(pattern in key for pattern in excluded_patterns) and self.config[key] != self.original_config.get(key) }
+        # Update self.config from the current state of all UI widgets
+        for key, widget in self.input_widgets.items():
+            original_value = self.original_config.get(key)
+            
+            if isinstance(widget, QLineEdit):
+                new_text = widget.text()
+                # Attempt to cast back to original type (int or str)
+                if isinstance(original_value, int):
+                    try:
+                        self.config[key] = int(new_text)
+                    except ValueError:
+                        self.config[key] = original_value
+                else:
+                    self.config[key] = new_text
+            elif isinstance(widget, QButtonGroup):
+                self.config[key] = (widget.checkedButton().text() == "True")
+
+        # Now that self.config is up-to-date, call the save callback
         self.save_config_callback(self.config)
+
+        # The rest is for showing the confirmation message
+        excluded_patterns = { 'mypokemon', 'mainpokemon', 'pokemon_collection', 'trainer.cash', 'misc.last_tip_index', 'trainer.xp_share'}
+        changed_settings = { key: self.config[key] for key in self.config if not any(pattern in key for pattern in excluded_patterns) and self.config[key] != self.original_config.get(key) }
+        
         if changed_settings:
             friendly_changed = {self.friendly_names.get(k, k): v for k, v in changed_settings.items()}
             changed_message = "\n".join([f"{key}: {value}" for key, value in friendly_changed.items()])
             QMessageBox.information(self, "Settings Saved", "Your settings have been saved successfully.")
             QMessageBox.information(self, "Config changes", f"Changed settings:\n{changed_message}")
+            self.original_config = self.config.copy()
         else:
             QMessageBox.information(self, "No Changes", "No settings were changed.")
