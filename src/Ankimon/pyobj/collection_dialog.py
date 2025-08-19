@@ -690,7 +690,7 @@ def MainPokemon(
         status=pokemon_data.get('status', None),
         volatile_status=set(pokemon_data.get('volatile_status', [])),
         xp=pokemon_data.get("xp", 0),
-        nickname=pokemon_data.get('nickname', None),
+        nickname=pokemon_data.get('nickname', ""),
         # Add common extra fields if constructor supports them
         friendship=pokemon_data.get('friendship', 0),
         pokemon_defeated=pokemon_data.get('pokemon_defeated', 0),
