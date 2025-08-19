@@ -301,6 +301,7 @@ class SettingsWindow(QMainWindow):
                     l2_button.clicked.connect(lambda _, t=l2_title, b=l2_button: self._toggle_group_visibility(t, b))
             self.group_widgets[l1_title] = l1_widgets
             l1_button.clicked.connect(lambda _, t=l1_title, b=l1_button: self._toggle_group_visibility(t, b))
+        scroll_area_layout.addStretch()
         layout.addWidget(scroll_area)
         save_button = QPushButton("Save")
         save_button.setToolTip("Click to save your settings.")
