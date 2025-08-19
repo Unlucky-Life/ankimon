@@ -414,6 +414,8 @@ def on_review_card(*args):
         reviewer_obj.seconds = 0
         reviewer_obj.myseconds = 0
         ankimon_tracker_obj.general_card_count_for_battle += 1
+        
+        color = "#F0B27A" # Initialize with a default color
 
         achievements = handle_achievements(card_counter, achievements)
         achievements = check_and_award_badges(card_counter, achievements, ankimon_tracker_obj, test_window)
