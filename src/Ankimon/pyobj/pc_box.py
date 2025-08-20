@@ -583,11 +583,23 @@ class PokemonPC(QDialog):
         if not filters:
             return pokemon_list
 
+        def sort_key(p):
+            values = []
+            for key in filters:
+                value = p.get(key)
+                if value is None:
+                    if key in ('name', 'nickname'):
+                        value = ''
+                    else:
+                        value = 0
+                values.append(value)
+            return tuple(values)
+
         return sorted(
             pokemon_list,
             reverse=reverse,
-            key=lambda x: tuple(x[key] for key in filters)
-            )
+            key=sort_key
+        )
 
     def show_actions_submenu(self, button: QPushButton, pokemon: dict[str, Any]):
         """
