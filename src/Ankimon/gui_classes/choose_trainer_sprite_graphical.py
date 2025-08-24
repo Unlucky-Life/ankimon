@@ -1,5 +1,3 @@
-
-
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QGridLayout, QWidget, QScrollArea, QPushButton
 from PyQt6.QtGui import QIcon
@@ -52,12 +50,23 @@ class TrainerSpriteGraphicalDialog(QDialog):
             
             sprite_path = os.path.join(trainer_sprites_path, sprite_name + ".png")
             if os.path.exists(sprite_path):
+                # Create a widget to hold the button and label
+                item_widget = QWidget()
+                item_layout = QVBoxLayout(item_widget)
+                item_layout.setContentsMargins(0, 0, 0, 0)
+
                 button = QPushButton()
                 button.setIcon(QIcon(sprite_path))
                 button.setIconSize(QSize(100, 100))
                 button.setFixedSize(QSize(110, 110))
                 button.clicked.connect(lambda _, s=sprite_name: self.on_sprite_clicked(s))
-                self.grid_layout.addWidget(button, row, col)
+                item_layout.addWidget(button)
+
+                name_label = QLabel(sprite_name)
+                name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                item_layout.addWidget(name_label)
+
+                self.grid_layout.addWidget(item_widget, row, col)
                 col += 1
                 if col >= 6:
                     col = 0
