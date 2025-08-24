@@ -1,6 +1,7 @@
 
+
 from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QListWidget, QListWidgetItem
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QGridLayout, QWidget, QScrollArea, QPushButton
 from PyQt6.QtGui import QIcon
 from aqt import mw
 from ..utils import get_all_sprites
@@ -12,7 +13,7 @@ class TrainerSpriteGraphicalDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Choose Your Trainer Sprite")
         self.settings = settings_obj
-        self.trainer_sprites = get_all_sprites(trainer_sprites_path)
+        self.trainer_sprites = sorted(get_all_sprites(trainer_sprites_path))
         self.setModal(True)
 
         # Layout
@@ -22,27 +23,46 @@ class TrainerSpriteGraphicalDialog(QDialog):
         label = QLabel("Choose your trainer sprite:")
         layout.addWidget(label)
 
-        # List Widget
-        self.list_widget = QListWidget()
-        self.list_widget.setIconSize(QSize(100, 100))
-        self.list_widget.setFlow(QListWidget.Flow.LeftToRight)
-        self.list_widget.setWrapping(True)
-        self.list_widget.setViewMode(QListWidget.ViewMode.IconMode)
-        self.list_widget.itemClicked.connect(self.on_item_clicked)
-        layout.addWidget(self.list_widget)
+        # Scroll Area
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        layout.addWidget(scroll_area)
 
-        # Populate List Widget
-        for sprite_name in self.trainer_sprites:
-            sprite_path = os.path.join(trainer_sprites_path, sprite_name + ".png")
-            if os.path.exists(sprite_path):
-                item = QListWidgetItem(QIcon(sprite_path), sprite_name)
-                self.list_widget.addItem(item)
+        # Grid Widget
+        grid_widget = QWidget()
+        self.grid_layout = QGridLayout(grid_widget)
+        scroll_area.setWidget(grid_widget)
+
+        # Populate Grid
+        self.populate_grid()
 
         # Set layout
         self.setLayout(layout)
-        self.setMinimumSize(500, 400)
+        self.setMinimumSize(800, 600)
 
-    def on_item_clicked(self, item):
-        selected_sprite = item.text()
-        self.settings.set("trainer.sprite", selected_sprite)
+    def populate_grid(self):
+        col = 0
+        row = 0
+        last_letter = ''
+        for sprite_name in self.trainer_sprites:
+            if sprite_name[0].lower() != last_letter:
+                last_letter = sprite_name[0].lower()
+                col = 0
+                row += 1
+            
+            sprite_path = os.path.join(trainer_sprites_path, sprite_name + ".png")
+            if os.path.exists(sprite_path):
+                button = QPushButton()
+                button.setIcon(QIcon(sprite_path))
+                button.setIconSize(QSize(100, 100))
+                button.setFixedSize(QSize(110, 110))
+                button.clicked.connect(lambda _, s=sprite_name: self.on_sprite_clicked(s))
+                self.grid_layout.addWidget(button, row, col)
+                col += 1
+                if col >= 6:
+                    col = 0
+                    row += 1
+
+    def on_sprite_clicked(self, sprite_name):
+        self.settings.set("trainer.sprite", sprite_name)
         self.accept()
