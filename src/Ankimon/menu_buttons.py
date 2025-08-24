@@ -9,7 +9,9 @@ from PyQt6.QtGui import QAction, QKeySequence
 from aqt import mw  # The main window object
 from aqt.utils import qconnect
 
-from .gui_classes.choose_trainer_sprite import TrainerSpriteDialog
+
+from .gui_classes.choose_trainer_sprite_graphical import TrainerSpriteGraphicalDialog
+
 from .pyobj.trainer_card_window import TrainerCardGUI
 from .gui_classes.pokemon_team_window import PokemonTeamDialog
 from .gui_classes.check_files import FileCheckerApp
@@ -261,7 +263,7 @@ def create_menu_actions(
     # Choose Trainer Sprite Action
     choose_trainer_sprite_action = QAction(mw.translator.translate("choose_trainer_sprite_button"), mw)
     choose_trainer_sprite_action.setMenuRole(QAction.MenuRole.NoRole)
-    choose_trainer_sprite_action.triggered.connect(lambda: TrainerSpriteDialog(settings_obj=settings_obj).exec())
+    choose_trainer_sprite_action.triggered.connect(lambda: TrainerSpriteGraphicalDialog(settings_obj=settings_obj).exec())
     game_menu.addAction(choose_trainer_sprite_action)
 
     pokemon_team_action = QAction(mw.translator.translate("choose_pokemon_team_button"), mw)
