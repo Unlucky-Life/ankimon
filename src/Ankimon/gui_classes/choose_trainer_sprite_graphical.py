@@ -36,7 +36,7 @@ class TrainerSpriteGraphicalDialog(QDialog):
 
         # Set layout
         self.setLayout(layout)
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(910, 600)
 
     def populate_grid(self):
         col = 0
@@ -54,6 +54,7 @@ class TrainerSpriteGraphicalDialog(QDialog):
                 item_widget = QWidget()
                 item_layout = QVBoxLayout(item_widget)
                 item_layout.setContentsMargins(0, 0, 0, 0)
+                item_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
                 button = QPushButton()
                 button.setIcon(QIcon(sprite_path))
@@ -62,7 +63,8 @@ class TrainerSpriteGraphicalDialog(QDialog):
                 button.clicked.connect(lambda _, s=sprite_name: self.on_sprite_clicked(s))
                 item_layout.addWidget(button)
 
-                name_label = QLabel(sprite_name)
+                formatted_name = self.format_sprite_name(sprite_name)
+                name_label = QLabel(formatted_name)
                 name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 item_layout.addWidget(name_label)
 
@@ -71,6 +73,9 @@ class TrainerSpriteGraphicalDialog(QDialog):
                 if col >= 6:
                     col = 0
                     row += 1
+
+    def format_sprite_name(self, name):
+        return ' '.join(word.capitalize() for word in name.split('-'))
 
     def on_sprite_clicked(self, sprite_name):
         self.settings.set("trainer.sprite", sprite_name)
