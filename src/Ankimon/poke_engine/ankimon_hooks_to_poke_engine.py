@@ -166,7 +166,7 @@ def simulate_battle_with_poke_engine(
                 opponent=reset_side(enemy_pokemon_poke_engine),
                 weather=None,
                 field=None,
-                trick_room=None,
+                trick_room=False,
                 )
         else:
             if mutator_full_reset == 0:  # Combat is ongoing
@@ -199,7 +199,7 @@ def simulate_battle_with_poke_engine(
 
                 state.weather = None # Reset weather to None
                 state.field = None # Reset field to None
-                state.trick_room = None # Reset trick room to None
+                state.trick_room = False # Reset trick room to None
 
             else:
                 raise ValueError(f"Wrong mutator_full_reset encountered : {mutator_full_reset}")
