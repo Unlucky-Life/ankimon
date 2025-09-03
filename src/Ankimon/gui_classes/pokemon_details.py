@@ -227,7 +227,7 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         free_pokemon_button = QPushButton("Release Pokemon")
         qconnect(free_pokemon_button.clicked, lambda: PokemonFree(individual_id, name, logger, refresh_callback))
         trade_pokemon_button = QPushButton("Trade Pokemon")
-        qconnect(trade_pokemon_button.clicked, lambda: PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, individual_id, logger, refresh_callback))
+        qconnect(trade_pokemon_button.clicked, lambda: PokemonTrade(name, id, level, ability, iv, ev, gender, attacks, individual_id, shiny, logger, refresh_callback))
         rename_button = QPushButton("Rename Pokemon")
         rename_input = QLineEdit()
         rename_input.setPlaceholderText("Enter a new Nickname for your Pokemon")
