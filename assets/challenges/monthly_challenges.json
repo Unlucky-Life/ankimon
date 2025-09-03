@@ -1,0 +1,66 @@
+
+[
+    {
+        "code": "MONTHLY-2025-09-BIDOOF",
+        "month": "September 2025",
+        "description": "The God Pokémon, Bidoof, for the September 2025 Challenge.",
+        "pokemon": {
+            "name": "Bidoof",
+            "nickname": "",
+            "level": 1,
+            "gender": "M",
+            "id": 399,
+            "ability": "Simple",
+            "type": [
+            "Normal"
+            ],
+            "stats": {
+            "hp": 59,
+            "atk": 45,
+            "def": 40,
+            "spa": 35,
+            "spd": 40,
+            "spe": 31,
+            "xp": 0
+            },
+            "ev": {
+            "hp": 0,
+            "atk": 0,
+            "def": 0,
+            "spa": 0,
+            "spd": 0,
+            "spe": 0
+            },
+            "iv": {
+            "hp": 1,
+            "atk": 15,
+            "def": 13,
+            "spa": 15,
+            "spd": 23,
+            "spe": 26
+            },
+            "attacks": [
+            "Growl",
+            "Rollout"
+            ],
+            "base_experience": 50,
+            "current_hp": 59,
+            "growth_rate": "medium",
+            "friendship": 70,
+            "pokemon_defeated": 0,
+            "everstone": false,
+            "shiny": false,
+            "captured_date": "2025-09-03 05:00:12",
+            "individual_id": "ad461cb3-67f0-41bd-b66f-3a3b67db37b7",
+            "mega": false,
+            "special-form": null,
+            "evos": []
+                }
+    },
+    {
+        "code": "MONTHLY-2025-10-???",
+        "month": "October 2025",
+        "description": "???",
+        "pokemon": {}
+    }
+]
