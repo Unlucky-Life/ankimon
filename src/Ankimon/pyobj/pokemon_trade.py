@@ -1,9 +1,10 @@
 import json
 import hashlib
+import requests
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFrame
 from PyQt6.QtGui import QPixmap, QFont, QIcon, QColor
 from PyQt6.QtCore import QSize, Qt
-from aqt.utils import showWarning
+from aqt.utils import showWarning, showInfo
 from aqt import mw
 from ..resources import mainpokemon_path, mypokemon_path, pokeapi_db_path, moves_file_path, pokedex_path
 from ..functions.sprite_functions import get_sprite_path
@@ -16,7 +17,7 @@ from .error_handler import show_warning_with_traceback
 class PokemonTrade:
     TRADE_VERSION = "01"
 
-    def __init__(self, name, id, level, ability, iv, ev, gender, attacks, individual_id, logger, refresh_callback, parent_window=None):
+    def __init__(self, name, id, level, ability, iv, ev, gender, attacks, individual_id, shiny, logger, refresh_callback, parent_window=None):
         self.name = name
         self.id = id
         self.level = level
@@ -26,6 +27,7 @@ class PokemonTrade:
         self.gender = gender
         self.attacks = attacks
         self.individual_id = individual_id
+        self.shiny = shiny
         self.refresh_callback = refresh_callback
         self.logger = logger
         self.parent_window = parent_window  # The collection window or None
@@ -198,8 +200,9 @@ class PokemonTrade:
         main_layout.addWidget(self.their_code_label)
 
         self.trade_code_input = QLineEdit()
-        self.trade_code_input.setPlaceholderText("Paste the code from the other person here")
+        self.trade_code_input.setPlaceholderText("Paste trade code or monthly challenge code (MONTHLY-XXXX) here")
         self.trade_code_input.textChanged.connect(self.update_other_pokemon_sprite)
+        self.trade_code_input.textChanged.connect(self.update_trade_button_text)
         main_layout.addWidget(self.trade_code_input)
 
         # Trade Button
@@ -211,10 +214,22 @@ class PokemonTrade:
 
         window.exec()
 
+    def update_trade_button_text(self, text):
+        if text.strip().startswith("MONTHLY-"):
+            self.trade_button.setText("Redeem Monthly Pokemon")
+        else:
+            self.trade_button.setText("Generate Trade Password")
+
     def generate_and_show_passwords(self, window):
+        # Check for monthly challenge code first
+        code2 = self.trade_code_input.text().strip()
+        if code2.startswith("MONTHLY-"):
+            self.handle_monthly_challenge_code(code2)
+            window.accept()  # Close the dialog after handling the code
+            return
+
         # Validate codes before switching
         code1 = self.trade_code_display.text().strip()
-        code2 = self.trade_code_input.text().strip()
         if not code1 or not code2 or len(code2) < 15:
             showWarning("Please enter a valid trade code from the other user.")
             return
@@ -329,7 +344,7 @@ class PokemonTrade:
     def copy_to_clipboard(self, text):
         clipboard = mw.app.clipboard()
         clipboard.setText(text)
-        showWarning("Trade code copied to clipboard!")
+        showInfo("Trade code copied to clipboard!")
 
     def update_other_pokemon_sprite(self, code):
         from PyQt6.QtGui import QMovie
@@ -425,6 +440,133 @@ class PokemonTrade:
         if result == QMessageBox.StandardButton.Yes:
             self.trade_pokemon_in(code)
 
+    def handle_monthly_challenge_code(self, code):
+        """Handle special monthly challenge codes"""
+        try:
+            import requests
+            
+            # GitHub URL for monthly challenge data
+            monthly_data_url = "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/challenges/monthly_challenges.json"
+            
+            # Fetch monthly challenge data
+            response = requests.get(monthly_data_url)
+            response.raise_for_status()
+            monthly_challenges = response.json()
+            
+            # Find matching code
+            challenge_data = None
+            for challenge in monthly_challenges:
+                if challenge.get("code") == code:
+                    challenge_data = challenge
+                    break
+            
+            if not challenge_data:
+                showWarning("Invalid or expired monthly challenge code!")
+                return None
+
+            challenge_pokemon_data = challenge_data.get("pokemon")
+            if not challenge_pokemon_data:
+                showWarning("Monthly challenge data is missing pokemon information.")
+                return None
+
+            # Get the unique ID for the challenge Pokemon
+            challenge_individual_id = challenge_pokemon_data.get("individual_id")
+            if not challenge_individual_id:
+                show_warning_with_traceback(
+                    parent=self.parent_window,
+                    exception=ValueError("Challenge data is missing 'individual_id'"),
+                    message="Error processing monthly challenge code"
+                )
+                return None
+
+            # Check if user already has this specific Pokemon by its unique individual_id
+            with open(self.mypokemon_path, "r", encoding="utf-8") as file:
+                existing_pokemon = json.load(file)
+                
+            for pokemon in existing_pokemon:
+                if pokemon.get("individual_id") == challenge_individual_id:
+                    showWarning(f"You have already redeemed this specific {challenge_pokemon_data.get('name', 'challenge Pokémon')}!")
+                    return None
+            
+            # Create and add the new Pokemon
+            new_pokemon = self.create_monthly_challenge_pokemon(challenge_pokemon_data)
+            self.add_pokemon_to_collection(new_pokemon)
+            
+            description = challenge_data.get("description", "")
+            success_message = f"Congratulations! You've redeemed the monthly challenge {new_pokemon['name']} at level {new_pokemon.get('level', 1)}!"
+            if description:
+                success_message += f"\n\n{description}"
+            showInfo(success_message)
+            return new_pokemon
+            
+        except requests.RequestException as e:
+            showWarning(f"Failed to connect to monthly challenge server: {str(e)}")
+            return None
+        except Exception as e:
+            show_warning_with_traceback(
+                parent=self.parent_window,
+                exception=e,
+                message="Error processing monthly challenge code"
+            )
+            return None
+
+    def create_monthly_challenge_pokemon(self, pokemon_data):
+        """Create a Pokemon from monthly challenge data, using values from the JSON where available."""
+        from datetime import datetime
+        
+        base_stats = pokemon_data.get("stats", {"hp": 45, "atk": 49, "def": 49, "spa": 65, "spd": 65, "spe": 45})
+
+        return {
+            "name": pokemon_data["name"],
+            "nickname": pokemon_data.get("nickname", ""),
+            "id": pokemon_data["id"],
+            "level": pokemon_data.get("level", 1),
+            "ability": pokemon_data.get("ability", "No Ability"),
+            "type": pokemon_data.get("type", ["Normal"]),
+            "stats": base_stats,
+            "ev": pokemon_data.get("ev", {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}),
+            "iv": pokemon_data.get("iv", {"hp": 15, "atk": 15, "def": 15, "spa": 15, "spd": 15, "spe": 15}),
+            "attacks": pokemon_data.get("attacks", ["Tackle"]),
+            "growth_rate": pokemon_data.get("growth_rate", "medium"),
+            "base_experience": pokemon_data.get("base_experience", 64),
+            "gender": pokemon_data.get("gender", "N"),
+            "shiny": pokemon_data.get("shiny", False),
+            "xp": pokemon_data.get("xp", 0),
+            "current_hp": pokemon_data.get("current_hp", base_stats.get("hp")),
+            "friendship": pokemon_data.get("friendship", 0),
+            "pokemon_defeated": pokemon_data.get("pokemon_defeated", 0),
+            "everstone": pokemon_data.get("everstone", False),
+            "mega": pokemon_data.get("mega", False),
+            "special-form": pokemon_data.get("special-form", None),
+            "evos": pokemon_data.get("evos", []),
+            "tier": pokemon_data.get("tier", "Normal"),
+            "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "individual_id": pokemon_data["individual_id"],
+            "is_favorite": pokemon_data.get("is_favorite", False),
+            "held_item": pokemon_data.get("held_item", None)
+        }
+
+    def add_pokemon_to_collection(self, new_pokemon):
+        """Add the Pokemon to user's collection"""
+        try:
+            with open(self.mypokemon_path, "r", encoding="utf-8") as file:
+                pokemon_list = json.load(file)
+                
+            pokemon_list.append(new_pokemon)
+            
+            with open(self.mypokemon_path, "w", encoding="utf-8") as file:
+                json.dump(pokemon_list, file, indent=2)
+                
+            if self.refresh_callback:
+                self.refresh_callback()
+                
+        except Exception as e:
+            show_warning_with_traceback(
+                parent=self.parent_window,
+                exception=e,
+                message="Error adding Pokemon to collection"
+            )
+
     def format_gender(self):
         gender_map = {"M": 0, "F": 1, "N": 2}
         return gender_map.get(self.gender, 3)
@@ -439,8 +581,17 @@ class PokemonTrade:
         return ','.join([str(self.find_move_by_name(attack)) for attack in self.attacks])
 
     def trade_pokemon_in(self, number_code):
+        """Handle both regular trade codes and monthly challenge codes"""
+        code = number_code.strip()
+        
+        # Check if it's a monthly challenge code
+        if code.startswith("MONTHLY-"):
+            result = self.handle_monthly_challenge_code(code)
+            return  # Exit after handling monthly code
+        
+        # Continue with existing regular trade logic...
         try:
-            numbers = [int(num) for num in number_code.split(',')]
+            numbers = [int(num) for num in code.split(',')]
             if len(numbers) < 15:
                 showWarning("Code is incomplete.")
                 return
