@@ -3,7 +3,9 @@
     {
         "code": "MONTHLY-2025-09-BIDOOF",
         "month": "September 2025",
-        "description": "The God Pokémon, Bidoof, for the September 2025 Challenge.",
+        "description": "The almighty God Pokémon, Bidoof, is here for the September 2025 challenge!",
+        "previous_challenge_individual_id": "e5d795db-102c-4119-bd5c-53bf556d09eb",
+        "defeat_threshold": 100,
         "pokemon": {
             "name": "Bidoof",
             "nickname": "",
@@ -61,6 +63,8 @@
         "code": "MONTHLY-2025-10-???",
         "month": "October 2025",
         "description": "???",
+        "previous_challenge_individual_id": "????",
+        "defeat_threshold": "???",
         "pokemon": {}
     }
 ]
