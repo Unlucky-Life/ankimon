@@ -58,16 +58,43 @@ def special_pokemon_names_for_min_level(name):
     else:
         return name
 
-def search_pokedex(pokemon_name,variable):
-    pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
-    with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
+def search_pokedex(pokemon_name, variable):
+    try:
+        pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
+        with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
-            if pokemon_name in pokedex_data:
-                pokemon_info = pokedex_data[pokemon_name]
-                var = pokemon_info.get(variable, None)
+
+        # 1. Try a direct match first
+        if pokemon_name in pokedex_data:
+            pokemon_info = pokedex_data[pokemon_name]
+            var = pokemon_info.get(variable)
+            if var is not None:
                 return var
-            else:
-                return []
+
+        # 2. If no direct match, try stripping known suffixes in a prioritized order
+        # The order is important to handle names with multiple suffixes correctly.
+        suffixes_to_strip = [
+            "-standard", "-altered", "-land", "-incarnate", "-ordinary", "-aria", 
+            "-shield", "-average", "-50", "-baile", "-midday", "-solo", 
+            "-red-meteor", "-disguised", "-amped", "-ice", "-male", 
+            "-full-belly", "-single-strike", "-therian", "-origin", "-zen", 
+            "-blade", "-mega", "-gmax", "-alola", "-galar", "-hisui"
+        ]
+
+        for suffix in suffixes_to_strip:
+            if pokemon_name.endswith(suffix):
+                base_name = pokemon_name[:-len(suffix)]
+                if base_name in pokedex_data:
+                    pokemon_info = pokedex_data[base_name]
+                    var = pokemon_info.get(variable)
+                    if var is not None:
+                        return var
+
+        # 3. If still no match, return an empty list to be handled by the calling function
+        return []
+    except Exception as e:
+        show_warning_with_traceback(parent=mw, exception=e, message=f"Error searching for pokemon '{pokemon_name}'")
+        return []
 
 def search_pokedex_by_name_for_id(pokemon_name, variable):
     pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
