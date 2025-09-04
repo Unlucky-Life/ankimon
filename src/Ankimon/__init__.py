@@ -58,6 +58,7 @@ from .resources import (
     sound_list_path,
     badges_list_path,
     items_list_path,
+    rate_path,
 )
 from .menu_buttons import create_menu_actions
 from .hooks import setupHooks
@@ -135,6 +136,8 @@ from .singletons import (
     achievements,
     pokemon_pc
 )
+
+from .pyobj.pokemon_trade import check_and_award_monthly_pokemon
 
 from .functions.battle_functions import (
     update_pokemon_battle_status,
@@ -745,6 +748,9 @@ def on_profile_did_open():
 
         # Show tip of the day
         show_tip_of_the_day()
+
+        # Award monthly pokemon if applicable
+        check_and_award_monthly_pokemon(logger)
     except Exception as e:
         show_warning_with_traceback(parent=mw, exception=e, message="Error setting up sync system:")
 
