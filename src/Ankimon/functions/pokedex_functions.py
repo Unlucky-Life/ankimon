@@ -315,7 +315,6 @@ def check_evolution_by_item(pokemon_id, item_id, file_path=poke_evo_path):
     # Iterate through the possible evolutions
     for evos in possible_evos:
         evo_data = get_pokemon_evolution_data(int(evos))
-        showWarning(f"{evo_data}")  # Ensure this retrieves valid evolution data
         if evo_data:
             if (
                 int(evo_data['evolution_trigger_id']) == 3 and
