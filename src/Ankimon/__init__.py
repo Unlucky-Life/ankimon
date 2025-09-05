@@ -184,8 +184,7 @@ if not _collection_loaded: # If the collection hasn't already been loaded
     collected_pokemon_ids = load_collected_pokemon_ids()
     _collection_loaded = True
 
-config = mw.addonManager.getConfig(__name__)
-#show config .json file
+
 
 items_list = []
 with open(items_list_path, "r", encoding="utf-8") as file:
@@ -313,7 +312,7 @@ def open_help_window(online_connectivity):
 
 gen_config = []
 for i in range(1,10):
-    gen_config.append(config[f"misc.gen{i}"])
+    gen_config.append(settings_obj.get(f"misc.gen{i}"))
 
 def answerCard_before(filter, reviewer, card):
 	utils.answBtnAmt = reviewer.mw.col.sched.answerButtons(card)
