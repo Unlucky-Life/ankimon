@@ -12,7 +12,6 @@ from aqt.utils import showInfo, tooltip
 from ..pyobj.error_handler import show_warning_with_traceback
 
 from ..resources import user_path, addon_dir
-from ..config_var import ankiweb_sync
 from ..utils import close_anki
 
 from PyQt6.QtGui import QTextOption
@@ -713,12 +712,17 @@ class AnkimonDataSync:
 
     def _deobfuscate_data(self, obfuscated_str: str) -> dict:
         """De-obfuscates string back into a dictionary."""
-        separator = "---DATA_START---\n"
-        parts = obfuscated_str.split(separator)
-        if len(parts) > 1:
+        new_separator = "---DATA_START---"
+        old_separator = "\n---"
+        
+        if new_separator in obfuscated_str:
+            parts = obfuscated_str.split(new_separator)
+            obfuscated_data = parts[1]
+        elif old_separator in obfuscated_str:
+            parts = obfuscated_str.split(old_separator)
             obfuscated_data = parts[1]
         else:
-            obfuscated_data = parts[0] # Fallback for old format
+            obfuscated_data = obfuscated_str # Fallback for old format
 
         obfuscated_bytes = base64.b64decode(obfuscated_data)
         deobfuscated_bytes = bytearray()
@@ -727,63 +731,9 @@ class AnkimonDataSync:
             deobfuscated_bytes.append(byte ^ key_bytes[i % len(key_bytes)])
         return json.loads(deobfuscated_bytes.decode('utf-8'))
 
-    def _save_obfuscated_config(self):
-        try:
-            meta_path = self._get_source_path("meta.json")
-            if not meta_path.is_file():
-                return
+    
 
-            with open(meta_path, 'r', encoding='utf-8') as f:
-                meta_data = json.load(f)
-
-            config_data = meta_data.get("config")
-            if not config_data:
-                return
-
-            obfuscated_str = self._obfuscate_data(config_data)
-
-            warning_message = "WARNING: This file contains important user data. Do not delete or modify this file. Deleting or modifying this file can lead to data loss in the Ankimon addon.\n---DATA_START---\n"
-
-            file_content = warning_message + obfuscated_str
-
-            obfuscated_config_path = self.user_files_path / "config.obf"
-            with open(obfuscated_config_path, 'w', encoding='utf-8') as f:
-                f.write(file_content)
-
-        except Exception as e:
-            print(f"Ankimon: Could not save obfuscated config: {e}")
-
-    def _load_and_update_config_from_obfuscated_file(self):
-        try:
-            obfuscated_config_path = self.user_files_path / "config.obf"
-            if not obfuscated_config_path.is_file():
-                return
-
-            with open(obfuscated_config_path, 'r', encoding='utf-8') as f:
-                obfuscated_str = f.read()
-
-            if not obfuscated_str:
-                return
-
-            stored_config = self._deobfuscate_data(obfuscated_str)
-
-            meta_path = self._get_source_path("meta.json")
-            if not meta_path.is_file():
-                return
-
-            with open(meta_path, 'r', encoding='utf-8') as f:
-                meta_data = json.load(f)
-
-            current_config = meta_data.get("config", {})
-
-            current_config.update(stored_config)
-            meta_data["config"] = current_config
-
-            with open(meta_path, 'w', encoding='utf-8') as f:
-                json.dump(meta_data, f, indent=4)
-
-        except Exception as e:
-            print(f"Ankimon: Could not load obfuscated config: {e}")
+    
 
     def save_configs(self) -> List[str]:
         """
@@ -1045,6 +995,7 @@ def check_and_sync_pokemon_data(settings_obj, logger):
     Check for Pokemon data differences and show sync dialog ONLY if needed.
     Returns dialog instance only if differences exist.
     """
+    from ..config_var import ankiweb_sync
 
     # Check if sync is disabled
     if not ankiweb_sync:
@@ -1072,13 +1023,13 @@ def check_and_sync_pokemon_data(settings_obj, logger):
 
 def save_ankimon_configs():
     """Convenience function to save configs - called before media sync."""
+    from ..config_var import ankiweb_sync
     # Check if sync is disabled
     if not ankiweb_sync:
         return []
 
     try:
         sync_handler = get_ankimon_sync()
-        sync_handler._save_obfuscated_config()
         return sync_handler.save_configs()
     except Exception as e:
         # Gracefully handle errors during startup
@@ -1086,13 +1037,13 @@ def save_ankimon_configs():
 
 def read_ankimon_configs(media_sync_status: bool = False):
     """Convenience function to read configs - called after media sync."""
+    from ..config_var import ankiweb_sync
     # Check if sync is disabled
     if not ankiweb_sync:
         return []
 
     try:
         sync_handler = get_ankimon_sync()
-        sync_handler._load_and_update_config_from_obfuscated_file()
         return sync_handler.read_configs(media_sync_status)
     except Exception as e:
         # Gracefully handle errors during startup
@@ -1103,6 +1054,7 @@ _automatic_sync_enabled = False
 
 def setup_ankimon_sync_hooks(settings_obj, logger):
     """Set up hooks for automatic Ankimon data syncing - but disabled by default."""
+    from ..config_var import ankiweb_sync
 
     # Check if sync is disabled
     if not ankiweb_sync:

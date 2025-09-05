@@ -261,11 +261,11 @@ class SettingsWindow(QMainWindow):
         scroll_area_layout = QVBoxLayout(scroll_area_content)
         scroll_area.setWidget(scroll_area_content)
         hierarchical_groups = {
-            "General": { "settings": ["Trainer Name", "Language", "Show tip of the day on startup"], "subgroups": { "Technical Settings": {"settings": ["SSH Access", "Receive Ankimon News", "AnkiWeb Sync"]}, "Discord Integration": {"settings": ["Discord Rich Presence - Ankimon", "Discord Rich Presence - Quote Type"]} } },
-            "Battle": { "settings": ["Damage in reviewer", "Automatic Battle", "Cards per round", "Show Main Pokémon in Reviewer", "Show Pokémon buttons", "Pop-Up on Defeat", "Show Text Message Box in Reviewer", "Message Box Display Time"], "subgroups": { "Fight Hotkeys": {"settings": ["Key for Defeat", "Key for Catching", "Key for Opening/Closing Ankimon", "Allow Choosing Moves"]}, "HP, XP and Level Settings": {"settings": ["HP Bar Configuration", "XP Bar Configruation", "XP Bar Location", "Remove Level Cap"]} } },
-            "Styling": {"settings": ["Styling in Reviewer", "Animate Time", "HP Bar Thickness", "Reviewer Image as GIF", "View Main Pokémon Front"]},
+            "General": { "settings": ["Trainer Name", "Language", "Show tip of the day on startup"], "subgroups": { "Technical Settings": {"settings": ["SSH Access", "Receive Ankimon News", "AnkiWeb Sync", "Ankimon Leaderboard"]}, "Discord Integration": {"settings": ["Discord Rich Presence - Ankimon", "Discord Rich Presence - Quote Type"]} } },
+            "Battle": { "settings": ["Damage in reviewer", "Automatic Battle", "Cards per round", "Show Main Pokémon in Reviewer", "Show Pokémon buttons", "Pop-Up on Defeat", "Show Text Message Box in Reviewer", "Message Box Display Time"], "subgroups": { "Fight Hotkeys": {"settings": ["Key for Defeat", "Key for Catching", "Key for Opening/Closing Ankimon", "Allow Choosing Moves"]}, "HP, XP and Level Settings": {"settings": ["HP Bar Configuration", "XP Bar Configuration", "XP Bar Location", "Remove Level Cap"]} } },
+            "Styling": {"settings": ["Styling in Reviewer", "Animate Time", "HP Bar Thickness", "Reviewer Image as GIF", "View Main Pokémon Front", "Show GIFs in Collection"]},
             "Sound": {"settings": ["Enable Sound Effects", "Enable Sounds", "Enable Battle Sounds"]},
-            "Study": {"settings": ["Goal of Daily Average", "Card Max Time"]},
+            "Study": {"settings": ["Goal of Daily Average Cards", "Card Max Time"]},
             "Generations": {"settings": ["Generation 1", "Generation 2", "Generation 3", "Generation 4", "Generation 5", "Generation 6", "Generation 7", "Generation 8", "Generation 9"]}
         }
         for l1_title, l1_data in hierarchical_groups.items():
