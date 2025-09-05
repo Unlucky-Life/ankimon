@@ -12,7 +12,6 @@ from aqt.utils import showInfo, tooltip
 from ..pyobj.error_handler import show_warning_with_traceback
 
 from ..resources import user_path, addon_dir
-from ..config_var import ankiweb_sync
 from ..utils import close_anki
 
 from PyQt6.QtGui import QTextOption
@@ -713,12 +712,17 @@ class AnkimonDataSync:
 
     def _deobfuscate_data(self, obfuscated_str: str) -> dict:
         """De-obfuscates string back into a dictionary."""
-        separator = "---DATA_START---\n"
-        parts = obfuscated_str.split(separator)
-        if len(parts) > 1:
+        new_separator = "---DATA_START---"
+        old_separator = "\n---"
+        
+        if new_separator in obfuscated_str:
+            parts = obfuscated_str.split(new_separator)
+            obfuscated_data = parts[1]
+        elif old_separator in obfuscated_str:
+            parts = obfuscated_str.split(old_separator)
             obfuscated_data = parts[1]
         else:
-            obfuscated_data = parts[0] # Fallback for old format
+            obfuscated_data = obfuscated_str # Fallback for old format
 
         obfuscated_bytes = base64.b64decode(obfuscated_data)
         deobfuscated_bytes = bytearray()
@@ -991,6 +995,7 @@ def check_and_sync_pokemon_data(settings_obj, logger):
     Check for Pokemon data differences and show sync dialog ONLY if needed.
     Returns dialog instance only if differences exist.
     """
+    from ..config_var import ankiweb_sync
 
     # Check if sync is disabled
     if not ankiweb_sync:
@@ -1018,6 +1023,7 @@ def check_and_sync_pokemon_data(settings_obj, logger):
 
 def save_ankimon_configs():
     """Convenience function to save configs - called before media sync."""
+    from ..config_var import ankiweb_sync
     # Check if sync is disabled
     if not ankiweb_sync:
         return []
@@ -1031,6 +1037,7 @@ def save_ankimon_configs():
 
 def read_ankimon_configs(media_sync_status: bool = False):
     """Convenience function to read configs - called after media sync."""
+    from ..config_var import ankiweb_sync
     # Check if sync is disabled
     if not ankiweb_sync:
         return []
@@ -1047,6 +1054,7 @@ _automatic_sync_enabled = False
 
 def setup_ankimon_sync_hooks(settings_obj, logger):
     """Set up hooks for automatic Ankimon data syncing - but disabled by default."""
+    from ..config_var import ankiweb_sync
 
     # Check if sync is disabled
     if not ankiweb_sync:
