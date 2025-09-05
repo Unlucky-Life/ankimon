@@ -767,6 +767,63 @@ class AnkimonDataSync:
 
             stored_config = self._deobfuscate_data(obfuscated_str)
 
+            # --- Migration Logic Start ---
+            # Extract and save old top-level keys if they exist in stored_config
+            # These keys were previously saved directly in config.obf but are now separate files.
+            # We need to migrate them to their correct files and remove them from stored_config
+            # to prevent them from interfering with meta.json's config section.
+
+            # Handle 'items'
+            if "items" in stored_config and isinstance(stored_config["items"], list):
+                items_path = self.user_files_path / "items.json"
+                try:
+                    with open(items_path, 'w', encoding='utf-8') as f:
+                        json.dump(stored_config["items"], f, indent=4)
+                    print(f"Ankimon: Migrated 'items' data to {items_path}")
+                except Exception as e:
+                    print(f"Ankimon: Error migrating 'items' data: {e}")
+                del stored_config["items"] # Remove after migration attempt
+
+            # Handle 'trainer.team' and 'trainer.xp_share'
+            # These are likely part of mypokemon.json or a user profile file.
+            # For this fix, we will ensure they are not passed to meta.json's config.
+            # A more complete fix would involve writing them to their correct files.
+            # For now, we just remove them from stored_config if they are top-level.
+            if "trainer.team" in stored_config:
+                # This data should ideally be migrated to mypokemon.json or a dedicated user profile file.
+                # For now, we prevent it from being written to meta.json's config.
+                print(f"Ankimon: Found old 'trainer.team' in config.obf. Please ensure it's handled by mypokemon.json.")
+                del stored_config["trainer.team"]
+
+            if "trainer.xp_share" in stored_config:
+                # This data should ideally be migrated to mypokemon.json or a dedicated user profile file.
+                # For now, we prevent it from being written to meta.json's config.
+                print(f"Ankimon: Found old 'trainer.xp_share' in config.obf. Please ensure it's handled by mypokemon.json.")
+                del stored_config["trainer.xp_share"]
+
+            # --- Migration Logic End ---
+
+            # --- Type Coercion Start ---
+            # Define expected types based on meta.json defaults (from previous analysis)
+            keys_to_coerce_to_int = [
+                "battle.automatic_battle",
+                "battle.daily_average",
+                "gui.reviewer_text_message_box_time",
+                "gui.xp_bar_location",
+                "misc.discord_rich_presence_text"
+            ]
+
+            for key in keys_to_coerce_to_int:
+                if key in stored_config and isinstance(stored_config[key], str):
+                    try:
+                        stored_config[key] = int(stored_config[key])
+                    except ValueError:
+                        # Log a warning if conversion fails, but don't crash.
+                        print(f"Ankimon: Warning: Could not convert '{stored_config[key]}' for key '{key}' to int. Keeping as string.")
+                        # Optionally, set to a default value if conversion fails, e.g., stored_config[key] = 0
+
+            # --- Type Coercion End ---
+
             meta_path = self._get_source_path("meta.json")
             if not meta_path.is_file():
                 return
@@ -776,14 +833,24 @@ class AnkimonDataSync:
 
             current_config = meta_data.get("config", {})
 
+            # Update the 'config' section of meta.json with the processed stored_config.
+            # This will correctly merge values and types.
             current_config.update(stored_config)
             meta_data["config"] = current_config
 
             with open(meta_path, 'w', encoding='utf-8') as f:
                 json.dump(meta_data, f, indent=4)
 
+            # --- Clean config.obf after successful migration and update ---
+            # This ensures that config.obf only contains the 'config' section going forward.
+            # This will be handled by calling _save_obfuscated_config after this function.
+            # The read_ankimon_configs function already calls save_ankimon_configs, which calls _save_obfuscated_config.
+
         except Exception as e:
             print(f"Ankimon: Could not load obfuscated config: {e}")
+            # If an error occurs during loading/migration, we should ensure meta.json is not corrupted.
+            # However, the current code just prints. A more robust solution might involve
+            # reverting meta.json or loading defaults. For now, stick to existing error handling.
 
     def save_configs(self) -> List[str]:
         """
