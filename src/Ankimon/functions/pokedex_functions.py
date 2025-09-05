@@ -64,34 +64,30 @@ def search_pokedex(pokemon_name, variable):
         with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
 
-        # 1. Try a direct match first
-        if pokemon_name in pokedex_data:
-            pokemon_info = pokedex_data[pokemon_name]
-            var = pokemon_info.get(variable)
-            if var is not None:
-                return var
+        # Create a copy of the name to modify
+        current_name = pokemon_name
 
-        # 2. If no direct match, try stripping known suffixes in a prioritized order
-        # The order is important to handle names with multiple suffixes correctly.
-        suffixes_to_strip = [
-            "-standard", "-altered", "-land", "-incarnate", "-ordinary", "-aria", 
-            "-shield", "-average", "-50", "-baile", "-midday", "-solo", 
-            "-red-meteor", "-disguised", "-amped", "-ice", "-male", 
-            "-full-belly", "-single-strike", "-therian", "-origin", "-zen", 
-            "-blade", "-mega", "-gmax", "-alola", "-galar", "-hisui"
-        ]
+        while True:
+            # 1. Try to find a match with the current name
+            if current_name in pokedex_data:
+                pokemon_info = pokedex_data[current_name]
+                var = pokemon_info.get(variable)
+                if var is not None:
+                    return var
 
-        for suffix in suffixes_to_strip:
-            if pokemon_name.endswith(suffix):
-                base_name = pokemon_name[:-len(suffix)]
-                if base_name in pokedex_data:
-                    pokemon_info = pokedex_data[base_name]
-                    var = pokemon_info.get(variable)
-                    if var is not None:
-                        return var
+            # 2. If no match, find the last hyphen
+            last_hyphen_index = current_name.rfind('-')
 
-        # 3. If still no match, return an empty list to be handled by the calling function
+            # 3. If no hyphen is found, we can't shorten the name anymore.
+            if last_hyphen_index == -1:
+                break
+
+            # 4. Remove the suffix and try again in the next iteration
+            current_name = current_name[:last_hyphen_index]
+
+        # 5. If no match was ever found, return an empty list
         return []
+
     except Exception as e:
         show_warning_with_traceback(parent=mw, exception=e, message=f"Error searching for pokemon '{pokemon_name}'")
         return []
