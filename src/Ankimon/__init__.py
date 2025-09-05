@@ -568,7 +568,7 @@ def on_review_card(*args):
                 play_effect_sound("HurtNormal")
 
             if true_dmg_from_user_move > 0:
-                reviewer_obj.seconds = int(settings_obj.compute_special_variable("animate_time"))
+                reviewer_obj.seconds = settings_obj.compute_special_variable("animate_time")
                 tooltipWithColour(f" -{true_dmg_from_user_move} HP ", "#F06060", x=200)
                 if multiplier == 1:
                     play_effect_sound("HurtNormal")
