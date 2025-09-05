@@ -727,130 +727,9 @@ class AnkimonDataSync:
             deobfuscated_bytes.append(byte ^ key_bytes[i % len(key_bytes)])
         return json.loads(deobfuscated_bytes.decode('utf-8'))
 
-    def _save_obfuscated_config(self):
-        try:
-            meta_path = self._get_source_path("meta.json")
-            if not meta_path.is_file():
-                return
+    
 
-            with open(meta_path, 'r', encoding='utf-8') as f:
-                meta_data = json.load(f)
-
-            config_data = meta_data.get("config")
-            if not config_data:
-                return
-
-            obfuscated_str = self._obfuscate_data(config_data)
-
-            warning_message = "WARNING: This file contains important user data. Do not delete or modify this file. Deleting or modifying this file can lead to data loss in the Ankimon addon.\n---DATA_START---\n"
-
-            file_content = warning_message + obfuscated_str
-
-            obfuscated_config_path = self.user_files_path / "config.obf"
-            with open(obfuscated_config_path, 'w', encoding='utf-8') as f:
-                f.write(file_content)
-
-        except Exception as e:
-            print(f"Ankimon: Could not save obfuscated config: {e}")
-
-    def _load_and_update_config_from_obfuscated_file(self):
-        try:
-            obfuscated_config_path = self.user_files_path / "config.obf"
-            if not obfuscated_config_path.is_file():
-                return
-
-            with open(obfuscated_config_path, 'r', encoding='utf-8') as f:
-                obfuscated_str = f.read()
-
-            if not obfuscated_str:
-                return
-
-            stored_config = self._deobfuscate_data(obfuscated_str)
-
-            # --- Migration Logic Start ---
-            # Extract and save old top-level keys if they exist in stored_config
-            # These keys were previously saved directly in config.obf but are now separate files.
-            # We need to migrate them to their correct files and remove them from stored_config
-            # to prevent them from interfering with meta.json's config section.
-
-            # Handle 'items'
-            if "items" in stored_config and isinstance(stored_config["items"], list):
-                items_path = self.user_files_path / "items.json"
-                try:
-                    with open(items_path, 'w', encoding='utf-8') as f:
-                        json.dump(stored_config["items"], f, indent=4)
-                    print(f"Ankimon: Migrated 'items' data to {items_path}")
-                except Exception as e:
-                    print(f"Ankimon: Error migrating 'items' data: {e}")
-                del stored_config["items"] # Remove after migration attempt
-
-            # Handle 'trainer.team' and 'trainer.xp_share'
-            # These are likely part of mypokemon.json or a user profile file.
-            # For this fix, we will ensure they are not passed to meta.json's config.
-            # A more complete fix would involve writing them to their correct files.
-            # For now, we just remove them from stored_config if they are top-level.
-            if "trainer.team" in stored_config:
-                # This data should ideally be migrated to mypokemon.json or a dedicated user profile file.
-                # For now, we prevent it from being written to meta.json's config.
-                print(f"Ankimon: Found old 'trainer.team' in config.obf. Please ensure it's handled by mypokemon.json.")
-                del stored_config["trainer.team"]
-
-            if "trainer.xp_share" in stored_config:
-                # This data should ideally be migrated to mypokemon.json or a dedicated user profile file.
-                # For now, we prevent it from being written to meta.json's config.
-                print(f"Ankimon: Found old 'trainer.xp_share' in config.obf. Please ensure it's handled by mypokemon.json.")
-                del stored_config["trainer.xp_share"]
-
-            # --- Migration Logic End ---
-
-            # --- Type Coercion Start ---
-            # Define expected types based on meta.json defaults (from previous analysis)
-            keys_to_coerce_to_int = [
-                "battle.automatic_battle",
-                "battle.daily_average",
-                "gui.reviewer_text_message_box_time",
-                "gui.xp_bar_location",
-                "misc.discord_rich_presence_text"
-            ]
-
-            for key in keys_to_coerce_to_int:
-                if key in stored_config and isinstance(stored_config[key], str):
-                    try:
-                        stored_config[key] = int(stored_config[key])
-                    except ValueError:
-                        # Log a warning if conversion fails, but don't crash.
-                        print(f"Ankimon: Warning: Could not convert '{stored_config[key]}' for key '{key}' to int. Keeping as string.")
-                        # Optionally, set to a default value if conversion fails, e.g., stored_config[key] = 0
-
-            # --- Type Coercion End ---
-
-            meta_path = self._get_source_path("meta.json")
-            if not meta_path.is_file():
-                return
-
-            with open(meta_path, 'r', encoding='utf-8') as f:
-                meta_data = json.load(f)
-
-            current_config = meta_data.get("config", {})
-
-            # Update the 'config' section of meta.json with the processed stored_config.
-            # This will correctly merge values and types.
-            current_config.update(stored_config)
-            meta_data["config"] = current_config
-
-            with open(meta_path, 'w', encoding='utf-8') as f:
-                json.dump(meta_data, f, indent=4)
-
-            # --- Clean config.obf after successful migration and update ---
-            # This ensures that config.obf only contains the 'config' section going forward.
-            # This will be handled by calling _save_obfuscated_config after this function.
-            # The read_ankimon_configs function already calls save_ankimon_configs, which calls _save_obfuscated_config.
-
-        except Exception as e:
-            print(f"Ankimon: Could not load obfuscated config: {e}")
-            # If an error occurs during loading/migration, we should ensure meta.json is not corrupted.
-            # However, the current code just prints. A more robust solution might involve
-            # reverting meta.json or loading defaults. For now, stick to existing error handling.
+    
 
     def save_configs(self) -> List[str]:
         """
@@ -1145,7 +1024,6 @@ def save_ankimon_configs():
 
     try:
         sync_handler = get_ankimon_sync()
-        sync_handler._save_obfuscated_config()
         return sync_handler.save_configs()
     except Exception as e:
         # Gracefully handle errors during startup
@@ -1159,7 +1037,6 @@ def read_ankimon_configs(media_sync_status: bool = False):
 
     try:
         sync_handler = get_ankimon_sync()
-        sync_handler._load_and_update_config_from_obfuscated_file()
         return sync_handler.read_configs(media_sync_status)
     except Exception as e:
         # Gracefully handle errors during startup

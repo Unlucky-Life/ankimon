@@ -4,6 +4,8 @@ from aqt import mw
 from aqt.utils import showInfo
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from PyQt6.QtWidgets import QRadioButton, QHBoxLayout, QMainWindow, QScrollArea
+from pathlib import Path
+from ..resources import user_path
 
 class Settings:
     def __init__(self):
@@ -14,26 +16,61 @@ class Settings:
         return self.descriptions.get(key, "No description available.")
 
     def load_config(self):
+        obfuscated_config_path = user_path / "config.obf"
+        config = {}
+        from ..pyobj.ankimon_sync import AnkimonDataSync # To reuse deobfuscation logic
+        sync_handler = AnkimonDataSync() # Re-use the deobfuscation logic
 
-        # Load existing config or initialize as empty
-        config = mw.addonManager.getConfig(__name__) or {}
+        if obfuscated_config_path.is_file():
+            try:
+                with open(obfuscated_config_path, 'r', encoding='utf-8') as f:
+                    obfuscated_str = f.read()
+                config = sync_handler._deobfuscate_data(obfuscated_str)
+                # Migration logic for old keys (items, trainer.team, trainer.xp_share)
+                # These keys are removed from the config dictionary after being processed.
+                # This ensures config.obf only contains the 'config' section going forward.
+                if "items" in config and isinstance(config["items"], list):
+                    items_path = user_path / "items.json"
+                    try:
+                        with open(items_path, 'w', encoding='utf-8') as f:
+                            json.dump(config["items"], f, indent=4)
+                    except Exception as e:
+                        print(f"Ankimon: Error migrating 'items' data during load_config: {e}")
+                    del config["items"]
 
-        # Check if "misc.leaderboard" exists; if not, add it
-        if "misc.leaderboard" not in config:
-            config["misc.leaderboard"] = False  # Add the new setting with its default value
-            self.save_config(config)
-        if "misc.ankiweb_sync" not in config:
-            config["misc.ankiweb_sync"] = False  # Default to disabled
-            self.save_config(config)
+                if "trainer.team" in config:
+                    del config["trainer.team"]
 
+                if "trainer.xp_share" in config:
+                    del config["trainer.xp_share"]
+
+                # Type Coercion (from ankimon_sync.py)
+                keys_to_coerce_to_int = [
+                    "battle.automatic_battle",
+                    "battle.daily_average",
+                    "gui.reviewer_text_message_box_time",
+                    "gui.xp_bar_location",
+                    "misc.discord_rich_presence_text"
+                ]
+                for key in keys_to_coerce_to_int:
+                    if key in config and isinstance(config[key], str):
+                        try:
+                            config[key] = int(config[key])
+                        except ValueError:
+                            print(f"Ankimon: Warning: Could not convert '{config[key]}' for key '{key}' to int. Keeping as string.")
+
+            except Exception as e:
+                print(f"Ankimon: Error loading config from config.obf: {e}. Falling back to default config.")
+                config = {} # Fallback to default if error occurs
+        
         if not config:
-            #Card max time in Seconds
+            # If config.obf was not found, was empty, or had errors, load default config
             config = {
                 "battle.dmg_in_reviewer": True,
-                "battle.automatic_battle": int(0),
-                "battle.cards_per_round": int(2),
-                "battle.daily_average": int(100),
-                "battle.card_max_time": int(60),
+                "battle.automatic_battle": 0,
+                "battle.cards_per_round": 2,
+                "battle.daily_average": 100,
+                "battle.card_max_time": 60,
 
                 "controls.pokemon_buttons": True,
                 "controls.defeat_key": "5",
@@ -46,11 +83,11 @@ class Settings:
                 "gui.styling_in_reviewer": True,
                 "gui.hp_bar_config": True,
                 "gui.pop_up_dialog_message_on_defeat": False,
-                "gui.review_hp_bar_thickness": int(2),
+                "gui.review_hp_bar_thickness": 2,
                 "gui.reviewer_image_gif": False,
                 "gui.reviewer_text_message_box": True,
-                "gui.reviewer_text_message_box_time": int(3),
-                "gui.show_mainpkmn_in_reviewer": int(1),
+                "gui.reviewer_text_message_box_time": 3,
+                "gui.show_mainpkmn_in_reviewer": 1,
                 "gui.view_main_front": True,
                 "gui.xp_bar_config": True,
                 "gui.xp_bar_location": 2,
@@ -82,12 +119,22 @@ class Settings:
                 "trainer.id": 0,
                 "trainer.cash": 0,
                 "trainer.level": 0,
-                }
-            self.save_config(config)
+            }
+            self.save_config(config) # Save default config to config.obf
         return config
 
     def save_config(self, config):
-        mw.addonManager.writeConfig(__name__, config)
+        from ..pyobj.ankimon_sync import AnkimonDataSync # To reuse obfuscation logic
+        obfuscated_config_path = user_path / "config.obf"
+        sync_handler = AnkimonDataSync() # Re-use the obfuscation logic
+        try:
+            obfuscated_str = sync_handler._obfuscate_data(config)
+            warning_message = "WARNING: This file contains important user data. Do not delete or modify this file. Deleting or modifying this file can lead to data loss in the Ankimon addon.\n---"
+            file_content = warning_message + obfuscated_str
+            with open(obfuscated_config_path, 'w', encoding='utf-8') as f:
+                f.write(file_content)
+        except Exception as e:
+            print(f"Ankimon: Could not save obfuscated config: {e}")
 
     def get(self, key, default=None):
         return self.config.get(key, default)
