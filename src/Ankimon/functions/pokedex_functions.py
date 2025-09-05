@@ -58,16 +58,39 @@ def special_pokemon_names_for_min_level(name):
     else:
         return name
 
-def search_pokedex(pokemon_name,variable):
-    pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
-    with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
+def search_pokedex(pokemon_name, variable):
+    try:
+        pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
+        with open(str(pokedex_path), "r", encoding="utf-8") as json_file:
             pokedex_data = json.load(json_file)
-            if pokemon_name in pokedex_data:
-                pokemon_info = pokedex_data[pokemon_name]
-                var = pokemon_info.get(variable, None)
-                return var
-            else:
-                return []
+
+        # Create a copy of the name to modify
+        current_name = pokemon_name
+
+        while True:
+            # 1. Try to find a match with the current name
+            if current_name in pokedex_data:
+                pokemon_info = pokedex_data[current_name]
+                var = pokemon_info.get(variable)
+                if var is not None:
+                    return var
+
+            # 2. If no match, find the last hyphen
+            last_hyphen_index = current_name.rfind('-')
+
+            # 3. If no hyphen is found, we can't shorten the name anymore.
+            if last_hyphen_index == -1:
+                break
+
+            # 4. Remove the suffix and try again in the next iteration
+            current_name = current_name[:last_hyphen_index]
+
+        # 5. If no match was ever found, return an empty list
+        return []
+
+    except Exception as e:
+        show_warning_with_traceback(parent=mw, exception=e, message=f"Error searching for pokemon '{pokemon_name}'")
+        return []
 
 def search_pokedex_by_name_for_id(pokemon_name, variable):
     pokemon_name = special_pokemon_names_for_min_level(pokemon_name)
