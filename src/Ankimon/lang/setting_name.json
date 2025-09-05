@@ -9,6 +9,7 @@
     "controls.defeat_key": "Key for Defeat",
     "controls.catch_key": "Key for Catching",
     "controls.key_for_opening_closing_ankimon": "Key for Opening/Closing Ankimon",
+    "controls.allow_to_choose_moves": "Allow Choosing Moves",
     
     "gui.animate_time": "Animate Time",
     "gui.gif_in_collection": "Show GIFs in Collection",
