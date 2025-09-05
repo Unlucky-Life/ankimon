@@ -111,6 +111,7 @@ class Settings:
                 "misc.leaderboard": False,
                 "misc.ankiweb_sync": False,
                 "misc.YouShallNotPass_Ankimon_News": False,
+                "misc.show_tip_on_startup": True, # Added default for Tip of the Day
                 "misc.discord_rich_presence": False,
                 "misc.discord_rich_presence_text": 1,
 
@@ -121,6 +122,9 @@ class Settings:
                 "trainer.level": 0,
             }
             self.save_config(config) # Save default config to config.obf
+        # Ensure new settings are present in existing configurations
+        if "misc.show_tip_on_startup" not in config:
+            config["misc.show_tip_on_startup"] = True # Default to True
         return config
 
     def save_config(self, config):
