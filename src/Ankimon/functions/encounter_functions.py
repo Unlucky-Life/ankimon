@@ -198,8 +198,8 @@ def check_id_ok(id_num: Union[int, list[int]]):
     for gen, max_id in gen_ids.items():
         if id_num <= max_id:
             generation = int(gen.split('_')[1])
-            config = mw.addonManager.getConfig(__name__)
-            gen_config = [config[f"misc.gen{i}"] for i in range(1, 10)]
+            
+            gen_config = [settings_obj.get(f"misc.gen{i}") for i in range(1, 10)]
             return gen_config[generation - 1]
 
     return False
