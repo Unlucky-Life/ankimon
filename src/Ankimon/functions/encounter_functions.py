@@ -172,13 +172,10 @@ def choose_random_pkmn_from_tier():
 def check_min_generate_level(name):
     evoType = search_pokedex(name.lower(), "evoType")
     evoLevel = search_pokedex(name.lower(), "evoLevel")
-    if evoLevel is not None:
+    if isinstance(evoLevel, (int, str)) and str(evoLevel).isdigit():
         return int(evoLevel)
     elif evoType is not None:
         min_level = 100
-        return int(min_level)
-    elif evoType and evoLevel is None:
-        min_level = 1
         return int(min_level)
     else:
         min_level = 1
