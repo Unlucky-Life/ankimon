@@ -63,9 +63,6 @@ Set `gif_in_collection` to `true` to view GIF images instead of sprites of your 
 Setting `hp_bar_config` to `false` removes the HP bar in the reviewer interface.
 - `hp_bar_config` [True/False]
 
-Set `dmg_in_reviewer` to `false` if you prefer a simplified interaction. Setting it to `true` introduces a more realistic experience: once you press again or exert more pressure, the wild Pokémon gains the ability to attack your Pokémon.
-- `dmg_in_reviewer` [True/False]
-
 Setting `xp_bar_location` to 1 places the XP bar at the top of your screen in the reviewer. If set to 2, the XP bar will appear at the bottom of your screen.
 - `xp_bar_location` [1/2]
 

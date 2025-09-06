@@ -66,7 +66,6 @@ class Settings:
         if not config:
             # If config.obf was not found, was empty, or had errors, load default config
             config = {
-                "battle.dmg_in_reviewer": True,
                 "battle.automatic_battle": 0,
                 "battle.cards_per_round": 2,
                 "battle.daily_average": 100,
