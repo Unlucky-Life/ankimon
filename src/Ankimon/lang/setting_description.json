@@ -1,5 +1,4 @@
 {
-    "battle.dmg_in_reviewer": "Enable a realistic damage display during reviews. Setting this to true allows wild Pokémon to counterattack when re-engaged.",
     "battle.automatic_battle": "Set automatic battle mode for wild Pokémon interactions when enemy HP is 0. \n[0: Disabled, 1: Auto-catch, 2: Auto-defeat (to gain XP), 3: Catch if NEW Pokémon (not in collection), otherwise defeat].",
     "battle.cards_per_round": "Number of cards to review per round until the next battle action.",
     "battle.daily_average": "Set the amount of Cards you want to review per day.",

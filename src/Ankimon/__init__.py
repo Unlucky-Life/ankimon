@@ -38,7 +38,6 @@ from .resources import generate_startup_files, user_path, IS_EXPERIMENTAL_BUILD,
 generate_startup_files(addon_dir, user_path)
 
 from .config_var import (
-    dmg_in_reviewer,
     no_more_news,
     ssh,
     defeat_shortcut,
@@ -437,7 +436,7 @@ def on_review_card(*args):
             ankimon_tracker_obj.pokemon_encouter += 1
             multiplier = int(ankimon_tracker_obj.multiplier)
 
-            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:
+            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and multiplier < 1:
                 enemy_move = safe_get_random_move(enemy_pokemon.attacks, logger=logger)
                 enemy_move_category = enemy_move.get("category")
 
@@ -555,7 +554,6 @@ def on_review_card(*args):
                 opponent_hp_after=enemy_pokemon.hp, # Use the already updated HP
                 battle_status=main_pokemon.battle_status,
                 pokemon_encounter=ankimon_tracker_obj.pokemon_encouter,
-                dmg_in_reviewer=settings_obj.get("battle.dmg_in_reviewer", True),
                 translator=translator,
                 changes=current_battle_info_changes
             )

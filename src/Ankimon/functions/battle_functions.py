@@ -536,7 +536,6 @@ def process_battle_data(
     opponent_hp_after: int,
     battle_status: str,
     pokemon_encounter: int,
-    dmg_in_reviewer: bool,
     translator,
     changes
 ) -> str:
