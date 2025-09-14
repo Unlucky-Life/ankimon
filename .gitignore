@@ -24,3 +24,5 @@ src/Ankimon/HelpInfos.html
 # changelog
 src/Ankimon/updateinfos.md
 .aider*
+*.env
+cycle_keys.py
