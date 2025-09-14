@@ -18,7 +18,6 @@ gif_in_collection = settings_obj.get("gui.gif_in_collection") #default: true => 
 styling_in_reviewer = settings_obj.get("gui.styling_in_reviewer") #default: true; false = no styling in reviewer
 
 automatic_battle = settings_obj.get("battle.automatic_battle") #default: 0; 1 = catch_pokemon; 2 = defeat_pokemon
-dmg_in_reviewer = settings_obj.get("battle.dmg_in_reviewer") #default: false; true = mainpokemon is getting damaged in reviewer for false answers
 cards_per_round = settings_obj.get("battle.cards_per_round")
 
 leaderboard = settings_obj.get("misc.leaderboard", False)  # Default to False if not found
