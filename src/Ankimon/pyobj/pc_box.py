@@ -16,7 +16,7 @@ from aqt.qt import (
 
 from aqt.theme import theme_manager # Check if light / dark mode in Anki
 
-from PyQt6.QtWidgets import QLineEdit, QComboBox, QCheckBox, QMenu, QWidget, QScrollArea, QFrame
+from PyQt6.QtWidgets import QLineEdit, QComboBox, QCheckBox, QMenu, QWidget, QScrollArea, QFrame, QRadioButton, QButtonGroup
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QIcon, QFont, QAction, QMovie, QCloseEvent
 
@@ -112,9 +112,13 @@ class PokemonPC(QDialog):
         self.tier_combo = None
         self.filter_favorites = None
         self.filter_is_holding_item = None
+        self.filter_shiny = None
         self.sort_by_id = None
         self.sort_by_name = None
         self.sort_by_level = None
+        self.sort_by_date = None
+        self.sort_group = None
+        self.selected_sort_key = "Date"
         self.desc_sort = None  # Sort by descending order
 
         # Subscribe to theme change hook to update UI dynamically
@@ -337,41 +341,70 @@ class PokemonPC(QDialog):
         self.filter_is_holding_item = QCheckBox("Holds item")
         self.filter_is_holding_item.setChecked(is_checked)
         self.filter_is_holding_item.stateChanged.connect(lambda: self.go_to_box(0))
+        # Shiny filter
+        is_checked = self.filter_shiny.isChecked() if self.filter_shiny is not None else False
+        self.filter_shiny = QCheckBox("Shiny")
+        self.filter_shiny.setChecked(is_checked)
+        self.filter_shiny.stateChanged.connect(lambda: self.go_to_box(0))
         # Sorting options
         sort_label = QLabel("Sort by:")
-        sort_layout = QHBoxLayout()
-        is_checked = self.sort_by_id.isChecked() if self.sort_by_id is not None else False
-        self.sort_by_id = QCheckBox("ID")
-        self.sort_by_id.setChecked(is_checked)
-        self.sort_by_id.stateChanged.connect(lambda: self.go_to_box(0))
-        is_checked = self.sort_by_name.isChecked() if self.sort_by_name is not None else False
-        self.sort_by_name = QCheckBox("Name")
-        self.sort_by_name.setChecked(is_checked)
-        self.sort_by_name.stateChanged.connect(lambda: self.go_to_box(0))
-        is_checked = self.sort_by_level.isChecked() if self.sort_by_level is not None else False
-        self.sort_by_level = QCheckBox("Level")
-        self.sort_by_level.setChecked(is_checked)
-        self.sort_by_level.stateChanged.connect(lambda: self.go_to_box(0))
+
+        # Radio buttons for mutually exclusive sorting
+        self.sort_group = QButtonGroup(self)
+        self.sort_by_id = QRadioButton("ID")
+        self.sort_by_name = QRadioButton("Name")
+        self.sort_by_level = QRadioButton("Level")
+        self.sort_by_date = QRadioButton("Date")
+
+        self.sort_group.addButton(self.sort_by_id)
+        self.sort_group.addButton(self.sort_by_name)
+        self.sort_group.addButton(self.sort_by_level)
+        self.sort_group.addButton(self.sort_by_date)
+
+        if self.selected_sort_key == "ID":
+            self.sort_by_id.setChecked(True)
+        elif self.selected_sort_key == "Name":
+            self.sort_by_name.setChecked(True)
+        elif self.selected_sort_key == "Level":
+            self.sort_by_level.setChecked(True)
+        else:  # Date is the default
+            self.sort_by_date.setChecked(True)
+
+        # Connect signals
+        self.sort_group.buttonClicked.connect(self.on_sort_button_clicked)
+
+        sort_radio_layout = QHBoxLayout()
+        sort_radio_layout.addWidget(sort_label)
+        sort_radio_layout.addWidget(self.sort_by_id)
+        sort_radio_layout.addWidget(self.sort_by_name)
+        sort_radio_layout.addWidget(self.sort_by_level)
+        sort_radio_layout.addWidget(self.sort_by_date)
+        sort_radio_widget = QWidget()
+        sort_radio_widget.setLayout(sort_radio_layout)
+
+        # Checkboxes for other options
         is_checked = self.desc_sort.isChecked() if self.desc_sort is not None else False
         self.desc_sort = QCheckBox("Descending")
         self.desc_sort.setChecked(is_checked)
         self.desc_sort.stateChanged.connect(lambda: self.go_to_box(0))
-        sort_layout.addWidget(self.sort_by_id)
-        sort_layout.addWidget(self.sort_by_name)
-        sort_layout.addWidget(self.sort_by_level)
-        sort_layout.addWidget(self.desc_sort)
-        sort_widget = QWidget()
-        sort_widget.setLayout(sort_layout)
+
         # Adding the widgets to the layout
         filters_layout.addWidget(self.search_edit, 0, 0, 1, 4)
         filters_layout.addWidget(search_button, 0, 4, 1, 1)
-        filters_layout.addWidget(self.type_combo, 1, 0)
-        filters_layout.addWidget(self.generation_combo, 1, 1)
-        filters_layout.addWidget(self.tier_combo, 1, 2)
-        filters_layout.addWidget(self.filter_favorites, 1, 3)
-        filters_layout.addWidget(self.filter_is_holding_item, 1, 4)
-        filters_layout.addWidget(sort_label, 2, 0)
-        filters_layout.addWidget(sort_widget, 2, 1, 1, 3)
+        filters_layout.addWidget(self.type_combo, 1, 0, 1, 2)
+        filters_layout.addWidget(self.generation_combo, 1, 2, 1, 2)
+        filters_layout.addWidget(self.tier_combo, 1, 4, 1, 1)
+
+        checkboxes_layout = QHBoxLayout()
+        checkboxes_layout.addWidget(self.filter_favorites)
+        checkboxes_layout.addWidget(self.filter_is_holding_item)
+        checkboxes_layout.addWidget(self.filter_shiny)
+        checkboxes_layout.addWidget(self.desc_sort)  # Moved here
+        checkboxes_widget = QWidget()
+        checkboxes_widget.setLayout(checkboxes_layout)
+
+        filters_layout.addWidget(checkboxes_widget, 2, 0, 1, 5)
+        filters_layout.addWidget(sort_radio_widget, 3, 0, 1, 5)
         collection_layout.addLayout(filters_layout)
 
         # Finalizing layout
@@ -482,6 +515,8 @@ class PokemonPC(QDialog):
         try:
             with open(mypokemon_path, "r", encoding="utf-8") as file:
                 pokemon_list = json.load(file)
+                for i, pokemon in enumerate(pokemon_list):
+                    pokemon['original_index'] = i
                 return pokemon_list
         except FileNotFoundError:
             self.logger.log("error","mypokemon.json file not found.")
@@ -533,6 +568,10 @@ class PokemonPC(QDialog):
                 if self.filter_is_holding_item.isChecked() and not pokemon.get("held_item", False):
                     return False
 
+            if self.filter_shiny is not None:
+                if self.filter_shiny.isChecked() and not pokemon.get("shiny", False):
+                    return False
+
             if self.generation_combo is not None:
                 gen_idx = self.generation_combo.currentIndex()
                 if gen_idx != 0 and (
@@ -552,54 +591,27 @@ class PokemonPC(QDialog):
         return list(filter(filtering_func, pokemon_list.copy()))
 
     def sort_pokemon_list(self, pokemon_list: list) -> list:
-        """
-        Sorts a list of Pokémon dictionaries based on selected sorting criteria and order.
-
-        Sorting criteria are determined by UI checkboxes and can include:
-        - Sorting by Pokémon ID
-        - Sorting by name and nickname
-        - Sorting by level
-
-        The sort order (ascending or descending) is controlled by a separate checkbox.
-
-        Args:
-            pokemon_list (list): List of Pokémon dictionaries to sort. Each dictionary should
-                contain keys such as "id", "name", "nickname", and "level" depending on sorting.
-
-        Returns:
-            list: The sorted list of Pokémon dictionaries according to the selected criteria and order.
-                If no sorting criteria are selected, returns the original list unchanged.
-        """
         reverse = self.desc_sort is not None and self.desc_sort.isChecked()
-        filters = []
-        if self.sort_by_id is not None and self.sort_by_id.isChecked():
-            filters.append("id")
-        if self.sort_by_name is not None and self.sort_by_name.isChecked():
-            filters.append("name")
-            filters.append("nickname")
-        if self.sort_by_level is not None and self.sort_by_level.isChecked():
-            filters.append("level")
 
-        if not filters:
-            return pokemon_list
+        sort_key_str = self.selected_sort_key.lower()
+        if sort_key_str == "date":
+            sort_key_str = "original_index"
 
         def sort_key(p):
-            values = []
-            for key in filters:
-                value = p.get(key)
-                if value is None:
-                    if key in ('name', 'nickname'):
-                        value = ''
-                    else:
-                        value = 0
-                values.append(value)
-            return tuple(values)
+            if sort_key_str == "name":
+                return (p.get("name", ""), p.get("nickname", ""))
+            else:
+                return p.get(sort_key_str, 0)
 
         return sorted(
             pokemon_list,
             reverse=reverse,
             key=sort_key
         )
+
+    def on_sort_button_clicked(self, button):
+        self.selected_sort_key = button.text()
+        self.go_to_box(0)
 
     def show_actions_submenu(self, button: QPushButton, pokemon: dict[str, Any]):
         """
