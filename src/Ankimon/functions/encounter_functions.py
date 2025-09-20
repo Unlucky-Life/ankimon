@@ -172,11 +172,11 @@ def choose_random_pkmn_from_tier():
 def check_min_generate_level(name):
     evoType = search_pokedex(name.lower(), "evoType")
     evoLevel = search_pokedex(name.lower(), "evoLevel")
-    if isinstance(evoLevel, (int, str)) and str(evoLevel).isdigit():
+    if evoLevel:
         return int(evoLevel)
-    elif evoType is not None:
+    elif evoType != []:
         min_level = 100
-        return int(min_level)
+        return min_level
     else:
         min_level = 1
         return min_level
@@ -198,7 +198,7 @@ def check_id_ok(id_num: Union[int, list[int]]):
     for gen, max_id in gen_ids.items():
         if id_num <= max_id:
             generation = int(gen.split('_')[1])
-            
+
             gen_config = [settings_obj.get(f"misc.gen{i}") for i in range(1, 10)]
             return gen_config[generation - 1]
 

@@ -164,6 +164,8 @@ class Reviewer_Manager:
                          f'</div>')
 
             main_lang_name = (get_pokemon_diff_lang_name(int(self.main_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
+            if str(main_lang_name) == 'No translation in this language':
+                main_lang_name = 'RESTART ANKI NOW' 
             if self.main_pokemon.shiny:
                 main_lang_name += " ⭐ "
             main_name_display_text = f"{main_lang_name} LvL: {self.main_pokemon.level}"
