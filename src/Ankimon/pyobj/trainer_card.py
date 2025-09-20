@@ -78,26 +78,6 @@ class TrainerCard:
             showInfo(f"Error decoding JSON from file: {mypokemon_path}")
             return "None"
 
-    def get_highest_level_pokemon(self):
-        """Method to find the name of the highest-level Pokémon from the mypokemon_path."""
-        try:
-            # Read the Pokémon data from the file
-            with open(mypokemon_path, "r", encoding="utf-8") as file:
-                pokemon_data = json.load(file)
-
-            if not pokemon_data:
-                return None  # Return None if the data is empty
-
-            # Find the Pokémon with the highest level and return its name
-            highest_pokemon = max(pokemon_data, key=lambda p: p.get("level", 0))
-            return f"{highest_pokemon.get('level', 0)}"
-        except FileNotFoundError:
-            showInfo(f"File not found: {mypokemon_path}")
-            return "None"
-        except json.JSONDecodeError:
-            showInfo(f"Error decoding JSON from file: {mypokemon_path}")
-            return "None"
-
     def highest_pokemon_level(self):
         """Method to find the name of the highest-level Pokémon from the mypokemon_path."""
         try:
