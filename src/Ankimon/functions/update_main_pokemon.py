@@ -7,10 +7,10 @@ from ..pyobj.pokemon_obj import PokemonObject
 
 # default values to fall back in case of load error
 MAIN_POKEMON_DEFAULT = {
-    "name": "Pikachu",
+    "name": "RESTART ANKI",
     "gender": "M",
     "level": 5,
-    "id": 1,
+    "id": 0,
     "ability": "Static",
     "type": ["Electric"],
     "base_stats": {
