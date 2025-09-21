@@ -23,7 +23,7 @@ class TrainerCard:
     def __init__(self, logger, main_pokemon, settings_obj, trainer_name, badge_count, trainer_id, level=1, xp=0, achievements=None, team="", image_path=trainer_sprites_path, league="unranked"):
         self.logger = logger
         self.main_pokemon = main_pokemon
-        self.settings_obj = settings_obj,
+        self.settings_obj = settings_obj
         self.trainer_name = trainer_name      # Name of the trainer
         self.badge_count = badge_count        # Number of badges the trainer has earned
         self.favorite_pokemon = main_pokemon.name  # Trainer's favorite Pokémon
@@ -143,4 +143,5 @@ class TrainerCard:
         """Update level based on XP."""
         while self.xp >= self.xp_for_next_level():
             self.level += 1
+            self.settings_obj.set("trainer.level", self.level)
             self.on_level_up()

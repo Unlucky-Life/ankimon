@@ -111,6 +111,8 @@ class Settings:
                 "misc.discord_rich_presence": False,
                 "misc.discord_rich_presence_text": 1,
 
+                "misc.developer_mode": False,
+
                 "trainer.name": "Ash",
                 "trainer.sprite": "ash",
                 "trainer.id": 0,
@@ -121,6 +123,8 @@ class Settings:
         # Ensure new settings are present in existing configurations
         if "misc.show_tip_on_startup" not in config:
             config["misc.show_tip_on_startup"] = True # Default to True
+        if "misc.developer_mode" not in config:
+            config["misc.developer_mode"] = False
         return config
 
     def save_config(self, config):
