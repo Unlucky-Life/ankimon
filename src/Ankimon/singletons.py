@@ -145,6 +145,7 @@ test_window = TestWindow(
     ankimon_tracker_obj=ankimon_tracker_obj,
     translator=translator,
     parent=mw,
+    logger=logger,
     )
 
 achievement_bag = AchievementWindow()

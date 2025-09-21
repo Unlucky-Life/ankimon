@@ -37,7 +37,6 @@ from ..functions.pokedex_functions import get_pokemon_diff_lang_name, search_pok
 from ..functions.pokemon_functions import find_experience_for_level
 
 from ..pyobj.ankimon_tracker import AnkimonTracker
-
 from ..pyobj.InfoLogger import ShowInfoLogger
 
 from ..pyobj.translator import Translator
@@ -84,7 +83,7 @@ class TestWindow(QWidget):
         self.main_pokemon = main_pokemon
         self.settings_obj = settings_obj
         self.ankimon_tracker_obj = ankimon_tracker_obj
-        self.logger = logger if logger is not None else ShowInfoLogger()
+        self.logger = logger
         self.translator = translator
 
         if translator is None:
