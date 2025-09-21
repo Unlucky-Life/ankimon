@@ -43,5 +43,6 @@
     "misc.discord_rich_presence": "Discord Rich Presence for Ankimon showing in Discord 'Playing Ankimon'. Set to False to disable.",
     "misc.discord_rich_presence_text": "Set to 1 for Ankimon Quotes or set to 2 for showing what pokemon you are battle against or with",
     "misc.show_tip_on_startup": "If enabled, a window with a helpful tip about Ankimon will be shown when you start Anki!",
+    "misc.developer_mode": "Enable developer mode. This will create a backup every time Anki is opened.",
     "trainer.name": "Set the name of your trainer."
 }

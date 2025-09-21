@@ -100,6 +100,7 @@ from .functions.pokedex_functions import find_details_move
 from .gui_entities import UpdateNotificationWindow, CheckFiles
 from .pyobj.help_window import HelpWindow
 from .pyobj.backup_files import run_backup
+from .pyobj.backup_manager import BackupManager
 from .pyobj.ankimon_sync import save_ankimon_configs, read_ankimon_configs, setup_ankimon_sync_hooks, check_and_sync_pokemon_data
 from .pyobj.tip_of_the_day import show_tip_of_the_day
 from .classes.choose_move_dialog import MoveSelectionDialog
@@ -169,6 +170,11 @@ try:
     run_backup()
 except Exception as e:
     show_warning_with_traceback(parent=mw, exception=e, message="Backup error:")
+
+backup_manager = BackupManager(logger, settings_obj)
+
+if settings_obj.get("misc.developer_mode", False):
+    backup_manager.create_backup(manual=False)
 
 # Initialize mutator and mutator_full_reset
 global new_state
@@ -690,6 +696,7 @@ create_menu_actions(
     addon_dir,
     data_handler_obj,
     pokemon_pc,
+    backup_manager,
 )
 
     #https://goo.gl/uhAxsg
@@ -762,6 +769,7 @@ def on_profile_loaded():
 addHook("profileLoaded", on_profile_loaded)
 
 gui_hooks.profile_did_open.append(on_profile_did_open)
+gui_hooks.profile_will_close.append(backup_manager.on_anki_close)
 
 def catch_shorcut_function():
     if enemy_pokemon.hp >= 1:
