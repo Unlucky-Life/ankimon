@@ -16,20 +16,22 @@ class ShowInfoLogger:
 
         # Set up logging
         self.logger = logging.getLogger(name)
-        self.logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler(self.log_file, encoding='utf-8')  # Explicit UTF-8 encoding
-        file_handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        file_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
+        if not self.logger.handlers:
+            self.logger.setLevel(logging.DEBUG)
+            file_handler = logging.FileHandler(self.log_file, encoding='utf-8')  # Explicit UTF-8 encoding
+            file_handler.setLevel(logging.DEBUG)
+            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            file_handler.setFormatter(formatter)
+            self.logger.addHandler(file_handler)
 
         # Create a separate handler for the game log messages
         self.game_logger = logging.getLogger("GameLogger")
-        game_file_handler = logging.FileHandler(self.log_file,encoding="utf-8")
-        game_file_handler.setLevel(logging.DEBUG)
-        game_formatter = logging.Formatter('%(asctime)s - GAME - %(message)s')  # Custom format for game messages
-        game_file_handler.setFormatter(game_formatter)
-        self.game_logger.addHandler(game_file_handler)
+        if not self.game_logger.handlers:
+            game_file_handler = logging.FileHandler(self.log_file,encoding="utf-8")
+            game_file_handler.setLevel(logging.DEBUG)
+            game_formatter = logging.Formatter('%(asctime)s - GAME - %(message)s')  # Custom format for game messages
+            game_file_handler.setFormatter(game_formatter)
+            self.game_logger.addHandler(game_file_handler)
 
         # Track the log viewer dialog
         self.log_dialog = None

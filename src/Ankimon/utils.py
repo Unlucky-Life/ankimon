@@ -16,6 +16,7 @@ from PyQt6.QtGui import QFontDatabase, QFont
 from . import audios
 from .pyobj.settings import Settings
 from .pyobj.InfoLogger import ShowInfoLogger
+
 from .functions.battle_functions import calculate_hp
 from .functions.pokedex_functions import find_details_move, search_pokedex
 from .pyobj.error_handler import show_warning_with_traceback
@@ -895,7 +896,7 @@ def substract_item_from_itembag(item: str, quantity: int=1) -> None:
 
     # First, we check if the item is in the item bag
     if item not in [item_data["item"] for item_data in items_list]:
-        ShowInfoLogger().log_and_showinfo("error", f"Could not find {item} in the item bag.")
+        mw.logger.log_and_showinfo("error", f"Could not find {item} in the item bag.")
         return
 
     # Now that we know the item is in the item bag, we retrieve its index
@@ -907,10 +908,10 @@ def substract_item_from_itembag(item: str, quantity: int=1) -> None:
 
     # Now we check whether we can actually substract the chosen amount
     if items_list[index].get("quantity") is None:
-        ShowInfoLogger().log_and_showinfo("error", f"{item} does not seem to have a 'quantity' attribute in the item bag.")
+        mw.logger.log_and_showinfo("error", f"{item} does not seem to have a 'quantity' attribute in the item bag.")
         return
     if items_list[index].get("quantity") < quantity:
-        ShowInfoLogger().log_and_showinfo("error", f"There are {items_list[index].get('quantity')} instances of {item} in the item bag, but you are trying to remove {quantity}.")
+        mw.logger.log_and_showinfo("error", f"There are {items_list[index].get('quantity')} instances of {item} in the item bag, but you are trying to remove {quantity}.")
         return
 
     # Finally, we substract the given amount

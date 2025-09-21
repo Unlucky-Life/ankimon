@@ -8,11 +8,7 @@ from .battle import Move
 from .objects import Pokemon, State, StateMutator, Side
 from .helpers import normalize_name
 from .find_state_instructions import get_all_state_instructions
-from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.error_handler import show_warning_with_traceback
-from ..pyobj.InfoLogger import ShowInfoLogger
-
-logger = ShowInfoLogger()
 
 def reset_stat_boosts(pokemon: Pokemon) -> Pokemon:
     """
