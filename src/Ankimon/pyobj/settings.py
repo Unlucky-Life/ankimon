@@ -41,9 +41,6 @@ class Settings:
                 if "trainer.team" in config:
                     del config["trainer.team"]
 
-                if "trainer.xp_share" in config:
-                    del config["trainer.xp_share"]
-
                 # Type Coercion (from ankimon_sync.py)
                 keys_to_coerce_to_int = [
                     "battle.automatic_battle",
@@ -62,7 +59,7 @@ class Settings:
             except Exception as e:
                 print(f"Ankimon: Error loading config from config.obf: {e}. Falling back to default config.")
                 config = {} # Fallback to default if error occurs
-        
+
         if not config:
             # If config.obf was not found, was empty, or had errors, load default config
             config = {
