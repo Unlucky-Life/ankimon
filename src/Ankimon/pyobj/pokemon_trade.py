@@ -75,12 +75,19 @@ def check_and_award_monthly_pokemon(logger):
             return
 
         logger.log("info", "Checking for monthly challenge Pokemon award.")
-        current_month_str = datetime.now().strftime("%B %Y")
+        now = datetime.now()
+        month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        current_month_str = f"{month_names[now.month - 1]} {now.year}"
         monthly_data_url = "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/challenges/monthly_challenges.json"
         
-        response = requests.get(monthly_data_url)
-        response.raise_for_status()
-        monthly_challenges = response.json()
+        try:
+            response = requests.get(monthly_data_url, timeout=2)
+            response.raise_for_status()
+            monthly_challenges = response.json()
+        except requests.exceptions.RequestException as e:
+            logger.log("error", f"Could not fetch monthly challenges; likely no internet connection. Details: {e}")
+            return  # Exit gracefully if fetching fails
+
         current_challenge = next((c for c in monthly_challenges if c.get("month") == current_month_str), None)
 
         if not current_challenge:
@@ -88,25 +95,36 @@ def check_and_award_monthly_pokemon(logger):
             return
 
         challenge_pokemon_data = current_challenge.get("pokemon")
-        challenge_individual_id = challenge_pokemon_data.get("individual_id")
-        if not (challenge_pokemon_data and challenge_individual_id):
+        if not challenge_pokemon_data:
+            logger.log("warning", f"Monthly challenge for {current_month_str} is missing 'pokemon' data.")
             return
 
-        with open(mypokemon_path, "r", encoding="utf-8") as f:
-            my_pokemon = json.load(f)
+        challenge_individual_id = challenge_pokemon_data.get("individual_id")
+        if not challenge_individual_id:
+            logger.log("warning", f"Monthly challenge for {current_month_str} is missing 'individual_id' in 'pokemon' data.")
+            return
+
+        try:
+            with open(mypokemon_path, "r", encoding="utf-8") as f:
+                my_pokemon = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logger.log("error", f"Failed to load or parse mypokemon.json: {e}")
+            return
 
         if any(p.get("individual_id") == challenge_individual_id for p in my_pokemon):
-            logger.log("info", f"User already has the Pokémon for {current_month_str}.")
+            logger.log("info", f"User already has the Pokémon for {current_month_str} (ID: {challenge_individual_id}).")
             return
 
-        logger.log("info", f"Awarding Pokémon for {current_month_str}.")
+        logger.log("info", f"Awarding Pokémon for {current_month_str}: {challenge_pokemon_data.get('name')}")
         make_shiny = False
         prev_id = current_challenge.get("previous_challenge_individual_id")
         threshold = current_challenge.get("defeat_threshold")
 
         if prev_id and threshold:
+            logger.log("info", f"Checking for shiny eligibility: prev_id={prev_id}, threshold={threshold}")
             for p in my_pokemon:
                 if p.get("individual_id") == prev_id and p.get("pokemon_defeated", 0) >= threshold:
+                    logger.log("info", f"Shiny criteria met for {challenge_pokemon_data.get('name')}.")
                     make_shiny = True
                     break
         
@@ -124,8 +142,9 @@ def check_and_award_monthly_pokemon(logger):
         logger.log("info", f"Successfully awarded {new_pokemon['name']}{shiny_text}.")
 
     except Exception as e:
-        logger.log("error", f"Error in check_and_award_monthly_pokemon: {e}")
-        pass # Silently fail
+        logger.log("error", f"An unexpected error occurred in check_and_award_monthly_pokemon: {e}")
+        # Still failing silently on the user's end, but with more detailed logs for debugging.
+        pass
 
 
 class PokemonTrade:
