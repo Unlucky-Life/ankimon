@@ -46,6 +46,7 @@
     "misc.discord_rich_presence": "Discord Rich Presence - Ankimon",
     "misc.discord_rich_presence_text": "Discord Rich Presence - Quote Type",
     "misc.show_tip_on_startup": "Show Tip of the Day On Startup",
+    "misc.developer_mode": "Developer Mode",
     "trainer.name": "Trainer Name"
 
 }

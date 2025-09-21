@@ -43,6 +43,8 @@
     "See how you stack up against other Ankimon trainers! Check out the 'Leaderboard' option in settings to set it up.",
     "You can change the language of the Ankimon addon. Look for the 'Language' option in the settings!",
     "You can customize what information is shown in your Discord Rich Presence. Check out the 'Discord Rich Presence Text' setting!",
-    "You can set your trainer's name in the settings. Choose a name that fits your style with the 'Trainer Name' setting!"
+    "You can set your trainer's name in the settings. Choose a name that fits your style with the 'Trainer Name' setting!",
+    "The new Backup Manager (Game -> Backup Manager) lets you create and restore backups!",
+    "You can enable Developer Mode in the settings for unlimited backups! Ankimon will take a backup every time it opens."
   ]
 }

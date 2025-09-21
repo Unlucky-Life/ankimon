@@ -32,6 +32,8 @@ from .pyobj.ankimon_shop import PokemonShopManager
 from .pokedex.pokedex_obj import Pokedex
 from .pyobj.achievement_window import AchievementWindow
 from .pyobj.ankimon_tracker_window import AnkimonTrackerWindow
+from .pyobj.backup_manager import BackupManager
+from .gui_classes.backup_manager_dialog import BackupManagerDialog
 from .gui_entities import (
     License,
     Credits,
@@ -86,6 +88,7 @@ def create_menu_actions(
     addon_dir: Path,
     data_handler_obj: DataHandler,
     pokemon_pc: PokemonPC,
+    backup_manager: BackupManager,
 ):
     actions = []
 
@@ -158,6 +161,12 @@ def create_menu_actions(
         pokedex_action.setMenuRole(QAction.MenuRole.NoRole)
         qconnect(pokedex_action.triggered, pokedex_window.show)
         collection_menu.addAction(pokedex_action)
+
+    # Backup Manager
+    backup_manager_action = QAction("Backup Manager", mw)
+    backup_manager_action.setMenuRole(QAction.MenuRole.NoRole)
+    backup_manager_action.triggered.connect(lambda: BackupManagerDialog(backup_manager, mw).exec())
+    game_menu.addAction(backup_manager_action)
 
     # Effectiveness chart
     eff_chart_action = QAction(mw.translator.translate("eff_chart_button"), mw)
