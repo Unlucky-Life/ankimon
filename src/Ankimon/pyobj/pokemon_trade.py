@@ -75,7 +75,9 @@ def check_and_award_monthly_pokemon(logger):
             return
 
         logger.log("info", "Checking for monthly challenge Pokemon award.")
-        current_month_str = datetime.now().strftime("%B %Y")
+        now = datetime.now()
+        month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        current_month_str = f"{month_names[now.month - 1]} {now.year}"
         monthly_data_url = "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/challenges/monthly_challenges.json"
         
         try:
