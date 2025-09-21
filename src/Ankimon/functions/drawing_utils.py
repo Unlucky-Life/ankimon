@@ -1,12 +1,12 @@
 from typing import Optional
 
+from aqt import mw
 from aqt.qt import QPainter, QLabel, Qt
 from PyQt6.QtGui import QColor, QFont, QColor, QPalette
 from PyQt6.QtCore import Qt, QRect, QPoint, QSize, QPoint, QTimer
 from PyQt6.QtWidgets import QApplication, QLabel, QFrame
 
 from ..pyobj.pokemon_obj import PokemonObject
-from ..pyobj.InfoLogger import ShowInfoLogger
 from ..pyobj.settings import Settings
 
 def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, height=0, centered=False):
@@ -56,7 +56,7 @@ def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, heigh
             QTimer.singleShot(period, lambda: lab.hide())
         except:
             QTimer.singleShot(3000, lambda: lab.hide())
-        ShowInfoLogger().log_and_showinfo("game", msg)
+        mw.logger.log_and_showinfo("game", msg)
 
 def draw_gender_symbols(
     main_pokemon: PokemonObject,
