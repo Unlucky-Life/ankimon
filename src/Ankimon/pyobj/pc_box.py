@@ -27,6 +27,7 @@ from ..pyobj.translator import Translator
 from ..pyobj.collection_dialog import MainPokemon
 from ..gui_classes.pokemon_details import PokemonCollectionDetails
 from ..pyobj.InfoLogger import ShowInfoLogger
+
 from ..pyobj.settings import Settings
 from ..functions.sprite_functions import get_sprite_path
 from ..utils import load_custom_font, get_tier_by_id
@@ -787,12 +788,13 @@ class PokemonPC(QDialog):
             # small intermediary function. This allows me to display a confirmation message after giving the item and refresh the PC after giving the item.
             # Refreshing the PC after giving the item is important in order to update the pokemon information with the new held item
             pokemon_obj.give_held_item(item_name)
-            ShowInfoLogger().log_and_showinfo("info", f"{item_name} was given to {pokemon.get('name')}.")
+            self.logger.log_and_showinfo("info", f"{item_name} was given to {pokemon.get('name')}.")
             self.refresh_gui()
 
         give_item_window = GiveItemWindow(
             item_list=items_names,
             give_item_func=lambda item_name: func(item_name),
+            logger=self.logger
         )
         give_item_window.exec()
 
@@ -822,7 +824,7 @@ class PokemonPC(QDialog):
         if pokemon.get('held_item') is None:
             raise ValueError("The pokemon does not hold an item.")
         pokemon_obj.remove_held_item()
-        ShowInfoLogger().log_and_showinfo("info", f"{format_item_name(pokemon['held_item'])} was removed from {pokemon.get('name')}.")
+        self.logger.log_and_showinfo("info", f"{format_item_name(pokemon['held_item'])} was removed from {pokemon.get('name')}.")
 
         # Refreshing the PC after giving the item is important in order to update the pokemon information without the held item
         self.refresh_gui()
@@ -904,7 +906,7 @@ class GiveItemWindow(QDialog):
     """
     Small window that opens up when the user gives an item to the Pokemon from a PC box
     """
-    def __init__(self, item_list: list[str], give_item_func: Callable):
+    def __init__(self, item_list: list[str], give_item_func: Callable, logger):
         super().__init__()
         self.setWindowTitle("Give an Item")
         self.resize(400, 400)
@@ -921,6 +923,7 @@ class GiveItemWindow(QDialog):
         scroll_layout = QVBoxLayout(scroll_content)
 
         self.give_item_func = give_item_func
+        self.logger = logger
 
         NOT_YET_IMPLEMENTED_ITEMS = [
             "focus-sash",
@@ -948,7 +951,7 @@ class GiveItemWindow(QDialog):
                 give_button.setToolTip("Single use held items are not yet implemented.")
                 give_button.setEnabled(False)
                 give_button.clicked.connect(
-                    lambda clicked: ShowInfoLogger().log_and_showinfo("Single use held items are not yet implemented.")
+                    lambda clicked: self.logger.log_and_showinfo("info", "Single use held items are not yet implemented.")
                     )
 
             row_layout.addWidget(item_label)
