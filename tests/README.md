@@ -85,5 +85,5 @@ Once your virtual environment is set up and activated, and Anki's Python environ
     *   **Incorrect Import Depths**: Analyzes relative imports (e.g., `from . import ...`) to ensure they correctly point to an existing module within the Ankimon project structure.
     *   **Circular Imports**: Detects any circular dependencies between modules within the `src/Ankimon/` directory.
 
-*   **`test_addon_integrity.py`**: Contains additional tests related to addon integrity, including module import checks and settings consistency. Note that the primary and most robust import and settings consistency checks are now located in `test_ankimon_integrity.py` and `test_settings_consistency.py` respectively.
-*   **`test_code_integrity.py`**: Contains further code integrity checks. Similar to `test_addon_integrity.py`, some of its functionalities might overlap with the more refined tests in `test_ankimon_integrity.py` and `test_settings_consistency.py`.
+*   **`test_addon_integrity.py`**: Contains additional tests related to addon integrity. Its previous module import and settings consistency checks have been consolidated into `test_ankimon_integrity.py` and `test_settings_consistency.py` for improved robustness and clarity.
+*   **`test_code_integrity.py`**: Contains further code integrity checks. Its previous import and settings consistency checks have been consolidated into `test_ankimon_integrity.py` and `test_settings_consistency.py` for improved robustness and clarity.
