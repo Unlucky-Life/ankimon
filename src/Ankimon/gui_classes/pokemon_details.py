@@ -197,9 +197,9 @@ def PokemonCollectionDetails(name, level, id, shiny, ability, type, detail_stats
         qconnect(attacks_details_button.clicked, lambda: attack_details_window(attacks))
         remember_attacks_details_button = QPushButton("Remember Attacks")
         all_attacks = get_all_pokemon_moves(name, level)
-        qconnect(remember_attacks_details_button.clicked, lambda: remember_attack_details_window(id, attacks, all_attacks, logger))
+        qconnect(remember_attacks_details_button.clicked, lambda: remember_attack_details_window(individual_id, attacks, all_attacks, logger))
         forget_attacks_details_button = QPushButton("Forget Attacks")
-        qconnect(forget_attacks_details_button.clicked, lambda: forget_attack_details_window(id, attacks, logger))
+        qconnect(forget_attacks_details_button.clicked, lambda: forget_attack_details_window(individual_id, attacks, logger))
 
         tm_attacks_details_button = QPushButton("Learn attacks from TMs")
         qconnect(tm_attacks_details_button.clicked, lambda: tm_attack_details_window(id, attacks, logger))
@@ -361,7 +361,7 @@ def attack_details_window(attacks):
     window.setLayout(layout)
     window.exec()
 
-def remember_attack_details_window(id, attack_set, all_attacks, logger):
+def remember_attack_details_window(individual_id, attack_set, all_attacks, logger):
     window = QDialog()
     window.setWindowIcon(QIcon(str(icon_path)))
     outer_layout = QVBoxLayout(window)
@@ -390,7 +390,7 @@ def remember_attack_details_window(id, attack_set, all_attacks, logger):
     attack_layout = QVBoxLayout()
     for attack in all_attacks:
         remember_attack_button = QPushButton(f"Remember {attack}")
-        qconnect(remember_attack_button.clicked, lambda checked, a=attack: remember_attack(id, attack_set, a, logger))
+        qconnect(remember_attack_button.clicked, lambda checked, a=attack: remember_attack(individual_id, attack_set, a, logger))
         attack_layout.addWidget(remember_attack_button)
     attack_layout_widget = QWidget()
     attack_layout_widget.setLayout(attack_layout)
@@ -401,7 +401,7 @@ def remember_attack_details_window(id, attack_set, all_attacks, logger):
     window.resize(1000, 400)
     window.exec()
 
-def forget_attack_details_window(id: int, attack_set: list[str], logger: "InfoLogger.ShowInfoLogger") -> None:
+def forget_attack_details_window(individual_id: int, attack_set: list[str], logger: "InfoLogger.ShowInfoLogger") -> None:
     """
     Creates a window that will allow the user to erase moves from a Pokemon.
 
@@ -443,7 +443,7 @@ def forget_attack_details_window(id: int, attack_set: list[str], logger: "InfoLo
     attack_layout = QVBoxLayout()
     for attack in attack_set:
         forget_attack_button = QPushButton(f"Forget {attack}")
-        qconnect(forget_attack_button.clicked, lambda checked, a=attack: forget_attack(id, attack_set, a, logger))
+        qconnect(forget_attack_button.clicked, lambda checked, a=attack: forget_attack(individual_id, attack_set, a, logger))
         attack_layout.addWidget(forget_attack_button)
     attack_layout_widget = QWidget()
     attack_layout_widget.setLayout(attack_layout)
@@ -454,59 +454,60 @@ def forget_attack_details_window(id: int, attack_set: list[str], logger: "InfoLo
     window.resize(1000, 400)
     window.exec()
 
-def remember_attack(id, attacks, new_attack, logger):
+def remember_attack(individual_id, attacks, new_attack, logger):
     if new_attack in attacks:
         logger.log_and_showinfo("warning","Your pokemon already knows this move!")
         return
     if not mainpokemon_path.is_file():
         logger.log_and_showinfo("warning","Missing Mainpokemon Data !")
         return
-    with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
-        main_pokemon_data = json.load(json_file)
-    for mainpkmndata in main_pokemon_data:
 
-        # Use both id and individual_id for robustness
-        if mainpkmndata.get("id") == id or mainpkmndata.get("individual_id") == id:
-            attacks = mainpkmndata["attacks"]
-            if new_attack:
-                msg = ""
-                msg += f"Your {mainpkmndata['name'].capitalize()} can learn a new attack !"
-                if len(attacks) < 4:
-                    attacks.append(new_attack)
-                    msg += f"\n Your {mainpkmndata['name'].capitalize()} has learned {new_attack} !"
-                    logger.log_and_showinfo("info",f"{msg}")
-                else:
-                    dialog = AttackDialog(attacks, new_attack)
-                    if dialog.exec() == QDialog.DialogCode.Accepted:
-                        selected_attack = dialog.selected_attack
-                        index_to_replace = None
-                        for index, attack in enumerate(attacks):
-                            if attack == selected_attack:
-                                index_to_replace = index
-                        if index_to_replace is not None:
-                            attacks[index_to_replace] = new_attack
-                            logger.log_and_showinfo("info",f"Replaced '{selected_attack}' with '{new_attack}'")
-                        else:
-                            logger.log_and_showinfo("info",f"{new_attack} will be discarded.")
-            mainpkmndata["attacks"] = attacks
-            # Save to mainpokemon file
-            with open(str(mainpokemon_path), "w") as json_file:
-                json.dump([mainpkmndata], json_file, indent=2)
-            # Update mypokemon file
-            with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
-                mypokemondata = json.load(output_file)
-            for index, pokemon_data in enumerate(mypokemondata):
-                # Use individual_id for matching
-                if pokemon_data.get("individual_id") == mainpkmndata.get("individual_id"):
-                    mypokemondata[index] = mainpkmndata
-                    break
-            with open(str(mypokemon_path), "w") as output_file:
-                json.dump(mypokemondata, output_file, indent=2)
-            break
-    else:
-        logger.log_and_showinfo("info","Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can re-learn attacks!")
+    with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
+        mypokemondata = json.load(output_file)
+    for pokemon_data in mypokemondata:
+        # Use individual_id for matching
+        if pokemon_data["individual_id"] != individual_id:
+            continue
 
-def forget_attack(id: int, attacks: list[str], attack_to_forget: str, logger: ShowInfoLogger) -> None:
+        attacks = pokemon_data["attacks"]
+        if new_attack:
+            msg = ""
+            msg += f"Your {pokemon_data['name'].capitalize()} can learn a new attack !"
+            if len(attacks) < 4:
+                attacks.append(new_attack)
+                msg += f"\n Your {pokemon_data['name'].capitalize()} has learned {new_attack} !"
+                logger.log_and_showinfo("info",f"{msg}")
+            else:
+                dialog = AttackDialog(attacks, new_attack)
+                if dialog.exec() == QDialog.DialogCode.Accepted:
+                    selected_attack = dialog.selected_attack
+                    index_to_replace = None
+                    for index, attack in enumerate(attacks):
+                        if attack == selected_attack:
+                            index_to_replace = index
+                    if index_to_replace is not None:
+                        attacks[index_to_replace] = new_attack
+                        logger.log_and_showinfo("info",f"Replaced '{selected_attack}' with '{new_attack}'")
+                    else:
+                        logger.log_and_showinfo("info",f"{new_attack} will be discarded.")
+        pokemon_data["attacks"] = attacks
+
+        with open(str(mypokemon_path), "w") as output_file:
+            json.dump(mypokemondata, output_file, indent=2)
+
+        # Update mainpokemon file if necessary
+        with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
+            main_pokemon_data = json.load(json_file)
+        for mainpkmndata in main_pokemon_data:
+            if mainpkmndata["individual_id"] == individual_id:
+                mainpkmndata["attacks"] = attacks
+                break
+        with open(str(mainpokemon_path), "w") as json_file:
+            json.dump(main_pokemon_data, json_file, indent=2)
+
+        break
+
+def forget_attack(individual_id: int, attacks: list[str], attack_to_forget: str, logger: ShowInfoLogger) -> None:
     """
     Forgets a Pokemon's move. This is done by erasing the chosen move from the list
     of attacks known by the Pokemon and then saving that new Pokemon data in the main
@@ -521,44 +522,46 @@ def forget_attack(id: int, attacks: list[str], attack_to_forget: str, logger: Sh
     Returns:
         None
     """
+
     if not mainpokemon_path.is_file():
         logger.log_and_showinfo("warning","Missing Mainpokemon Data !")
         return
-    with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
-        main_pokemon_data = json.load(json_file)
-    for mainpkmndata in main_pokemon_data:
-        if mainpkmndata["id"] == id:
-            mainpokemon_name = mainpkmndata["name"]
-            mainpokemon_individual_id = mainpkmndata["individual_id"]
-            attacks = mainpkmndata["attacks"]
-            if attack_to_forget:
-                if attack_to_forget in attacks:
-                    if len(attacks) > 1:
-                        attacks.remove(attack_to_forget)
-                        msg = f"Your {mainpkmndata['name'].capitalize()} forgot {attack_to_forget}."
-                        logger.log_and_showinfo("info",f"{msg}")
-                    else:  # If we reach here, it means the Pokemon only has 1 move left. We can't allow this move to be forgotten
-                        msg = f"Your {mainpkmndata['name'].capitalize()} only knows this move, you can't forget it ! "
-                        logger.log_and_showinfo("info",f"{msg}")
-                else:
-                    msg = f"Your {mainpkmndata['name'].capitalize()} does not know {attack_to_forget}."
-                    logger.log_and_showinfo("info",f"{msg}")
-            mainpkmndata["attacks"] = attacks
-            mypkmndata = mainpkmndata
-            mainpkmndata = [mainpkmndata]
-            with open(str(mainpokemon_path), "w") as json_file:
-                json.dump(mainpkmndata, json_file, indent=2)
-            with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
-                mypokemondata = json.load(output_file)
-            for index, pokemon_data in enumerate(mypokemondata):
-                if pokemon_data["individual_id"] == mainpokemon_individual_id:
-                    mypokemondata[index] = mypkmndata
-                    break
-            with open(str(mypokemon_path), "w") as output_file:
-                json.dump(mypokemondata, output_file, indent=2)
-        else:
-            logger.log_and_showinfo("info","Please Select this Pokemon first as Main Pokemon ! \n Only Mainpokemons can forget attacks!")
 
+    with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
+        mypokemondata = json.load(output_file)
+    for pokemon_data in mypokemondata:
+        # Use individual_id for matching
+        if pokemon_data["individual_id"] != individual_id:
+            continue
+
+        attacks = pokemon_data["attacks"]
+        if attack_to_forget in attacks:
+            if len(attacks) > 1:
+                attacks.remove(attack_to_forget)
+                msg = f"Your {pokemon_data['name'].capitalize()} forgot {attack_to_forget}."
+                logger.log_and_showinfo("info",f"{msg}")
+            else:  # If we reach here, it means the Pokemon only has 1 move left. We can't allow this move to be forgotten
+                msg = f"Your {pokemon_data['name'].capitalize()} only knows this move, you can't forget it ! "
+                logger.log_and_showinfo("info",f"{msg}")
+        else:
+            msg = f"Your {pokemon_data['name'].capitalize()} does not know {attack_to_forget}."
+            logger.log_and_showinfo("info",f"{msg}")
+        pokemon_data["attacks"] = attacks
+
+        with open(str(mypokemon_path), "w") as output_file:
+            json.dump(mypokemondata, output_file, indent=2)
+
+        # Update mainpokemon file if necessary
+        with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
+            main_pokemon_data = json.load(json_file)
+        for mainpkmndata in main_pokemon_data:
+            if mainpkmndata["individual_id"] == individual_id:
+                mainpkmndata["attacks"] = attacks
+                break
+        with open(str(mainpokemon_path), "w") as json_file:
+            json.dump(main_pokemon_data, json_file, indent=2)
+
+        break
 def tm_attack_details_window(id: int, current_pokemon_moveset: list[str], logger: ShowInfoLogger) -> None:
     """
     Creates a window that will allow the user to learn TM moves.
