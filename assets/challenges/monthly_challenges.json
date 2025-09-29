@@ -60,11 +60,63 @@
                 }
     },
     {
-        "code": "MONTHLY-2025-10-???",
+        "code": "MONTHLY-2025-10-GASTLY",
         "month": "October 2025",
-        "description": "???",
-        "previous_challenge_individual_id": "????",
-        "defeat_threshold": "???",
-        "pokemon": {}
+        "description": "A spooky challenge for October 2025, featuring Gastly!",
+        "previous_challenge_individual_id": "ad461cb3-67f0-41bd-b66f-3a3b67db37b7",
+        "defeat_threshold": 150,
+        "pokemon": {
+            "name": "Gastly",
+            "nickname": "",
+            "level": 1,
+            "gender": "M",
+            "id": 92,
+            "ability": "Levitate",
+            "type": [
+                "Ghost",
+                "Poison"
+            ],
+            "stats": {
+                "hp": 30,
+                "atk": 35,
+                "def": 30,
+                "spa": 100,
+                "spd": 35,
+                "spe": 80,
+                "xp": 0
+            },
+            "ev": {
+                "hp": 0,
+                "atk": 0,
+                "def": 0,
+                "spa": 0,
+                "spd": 0,
+                "spe": 0
+            },
+            "iv": {
+                "hp": 18,
+                "atk": 17,
+                "def": 12,
+                "spa": 13,
+                "spd": 7,
+                "spe": 18
+            },
+            "attacks": [
+                "Confuse ray",
+                "Lick"
+            ],
+            "base_experience": 62,
+            "current_hp": 30,
+            "growth_rate": "medium-slow",
+            "friendship": 70,
+            "pokemon_defeated": 0,
+            "everstone": false,
+            "shiny": false,
+            "captured_date": "2025-09-29 14:42:51",
+            "individual_id": "c603d760-d637-4534-92ae-e0d89b15786f",
+            "mega": false,
+            "special-form": null,
+            "evos": []
+        }
     }
 ]
