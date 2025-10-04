@@ -208,7 +208,7 @@ class EvoWindow(QWidget):
         # Create buttons for catching and killing the Pokémon
         evolve_button = QPushButton("Evolve Pokémon")
         dont_evolve_button = QPushButton("Cancel Evolution")
-        qconnect(evolve_button.clicked, lambda: self.evolve_pokemon(individual_id, prevo_name, evo_id, evo_name, self.main_pokemon))
+        qconnect(evolve_button.clicked, lambda: self.evolve_pokemon(individual_id, prevo_id, prevo_name, evo_id, evo_name, self.main_pokemon))
         qconnect(dont_evolve_button.clicked, lambda: self.cancel_evolution(individual_id, prevo_name))
 
         # Set the merged image as the pixmap for the QLabel
@@ -224,7 +224,7 @@ class EvoWindow(QWidget):
             if widget:
                 widget.deleteLater()
 
-    def evolve_pokemon(self, individual_id, prevo_name, evo_id, evo_name, main_pokemon):
+    def evolve_pokemon(self, individual_id, prevo_id, prevo_name, evo_id, evo_name, main_pokemon):
         #global achievements
         try:
             with open(mypokemon_path, "r", encoding="utf-8") as json_file:
@@ -235,7 +235,6 @@ class EvoWindow(QWidget):
                         if pokemon_data['individual_id'] == individual_id:
                             pokemon = pokemon_data
                             if pokemon is not None:
-                                prevo_id = pokemon["id"]
                                 pokemon["name"] = evo_name.capitalize()
                                 pokemon["id"] = evo_id
                                 pokemon["type"] = search_pokedex(evo_name.lower(), "types")
