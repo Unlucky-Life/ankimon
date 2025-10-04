@@ -451,5 +451,7 @@
   "futuresight_start": "{pokemon_name} prevede un attacco!",
   "futuresight_still_active": "Un attacco è previsto per {side}!",
   "futuresight_hits": "L'attacco previsto colpisce {side}!",
-  "futuresight_fails": "Divinazione fallisce!"
+  "futuresight_fails": "Divinazione fallisce!",
+  "weather_raindance_still": "Sta ancora piovendo!",
+  "wish_started": "{pokemon_name} ha espresso un desiderio! Guarirà {heal_amount} PS a breve."
 }

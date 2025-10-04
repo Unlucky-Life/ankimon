@@ -451,5 +451,7 @@
   "futuresight_start": "{pokemon_name} prévoit une attaque !",
   "futuresight_still_active": "Une attaque est prévue pour {side} !",
   "futuresight_hits": "L'attaque prévue frappe {side} !",
-  "futuresight_fails": "Prescience échoue !"
+  "futuresight_fails": "Prescience échoue !",
+  "weather_raindance_still": "Il pleut encore !",
+  "wish_started": "{pokemon_name} a fait un vœu ! Il récupérera {heal_amount} PV bientôt."
 }

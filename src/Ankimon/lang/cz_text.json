@@ -451,5 +451,7 @@
   "futuresight_start": "{pokemon_name} předvídá útok!",
   "futuresight_still_active": "Útok je předvídán pro {side}!",
   "futuresight_hits": "Předvídaný útok zasáhl {side}!",
-  "futuresight_fails": "Budoucí zrak selhal!"
+  "futuresight_fails": "Budoucí zrak selhal!",
+  "weather_raindance_still": "Stále prší!",
+  "wish_started": "{pokemon_name} si přál! Brzy si obnoví {heal_amount} HP."
 }

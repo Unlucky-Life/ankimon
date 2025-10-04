@@ -451,5 +451,7 @@
   "futuresight_start": "{pokemon_name}は攻撃を予知した！",
   "futuresight_still_active": "{side}への攻撃が予知されている！",
   "futuresight_hits": "予知された攻撃が{side}を襲った！",
-  "futuresight_fails": "未来予知が失敗した！"
+  "futuresight_fails": "未来予知が失敗した！",
+  "weather_raindance_still": "まだ雨が降っている！",
+  "wish_started": "{pokemon_name}は願い事をした！まもなく{heal_amount} HPを回復する。"
 }

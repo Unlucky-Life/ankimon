@@ -451,5 +451,7 @@
   "futuresight_start": "{pokemon_name} sieht einen Angriff voraus!",
   "futuresight_still_active": "Ein Angriff wird für {side} vorausgesehen!",
   "futuresight_hits": "Der vorausgesehene Angriff trifft {side}!",
-  "futuresight_fails": "Seher schlägt fehl!"
+  "futuresight_fails": "Seher schlägt fehl!",
+  "weather_raindance_still": "Es regnet immer noch!",
+  "wish_started": "{pokemon_name} hat sich etwas gewünscht! Es wird bald {heal_amount} KP heilen."
 }
