@@ -622,3 +622,16 @@ class PokemonTrade:
 
         except (FileNotFoundError, json.JSONDecodeError) as e:
             show_warning_with_traceback(parent=self.parent_window, exception=e, message="Error updating Pokémon data.")
+    
+    def format_gender(self):
+        gender_map = {"M": 0, "F": 1, "N": 2}
+        return gender_map.get(self.gender, 3)
+
+    def ev_string(self):
+        return ','.join(str(value) for value in self.ev.values())
+
+    def iv_string(self):
+        return ','.join(str(value) for value in self.iv.values())
+
+    def attack_ids(self):
+        return ','.join([str(self.find_move_by_name(attack)) for attack in self.attacks])
