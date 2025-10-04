@@ -639,7 +639,7 @@ gui_hooks.reviewer_did_answer_card.append(on_review_card)
 if database_complete:
     with open(badgebag_path, "r", encoding="utf-8") as json_file:
         badge_list = json.load(json_file)
-        if len(badge_list) > 2:
+        if len(badge_list) > 1: # has atleast one badge
             rate_this_addon()
 
 #Badges needed for achievements:
