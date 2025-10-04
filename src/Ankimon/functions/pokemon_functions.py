@@ -267,21 +267,30 @@ def save_fossil_pokemon(pokemon_id):
         "spd": random.randint(1, 32),
         "spe": random.randint(1, 32)
     }
+    stats["xp"] = 0
     caught_pokemon = {
         "name": name,
+        "nickname": name,
         "gender": gender,
         "level": level,
         "id": id,
         "ability": ability,
         "type": type,
-        "base_stats": stats,
-        "xp": 0,
+        "stats": stats,
         "ev": ev,
         "iv": iv,
         "attacks": attacks,
         "base_experience": base_experience,
         "current_hp": calculate_hp(int(stats["hp"]), level, ev, iv),
         "growth_rate": growth_rate,
+        "friendship": 0,
+        "pokemon_defeated": 0,
+        "everstone": False,
+        "shiny": shiny_chance(),
+        "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "individual_id": str(uuid.uuid4()),
+        "mega": False,
+        "special-form": None,
         "evos": evos
     }
     # Load existing Pokémon data if it exists

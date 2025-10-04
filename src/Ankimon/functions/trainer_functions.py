@@ -88,7 +88,7 @@ def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp, xp
 
         # Increase the xp of the matched Pokémon
         current_level = int(pokemon['level'])  # MODIFIED: Use local variable for level
-        current_xp = pokemon.get("xp") or pokemon["stats"].get("xp", 0)
+        current_xp = pokemon.get("xp") or pokemon.get("stats", {}).get("xp", 0)
         growth_rate = pokemon['growth_rate']  # MODIFIED: Use local variable for growth rate
         experience_needed = int(find_experience_for_level(growth_rate, current_level, remove_level_cap))  # MODIFIED: Pre-calculate needed XP
         evo_id = None # Initialize variable
