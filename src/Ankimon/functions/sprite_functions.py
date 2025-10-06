@@ -15,11 +15,12 @@ def get_sprite_path(side, sprite_type, id=132, shiny=False, gender="M"):
         if os.path.exists(path):
             return path
         else:
+            print(f"Unable to find path: {path}, trying fallback values.")
             if gender == "F":
                 gender_path = ""
                 path = f"{pkmnimgfolder}/{base_path}/{shiny_path}{gender_path}{id}.{sprite_type}"
                 return path
-            elif shiny == "True":
+            elif shiny == True:
                 shiny_path = ""
                 path = f"{pkmnimgfolder}/{base_path}/{shiny_path}{gender_path}{id}.{sprite_type}"
                 return path
