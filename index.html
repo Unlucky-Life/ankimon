@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ankimon - Experimental Branch Developer Roadmap</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="nav-brand">
+                    <span class="brand-icon">⚡</span>
+                    <span class="brand-text">Ankimon</span>
+                    <span class="branch-badge">Experimental</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#" class="nav-link active">Home</a>
+                    <a href="#" class="nav-link placeholder">Getting Started</a>
+                    <a href="#" class="nav-link placeholder">API Docs</a>
+                    <a href="#" class="nav-link placeholder">Contributing</a>
+                    <a href="#" class="nav-link placeholder">FAQ</a>
+                    <a href="https://discord.gg/eY8jPHZw4z" target="_blank" class="nav-link external">Discord</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text">
+            <span id="progressText">0% Complete</span>
+            <span class="progress-stats" id="progressStats">0/7 Milestones</span>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">🎮 Developer Journey</div>
+                <h1 class="hero-title">Master Ankimon Development</h1>
+                <p class="hero-subtitle">Transform your Anki experience with Pokémon-inspired learning. Follow our roadmap to become a contributor to the experimental branch.</p>
+                <div class="hero-actions">
+                    <button class="btn btn--primary hero-cta" onclick="scrollToRoadmap()">
+                        Start Your Journey
+                        <span class="btn-icon">🚀</span>
+                    </button>
+                    <button class="btn btn--outline" onclick="resetProgress()">Reset Progress</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Section -->
+    <section class="roadmap-section" id="roadmap">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Your Development Roadmap</h2>
+                <p class="section-description">Follow these milestones to master Ankimon development. Each step builds on the previous one.</p>
+            </div>
+
+            <div class="roadmap">
+                <div class="roadmap-line"></div>
+                
+                <!-- Milestone 1 -->
+                <div class="milestone" data-milestone="1">
+                    <div class="milestone-marker">
+                        <div class="milestone-icon">👥</div>
+                        <div class="milestone-status" id="status-1"></div>
+                    </div>
+                    <div class="milestone-content">
+                        <div class="milestone-header" onclick="toggleMilestone(1)">
+                            <h3 class="milestone-title">Join the Community</h3>
+                            <p class="milestone-subtitle">Connect with fellow developers</p>
+                            <div class="milestone-meta">
+                                <span class="milestone-time">⏱️ 5 minutes</span>
+                                <span class="milestone-difficulty difficulty-easy">Easy</span>
+                                <span class="milestone-toggle">▼</span>
+                            </div>
+                        </div>
+                        <div class="milestone-details" id="details-1">
+                            <div class="tasks">
+                                <div class="task" data-task="1-1">
+                                    <div class="task-checkbox" onclick="toggleTask('1-1')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Join Discord Server</h4>
+                                        <p class="task-description">Get the 'New Contributors' role for mentor support</p>
+                                        <a href="https://discord.gg/eY8jPHZw4z" target="_blank" class="task-link">Join Now →</a>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="1-2">
+                                    <div class="task-checkbox" onclick="toggleTask('1-2')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Introduce Yourself</h4>
+                                        <p class="task-description">Say hello in the #introductions channel</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="1-3">
+                                    <div class="task-checkbox" onclick="toggleTask('1-3')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Explore the Repository</h4>
+                                        <p class="task-description">Star and fork the main Ankimon repository</p>
+                                        <a href="https://github.com/Unlucky-Life/ankimon" target="_blank" class="task-link">View Repository →</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Milestone 2 -->
+                <div class="milestone" data-milestone="2">
+                    <div class="milestone-marker">
+                        <div class="milestone-icon">⚙️</div>
+                        <div class="milestone-status" id="status-2"></div>
+                    </div>
+                    <div class="milestone-content">
+                        <div class="milestone-header" onclick="toggleMilestone(2)">
+                            <h3 class="milestone-title">Setup Your Environment</h3>
+                            <p class="milestone-subtitle">Prepare your development workspace</p>
+                            <div class="milestone-meta">
+                                <span class="milestone-time">⏱️ 15 minutes</span>
+                                <span class="milestone-difficulty difficulty-easy">Easy</span>
+                                <span class="milestone-toggle">▼</span>
+                            </div>
+                        </div>
+                        <div class="milestone-details" id="details-2">
+                            <div class="tasks">
+                                <div class="task" data-task="2-1">
+                                    <div class="task-checkbox" onclick="toggleTask('2-1')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Install VS Code</h4>
+                                        <p class="task-description">Download and install Visual Studio Code</p>
+                                        <a href="https://code.visualstudio.com/" target="_blank" class="task-link">Download →</a>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="2-2">
+                                    <div class="task-checkbox" onclick="toggleTask('2-2')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Install Python Extension</h4>
+                                        <p class="task-description">Add Python, Pylance, and GitLens extensions</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="2-3">
+                                    <div class="task-checkbox" onclick="toggleTask('2-3')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Setup Anki-VSCode Integration</h4>
+                                        <p class="task-description">Configure debugging environment for Anki</p>
+                                        <a href="https://github.com/h0tp-ftw/anki-vscode" target="_blank" class="task-link">Setup Guide →</a>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="2-4">
+                                    <div class="task-checkbox" onclick="toggleTask('2-4')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Test Your Setup</h4>
+                                        <p class="task-description">Launch Anki with debugger attached</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Milestone 3 -->
+                <div class="milestone" data-milestone="3">
+                    <div class="milestone-marker">
+                        <div class="milestone-icon">🐍</div>
+                        <div class="milestone-status" id="status-3"></div>
+                    </div>
+                    <div class="milestone-content">
+                        <div class="milestone-header" onclick="toggleMilestone(3)">
+                            <h3 class="milestone-title">Learn the Basics</h3>
+                            <p class="milestone-subtitle">Grasp Python fundamentals</p>
+                            <div class="milestone-meta">
+                                <span class="milestone-time">⏱️ 2 hours</span>
+                                <span class="milestone-difficulty difficulty-medium">Medium</span>
+                                <span class="milestone-toggle">▼</span>
+                            </div>
+                        </div>
+                        <div class="milestone-details" id="details-3">
+                            <div class="tasks">
+                                <div class="task" data-task="3-1">
+                                    <div class="task-checkbox" onclick="toggleTask('3-1')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Python Syntax Overview</h4>
+                                        <p class="task-description">Variables, functions, and basic data types</p>
+                                        <a href="https://www.w3schools.com/python/default.asp" target="_blank" class="task-link">Learn Python →</a>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="3-2">
+                                    <div class="task-checkbox" onclick="toggleTask('3-2')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Control Flow</h4>
+                                        <p class="task-description">Learn if/else statements and loops</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="3-3">
+                                    <div class="task-checkbox" onclick="toggleTask('3-3')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Functions and Classes</h4>
+                                        <p class="task-description">Understand function definitions and basic OOP</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="3-4">
+                                    <div class="task-checkbox" onclick="toggleTask('3-4')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Practice Exercise</h4>
+                                        <p class="task-description">Build a simple calculator or Pokémon selector</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Milestone 4 -->
+                <div class="milestone" data-milestone="4">
+                    <div class="milestone-marker">
+                        <div class="milestone-icon">📖</div>
+                        <div class="milestone-status" id="status-4"></div>
+                    </div>
+                    <div class="milestone-content">
+                        <div class="milestone-header" onclick="toggleMilestone(4)">
+                            <h3 class="milestone-title">Read Like a Pro</h3>
+                            <p class="milestone-subtitle">Understand existing code</p>
+                            <div class="milestone-meta">
+                                <span class="milestone-time">⏱️ 1 hour</span>
+                                <span class="milestone-difficulty difficulty-medium">Medium</span>
+                                <span class="milestone-toggle">▼</span>
+                            </div>
+                        </div>
+                        <div class="milestone-details" id="details-4">
+                            <div class="tasks">
+                                <div class="task" data-task="4-1">
+                                    <div class="task-checkbox" onclick="toggleTask('4-1')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Explore Ankimon Functions</h4>
+                                        <p class="task-description">Navigate to src/Ankimon/functions directory</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="4-2">
+                                    <div class="task-checkbox" onclick="toggleTask('4-2')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Trace Function Flow</h4>
+                                        <p class="task-description">Follow how catch mechanics work in the code</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="4-3">
+                                    <div class="task-checkbox" onclick="toggleTask('4-3')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Practice Code Reading</h4>
+                                        <p class="task-description">Explain what a code snippet does in your own words</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="4-4">
+                                    <div class="task-checkbox" onclick="toggleTask('4-4')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Map the Architecture</h4>
+                                        <p class="task-description">Understand how different parts connect</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Milestone 5 -->
+                <div class="milestone" data-milestone="5">
+                    <div class="milestone-marker">
+                        <div class="milestone-icon">✏️</div>
+                        <div class="milestone-status" id="status-5"></div>
+                    </div>
+                    <div class="milestone-content">
+                        <div class="milestone-header" onclick="toggleMilestone(5)">
+                            <h3 class="milestone-title">Make Your Mark</h3>
+                            <p class="milestone-subtitle">First safe changes</p>
+                            <div class="milestone-meta">
+                                <span class="milestone-time">⏱️ 30 minutes</span>
+                                <span class="milestone-difficulty difficulty-medium">Medium</span>
+                                <span class="milestone-toggle">▼</span>
+                            </div>
+                        </div>
+                        <div class="milestone-details" id="details-5">
+                            <div class="tasks">
+                                <div class="task" data-task="5-1">
+                                    <div class="task-checkbox" onclick="toggleTask('5-1')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Add Debug Logging</h4>
+                                        <p class="task-description">Insert print statements to trace execution</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="5-2">
+                                    <div class="task-checkbox" onclick="toggleTask('5-2')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Test Your Changes</h4>
+                                        <p class="task-description">Run Anki and verify your logs appear</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="5-3">
+                                    <div class="task-checkbox" onclick="toggleTask('5-3')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Make a Tiny UI Change</h4>
+                                        <p class="task-description">Modify a menu text or add a simple dialog</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="5-4">
+                                    <div class="task-checkbox" onclick="toggleTask('5-4')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Document Your Process</h4>
+                                        <p class="task-description">Keep notes on what you learned</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Milestone 6 -->
+                <div class="milestone" data-milestone="6">
+                    <div class="milestone-marker">
+                        <div class="milestone-icon">🤖</div>
+                        <div class="milestone-status" id="status-6"></div>
+                    </div>
+                    <div class="milestone-content">
+                        <div class="milestone-header" onclick="toggleMilestone(6)">
+                            <h3 class="milestone-title">Vibe Coding Mastery</h3>
+                            <p class="milestone-subtitle">AI-assisted development</p>
+                            <div class="milestone-meta">
+                                <span class="milestone-time">⏱️ 1 hour</span>
+                                <span class="milestone-difficulty difficulty-medium">Medium</span>
+                                <span class="milestone-toggle">▼</span>
+                            </div>
+                        </div>
+                        <div class="milestone-details" id="details-6">
+                            <div class="tasks">
+                                <div class="task" data-task="6-1">
+                                    <div class="task-checkbox" onclick="toggleTask('6-1')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Setup AI Assistant</h4>
+                                        <p class="task-description">Choose your preferred AI coding tool</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="6-2">
+                                    <div class="task-checkbox" onclick="toggleTask('6-2')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Practice Prompting</h4>
+                                        <p class="task-description">Learn to describe goals clearly to AI</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="6-3">
+                                    <div class="task-checkbox" onclick="toggleTask('6-3')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Iterate and Test</h4>
+                                        <p class="task-description">AI generates, you test and refine</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="6-4">
+                                    <div class="task-checkbox" onclick="toggleTask('6-4')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Error Debugging</h4>
+                                        <p class="task-description">Learn to interpret and fix AI-generated errors</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Milestone 7 -->
+                <div class="milestone" data-milestone="7">
+                    <div class="milestone-marker">
+                        <div class="milestone-icon">🚀</div>
+                        <div class="milestone-status" id="status-7"></div>
+                    </div>
+                    <div class="milestone-content">
+                        <div class="milestone-header" onclick="toggleMilestone(7)">
+                            <h3 class="milestone-title">Ship Your Feature</h3>
+                            <p class="milestone-subtitle">Make your first contribution</p>
+                            <div class="milestone-meta">
+                                <span class="milestone-time">⏱️ 2 hours</span>
+                                <span class="milestone-difficulty difficulty-hard">Hard</span>
+                                <span class="milestone-toggle">▼</span>
+                            </div>
+                        </div>
+                        <div class="milestone-details" id="details-7">
+                            <div class="tasks">
+                                <div class="task" data-task="7-1">
+                                    <div class="task-checkbox" onclick="toggleTask('7-1')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Choose Your Feature</h4>
+                                        <p class="task-description">Pick a small enhancement or fix</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="7-2">
+                                    <div class="task-checkbox" onclick="toggleTask('7-2')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Implement with AI Help</h4>
+                                        <p class="task-description">Build your feature using vibe coding</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="7-3">
+                                    <div class="task-checkbox" onclick="toggleTask('7-3')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Test Thoroughly</h4>
+                                        <p class="task-description">Ensure your change works as expected</p>
+                                    </div>
+                                </div>
+                                <div class="task" data-task="7-4">
+                                    <div class="task-checkbox" onclick="toggleTask('7-4')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Submit Pull Request</h4>
+                                        <p class="task-description">Share your contribution with the community</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Resources Section -->
+    <section class="resources-section">
+        <div class="container">
+            <h2 class="section-title">Essential Resources</h2>
+            <div class="resources-grid">
+                <div class="resource-card">
+                    <h3>📦 Ankimon Repository</h3>
+                    <p>Main codebase and project documentation</p>
+                    <a href="https://github.com/Unlucky-Life/ankimon" target="_blank" class="resource-link">Explore →</a>
+                </div>
+                <div class="resource-card">
+                    <h3>🔧 VS Code Setup</h3>
+                    <p>Development environment configuration</p>
+                    <a href="https://github.com/h0tp-ftw/anki-vscode" target="_blank" class="resource-link">Setup Guide →</a>
+                </div>
+                <div class="resource-card">
+                    <h3>🐍 Python Tutorial</h3>
+                    <p>Learn Python fundamentals</p>
+                    <a href="https://www.w3schools.com/python/default.asp" target="_blank" class="resource-link">Learn →</a>
+                </div>
+                <div class="resource-card">
+                    <h3>💬 Discord Community</h3>
+                    <p>Get help and connect with developers</p>
+                    <a href="https://discord.gg/eY8jPHZw4z" target="_blank" class="resource-link">Join →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>
