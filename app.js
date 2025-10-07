@@ -19,44 +19,21 @@ function initializeRoadmap() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Handle navigation placeholder links
-    document.addEventListener('click', function(e) {
-        // Only prevent default for placeholder links, not external links
-        if (e.target.classList.contains('placeholder') || e.target.closest('.placeholder')) {
-            e.preventDefault();
-            showToast('This page is coming soon! 🚧');
-            return;
-        }
-        
-        // Handle internal anchor links
-        if (e.target.matches('a[href^="#"]')) {
-            e.preventDefault();
-            const target = document.querySelector(e.target.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-            return;
-        }
-        
-        // External links should work normally - don't prevent default
-    });
+    // ... (existing event listeners)
 
-    // Handle milestone expansion keyboard navigation
-    document.addEventListener('keydown', function(e) {
-        if (e.target.classList.contains('milestone-header') && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault();
-            const milestoneId = parseInt(e.target.closest('.milestone').dataset.milestone);
-            toggleMilestone(milestoneId);
-        }
-        
-        if (e.target.classList.contains('task-checkbox') && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault();
-            const taskId = e.target.closest('.task').dataset.task;
-            toggleTask(taskId);
-        }
+    // Intersection Observer for animations
+    const milestones = document.querySelectorAll('.milestone');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animationPlayState = 'running';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    milestones.forEach(milestone => {
+        observer.observe(milestone);
     });
 }
 

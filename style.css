@@ -415,6 +415,7 @@ pre code {
 .btn--primary {
   background: var(--color-primary);
   color: var(--color-btn-primary-text);
+  box-shadow: var(--shadow-md);
 }
 
 .btn--primary:hover {
@@ -842,10 +843,24 @@ select.form-control {
 }
 
 /* Hero Section */
+@keyframes animated-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .hero {
-  background: linear-gradient(135deg, var(--color-bg-1), var(--color-bg-8));
+  background: linear-gradient(135deg, var(--color-bg-1), var(--color-bg-8), var(--color-bg-5), var(--color-bg-2));
+  background-size: 400% 400%;
   padding: var(--space-32) 0;
   text-align: center;
+  animation: animated-gradient 15s ease infinite;
 }
 
 .hero-content {
@@ -938,11 +953,25 @@ select.form-control {
   z-index: 1;
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .milestone {
   position: relative;
   display: flex;
   margin-bottom: var(--space-32);
   z-index: 2;
+  opacity: 0; /* Start hidden for animation */
+  animation: fadeInUp 0.5s ease-out forwards;
+  animation-play-state: paused; /* Will be triggered by JS */
 }
 
 .milestone-marker {
@@ -1014,6 +1043,11 @@ select.form-control {
   padding: var(--space-20);
   cursor: pointer;
   position: relative;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.milestone-header:hover {
+  background-color: var(--color-bg-1);
 }
 
 .milestone-title {
@@ -1200,6 +1234,7 @@ select.form-control {
 .resource-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary);
 }
 
 .resource-card h3 {

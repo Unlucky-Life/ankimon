@@ -48,7 +48,7 @@
             <div class="hero-content">
                 <div class="hero-badge">🎮 Developer Journey</div>
                 <h1 class="hero-title">Master Ankimon Development</h1>
-                <p class="hero-subtitle">Transform your Anki experience with Pokémon-inspired learning. Follow our roadmap to become a contributor to the experimental branch.</p>
+                <p class="hero-subtitle">No coding experience? No problem. This guide is your first step to becoming a contributor to a real-world project. All you need is passion and time.</p>
                 <div class="hero-actions">
                     <button class="btn btn--primary hero-cta" onclick="scrollToRoadmap()">
                         Start Your Journey
@@ -89,27 +89,27 @@
                         </div>
                         <div class="milestone-details" id="details-1">
                             <div class="tasks">
+                                <div class="task" data-task="1-0">
+                                    <div class="task-checkbox" onclick="toggleTask('1-0')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Welcome!</h4>
+                                        <p class="task-description">We're excited to have you as a developer! This is a friendly and supportive community, so don't hesitate to ask questions.</p>
+                                    </div>
+                                </div>
                                 <div class="task" data-task="1-1">
                                     <div class="task-checkbox" onclick="toggleTask('1-1')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Join Discord Server</h4>
-                                        <p class="task-description">Get the 'New Contributors' role for mentor support</p>
-                                        <a href="https://discord.gg/eY8jPHZw4z" target="_blank" class="task-link">Join Now →</a>
+                                        <h4 class="task-title">Get Access To #new-contributors on the Discord Server</h4>
+                                        <p class="task-description">Get the 'New Contributors' role for fellow developers to help you out!</p>
+                                        <a href="https://discord.gg/eY8jPHZw4z" target="_blank" class="task-link">Join the Discord Server →</a>
                                     </div>
                                 </div>
                                 <div class="task" data-task="1-2">
-                                    <div class="task-checkbox" onclick="toggleTask('1-2')"></div>
-                                    <div class="task-content">
-                                        <h4 class="task-title">Introduce Yourself</h4>
-                                        <p class="task-description">Say hello in the #introductions channel</p>
-                                    </div>
-                                </div>
-                                <div class="task" data-task="1-3">
                                     <div class="task-checkbox" onclick="toggleTask('1-3')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Explore the Repository</h4>
-                                        <p class="task-description">Star and fork the main Ankimon repository</p>
-                                        <a href="https://github.com/Unlucky-Life/ankimon" target="_blank" class="task-link">View Repository →</a>
+                                        <h4 class="task-title">Create a GitHub Account</h4>
+                                        <p class="task-description">GitHub is where we collaborate on code. Think of it as a Google Docs for programmers. Create a free account to get started. IMPORTANT: In Github settings, go to Emails → check “Keep my email address private” and “Block command line pushes that expose my email”</p>
+                                        <a href="https://github.com/h0tp-ftw/ankimon" target="_blank" class="task-link">View Ankimon Experimental on Github →</a>
                                     </div>
                                 </div>
                             </div>
@@ -139,30 +139,30 @@
                                     <div class="task-checkbox" onclick="toggleTask('2-1')"></div>
                                     <div class="task-content">
                                         <h4 class="task-title">Install VS Code</h4>
-                                        <p class="task-description">Download and install Visual Studio Code</p>
+                                        <p class="task-description">A popular code editor that you'll use to write and edit Ankimon's code.</p>
                                         <a href="https://code.visualstudio.com/" target="_blank" class="task-link">Download →</a>
                                     </div>
                                 </div>
                                 <div class="task" data-task="2-2">
                                     <div class="task-checkbox" onclick="toggleTask('2-2')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Install Python Extension</h4>
-                                        <p class="task-description">Add Python, Pylance, and GitLens extensions</p>
+                                        <h4 class="task-title">Install Python Extension in VS Code</h4>
+                                        <p class="task-description">VS Code will prompt you to install Python extension to work properly with Python. You should also get other extensions that are relevant, like the GitHub extension.</p>
                                     </div>
                                 </div>
                                 <div class="task" data-task="2-3">
                                     <div class="task-checkbox" onclick="toggleTask('2-3')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Setup Anki-VSCode Integration</h4>
-                                        <p class="task-description">Configure debugging environment for Anki</p>
-                                        <a href="https://github.com/h0tp-ftw/anki-vscode" target="_blank" class="task-link">Setup Guide →</a>
+                                        <h4 class="task-title">Setup h0tp's Anki-VSCode Integration</h4>
+                                        <p class="task-description">This makes testing and debugging much easier - just run the Quick Start script from the link below. </p>
+                                        <a href="https://github.com/h0tp-ftw/anki-vscode" target="_blank" class="task-link">Github link to Anki-VSCode →</a>
                                     </div>
                                 </div>
                                 <div class="task" data-task="2-4">
                                     <div class="task-checkbox" onclick="toggleTask('2-4')"></div>
                                     <div class="task-content">
                                         <h4 class="task-title">Test Your Setup</h4>
-                                        <p class="task-description">Launch Anki with debugger attached</p>
+                                        <p class="task-description">Follow the Anki-VSCode instructions to launch Anki from within VS-Code! If it works correctly, you should be able to launch Anki from within VS Code.</p>
                                     </div>
                                 </div>
                             </div>
@@ -179,7 +179,7 @@
                     <div class="milestone-content">
                         <div class="milestone-header" onclick="toggleMilestone(3)">
                             <h3 class="milestone-title">Learn the Basics</h3>
-                            <p class="milestone-subtitle">Grasp Python fundamentals</p>
+                            <p class="milestone-subtitle">Grasp the fundamentals of coding with Python and Git</p>
                             <div class="milestone-meta">
                                 <span class="milestone-time">⏱️ 2 hours</span>
                                 <span class="milestone-difficulty difficulty-medium">Medium</span>
@@ -191,30 +191,28 @@
                                 <div class="task" data-task="3-1">
                                     <div class="task-checkbox" onclick="toggleTask('3-1')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Python Syntax Overview</h4>
-                                        <p class="task-description">Variables, functions, and basic data types</p>
+                                        <h4 class="task-title">Learn the Basics of Python</h4>
+                                        <p class="task-description">Go through the w3schools course on Python. Go through the entire "Python Tutorial" section to gain an understanding - don't memorize, only learn how to UNDERSTAND code.</p>
                                         <a href="https://www.w3schools.com/python/default.asp" target="_blank" class="task-link">Learn Python →</a>
                                     </div>
                                 </div>
                                 <div class="task" data-task="3-2">
                                     <div class="task-checkbox" onclick="toggleTask('3-2')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Control Flow</h4>
-                                        <p class="task-description">Learn if/else statements and loops</p>
+                                        <h4 class="task-title">Learn the Basics of Git</h4>
+                                        <p class="task-description">Git is a tool that tracks changes in code, like a time machine. You don't need to memorize commands right now, just understand the basic ideas of what it does. This guide will give you a great overview, and show you how to set-up Git (do the setup before you start coding).</p>
+                                        <a href="https://gist.github.com/brandon1024/14b5f9fcfd982658d01811ee3045ff1e" target="_blank" class="task-link">Open Github Crash Course →</a>
                                     </div>
                                 </div>
                                 <div class="task" data-task="3-3">
                                     <div class="task-checkbox" onclick="toggleTask('3-3')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Functions and Classes</h4>
-                                        <p class="task-description">Understand function definitions and basic OOP</p>
-                                    </div>
-                                </div>
-                                <div class="task" data-task="3-4">
-                                    <div class="task-checkbox" onclick="toggleTask('3-4')"></div>
-                                    <div class="task-content">
-                                        <h4 class="task-title">Practice Exercise</h4>
-                                        <p class="task-description">Build a simple calculator or Pokémon selector</p>
+                                        <h4 class="task-title">Set-up an AI Assistant for Coding</h4>
+                                        <p class="task-description">This will make you 10x better at coding - learn how to work with AI to improve code! h0tp recommends using Gemini Code Assist, or a good and free-to-use AI chat like Grok or ChatGPT.</p>
+                                        <a href="https://codeassist.google/" target="_blank" class="task-link">Gemini Code Assist (easiest and best) →</a><br>
+                                        <a href="https://grok.com/" target="_blank" class="task-link">Grok →</a><br>
+                                        <a href="https://chatgpt.com/" target="_blank" class="task-link">ChatGPT →</a><br>
+                                        <a href="https://duck.ai/" target="_blank" class="task-link">Duck.ai (worse, but privacy-conscious) →</a>
                                     </div>
                                 </div>
                             </div>
@@ -231,7 +229,7 @@
                     <div class="milestone-content">
                         <div class="milestone-header" onclick="toggleMilestone(4)">
                             <h3 class="milestone-title">Read Like a Pro</h3>
-                            <p class="milestone-subtitle">Understand existing code</p>
+                            <p class="milestone-subtitle">Understand the existing code of Ankimon</p>
                             <div class="milestone-meta">
                                 <span class="milestone-time">⏱️ 1 hour</span>
                                 <span class="milestone-difficulty difficulty-medium">Medium</span>
@@ -240,32 +238,39 @@
                         </div>
                         <div class="milestone-details" id="details-4">
                             <div class="tasks">
+                                <div class="task" data-task="4-0">
+                                    <div class="task-checkbox" onclick="toggleTask('4-0')"></div>
+                                    <div class="task-content">
+                                        <h4 class="task-title">Don't Panic!</h4>
+                                        <p class="task-description">It's okay if you don't understand everything at first. Focus on getting a general idea of how things work. AI helps with the rest!</p>
+                                    </div>
+                                </div>
                                 <div class="task" data-task="4-1">
                                     <div class="task-checkbox" onclick="toggleTask('4-1')"></div>
                                     <div class="task-content">
                                         <h4 class="task-title">Explore Ankimon Functions</h4>
-                                        <p class="task-description">Navigate to src/Ankimon/functions directory</p>
+                                        <p class="task-description">In VS Code, open Ankimon code, go to Explorer from the left tab (Ctrl+Shift+E), and navigate to the src/Ankimon/functions directory</p>
                                     </div>
                                 </div>
                                 <div class="task" data-task="4-2">
                                     <div class="task-checkbox" onclick="toggleTask('4-2')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Trace Function Flow</h4>
-                                        <p class="task-description">Follow how catch mechanics work in the code</p>
+                                        <h4 class="task-title">Try to Understand a File</h4>
+                                        <p class="task-description">Open any file in that directory, and check out one of its functions. Use help from AI. Can you understand what the function is trying to do? What does every line do?</p>
                                     </div>
                                 </div>
                                 <div class="task" data-task="4-3">
                                     <div class="task-checkbox" onclick="toggleTask('4-3')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Practice Code Reading</h4>
-                                        <p class="task-description">Explain what a code snippet does in your own words</p>
+                                        <h4 class="task-title">Practice Code Reading and Understanding</h4>
+                                        <p class="task-description">Find three functions in the file, and in your own words, explain what the functions do. Again, AI help is allowed!</p>
                                     </div>
                                 </div>
                                 <div class="task" data-task="4-4">
                                     <div class="task-checkbox" onclick="toggleTask('4-4')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Map the Architecture</h4>
-                                        <p class="task-description">Understand how different parts connect</p>
+                                        <h4 class="task-title">See How It All Connects</h4>
+                                        <p class="task-description">Take a look at the src/Ankimon/__init__.py file. This is the main file that brings everything together. Notice how it imports and uses code from other files you've seen. Try to follow one or two function calls to see where they lead!</p>
                                     </div>
                                 </div>
                             </div>
@@ -273,56 +278,7 @@
                     </div>
                 </div>
 
-                <!-- Milestone 5 -->
-                <div class="milestone" data-milestone="5">
-                    <div class="milestone-marker">
-                        <div class="milestone-icon">✏️</div>
-                        <div class="milestone-status" id="status-5"></div>
-                    </div>
-                    <div class="milestone-content">
-                        <div class="milestone-header" onclick="toggleMilestone(5)">
-                            <h3 class="milestone-title">Make Your Mark</h3>
-                            <p class="milestone-subtitle">First safe changes</p>
-                            <div class="milestone-meta">
-                                <span class="milestone-time">⏱️ 30 minutes</span>
-                                <span class="milestone-difficulty difficulty-medium">Medium</span>
-                                <span class="milestone-toggle">▼</span>
-                            </div>
-                        </div>
-                        <div class="milestone-details" id="details-5">
-                            <div class="tasks">
-                                <div class="task" data-task="5-1">
-                                    <div class="task-checkbox" onclick="toggleTask('5-1')"></div>
-                                    <div class="task-content">
-                                        <h4 class="task-title">Add Debug Logging</h4>
-                                        <p class="task-description">Insert print statements to trace execution</p>
-                                    </div>
-                                </div>
-                                <div class="task" data-task="5-2">
-                                    <div class="task-checkbox" onclick="toggleTask('5-2')"></div>
-                                    <div class="task-content">
-                                        <h4 class="task-title">Test Your Changes</h4>
-                                        <p class="task-description">Run Anki and verify your logs appear</p>
-                                    </div>
-                                </div>
-                                <div class="task" data-task="5-3">
-                                    <div class="task-checkbox" onclick="toggleTask('5-3')"></div>
-                                    <div class="task-content">
-                                        <h4 class="task-title">Make a Tiny UI Change</h4>
-                                        <p class="task-description">Modify a menu text or add a simple dialog</p>
-                                    </div>
-                                </div>
-                                <div class="task" data-task="5-4">
-                                    <div class="task-checkbox" onclick="toggleTask('5-4')"></div>
-                                    <div class="task-content">
-                                        <h4 class="task-title">Document Your Process</h4>
-                                        <p class="task-description">Keep notes on what you learned</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Milestone 6 -->
                 <div class="milestone" data-milestone="6">
@@ -332,8 +288,8 @@
                     </div>
                     <div class="milestone-content">
                         <div class="milestone-header" onclick="toggleMilestone(6)">
-                            <h3 class="milestone-title">Vibe Coding Mastery</h3>
-                            <p class="milestone-subtitle">AI-assisted development</p>
+                            <h3 class="milestone-title">AI-Assisted Coding</h3>
+                            <p class="milestone-subtitle">Start coding with the help of AI</p>
                             <div class="milestone-meta">
                                 <span class="milestone-time">⏱️ 1 hour</span>
                                 <span class="milestone-difficulty difficulty-medium">Medium</span>
@@ -345,29 +301,22 @@
                                 <div class="task" data-task="6-1">
                                     <div class="task-checkbox" onclick="toggleTask('6-1')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Setup AI Assistant</h4>
-                                        <p class="task-description">Choose your preferred AI coding tool</p>
+                                        <h4 class="task-title">Find a Bug to Fix</h4>
+                                        <p class="task-description">Go on the Ankimon Discord in the bugs-and-issues channel to find a bug to fix!</p>
                                     </div>
                                 </div>
                                 <div class="task" data-task="6-2">
                                     <div class="task-checkbox" onclick="toggleTask('6-2')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Practice Prompting</h4>
-                                        <p class="task-description">Learn to describe goals clearly to AI</p>
+                                        <h4 class="task-title">Prompt Designing and AI Assistance</h4>
+                                        <p class="task-description">Ask AI to help you fix the issue! Make a prompt that ensures that the AI will explain to you the errors clearly, and help make the code fixes properly. Make sure you understand the code changes!</p>
                                     </div>
                                 </div>
                                 <div class="task" data-task="6-3">
                                     <div class="task-checkbox" onclick="toggleTask('6-3')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Iterate and Test</h4>
-                                        <p class="task-description">AI generates, you test and refine</p>
-                                    </div>
-                                </div>
-                                <div class="task" data-task="6-4">
-                                    <div class="task-checkbox" onclick="toggleTask('6-4')"></div>
-                                    <div class="task-content">
                                         <h4 class="task-title">Error Debugging</h4>
-                                        <p class="task-description">Learn to interpret and fix AI-generated errors</p>
+                                        <p class="task-description">Your AI is a powerful tool, but it can make mistakes. When you see an error, don't get discouraged! Read the error message carefully. A good practice is to copy the full error and ask your AI 'What does this error mean and how can I fix it?'. This teaches you how to solve problems like a real developer.</p>
                                     </div>
                                 </div>
                             </div>
@@ -383,11 +332,11 @@
                     </div>
                     <div class="milestone-content">
                         <div class="milestone-header" onclick="toggleMilestone(7)">
-                            <h3 class="milestone-title">Ship Your Feature</h3>
-                            <p class="milestone-subtitle">Make your first contribution</p>
+                            <h3 class="milestone-title">Submit Your First Contribution</h3>
+                            <p class="milestone-subtitle">Become an Ankimon contributor</p>
                             <div class="milestone-meta">
                                 <span class="milestone-time">⏱️ 2 hours</span>
-                                <span class="milestone-difficulty difficulty-hard">Hard</span>
+                                <span class="milestone-difficulty difficulty-hard">FINALE</span>
                                 <span class="milestone-toggle">▼</span>
                             </div>
                         </div>
@@ -396,29 +345,30 @@
                                 <div class="task" data-task="7-1">
                                     <div class="task-checkbox" onclick="toggleTask('7-1')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Choose Your Feature</h4>
-                                        <p class="task-description">Pick a small enhancement or fix</p>
+                                        <h4 class="task-title">Start running Anki via VS Code</h4>
+                                        <p class="task-description">After making code changes, go to Run and Debug (Ctrl+Shift+D) on the left menu, select the "Python Anki" configuration, and run (F5)!</p>
                                     </div>
                                 </div>
                                 <div class="task" data-task="7-2">
                                     <div class="task-checkbox" onclick="toggleTask('7-2')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Implement with AI Help</h4>
-                                        <p class="task-description">Build your feature using vibe coding</p>
+                                        <h4 class="task-title">Master the Debugging Workflow</h4>
+                                        <p class="task-description">Learn to use the debug features to quickly restart and test your code in Anki! Your code changes have NO EFFECT until you restart Anki, so learn how to quickly restart. Watch the guide below</p>
+                                        <a href="https://www.youtube.com/watch?v=oCcTiRGPogQ/" target="_blank" class="task-link">YouTube Guide on Python Debugging →</a>
                                     </div>
                                 </div>
                                 <div class="task" data-task="7-3">
                                     <div class="task-checkbox" onclick="toggleTask('7-3')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Test Thoroughly</h4>
-                                        <p class="task-description">Ensure your change works as expected</p>
+                                        <h4 class="task-title">Make Your Code Changes and See If It Works!</h4>
+                                        <p class="task-description">Ensure your change works as expected! See if the issues get fixed as expected, and share your fixes with other people to see if it is fixed for them as well</p>
                                     </div>
                                 </div>
                                 <div class="task" data-task="7-4">
                                     <div class="task-checkbox" onclick="toggleTask('7-4')"></div>
                                     <div class="task-content">
-                                        <h4 class="task-title">Submit Pull Request</h4>
-                                        <p class="task-description">Share your contribution with the community</p>
+                                        <h4 class="task-title">Share Your Fix!</h4>
+                                        <p class="task-description">Made it this far? Congratulations! Share your fix on Discord, and h0tp will give you access to the repository to get your own branch and be able to submit a fix. You can also learn how to make a "fork" and submit a change through a "pull request". Welcome onboard!</p>
                                     </div>
                                 </div>
                             </div>
