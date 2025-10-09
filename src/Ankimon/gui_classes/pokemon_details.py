@@ -1,8 +1,8 @@
 from math import exp
 import json
+from typing import Any
 
 from aqt import mw, qconnect
-from aqt.qt import QDialog
 from aqt.utils import showWarning
 from PyQt6.QtGui import QPixmap, QPainter, QIcon
 from PyQt6.QtCore import Qt
@@ -54,28 +54,28 @@ from ..texts import (
 
 
 def PokemonCollectionDetails(
-    name,
-    level,
-    id,
-    shiny,
-    ability,
-    type,
-    detail_stats,
-    attacks,
-    base_experience,
+    name: str,
+    level: int,
+    id: int,
+    shiny: bool,
+    ability: str,
+    type: list[str],
+    detail_stats: dict[Any, Any],
+    attacks: list[str],
+    base_experience: int,
     growth_rate,
-    ev,
-    iv,
-    gender,
-    nickname,
-    individual_id,
-    pokemon_defeated,
-    everstone,
-    captured_date,
-    language,
+    ev: dict[str, int],
+    iv: dict[str, int],
+    gender: str,
+    nickname: str,
+    individual_id: str,
+    pokemon_defeated: int,
+    everstone: bool,
+    captured_date: str,
+    language: int,
     gif_in_collection,
-    remove_levelcap,
-    logger,
+    remove_levelcap: bool,
+    logger: ShowInfoLogger,
     refresh_callback,
 ):
     # Create a layout for the details panel
@@ -588,7 +588,9 @@ def forget_attack_details_window(
     window.exec()
 
 
-def remember_attack(individual_id, attacks, new_attack, logger):
+def remember_attack(
+    individual_id: str, attacks: list[str], new_attack: str, logger: ShowInfoLogger
+):
     if new_attack in attacks:
         logger.log_and_showinfo("warning", "Your pokemon already knows this move!")
         return
@@ -812,7 +814,13 @@ def tm_attack_details_window(
     window.exec()
 
 
-def rename_pkmn(nickname, pkmn_name, individual_id, logger, refresh_callback):
+def rename_pkmn(
+    nickname: str,
+    pkmn_name: str,
+    individual_id: str,
+    logger: ShowInfoLogger,
+    refresh_callback,
+):
     try:
         # Load the captured Pokémon data
         with open(mypokemon_path, "r", encoding="utf-8") as json_file:
@@ -853,7 +861,9 @@ def rename_pkmn(nickname, pkmn_name, individual_id, logger, refresh_callback):
         )
 
 
-def PokemonFree(individual_id, name, logger, refresh_callback):
+def PokemonFree(
+    individual_id: str, name: str, logger: ShowInfoLogger, refresh_callback
+):
     # Confirmation dialog
     reply = QMessageBox.question(
         None,
