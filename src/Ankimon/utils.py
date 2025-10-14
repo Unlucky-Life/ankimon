@@ -278,7 +278,7 @@ def daily_item_list():
     # Contest / Grooming / Friendship items outside battle
     "soothe-bell",
     "luxury-ball",
-    "pretty-wing"
+    "pretty-wing",
     # Miscellaneous items for info
     "heart-scale",
     "honey",
