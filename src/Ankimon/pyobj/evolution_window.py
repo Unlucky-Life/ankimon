@@ -324,68 +324,61 @@ class EvoWindow(QWidget):
             receive_badge(16, self.achievements)
 
     def cancel_evolution(self, individual_id, prevo_name):
-        # Load existing Pokémon data if it exists
-        if mainpokemon_path.is_file():
-            with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
-                main_pokemon_data = json.load(json_file)
-                for pokemon in main_pokemon_data:
-                    if pokemon["individual_id"] == individual_id:
-                        attacks = pokemon["attacks"]
-                        new_attacks = get_random_moves_for_pokemon(prevo_name.lower(), int(self.main_pokemon.level))
-                        for new_attack in new_attacks:
-                            if new_attack not in attacks:
-                                if len(attacks) < 4:
-                                    attacks.append(new_attack)
-                                else:
-                                    dialog = AttackDialog(attacks, new_attack)
-                                    if dialog.exec() == QDialog.DialogCode.Accepted:
-                                        selected_attack = dialog.selected_attack
-                                        index_to_replace = None
-                                        for index, attack in enumerate(attacks):
-                                            if attack == selected_attack:
-                                                index_to_replace = index
-                                            else:
-                                                pass
-                                        # If the attack is found, replace it with 'new_attack'
-                                        if index_to_replace is not None:
-                                            attacks[index_to_replace] = new_attack
-                                            self.logger.log_and_showinfo("info", self.translator.translate("replaced_selected_attack", selected_attack=selected_attack, new_attack=new_attack))
-                                        else:
-                                            self.logger.log_and_showinfo("info", self.translator.translate("selected_attack_not_found", selected_attack=selected_attack))
-                                    else:
-                                        # Handle the case where the user cancels the dialog
-                                        self.logger.log_and_showinfo("info", self.translator.translate("no_attack_selected"))
+        try:
+            with open(mypokemon_path, "r+", encoding="utf-8") as f:
+                all_pokemon = json.load(f)
+
+                pokemon_to_update = None
+                for p in all_pokemon:
+                    if p.get("individual_id") == individual_id:
+                        pokemon_to_update = p
                         break
-                for mainpkmndata in main_pokemon_data:
-                    #mainpkmndata["stats"]["xp"] = int(self.main_pokemon.xp)
-                    mainpkmndata["xp"] = int(self.main_pokemon.xp)
-                    mainpkmndata["base_stats"] = self.main_pokemon.base_stats
-                    mainpkmndata["level"] = int(self.main_pokemon.level)
-                    mainpkmndata["current_hp"] = int(self.main_pokemon.hp)
-                    ev_yield = limit_ev_yield(mainpkmndata["ev"], self.enemy_pokemon.ev_yield)
-                    mainpkmndata["ev"]["hp"] += ev_yield["hp"]
-                    mainpkmndata["ev"]["atk"] += ev_yield["attack"]
-                    mainpkmndata["ev"]["def"] += ev_yield["defense"]
-                    mainpkmndata["ev"]["spa"] += ev_yield["special-attack"]
-                    mainpkmndata["ev"]["spd"] += ev_yield["special-defense"]
-                    mainpkmndata["ev"]["spe"] += ev_yield["speed"]
-                    mainpkmndata["attacks"] = attacks
-                    mainpkmndata["everstone"] = False
-        mypkmndata = mainpkmndata
-        mainpkmndata = [mainpkmndata]
-        # Save the caught Pokémon's data to a JSON file
-        with open(str(mainpokemon_path), "w") as json_file:
-            json.dump(mainpkmndata, json_file, indent=2)
+                
+                if not pokemon_to_update:
+                    self.logger.log(f"Could not find pokemon with individual_id {individual_id} to cancel evolution.")
+                    return
 
-            # Load data from the output JSON file
-        with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
-            mypokemondata = json.load(output_file)
+                # Add logic to learn new moves, similar to the original function
+                attacks = pokemon_to_update.get("attacks", [])
+                # The level should come from the pokemon itself, not self.main_pokemon
+                level = pokemon_to_update.get("level", 1) 
+                new_attacks = get_random_moves_for_pokemon(prevo_name.lower(), int(level))
+                
+                for new_attack in new_attacks:
+                    if new_attack not in attacks:
+                        if len(attacks) < 4:
+                            attacks.append(new_attack)
+                        else:
+                            # Attack replacement dialog
+                            dialog = AttackDialog(attacks, new_attack)
+                            if dialog.exec() == QDialog.DialogCode.Accepted:
+                                selected_attack = dialog.selected_attack
+                                try:
+                                    index_to_replace = attacks.index(selected_attack)
+                                    attacks[index_to_replace] = new_attack
+                                    self.logger.log_and_showinfo("info", self.translator.translate("replaced_attack", selected_attack=selected_attack, new_attack=new_attack))
+                                except ValueError:
+                                    self.logger.log_and_showinfo("info", self.translator.translate("selected_attack_not_found", selected_attack=selected_attack))
+                            else:
+                                self.logger.log_and_showinfo("info", self.translator.translate("no_attack_selected"))
+                
+                pokemon_to_update["attacks"] = attacks
+                # Set everstone to true to prevent evolution loop
+                pokemon_to_update["everstone"] = True
 
-            # Find and replace the specified Pokémon's data in mypokemondata
-            for index, pokemon_data in enumerate(mypokemondata):
-                if pokemon_data["individual_id"] == individual_id:
-                    mypokemondata[index] = mypkmndata
-                    break
-            # Save the modified data to the output JSON file
-            with open(str(mypokemon_path), "w") as output_file:
-                json.dump(mypokemondata, output_file, indent=2)
+                # Write the changes back to the file
+                f.seek(0)
+                json.dump(all_pokemon, f, indent=2)
+                f.truncate()
+
+            # If the main pokemon was the one, update its object in memory
+            if self.main_pokemon and self.main_pokemon.individual_id == individual_id:
+                # This function reloads from file, so it will get the changes we just saved
+                self.main_pokemon, _ = update_main_pokemon(self.main_pokemon)
+
+            self.logger.log_and_showinfo("info", f"Canceled evolution for {prevo_name}.")
+            self.close() # Close the window after action is taken
+
+        except Exception as e:
+            show_warning_with_traceback(parent=mw, exception=e, message="Error occurred while canceling evolution")
+            self.logger.log(f"Error in cancel_evolution: {e}")
