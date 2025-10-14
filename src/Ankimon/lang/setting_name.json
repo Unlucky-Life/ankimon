@@ -42,7 +42,7 @@
     "misc.ssh": "SSH Access",
     "misc.leaderboard": "Ankimon Leaderboard",
     "misc.ankiweb_sync": "AnkiWeb Sync",
-    "misc.YouShallNotPass_Ankimon_News": "Receive Ankimon News",
+    "misc.YouShallNotPass_Ankimon_News": "Prevent Ankimon News on Startup",
     "misc.discord_rich_presence": "Discord Rich Presence - Ankimon",
     "misc.discord_rich_presence_text": "Discord Rich Presence - Quote Type",
     "misc.show_tip_on_startup": "Show Tip of the Day On Startup",
