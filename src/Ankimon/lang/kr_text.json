@@ -451,5 +451,7 @@
   "futuresight_start": "{pokemon_name}이(가) 공격을 예지했다!",
   "futuresight_still_active": "{side}에 대한 공격이 예지되어 있다!",
   "futuresight_hits": "예지된 공격이 {side}를 강타했다!",
-  "futuresight_fails": "미래예지가 실패했다!"
+  "futuresight_fails": "미래예지가 실패했다!",
+  "weather_raindance_still": "아직도 비가 내리고 있다!",
+  "wish_started": "{pokemon_name}이(가) 소원을 빌었다! 곧 {heal_amount} HP를 회복할 것이다."
 }
