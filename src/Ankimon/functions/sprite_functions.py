@@ -1,7 +1,7 @@
 from ..resources import pkmnimgfolder
 import os
 
-def get_sprite_path(side, sprite_type, id=132, shiny=False, gender="M"):
+def get_sprite_path(side: str, sprite_type: str, id: int=132, shiny: bool=False, gender: str="M"):
         """Return the path to the sprite of the Pokémon."""
         base_path = f"{side}_default_gif" if sprite_type == "gif" else f"{side}_default"
 

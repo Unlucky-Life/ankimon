@@ -1,3 +1,4 @@
+from Ankimon.functions.sprite_functions import get_sprite_path
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QPushButton, QScrollArea, QGroupBox, QFrame, QGridLayout, QComboBox, QDialogButtonBox
 from PyQt6.QtGui import QPixmap
@@ -183,11 +184,10 @@ class PokemonTeamDialog(QDialog):
             for pokemon in available_pokemon:
                 combo_box.addItem(f"{pokemon['name']} (Level {pokemon['level']})", pokemon)
 
-                # Optionally, you can set a preview image as item data:
-                sprite_path = os.path.join(frontdefault, f"{pokemon['id']}.png")
-                if os.path.exists(sprite_path):
-                    pixmap = QPixmap(sprite_path)
-                    combo_box.setItemData(combo_box.count() - 1, pixmap, Qt.ItemDataRole.DecorationRole)
+                # Set a preview image as item data
+                sprite_path = get_sprite_path("front", "png", pokemon['id'], pokemon["shiny"], pokemon["gender"])
+                pixmap = QPixmap(sprite_path)
+                combo_box.setItemData(combo_box.count() - 1, pixmap, Qt.ItemDataRole.DecorationRole)
         else:
             combo_box.addItem("No available Pokémon", None)  # Display a message if no Pokémon are available
 
@@ -203,11 +203,10 @@ class PokemonTeamDialog(QDialog):
         def update_preview(index):
             pokemon = combo_box.itemData(index)
             if pokemon:
-                sprite_path = os.path.join(frontdefault, f"{pokemon['id']}.png")
-                if os.path.exists(sprite_path):
-                    pixmap = QPixmap(sprite_path)
-                    image_label.setPixmap(pixmap.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio))
-                    image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                sprite_path = get_sprite_path("front", "png", pokemon['id'], pokemon["shiny"], pokemon["gender"])
+                pixmap = QPixmap(sprite_path)
+                image_label.setPixmap(pixmap.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio))
+                image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Connect the selection change to the preview update
         combo_box.currentIndexChanged.connect(lambda: update_preview(combo_box.currentIndex()))
