@@ -277,27 +277,26 @@ class PokemonTeamDialog(QDialog):
                 }
                 pokemon_names.append(pokemon_name)
 
-        if len(team_data) > 0:
-            # Get the selected Pokémon for XP Share
-            xp_share_pokemon = self.xp_share_combo.currentText()
-            if xp_share_pokemon != "No XP Share":
-                # Retrieve the individual_id of the selected Pokémon
-                current_index = self.xp_share_combo.currentIndex()
-                xp_share_individual_id = self.xp_share_combo.itemData(current_index)
-            else:
-                xp_share_individual_id = None
+        # Get the selected Pokémon for XP Share
+        xp_share_pokemon = self.xp_share_combo.currentText()
+        if xp_share_pokemon != "No XP Share":
+            # Retrieve the individual_id of the selected Pokémon
+            current_index = self.xp_share_combo.currentIndex()
+            xp_share_individual_id = self.xp_share_combo.itemData(current_index)
+        else:
+            xp_share_individual_id = None
 
-            # Update settings with the selected team and XP Share setting
-            self.settings.set("trainer.team", team_data)
-            self.settings.set("trainer.xp_share", xp_share_individual_id)  # Save XP Share Pokémon
+        # Update settings with the selected team and XP Share setting
+        self.settings.set("trainer.team", team_data)
+        self.settings.set("trainer.xp_share", xp_share_individual_id)  # Save XP Share Pokémon
 
-            try:
-                with open(team_pokemon_path, "w") as json_file:
-                    json.dump(team_data, json_file, indent=4)
+        try:
+            with open(team_pokemon_path, "w") as json_file:
+                json.dump(team_data, json_file, indent=4)
 
-                self.logger.log_and_showinfo("info", f"Trainer settings saved to {team_pokemon_path}.")
-            except Exception as e:
-                self.logger.log_and_showinfo("error", f"Failed to save trainer settings: {e}")
+            self.logger.log_and_showinfo("info", f"Trainer settings saved to {team_pokemon_path}.")
+        except Exception as e:
+            self.logger.log_and_showinfo("error", f"Failed to save trainer settings: {e}")
 
 
         if self.team_pokemon:
