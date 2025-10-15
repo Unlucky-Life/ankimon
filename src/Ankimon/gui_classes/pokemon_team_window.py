@@ -15,7 +15,7 @@ class PokemonTeamDialog(QDialog):
         self.logger = logger
 
         # Set the minimum size of the dialog
-        self.setMinimumSize(900, 500)  # Minimum size of 400x300 pixels
+        self.setMinimumSize(900, 500)  # Minimum size of 900x500 pixels
 
         # Load the Pokémon team data
         self.my_pokemon = self.load_my_pokemon()
