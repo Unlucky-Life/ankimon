@@ -81,6 +81,11 @@ class PokemonTeamDialog(QDialog):
         for pokemon in self.my_pokemon:
             self.xp_share_combo.addItem(f"{pokemon['name']} (Level {pokemon['level']})", pokemon['individual_id'])
 
+            # Set a preview image as item data
+            sprite_path = get_sprite_path("front", "png", pokemon['id'], pokemon["shiny"], pokemon["gender"])
+            pixmap = QPixmap(sprite_path)
+            self.xp_share_combo.setItemData(self.xp_share_combo.count() - 1, pixmap, Qt.ItemDataRole.DecorationRole)
+
         # Set the initial XP Share Pokémon (based on settings)
         xp_share_pokemon_individual_id = self.settings.get("trainer.xp_share", None)
         if xp_share_pokemon_individual_id:
