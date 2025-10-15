@@ -295,13 +295,8 @@ class PokemonTeamDialog(QDialog):
                 json.dump(team_data, json_file, indent=4)
 
             self.logger.log_and_showinfo("info", f"Trainer settings saved to {team_pokemon_path}.")
+            self.logger.log_and_showinfo("info", f"You chose the following team: [{', '.join([pokemon['name'] for pokemon in pokemon_names])}]\nXP Share: {xp_share_pokemon}")
         except Exception as e:
             self.logger.log_and_showinfo("error", f"Failed to save trainer settings: {e}")
-
-
-        if self.team_pokemon:
-            self.logger.log_and_showinfo("info", f"You chose the following team: {', '.join([pokemon['name'] for pokemon in pokemon_names])}")
-        else:
-            self.logger.log_and_showinfo("error", "No Pokémon team data found!")
 
         self.accept()  # Close the dialog
