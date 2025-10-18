@@ -4,13 +4,9 @@ import json
 from aqt import mw
 from aqt.qt import (
     QGridLayout,
-    QLabel,
     QPixmap,
     Qt,
-    QVBoxLayout,
-    QWidget,
 )
-from aqt.utils import showWarning
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QLabel,
