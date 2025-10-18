@@ -139,6 +139,8 @@ class StarterWindow(QWidget):
             evos=evos,
             individual_id=str(uuid.uuid4()),
             captured_date=None,
+            shiny=False,
+            tier="Starter",
         )
 
         # Load existing Pokémon data if it exists
