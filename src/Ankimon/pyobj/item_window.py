@@ -109,7 +109,6 @@ class ItemWindow(QWidget):
         }
 
         self.evolution_items = {}
-        self.tm_hm_list = {}
 
         self.setWindowIcon(QIcon(str(icon_path)))  # Add a Pokeball icon
         self.setWindowTitle("Itembag")
@@ -209,7 +208,7 @@ class ItemWindow(QWidget):
         row, col = 0, 0
         max_items_per_row = 3
 
-        filtered_items = []
+        filtered_items = list(self.itembag_list)
         try:
             if not self.itembag_list:  # Simplified check
                 empty_label = QLabel("Empty Search")
@@ -218,31 +217,29 @@ class ItemWindow(QWidget):
                 # Filter items based on category index
                 if category_index == 1:  # Fossils
                     filtered_items = [
-                        item for item in self.itembag_list
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.fossil_pokemon and search_text in item["item"].lower()
+                        item for item in filtered_items
+                        if isinstance(item, dict) and "item" in item and item["item"] in self.fossil_pokemon
                     ]
                 elif category_index == 2:  # TMs and HMs
-                    filtered_items = [
-                        item for item in self.itembag_list
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.tm_hm_list and search_text in item["item"].lower()
-                    ]
+                    filtered_items = list(filter(lambda item: item.get("type") == "TM", filtered_items))
                 elif category_index == 3:  # Heal items
                     filtered_items = [
-                        item for item in self.itembag_list
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.hp_heal_items and search_text in item["item"].lower()
+                        item for item in filtered_items
+                        if isinstance(item, dict) and "item" in item and item["item"] in self.hp_heal_items
                     ]
                 elif category_index == 4:  # Evolution items
                     filtered_items = [
-                        item for item in self.itembag_list
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.evolution_items and search_text in item["item"].lower()
+                        item for item in filtered_items
+                        if isinstance(item, dict) and "item" in item and item["item"] in self.evolution_items
                     ]
                 elif category_index == 5: # Pokeballs
                     filtered_items = [
-                        item for item in self.itembag_list
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.pokeball_chances and search_text in item["item"].lower()
+                        item for item in filtered_items
+                        if isinstance(item, dict) and "item" in item and item["item"] in self.pokeball_chances
                     ]
-                else:
-                    filtered_items = [item for item in self.itembag_list if search_text in item["item"].lower()]
+
+                # Now filter by search
+                filtered_items = list(filter(lambda item: search_text in item["item"].lower(), filtered_items))
         except Exception as e:
             filtered_items = []
             self.logger.log_and_showinfo("error", f"Error filtering items: {e}")
