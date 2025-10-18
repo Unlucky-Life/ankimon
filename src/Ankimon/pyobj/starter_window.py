@@ -1,5 +1,7 @@
+from datetime import datetime
 import random
 import json
+import uuid
 
 from aqt.utils import showWarning
 from aqt.qt import (
@@ -82,7 +84,7 @@ class StarterWindow(QWidget):
         # add all new values like hp as max_hp, evolution_data, description and growth rate
         name = search_pokedex(starter_name, "name")
         id = search_pokedex(starter_name, "num")
-        stats = search_pokedex(starter_name, "baseStats")
+        base_stats = search_pokedex(starter_name, "baseStats")
         abilities = search_pokedex(starter_name, "abilities")
         evos = search_pokedex(starter_name, "evos")
         gender = pick_random_gender(name.lower())
@@ -104,7 +106,6 @@ class StarterWindow(QWidget):
         description= search_pokeapi_db_by_id(id, "description")
         level = 5
         attacks = get_random_moves_for_pokemon(starter_name, level)
-        stats["xp"] = 0
         ev = {
             "hp": 0,
             "atk": 0,
@@ -121,23 +122,25 @@ class StarterWindow(QWidget):
             "spd": random.randint(1, 32),
             "spe": random.randint(1, 32)
         }
-        caught_pokemon = {
-            "name": name,
-            "nickname": name,
-            "gender": gender,
-            "level": level,
-            "id": id,
-            "ability": ability,
-            "type": type,
-            "stats": stats,
-            "ev": ev,
-            "iv": iv,
-            "attacks": attacks,
-            "base_experience": base_experience,
-            "current_hp": calculate_hp(int(stats["hp"]), level, ev, iv),
-            "growth_rate": growth_rate,
-            "evos": evos
-        }
+        main_pokemon = PokemonObject(
+            name=name,
+            gender=gender,
+            level=level,
+            id=id,
+            ability=ability,
+            type=type,
+            base_stats=base_stats,
+            ev=ev,
+            iv=iv,
+            attacks=attacks,
+            base_experience=base_experience,
+            current_hp=calculate_hp(int(base_stats["hp"]), level, ev, iv),
+            growth_rate=growth_rate,
+            evos=evos,
+            individual_id=str(uuid.uuid4()),
+            captured_date=None,
+        )
+
         # Load existing Pokémon data if it exists
         if mypokemon_path.is_file():
             with open(mypokemon_path, "r", encoding="utf-8") as json_file:
@@ -146,15 +149,14 @@ class StarterWindow(QWidget):
             caught_pokemon_data = []
 
         # Append the caught Pokémon's data to the list
-        caught_pokemon_data.append(caught_pokemon)
-        # Save the caught Pokémon's data to a JSON file
-        with open(str(mainpokemon_path), "w") as json_file:
+        caught_pokemon_data.append(main_pokemon.to_dict())
+
+        # Save to mainpokemon
+        with open(mainpokemon_path, "w") as json_file:
             json.dump(caught_pokemon_data, json_file, indent=2)
 
-        main_pokemon = PokemonObject(**caught_pokemon_data[0])
-
-        # Save the caught Pokémon's data to a JSON file
-        with open(str(mypokemon_path), "w") as json_file:
+        # Save to mypokemon
+        with open(mypokemon_path, "w") as json_file:
             json.dump(caught_pokemon_data, json_file, indent=2)
 
         self.logger.log_and_showinfo("info",f"{name.capitalize()} has been chosen as Starter Pokemon !")
