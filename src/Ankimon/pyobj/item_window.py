@@ -214,6 +214,11 @@ class ItemWindow(QWidget):
         max_items_per_row = 3
 
         filtered_items = list(self.read_items_file())
+        if not filtered_items:
+            empty_label = QLabel("You don't own any items yet.")
+            self.contentLayout.addWidget(empty_label, 1, 1)
+            return
+
         try:
             # Filter items based on category index
             if category_index == 1:  # Fossils
@@ -245,20 +250,20 @@ class ItemWindow(QWidget):
             filtered_items = []
             self.logger.log_and_showinfo("error", f"Error filtering items: {e}")
 
-            
-        if not filtered_items:  # Simplified check
+        if not filtered_items:
             empty_label = QLabel("Empty Search")
             self.contentLayout.addWidget(empty_label, 1, 1)
-        else:
-            for item in filtered_items:
-                item_widget = self.ItemLabel(item["item"], item["quantity"], item.get("type"))
-                # FIX 5: Ensure consistent sizing for filtered items too
-                item_widget.setMinimumWidth(180)
-                self.contentLayout.addWidget(item_widget, row, col)
-                col += 1
-                if col >= max_items_per_row:
-                    row += 1
-                    col = 0
+            return
+
+        for item in filtered_items:
+            item_widget = self.ItemLabel(item["item"], item["quantity"], item.get("type"))
+            # FIX 5: Ensure consistent sizing for filtered items too
+            item_widget.setMinimumWidth(180)
+            self.contentLayout.addWidget(item_widget, row, col)
+            col += 1
+            if col >= max_items_per_row:
+                row += 1
+                col = 0
 
     def ItemLabel(self, item_name: str, quantity: int, item_type: str | None):
         item_file_path = items_path / f"{item_name}.png"
