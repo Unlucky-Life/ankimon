@@ -210,49 +210,50 @@ class ItemWindow(QWidget):
 
         filtered_items = list(self.itembag_list)
         try:
-            if not self.itembag_list:  # Simplified check
-                empty_label = QLabel("Empty Search")
-                self.contentLayout.addWidget(empty_label, 1, 1)
-            else:
-                # Filter items based on category index
-                if category_index == 1:  # Fossils
-                    filtered_items = [
-                        item for item in filtered_items
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.fossil_pokemon
-                    ]
-                elif category_index == 2:  # TMs and HMs
-                    filtered_items = list(filter(lambda item: item.get("type") == "TM", filtered_items))
-                elif category_index == 3:  # Heal items
-                    filtered_items = [
-                        item for item in filtered_items
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.hp_heal_items
-                    ]
-                elif category_index == 4:  # Evolution items
-                    filtered_items = [
-                        item for item in filtered_items
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.evolution_items
-                    ]
-                elif category_index == 5: # Pokeballs
-                    filtered_items = [
-                        item for item in filtered_items
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.pokeball_chances
-                    ]
+            # Filter items based on category index
+            if category_index == 1:  # Fossils
+                filtered_items = [
+                    item for item in filtered_items
+                    if isinstance(item, dict) and "item" in item and item["item"] in self.fossil_pokemon
+                ]
+            elif category_index == 2:  # TMs and HMs
+                filtered_items = list(filter(lambda item: item.get("type") == "TM", filtered_items))
+            elif category_index == 3:  # Heal items
+                filtered_items = [
+                    item for item in filtered_items
+                    if isinstance(item, dict) and "item" in item and item["item"] in self.hp_heal_items
+                ]
+            elif category_index == 4:  # Evolution items
+                filtered_items = [
+                    item for item in filtered_items
+                    if isinstance(item, dict) and "item" in item and item["item"] in self.evolution_items
+                ]
+            elif category_index == 5: # Pokeballs
+                filtered_items = [
+                    item for item in filtered_items
+                    if isinstance(item, dict) and "item" in item and item["item"] in self.pokeball_chances
+                ]
 
-                # Now filter by search
-                filtered_items = list(filter(lambda item: search_text in item["item"].lower(), filtered_items))
+            # Now filter by search
+            filtered_items = list(filter(lambda item: search_text in item["item"].lower(), filtered_items))
         except Exception as e:
             filtered_items = []
             self.logger.log_and_showinfo("error", f"Error filtering items: {e}")
 
-        for item in filtered_items:
-            item_widget = self.ItemLabel(item["item"], item["quantity"], item_type=item.get("type"))
-            # FIX 5: Ensure consistent sizing for filtered items too
-            item_widget.setMinimumWidth(180)
-            self.contentLayout.addWidget(item_widget, row, col)
-            col += 1
-            if col >= max_items_per_row:
-                row += 1
-                col = 0
+            
+        if not filtered_items:  # Simplified check
+            empty_label = QLabel("Empty Search")
+            self.contentLayout.addWidget(empty_label, 1, 1)
+        else:
+            for item in filtered_items:
+                item_widget = self.ItemLabel(item["item"], item["quantity"], item_type=item.get("type"))
+                # FIX 5: Ensure consistent sizing for filtered items too
+                item_widget.setMinimumWidth(180)
+                self.contentLayout.addWidget(item_widget, row, col)
+                col += 1
+                if col >= max_items_per_row:
+                    row += 1
+                    col = 0
 
     def ItemLabel(self, item_name, quantity, **kwargs):
         item_file_path = items_path / f"{item_name}.png"
