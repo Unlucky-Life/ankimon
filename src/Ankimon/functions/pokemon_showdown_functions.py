@@ -65,6 +65,14 @@ def export_to_pkmn_showdown():
     # Show the window
     window.show()
 
+POKEMON_INFO_FORMAT = """{}
+Ability: {}
+Level: {}
+Type: {}
+EVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe
+IVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe
+"""
+
 def export_all_pkmn_showdown():
     # Create a main window
     export_window = QDialog()
@@ -101,17 +109,17 @@ def export_all_pkmn_showdown():
                     pokemon_ev = pokemon['ev']
                     pokemon_iv = pokemon['iv']
 
-                    pokemon_info = "{} \nAbility: {}\nLevel: {}\nType: {}\nEVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe\n IVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe \n".format(
+                    pokemon_info = POKEMON_INFO_FORMAT.format(
                         pokemon_name,
                         pokemon_ability.capitalize(),
                         pokemon_level,
                         pokemon_type_text,
-                        pokemon_stats["hp"],
-                        pokemon_stats["atk"],
-                        pokemon_stats["def"],
-                        pokemon_stats["spa"],
-                        pokemon_stats["spd"],
-                        pokemon_stats["spe"],
+                        pokemon_ev["hp"],
+                        pokemon_ev["atk"],
+                        pokemon_ev["def"],
+                        pokemon_ev["spa"],
+                        pokemon_ev["spd"],
+                        pokemon_ev["spe"],
                         pokemon_iv["hp"],
                         pokemon_iv["atk"],
                         pokemon_iv["def"],
@@ -192,17 +200,17 @@ def flex_pokemon_collection():
                     pokemon_ev = pokemon['ev']
                     pokemon_iv = pokemon['iv']
 
-                    pokemon_info = "{} \nAbility: {}\nLevel: {}\nType: {}\nEVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe\n IVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe \n".format(
+                    pokemon_info = POKEMON_INFO_FORMAT.format(
                         pokemon_name,
                         pokemon_ability.capitalize(),
                         pokemon_level,
                         pokemon_type_text,
-                        pokemon_stats["hp"],
-                        pokemon_stats["atk"],
-                        pokemon_stats["def"],
-                        pokemon_stats["spa"],
-                        pokemon_stats["spd"],
-                        pokemon_stats["spe"],
+                        pokemon_ev["hp"],
+                        pokemon_ev["atk"],
+                        pokemon_ev["def"],
+                        pokemon_ev["spa"],
+                        pokemon_ev["spd"],
+                        pokemon_ev["spe"],
                         pokemon_iv["hp"],
                         pokemon_iv["atk"],
                         pokemon_iv["def"],
