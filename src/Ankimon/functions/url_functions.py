@@ -23,7 +23,7 @@ def rate_addon_url():
 
 def report_bug():
     # Specify the URL of the Ankimon issue tracker
-    bug_url = "https://github.com/Unlucky-Life/ankimon/issues"
+    bug_url = "https://github.com/h0tp-ftw/ankimon/issues"
 
     # Open the Ankimon issue tracker in the default web browser
     QDesktopServices.openUrl(QUrl(bug_url))
