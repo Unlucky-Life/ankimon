@@ -88,7 +88,7 @@ class DownloadThread(QThread):
                 downloaded_size = 0
 
                 with open(self._temp_zip_path, "wb") as f:
-                    for data in response.iter_content(chunk_size=8192): # Increased chunk size for efficiency
+                    for data in response.iter_content(chunk_size=(1024*1024)): # Point 2: Increased chunk size for better throughput
                         if self._is_cancelled:
                             self.status_signal.emit("Download cancelled.")
                             self._cleanup_temp_files()
@@ -127,12 +127,12 @@ class DownloadThread(QThread):
                 self._cleanup_temp_files()
                 self.download_finished_signal.emit(False, "Failed to download sprites.")
                 return
-        
-        # If loop finished without breaking, download failed all attempts
-        else: 
-            self._cleanup_temp_files()
-            self.download_finished_signal.emit(False, "Failed to download sprites after multiple attempts.")
             return
+
+        # Point 4: Remove unreachable else clause after retry for loop (optional cleanup)
+        # The 'else' clause here is unreachable because the loop either 'break's or 'return's,
+        # or the 'return' statement outside the loop but before this 'else' handles the failure.
+
 
         # Point 3: Validate ZIP integrity
         self.status_signal.emit("Verifying ZIP file integrity...")
@@ -171,17 +171,15 @@ class DownloadThread(QThread):
                     extraction_progress = int((i / total_files) * 100) if total_files > 0 else 0
                     self.progress_signal.emit(extraction_progress)
                     
-                    if not dest_file.exists(): # Check if the file already exists to avoid overwriting
-                        try:
-                            zip_ref.extract(file_name, self.dest_dir_path)
-                            self.status_signal.emit(f"Extracted ({extraction_progress}%): {file_name}")
-                            extracted_count += 1
-                        except OSError as e:
-                            self.status_signal.emit(f"Error extracting {file_name}: {e}")
-                            # Continue with other files, but mark as failure later? Or stop?
-                            # For now, continue and report overall success/failure.
-                    else:
-                        self.status_signal.emit(f"Skipped ({extraction_progress}%, file exists): {file_name}")
+                    # Point 3: Always extract all files.
+                    try:
+                        zip_ref.extract(file_name, self.dest_dir_path)
+                        self.status_signal.emit(f"Extracted ({extraction_progress}%): {file_name}")
+                        extracted_count += 1
+                    except OSError as e:
+                        self.status_signal.emit(f"Error extracting {file_name}: {e}")
+                        # Continue with other files, but mark as failure later? Or stop?
+                        # For now, continue and report overall success/failure.
                 self.progress_signal.emit(100) # Final extraction progress
         except (zipfile.BadZipFile, IOError) as e:
             self.status_signal.emit(f"Error during extraction: {e}")
@@ -321,6 +319,8 @@ def show_agreement_and_download_dialog():
     dialog = AgreementDialog()
     if dialog.exec() == QDialog.DialogCode.Accepted:
         download_dialog = DownloadDialog()
+        # Point 1: Memory leak fix - Ensure dialog is deleted when closed.
+        download_dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         # Point 7: Make dialog non-modal but always-on-top
         download_dialog.setWindowModality(Qt.WindowModality.NonModal) # Changed from ApplicationModal to NonModal
         download_dialog.setWindowFlag(Qt.WindowStaysOnTopHint)
