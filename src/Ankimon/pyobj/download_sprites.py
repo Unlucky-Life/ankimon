@@ -127,11 +127,9 @@ class DownloadThread(QThread):
                 self._cleanup_temp_files()
                 self.download_finished_signal.emit(False, "Failed to download sprites.")
                 return
-            return
-
-        # Point 4: Remove unreachable else clause after retry for loop (optional cleanup)
-        # The 'else' clause here is unreachable because the loop either 'break's or 'return's,
-        # or the 'return' statement outside the loop but before this 'else' handles the failure.
+        
+        # Point 4: The previous 'return' here was incorrect, preventing successful paths from proceeding.
+        # The 'else' clause after the for loop is now implicitly handled if the loop completes without a 'break'.
 
 
         # Point 3: Validate ZIP integrity
