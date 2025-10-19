@@ -322,6 +322,6 @@ def show_agreement_and_download_dialog():
     if dialog.exec() == QDialog.DialogCode.Accepted:
         download_dialog = DownloadDialog()
         # Point 7: Make dialog non-modal but always-on-top
-        download_dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        download_dialog.setWindowModality(Qt.WindowModality.NonModal) # Changed from ApplicationModal to NonModal
         download_dialog.setWindowFlag(Qt.WindowStaysOnTopHint)
         download_dialog.show() # Show the dialog non-modally
