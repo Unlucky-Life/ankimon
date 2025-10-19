@@ -94,7 +94,6 @@ def export_all_pkmn_showdown():
                 column = 0
                 row = 0
                 for pokemon in captured_pokemon_data:
-                    pokemon_name = pokemon['name']
                     pokemon_level = pokemon['level']
                     pokemon_ability = pokemon['ability']
                     pokemon_type = pokemon['type']
@@ -103,14 +102,17 @@ def export_all_pkmn_showdown():
                         pokemon_type_text = ""
                         pokemon_type_text += f"{pokemon_type[0].capitalize()}"
                         pokemon_type_text += f" {pokemon_type[1].capitalize()}"
-                    pokemon_stats = pokemon['stats']
-                    pokemon_hp = pokemon_stats["hp"]
                     pokemon_attacks = pokemon['attacks']
                     pokemon_ev = pokemon['ev']
                     pokemon_iv = pokemon['iv']
 
+                    if pokemon["nickname"]:
+                        pokemon_name_and_nickname = f"{pokemon["nickname"]} ({pokemon["name"]})"
+                    else:
+                        pokemon_name_and_nickname = f"{pokemon["name"]}"
+
                     pokemon_info = POKEMON_INFO_FORMAT.format(
-                        pokemon_name,
+                        pokemon_name_and_nickname,
                         pokemon_ability.capitalize(),
                         pokemon_level,
                         pokemon_type_text,
@@ -185,7 +187,6 @@ def flex_pokemon_collection():
                 column = 0
                 row = 0
                 for pokemon in captured_pokemon_data:
-                    pokemon_name = pokemon['name']
                     pokemon_level = pokemon['level']
                     pokemon_ability = pokemon['ability']
                     pokemon_type = pokemon['type']
@@ -194,14 +195,17 @@ def flex_pokemon_collection():
                         pokemon_type_text = ""
                         pokemon_type_text += f"{pokemon_type[0].capitalize()}"
                         pokemon_type_text += f" {pokemon_type[1].capitalize()}"
-                    pokemon_stats = pokemon['stats']
-                    pokemon_hp = pokemon_stats["hp"]
                     pokemon_attacks = pokemon['attacks']
                     pokemon_ev = pokemon['ev']
                     pokemon_iv = pokemon['iv']
 
+                    if pokemon["nickname"]:
+                        pokemon_name_and_nickname = f"{pokemon["nickname"]} ({pokemon["name"]})"
+                    else:
+                        pokemon_name_and_nickname = f"{pokemon["name"]}"
+
                     pokemon_info = POKEMON_INFO_FORMAT.format(
-                        pokemon_name,
+                        pokemon_name_and_nickname,
                         pokemon_ability.capitalize(),
                         pokemon_level,
                         pokemon_type_text,
