@@ -65,7 +65,7 @@ def export_to_pkmn_showdown():
     # Show the window
     window.show()
 
-POKEMON_INFO_FORMAT = """{}
+POKEMON_INFO_FORMAT = """{}{}
 Ability: {}
 Level: {}
 Type: {}
@@ -111,8 +111,14 @@ def export_all_pkmn_showdown():
                     else:
                         pokemon_name_and_nickname = f"{pokemon["name"]}"
 
+                    if pokemon["gender"] in ["M", "F"]:
+                        exported_gender = f" ({pokemon["gender"]})"
+                    else:
+                        exported_gender = ""
+
                     pokemon_info = POKEMON_INFO_FORMAT.format(
                         pokemon_name_and_nickname,
+                        exported_gender,
                         pokemon_ability.capitalize(),
                         pokemon_level,
                         pokemon_type_text,
@@ -204,8 +210,14 @@ def flex_pokemon_collection():
                     else:
                         pokemon_name_and_nickname = f"{pokemon["name"]}"
 
+                    if pokemon["gender"] in ["M", "F"]:
+                        exported_gender = f" ({pokemon["gender"]})"
+                    else:
+                        exported_gender = ""
+
                     pokemon_info = POKEMON_INFO_FORMAT.format(
                         pokemon_name_and_nickname,
+                        exported_gender,
                         pokemon_ability.capitalize(),
                         pokemon_level,
                         pokemon_type_text,
