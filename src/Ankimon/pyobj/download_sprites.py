@@ -2,6 +2,7 @@ import os
 import zipfile
 import requests
 import time
+import hashlib # Point 4: Add import for hashlib
 from pathlib import Path
 
 from ..resources import user_path
@@ -40,6 +41,54 @@ class DownloadThread(QThread):
                     self.status_signal.emit(f"Cleaned up partial file: {path.name}")
                 except OSError as e:
                     self.status_signal.emit(f"Error cleaning up {path.name}: {e}")
+
+    # Point 1: Add method _fetch_expected_hash(self)
+    def _fetch_expected_hash(self) -> str | None:
+        """Fetches the expected SHA256 hash from GitHub Releases API."""
+        api_url = "https://api.github.com/repos/Unlucky-Life/ankimon/releases/latest"
+        try:
+            # Add 10-second timeout to API request
+            response = requests.get(api_url, timeout=10)
+            response.raise_for_status()
+            release_data = response.json()
+            
+            # Parse JSON to find asset matching "sprites.zip"
+            # Note: The provided example JSON does not contain 'sprites.zip'
+            # directly but 'ankimon-1.288-anki21-ankiweb.ankiaddon'.
+            # Assuming 'sprites.zip' will eventually be an asset with 'sha256' field.
+            for asset in release_data.get('assets', []):
+                if asset.get('name') == "sprites.zip":
+                    sha256_hash = asset.get('sha256') # Extract and return the "sha256" field
+                    if sha256_hash:
+                        return sha256_hash.lower() # Return in lowercase for case-insensitive comparison later
+            
+            self.status_signal.emit("Warning: 'sprites.zip' asset not found in GitHub release assets or missing 'sha256'.")
+            return None
+        except requests.exceptions.Timeout:
+            self.status_signal.emit("Warning: GitHub API request timed out when fetching checksum.")
+            return None
+        except requests.exceptions.RequestException as e:
+            self.status_signal.emit(f"Warning: Failed to fetch checksum from GitHub API: {e}")
+            return None
+        except ValueError: # For JSON decoding errors
+            self.status_signal.emit("Warning: Failed to decode GitHub API response as JSON.")
+            return None
+        except Exception as e:
+            self.status_signal.emit(f"Warning: An unexpected error occurred while fetching checksum: {e}")
+            return None
+
+    # Point 2: Add method _calculate_file_hash(self, file_path: Path) -> str:
+    def _calculate_file_hash(self, file_path: Path) -> str:
+        """Calculates the SHA256 hash of a file, reading in chunks."""
+        hasher = hashlib.sha256()
+        try:
+            with open(file_path, 'rb') as f:
+                while chunk := f.read(1024 * 1024):  # Read file in 1MB chunks
+                    hasher.update(chunk)
+            return hasher.hexdigest().lower() # Return in lowercase for case-insensitive comparison
+        except IOError as e:
+            self.status_signal.emit(f"Error calculating hash for {file_path.name}: {e}")
+            return ""
 
     def run(self):
         self.status_signal.emit("Initializing download...")
@@ -131,8 +180,30 @@ class DownloadThread(QThread):
         # Point 4: The previous 'return' here was incorrect, preventing successful paths from proceeding.
         # The 'else' clause after the for loop is now implicitly handled if the loop completes without a 'break'.
 
+        # Point 3: Modify run() method after ZIP download completes
+        self.status_signal.emit("Fetching expected checksum...")
+        expected_hash = self._fetch_expected_hash()
 
-        # Point 3: Validate ZIP integrity
+        if expected_hash:
+            self.status_signal.emit("Verifying file integrity with SHA256...")
+            actual_hash = self._calculate_file_hash(self._temp_zip_path)
+
+            if not actual_hash: # Error during hash calculation
+                self.download_finished_signal.emit(False, "Failed to calculate download file checksum.")
+                self._cleanup_temp_files()
+                return
+
+            if actual_hash != expected_hash: # Compare hashes (case-insensitive done in methods)
+                self.status_signal.emit(f"Checksum mismatch! Expected: {expected_hash}, Actual: {actual_hash[:10]}...")
+                self._cleanup_temp_files()
+                self.download_finished_signal.emit(False, "Downloaded file checksum mismatch. It might be corrupted.")
+                return
+            self.status_signal.emit("Checksum verified (SHA256).")
+        else:
+            self.status_signal.emit("Could not fetch checksum, proceeding with ZIP validation only.")
+
+
+        # Point 5: Keep all existing ZIP validation as secondary check
         self.status_signal.emit("Verifying ZIP file integrity...")
         try:
             if not zipfile.is_zipfile(self._temp_zip_path):
@@ -140,16 +211,15 @@ class DownloadThread(QThread):
             with zipfile.ZipFile(self._temp_zip_path, 'r') as _: # Try to open to ensure it's readable
                 pass
             self.status_signal.emit("ZIP file integrity verified.")
-            # Point 3: Only rename to sprites.zip after validation
+            # Point 3 (from original request): Only rename to sprites.zip after validation
             os.rename(self._temp_zip_path, self._final_zip_path)
             self.status_signal.emit(f"Renamed {self._temp_zip_path.name} to {self._final_zip_path.name}.")
         except (zipfile.BadZipFile, IOError) as e:
             self.status_signal.emit(f"ZIP file verification failed: {e}")
             self._cleanup_temp_files()
-            self.download_finished_signal.emit(False, "ZIP file verification failed.")
+            self.download_finished_signal.emit(False, "ZIP file format verification failed.")
             return
         
-        # Point 2: Extract the ZIP file
         self.status_signal.emit("Extracting files...")
         extracted_count = 0
         total_files = 0
