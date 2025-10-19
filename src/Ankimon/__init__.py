@@ -629,7 +629,8 @@ def on_review_card(*args):
         reviewer.web = mw.reviewer.web
         reviewer_obj.update_life_bar(reviewer, 0, 0)
         if test_window is not None:
-            test_window.display_battle()
+            if enemy_pokemon.hp > 0:
+                test_window.display_battle()
     except Exception as e:
         show_warning_with_traceback(parent=mw, exception=e, message="An error occurred in reviewer:")
 
