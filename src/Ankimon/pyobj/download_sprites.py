@@ -12,6 +12,17 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QProgressBar, QLabel, QPushBut
 
 
 class DownloadThread(QThread):
+    """
+    A QThread subclass for downloading, verifying, and extracting ZIP files in the background.
+    This class handles network retries, SHA256 integrity checks, download cancellation,
+    and provides detailed progress updates through Qt signals. It uses Path objects for
+    robust file system operations.
+    
+    Signals:
+        progress_signal(int): Emitted during download/extraction with progress percentage (0-100).
+        status_signal(str): Emitted with status updates throughout the process.
+        download_finished_signal(bool, str): Emitted upon completion (success, message).
+    """
     # Define custom signals for progress and completion
     progress_signal = pyqtSignal(int)
     status_signal = pyqtSignal(str)
@@ -239,7 +250,11 @@ class DownloadThread(QThread):
                     extraction_progress = int((i / total_files) * 100) if total_files > 0 else 0
                     self.progress_signal.emit(extraction_progress)
                     
-                    # Point 3: Always extract all files.
+                    # Check if file already exists to avoid overwriting
+                    if dest_file.exists():
+                        self.status_signal.emit(f"Skipped ({extraction_progress}%): {file_name} (File exists)")
+                        continue # Skip to the next file
+                        
                     try:
                         zip_ref.extract(file_name, self.dest_dir_path)
                         self.status_signal.emit(f"Extracted ({extraction_progress}%): {file_name}")
@@ -281,7 +296,7 @@ class DownloadDialog(QDialog):
         self.setWindowTitle('Ankimon Sprites Download')
         self.setGeometry(300, 300, 400, 200)
 
-        self.url = "https://github.com/Unlucky-Life/ankimon/releases/download/sprites/sprites.zip"
+        self.url = "https://github.com/Unlucky-Life/ankimon/releases/download/sprites-v1.43/sprites.zip"
         self.dest_dir_path = Path(user_path)
         self._flag_file_path = self.dest_dir_path / "download_complete.flag"
 
