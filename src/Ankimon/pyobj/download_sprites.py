@@ -28,9 +28,9 @@ class DownloadThread(QThread):
     status_signal = pyqtSignal(str)
     download_finished_signal = pyqtSignal(bool, str) # success, message
 
-    def __init__(self, url, dest_dir_path: Path, force_download=False):
+    def __init__(self, urls: list[str], dest_dir_path: Path, force_download=False):
         super().__init__()
-        self.url = url
+        self.urls = urls
         self.force_download = force_download
         self.dest_dir_path = dest_dir_path
         self._is_cancelled = False
@@ -132,62 +132,73 @@ class DownloadThread(QThread):
 
         # Point 8: Add retry logic (3 attempts) with exponential backoff for network failures
         max_attempts = 3
-        for attempt in range(max_attempts):
-            if self._is_cancelled:
-                self.status_signal.emit("Download cancelled during retry setup.")
-                self._cleanup_temp_files()
-                self.download_finished_signal.emit(False, "Download cancelled.")
-                return
+        download_successful = False
+        
+        for url_index, url in enumerate(self.urls):
+            self.status_signal.emit(f"Trying download mirror {url_index + 1}/{len(self.urls)}: {url}")
+            for attempt in range(max_attempts):
+                if self._is_cancelled:
+                    self.status_signal.emit("Download cancelled during retry setup.")
+                    self._cleanup_temp_files()
+                    self.download_finished_signal.emit(False, "Download cancelled.")
+                    return
 
-            try:
-                self.status_signal.emit(f"Attempt {attempt + 1}/{max_attempts}: Downloading ZIP file...")
-                # Point 1 & 2: Add comprehensive error handling & timeout
-                response = requests.get(self.url, stream=True, timeout=self.download_timeout)
-                response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
+                try:
+                    self.status_signal.emit(f"Attempt {attempt + 1}/{max_attempts} for current mirror: Downloading ZIP file...")
+                    # Point 1 & 2: Add comprehensive error handling & timeout
+                    response = requests.get(url, stream=True, timeout=self.download_timeout)
+                    response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
 
-                total_size = int(response.headers.get('content-length', 0))
-                downloaded_size = 0
+                    total_size = int(response.headers.get('content-length', 0))
+                    downloaded_size = 0
 
-                with open(self._temp_zip_path, "wb") as f:
-                    for data in response.iter_content(chunk_size=(1024*1024)): # Point 2: Increased chunk size for better throughput
-                        if self._is_cancelled:
-                            self.status_signal.emit("Download cancelled.")
-                            self._cleanup_temp_files()
-                            self.download_finished_signal.emit(False, "Download cancelled.")
-                            return
+                    with open(self._temp_zip_path, "wb") as f:
+                        for data in response.iter_content(chunk_size=(1024*1024)): # Point 2: Increased chunk size for better throughput
+                            if self._is_cancelled:
+                                self.status_signal.emit("Download cancelled.")
+                                self._cleanup_temp_files()
+                                self.download_finished_signal.emit(False, "Download cancelled.")
+                                return
 
-                        downloaded_size += len(data)
-                        f.write(data)
+                            downloaded_size += len(data)
+                            f.write(data)
 
-                        # Point 5: Throttle progress updates to max 10Hz (every 10%)
-                        current_progress_percent = int((downloaded_size / total_size) * 100) if total_size > 0 else 0
-                        current_time = time.time()
+                            # Point 5: Throttle progress updates to max 10Hz (every 10%)
+                            current_progress_percent = int((downloaded_size / total_size) * 100) if total_size > 0 else 0
+                            current_time = time.time()
 
-                        if (current_progress_percent >= self._last_progress_percent_emit + 10 or current_progress_percent == 100) and \
-                           (current_time - self._last_progress_time_emit >= 0.1): # Max 10Hz
-                            self.progress_signal.emit(current_progress_percent)
-                            self._last_progress_percent_emit = current_progress_percent
-                            self._last_progress_time_emit = current_time
+                            if (current_progress_percent >= self._last_progress_percent_emit + 10 or current_progress_percent == 100) and \
+                               (current_time - self._last_progress_time_emit >= 0.1): # Max 10Hz
+                                self.progress_signal.emit(current_progress_percent)
+                                self._last_progress_percent_emit = current_progress_percent
+                                self._last_progress_time_emit = current_time
 
-                # Emit final progress
-                self.progress_signal.emit(100)
-                self.status_signal.emit(f"Downloaded {self._temp_zip_path.name}.")
-                break # Download successful, break out of retry loop
+                    # Emit final progress
+                    self.progress_signal.emit(100)
+                    self.status_signal.emit(f"Downloaded {self._temp_zip_path.name} from mirror {url_index + 1}.")
+                    download_successful = True
+                    break # Download successful, break out of retry loop
+                
+                except requests.exceptions.Timeout:
+                    self.status_signal.emit(f"Download timed out (attempt {attempt + 1}). Retrying...")
+                except requests.exceptions.RequestException as e:
+                    self.status_signal.emit(f"Network error (attempt {attempt + 1}): {e}. Retrying...")
+                except IOError as e:
+                    self.status_signal.emit(f"File system error during download (attempt {attempt + 1}): {e}. Retrying...")
+                
+                if attempt < max_attempts - 1:
+                    time.sleep(2 ** attempt) # Exponential backoff
+                else:
+                    self.status_signal.emit(f"Failed to download from mirror {url_index + 1} after {max_attempts} attempts.")
             
-            except requests.exceptions.Timeout:
-                self.status_signal.emit(f"Download timed out (attempt {attempt + 1}). Retrying...")
-            except requests.exceptions.RequestException as e:
-                self.status_signal.emit(f"Network error (attempt {attempt + 1}): {e}. Retrying...")
-            except IOError as e:
-                self.status_signal.emit(f"File system error during download (attempt {attempt + 1}): {e}. Retrying...")
-            
-            if attempt < max_attempts - 1:
-                time.sleep(2 ** attempt) # Exponential backoff
-            else:
-                self.status_signal.emit(f"Failed to download after {max_attempts} attempts.")
-                self._cleanup_temp_files()
-                self.download_finished_signal.emit(False, "Failed to download sprites.")
-                return
+            if download_successful:
+                break # Break out of the URL loop if download was successful
+
+        if not download_successful:
+            self.status_signal.emit(f"Failed to download after trying all {len(self.urls)} mirrors.")
+            self._cleanup_temp_files()
+            self.download_finished_signal.emit(False, "Failed to download sprites.")
+            return
         
         # Point 4: The previous 'return' here was incorrect, preventing successful paths from proceeding.
         # The 'else' clause after the for loop is now implicitly handled if the loop completes without a 'break'.
@@ -298,7 +309,10 @@ class DownloadDialog(QDialog):
         self.setWindowTitle('Ankimon Sprites Download')
         self.setGeometry(300, 300, 400, 200)
 
-        self.url = "https://github.com/Unlucky-Life/ankimon/releases/download/sprites-v1.43/sprites.zip"
+        self.urls = [
+            "https://huggingface.co/datasets/h0tp/ankimon/resolve/main/sprites.zip",
+            "https://github.com/Unlucky-Life/ankimon/releases/download/sprites-v1.43/sprites.zip"
+        ]
         self.dest_dir_path = Path(user_path)
         self._flag_file_path = self.dest_dir_path / "download_complete.flag"
 
@@ -356,7 +370,7 @@ class DownloadDialog(QDialog):
             return
 
         # Point 10: Check if download is already complete
-        if self._flag_file_path.exists():
+        if self._flag_file_path.exists() and not self.force_download:
             QMessageBox.information(self, "Download Complete", "Ankimon sprites are already downloaded and verified.")
             self.status_label.setText("Sprites already downloaded and verified.")
             self.start_button.setEnabled(False)
@@ -365,7 +379,7 @@ class DownloadDialog(QDialog):
             return
 
         # Start the download thread
-        self.download_thread = DownloadThread(self.url, self.dest_dir_path, force_download=self.force_download)
+        self.download_thread = DownloadThread(self.urls, self.dest_dir_path, force_download=self.force_download)
         self.download_thread.progress_signal.connect(self.update_progress)
         self.download_thread.status_signal.connect(self.update_status)
         self.download_thread.download_finished_signal.connect(self.on_download_finished)
