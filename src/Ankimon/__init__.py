@@ -98,6 +98,7 @@ from .functions.encounter_functions import (
 )
 from .functions.pokedex_functions import find_details_move
 from .gui_entities import UpdateNotificationWindow, CheckFiles
+from .pyobj.download_sprites import show_agreement_and_download_dialog
 from .pyobj.help_window import HelpWindow
 from .pyobj.backup_files import run_backup
 from .pyobj.backup_manager import BackupManager
@@ -235,6 +236,7 @@ database_complete = all([
 ])
 
 if not database_complete:
+    show_agreement_and_download_dialog(force_download=True)
     dialog = CheckFiles()
     dialog.show()
 

@@ -28,9 +28,10 @@ class DownloadThread(QThread):
     status_signal = pyqtSignal(str)
     download_finished_signal = pyqtSignal(bool, str) # success, message
 
-    def __init__(self, url, dest_dir_path: Path):
+    def __init__(self, url, dest_dir_path: Path, force_download=False):
         super().__init__()
         self.url = url
+        self.force_download = force_download
         self.dest_dir_path = dest_dir_path
         self._is_cancelled = False
         self._temp_zip_path = self.dest_dir_path / "sprites_temp.zip"
@@ -124,7 +125,7 @@ class DownloadThread(QThread):
         self._cleanup_temp_files()
         
         # Point 10: Check if already completed
-        if self._flag_file_path.exists():
+        if self._flag_file_path.exists() and not self.force_download:
             self.status_signal.emit("Sprites already downloaded and verified.")
             self.download_finished_signal.emit(True, "Sprites already downloaded.")
             return
@@ -290,9 +291,10 @@ class DownloadThread(QThread):
 
 
 class DownloadDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, force_download=False):
         super().__init__(parent)
 
+        self.force_download = force_download
         self.setWindowTitle('Ankimon Sprites Download')
         self.setGeometry(300, 300, 400, 200)
 
@@ -329,6 +331,10 @@ class DownloadDialog(QDialog):
     def _check_initial_state(self):
         """Checks if sprites are already downloaded and updates UI."""
         if self._flag_file_path.exists():
+            if self.force_download:
+                self.status_label.setText("Forcing download despite existing flag.")
+                return # Do not disable button, allow download to start
+                
             self.status_label.setText("Sprites already downloaded and verified.")
             self.start_button.setEnabled(False)
             self.cancel_button.setEnabled(False)
@@ -359,7 +365,7 @@ class DownloadDialog(QDialog):
             return
 
         # Start the download thread
-        self.download_thread = DownloadThread(self.url, self.dest_dir_path)
+        self.download_thread = DownloadThread(self.url, self.dest_dir_path, force_download=self.force_download)
         self.download_thread.progress_signal.connect(self.update_progress)
         self.download_thread.status_signal.connect(self.update_status)
         self.download_thread.download_finished_signal.connect(self.on_download_finished)
@@ -397,14 +403,12 @@ class DownloadDialog(QDialog):
             self.progress_bar.setValue(0) # Reset progress on failure
 
 
-def show_agreement_and_download_dialog():
+def show_agreement_and_download_dialog(force_download=False):
     # Show the agreement dialog
     dialog = AgreementDialog()
     if dialog.exec() == QDialog.DialogCode.Accepted:
-        download_dialog = DownloadDialog()
+        download_dialog = DownloadDialog(force_download=force_download)
         # Point 1: Memory leak fix - Ensure dialog is deleted when closed.
         download_dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        # Point 7: Make dialog non-modal but always-on-top
-        download_dialog.setWindowModality(Qt.WindowModality.NonModal) # Changed from ApplicationModal to NonModal
-        download_dialog.setWindowFlag(Qt.WindowStaysOnTopHint)
-        download_dialog.show() # Show the dialog non-modally
+        # Ensure the dialog is modal and blocks execution until download is complete or cancelled.
+        download_dialog.exec() # Show the dialog modally
