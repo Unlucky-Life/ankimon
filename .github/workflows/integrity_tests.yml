@@ -30,5 +30,8 @@ jobs:
 
     - name: Run tests
       run: |
+        echo "Content of tests/test_ankimon_integrity.py:"
+        cat tests/test_ankimon_integrity.py
+        echo "PYTHONPATH: $PYTHONPATH"
         source venv/bin/activate
         pytest tests/
