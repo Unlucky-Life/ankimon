@@ -26,3 +26,4 @@ src/Ankimon/updateinfos.md
 .aider*
 *.env
 cycle_keys.py
+src/Ankimon/user_files/download_complete.flag
