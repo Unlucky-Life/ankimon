@@ -8,44 +8,24 @@ from ..pyobj.pokemon_obj import PokemonObject
 # default values to fall back in case of load error
 MAIN_POKEMON_DEFAULT = {
     "name": "RESTART ANKI",
-    "gender": "M",
+    "gender": None,
     "level": 5,
-    "id": 0,
-    "ability": "Static",
-    "type": ["Electric"],
-    "base_stats": {
-        "hp": 20,
-        "atk": 30,
-        "def": 15,
-        "spa": 50,
-        "spd": 40,
-        "spe": 60,
-    },
-    "xp": 0,
-    "ev": {
-        "hp": 0,
-        "atk": 1,
-        "def": 0,
-        "spa": 0,
-        "spd": 0,
-        "spe": 0
-    },
-    "iv": {
-        "hp": 15,
-        "atk": 20,
-        "def": 10,
-        "spa": 10,
-        "spd": 10,
-        "spe": 10
-    },
-    "attacks": [
-        "Thunderbolt",
-        "Quick Attack"
-    ],
-    "base_experience": 112,
-    "hp": 20,
-    "growth_rate": "medium",
-    "evos": ["Pikachu"]
+    "id": None,
+    "ability": None,
+    "type": None,
+    "base_stats": None,
+    "xp": None,
+    "ev": None,
+    "iv": None,
+    "attacks": None,
+    "base_experience": None,
+    "hp": 100,
+    "growth_rate": None,
+    "evos": None,
+    "individual_id": None,
+    "tier": None,
+    "shiny": None,
+    "captured_date": None
 }
 
 

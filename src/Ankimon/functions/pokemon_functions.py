@@ -121,41 +121,43 @@ def shiny_chance():
     shiny = random.randint(1, SHINY_PROBABILITY) == 1
     return shiny
 
-def create_caught_pokemon(enemy_pokemon, nickname):
-    enemy_pokemon.stats["xp"] = 0
-    ev = {
-        "hp": 0,
-        "atk": 0,
-        "def": 0,
-        "spa": 0,
-        "spd": 0,
-        "spe": 0
-    }
-    caught_pokemon = {
-        "name": enemy_pokemon.name.capitalize(),
-        "nickname": nickname,
-        "level": enemy_pokemon.level,
-        "gender": enemy_pokemon.gender,
-        "id": enemy_pokemon.id,
-        "ability": enemy_pokemon.ability,
-        "type": enemy_pokemon.type,
-        "stats": enemy_pokemon.stats,
-        "ev": {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0},
-        "iv": enemy_pokemon.iv,
-        "attacks": enemy_pokemon.attacks,
-        "base_experience": enemy_pokemon.base_experience,
-        "current_hp": enemy_pokemon.calculate_max_hp(),
-        "growth_rate": enemy_pokemon.growth_rate,
-        "friendship": 0,
-        "pokemon_defeated": 0,
-        "everstone": False,
-        "shiny": enemy_pokemon.shiny,
-        "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "individual_id": str(uuid.uuid4()),
-        "mega": False,
-        "special-form": None,
-    }
-    return caught_pokemon
+# unused, archived
+# must fix missing fields if used
+#def create_caught_pokemon(enemy_pokemon, nickname):
+#    enemy_pokemon.stats["xp"] = 0
+#    ev = {
+#        "hp": 0,
+#        "atk": 0,
+#        "def": 0,
+#        "spa": 0,
+#        "spd": 0,
+#        "spe": 0
+#    }
+#    caught_pokemon = {
+#        "name": enemy_pokemon.name.capitalize(),
+#        "nickname": nickname,
+#        "level": enemy_pokemon.level,
+#        "gender": enemy_pokemon.gender,
+#        "id": enemy_pokemon.id,
+#        "ability": enemy_pokemon.ability,
+#        "type": enemy_pokemon.type,
+#        "stats": enemy_pokemon.stats,
+#        "ev": {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0},
+#        "iv": enemy_pokemon.iv,
+#        "attacks": enemy_pokemon.attacks,
+#        "base_experience": enemy_pokemon.base_experience,
+#        "current_hp": enemy_pokemon.calculate_max_hp(),
+#        "growth_rate": enemy_pokemon.growth_rate,
+#        "friendship": 0,
+#        "pokemon_defeated": 0,
+#        "everstone": False,
+#        "shiny": enemy_pokemon.shiny,
+#        "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+#        "individual_id": str(uuid.uuid4()),
+#        "mega": False,
+#        "special-form": None,
+#    }
+#    return caught_pokemon
 
 def get_random_moves_for_pokemon(pokemon_name, level):
         """
@@ -291,6 +293,7 @@ def save_fossil_pokemon(pokemon_id):
         "individual_id": str(uuid.uuid4()),
         "mega": False,
         "special-form": None,
+        "tier": "Fossil",
         "evos": evos
     }
     # Load existing Pokémon data if it exists
