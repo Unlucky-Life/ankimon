@@ -1,16 +1,14 @@
+from pathlib import Path
 import random
 import json
+from typing import Any
 
 from aqt import mw
 from aqt.qt import (
     QGridLayout,
-    QLabel,
     QPixmap,
     Qt,
-    QVBoxLayout,
-    QWidget,
 )
-from aqt.utils import showWarning
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QLabel,
@@ -22,6 +20,11 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QScrollArea,
 )
+
+from ..pyobj.InfoLogger import ShowInfoLogger
+from ..pyobj.evolution_window import EvoWindow
+from ..pyobj.pokemon_obj import PokemonObject
+from ..pyobj.starter_window import StarterWindow
 
 from ..business import (
     get_id_and_description_by_item_name
@@ -43,24 +46,23 @@ UserRole = 1000
 class ItemWindow(QWidget):
     def __init__(
             self,
-            logger,
-            main_pokemon,
-            enemy_pokemon,
-            itembagpath,
-            achievements,
-            starter_window,
-            evo_window
+            logger: ShowInfoLogger,
+            main_pokemon: PokemonObject,
+            enemy_pokemon: PokemonObject,
+            itembagpath: Path,
+            achievements: dict[str, bool],
+            starter_window: StarterWindow,
+            evo_window: EvoWindow
             ):
         super().__init__()
-        self.itembag_path = itembagpath
-        self.logger = logger
-        self.read_item_file()
+        self.itembag_path: Path = itembagpath
+        self.logger: ShowInfoLogger = logger
+        self.main_pokemon: PokemonObject = main_pokemon
+        self.enemy_pokemon: PokemonObject = enemy_pokemon
+        self.achievements: dict[str, bool] = achievements
+        self.starter_window: StarterWindow = starter_window
+        self.evo_window: EvoWindow = evo_window
         self.initUI()
-        self.main_pokemon = main_pokemon
-        self.enemy_pokemon = enemy_pokemon
-        self.achievements = achievements
-        self.starter_window = starter_window
-        self.evo_window = evo_window
 
     def initUI(self):
         self.hp_heal_items = {
@@ -113,7 +115,6 @@ class ItemWindow(QWidget):
         }
 
         self.evolution_items = {}
-        self.tm_hm_list = {}
 
         self.setWindowIcon(QIcon(str(icon_path)))  # Add a Pokeball icon
         self.setWindowTitle("Itembag")
@@ -178,7 +179,6 @@ class ItemWindow(QWidget):
         self.resize(initial_width, initial_height)
 
     def renewWidgets(self):
-        self.read_item_file()
         # Clear the existing widgets from the content layout
         for i in reversed(range(self.contentLayout.count())):
             widget = self.contentLayout.itemAt(i).widget()
@@ -187,12 +187,13 @@ class ItemWindow(QWidget):
         row, col = 0, 0
         max_items_per_row = 3
 
-        if not self.itembag_list:  # Simplified check
+        itembag_list = self.read_items_file()
+        if not itembag_list:  # Simplified check
             empty_label = QLabel("You don't own any items yet.")
             self.contentLayout.addWidget(empty_label, 1, 1)
         else:
-            for item in self.itembag_list:
-                item_widget = self.ItemLabel(item["item"], item["quantity"], item_type=item.get("type"))
+            for item in itembag_list:
+                item_widget = self.ItemLabel(item["item"], item["quantity"], item.get("type"))
                 # FIX 4: Set consistent size policy for all item widgets
                 item_widget.setMinimumWidth(180)  # Ensure minimum width for each item
                 self.contentLayout.addWidget(item_widget, row, col)
@@ -202,7 +203,6 @@ class ItemWindow(QWidget):
                     col = 0
 
     def filter_items(self):
-        self.read_item_file()
         search_text = self.search_edit.text().lower()
         category_index = self.category.currentIndex()
         # Clear the existing widgets from the content layout
@@ -213,46 +213,50 @@ class ItemWindow(QWidget):
         row, col = 0, 0
         max_items_per_row = 3
 
-        filtered_items = []
+        filtered_items = list(self.read_items_file())
+        if not filtered_items:
+            empty_label = QLabel("You don't own any items yet.")
+            self.contentLayout.addWidget(empty_label, 1, 1)
+            return
+
         try:
-            if not self.itembag_list:  # Simplified check
-                empty_label = QLabel("Empty Search")
-                self.contentLayout.addWidget(empty_label, 1, 1)
-            else:
-                # Filter items based on category index
-                if category_index == 1:  # Fossils
-                    filtered_items = [
-                        item for item in self.itembag_list
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.fossil_pokemon and search_text in item["item"].lower()
-                    ]
-                elif category_index == 2:  # TMs and HMs
-                    filtered_items = [
-                        item for item in self.itembag_list
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.tm_hm_list and search_text in item["item"].lower()
-                    ]
-                elif category_index == 3:  # Heal items
-                    filtered_items = [
-                        item for item in self.itembag_list
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.hp_heal_items and search_text in item["item"].lower()
-                    ]
-                elif category_index == 4:  # Evolution items
-                    filtered_items = [
-                        item for item in self.itembag_list
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.evolution_items and search_text in item["item"].lower()
-                    ]
-                elif category_index == 5: # Pokeballs
-                    filtered_items = [
-                        item for item in self.itembag_list
-                        if isinstance(item, dict) and "item" in item and item["item"] in self.pokeball_chances and search_text in item["item"].lower()
-                    ]
-                else:
-                    filtered_items = [item for item in self.itembag_list if search_text in item["item"].lower()]
+            # Filter items based on category index
+            if category_index == 1:  # Fossils
+                filtered_items = [
+                    item for item in filtered_items
+                    if isinstance(item, dict) and "item" in item and item["item"] in self.fossil_pokemon
+                ]
+            elif category_index == 2:  # TMs and HMs
+                filtered_items = list(filter(lambda item: item.get("type") == "TM", filtered_items))
+            elif category_index == 3:  # Heal items
+                filtered_items = [
+                    item for item in filtered_items
+                    if isinstance(item, dict) and "item" in item and item["item"] in self.hp_heal_items
+                ]
+            elif category_index == 4:  # Evolution items
+                filtered_items = [
+                    item for item in filtered_items
+                    if isinstance(item, dict) and "item" in item and item["item"] in self.evolution_items
+                ]
+            elif category_index == 5: # Pokeballs
+                filtered_items = [
+                    item for item in filtered_items
+                    if isinstance(item, dict) and "item" in item and item["item"] in self.pokeball_chances
+                ]
+
+            # Now filter by search
+            filtered_items = list(filter(lambda item: search_text in item["item"].lower(), filtered_items))
         except Exception as e:
             filtered_items = []
             self.logger.log_and_showinfo("error", f"Error filtering items: {e}")
 
+        if not filtered_items:
+            empty_label = QLabel("Empty Search")
+            self.contentLayout.addWidget(empty_label, 1, 1)
+            return
+
         for item in filtered_items:
-            item_widget = self.ItemLabel(item["item"], item["quantity"], item_type=item.get("type"))
+            item_widget = self.ItemLabel(item["item"], item["quantity"], item.get("type"))
             # FIX 5: Ensure consistent sizing for filtered items too
             item_widget.setMinimumWidth(180)
             self.contentLayout.addWidget(item_widget, row, col)
@@ -261,16 +265,16 @@ class ItemWindow(QWidget):
                 row += 1
                 col = 0
 
-    def ItemLabel(self, item_name, quantity, **kwargs):
+    def ItemLabel(self, item_name: str, quantity: int, item_type: str | None):
         item_file_path = items_path / f"{item_name}.png"
-        if kwargs.get("item_type") == "TM":
+        if item_type == "TM":
             item_file_path = items_path / "Bag_TM_Normal_SV_Sprite.png"
         item_frame = QVBoxLayout()  # itemframe
         info_item_button = QPushButton("More Info")
         info_item_button.clicked.connect(lambda: self.more_info_button_act(item_name))
         item_name_for_label = item_name.replace("-", " ")  # Remove hyphens from item_name
         item_name_for_label = f"{item_name_for_label.capitalize()} x{quantity}"  # Display quantity
-        if kwargs.get("item_type") == "TM":
+        if item_type == "TM":
             item_name_for_label = f"TM : {item_name_for_label}"
         item_name_label = QLabel(item_name_for_label)
         item_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -294,7 +298,7 @@ class ItemWindow(QWidget):
         elif item_name in self.pokeball_chances:
             use_item_button = QPushButton("Try catching wild Pokemon")
             use_item_button.clicked.connect(lambda: self.Handle_Pokeball(item_name))
-        elif kwargs.get("item_type") == "TM":
+        elif item_type == "TM":
             use_item_button = QLabel()
 
             # FIX: Remove indentation by using textwrap.dedent() or reformatting the string
@@ -346,12 +350,12 @@ class ItemWindow(QWidget):
         except Exception as e:
             self.logger.log_and_showinfo("error", f"Error loading Pokémon list: {e}")
 
-    def Evolve_Fossil(self, item_name, fossil_id, fossil_poke_name):
+    def Evolve_Fossil(self, item_name: str, fossil_id: int, fossil_poke_name: str):
         self.starter_window.display_fossil_pokemon(fossil_id, fossil_poke_name)
         save_fossil_pokemon(fossil_id)
         self.delete_item(item_name)
 
-    def modified_pokeball_chances(self, item_name, catch_chance):
+    def modified_pokeball_chances(self, item_name: str, catch_chance: int):
         # Adjust catch chance based on Pokémon type and Poké Ball
         if item_name == 'net-ball' and ('water' in self.enemy_pokemon.type or 'bug' in self.enemy_pokemon.type):
             catch_chance += 10  # Additional 10% for Water or Bug-type Pokémon
@@ -367,7 +371,7 @@ class ItemWindow(QWidget):
 
         return catch_chance
 
-    def Handle_Pokeball(self, item_name):
+    def Handle_Pokeball(self, item_name: str):
         # Check if the item exists in the pokeball chances
         if item_name in self.pokeball_chances:
             catch_chance = self.pokeball_chances[item_name]
@@ -385,10 +389,9 @@ class ItemWindow(QWidget):
         else:
             self.logger.log_and_showinfo("error", f"{item_name} is not a valid Poké Ball!")
 
-    def delete_item(self, item_name):
-        self.read_item_file()
-
-        for item in self.itembag_list:
+    def delete_item(self, item_name: str):
+        itembag_list = self.read_items_file()
+        for item in itembag_list:
             # Check if the item exists and if the name matches
             if item['item'] == item_name:
                 # Decrease the quantity by 1
@@ -396,12 +399,12 @@ class ItemWindow(QWidget):
 
                 # If quantity reaches 0, remove the item from the list
                 if item['quantity'] == 0:
-                    self.itembag_list.remove(item)
+                    itembag_list.remove(item)
 
-        self.write_item_file()
+        self.write_items_file(itembag_list)
         self.renewWidgets()
 
-    def Check_Heal_Item(self, prevo_name, heal_points, item_name, achievements):
+    def Check_Heal_Item(self, prevo_name: str, heal_points: int, item_name: str, achievements):
         check = check_for_badge(achievements, 20)
         if check is False:
             receive_badge(20, achievements)
@@ -414,7 +417,7 @@ class ItemWindow(QWidget):
         play_effect_sound("HpHeal")
         self.logger.log_and_showinfo("info", f"{prevo_name} was healed for {heal_points}")
 
-    def Check_Evo_Item(self, individual_id, prevo_id, item_name):
+    def Check_Evo_Item(self, individual_id: str, prevo_id: str, item_name: str):
         try:
             item_id = return_id_for_item_name(item_name)
             evo_id = check_evolution_by_item(prevo_id, item_id)
@@ -427,22 +430,23 @@ class ItemWindow(QWidget):
         except Exception as e:
             show_warning_with_traceback(parent=self, exception=e, message=f"{e}")
 
-    def write_item_file(self):
+    def write_items_file(self, itembag_list: list[Any]):
         with open(itembag_path, 'w') as json_file:
-            json.dump(self.itembag_list, json_file)
+            json.dump(itembag_list, json_file)
 
-    def read_item_file(self):
+    def read_items_file(self):
         """
         Reads the list from the JSON file. If the file contains malformed items,
         it tries to fix them by converting strings to the correct structure.
         """
         try:
             with open(self.itembag_path, "r", encoding="utf-8") as json_file:
-                self.itembag_list = json.load(json_file)
+                return json.load(json_file)
         except json.JSONDecodeError:
             self.logger.log("error", "Malformed JSON detected. Attempting to fix.")
-            self.itembag_list = self._fix_and_load_items()
-            self.write_item_file()
+            itembag_list = self._fix_and_load_items()
+            self.write_items_file(itembag_list)
+            return itembag_list
 
     def _fix_and_load_items(self):
         """
@@ -502,6 +506,6 @@ class ItemWindow(QWidget):
 
         self.show()
 
-    def more_info_button_act(self, item_name):
+    def more_info_button_act(self, item_name: str):
         description = get_id_and_description_by_item_name(item_name)
         self.logger.log_and_showinfo("info", f"{description}")
