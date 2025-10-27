@@ -212,20 +212,22 @@ class BackupManager:
 
     def cleanup_backups(self):
         """Deletes old backups based on retention policy."""
-        backups = sorted(self.backups_path.iterdir(), key=os.path.getmtime)
+        # Get only directories and sort them by modification time
+        backups = sorted([p for p in self.backups_path.iterdir() if p.is_dir()], key=os.path.getmtime)
         
-        # Delete backups older than MAX_BACKUP_AGE_DAYS
+        backups_to_keep = []
         for backup_dir in backups:
             backup_time = datetime.datetime.fromtimestamp(os.path.getmtime(backup_dir))
             if (datetime.datetime.now() - backup_time).days > self.MAX_BACKUP_AGE_DAYS:
                 shutil.rmtree(backup_dir)
                 self.logger.log("info", f"Deleted old backup: {backup_dir.name}")
+            else:
+                backups_to_keep.append(backup_dir)
 
         # Keep only the latest MAX_BACKUPS, unless in developer mode
         if not self.settings_obj.get("misc.developer_mode", False):
-            backups = sorted(self.backups_path.iterdir(), key=os.path.getmtime)
-            while len(backups) > self.MAX_BACKUPS:
-                oldest_backup = backups.pop(0)
+            while len(backups_to_keep) > self.MAX_BACKUPS:
+                oldest_backup = backups_to_keep.pop(0)
                 shutil.rmtree(oldest_backup)
                 self.logger.log("info", f"Deleted oldest backup to maintain max count: {oldest_backup.name}")
 
