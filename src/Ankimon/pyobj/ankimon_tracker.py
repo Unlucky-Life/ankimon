@@ -9,7 +9,6 @@ import random
 
 class AnkimonTracker:
     def __init__(self, trainer_card, settings_obj):
-
         # Object bindings
         self.trainer_card = trainer_card
         self.settings = settings_obj
@@ -162,10 +161,10 @@ class AnkimonTracker:
             self.settings.set("trainer.cash", self.settings.get("trainer.cash") + 200)
             self.trainer_card.cash += 200
 
-    def update_streak(self, new_day):
-        """Update the streak for daily reviews (each position represents a day)."""
-        if not self.streak or self.streak[-1] != new_day:
-            self.streak.append(new_day)  # Add a new day to the streak array
+    #def update_streak(self, new_day):
+    #    """Update the streak for daily reviews (each position represents a day)."""
+    #    if not self.streak or self.streak[-1] != new_day:
+    #        self.streak.append(new_day)  # Add a new day to the streak array
 
     def get_stats(self):
         """Get all the tracked statistics."""
@@ -232,13 +231,13 @@ class AnkimonTracker:
     def reset_card_timer(self):
         self.card_time_elapsed = 0
 
-    def check_pokecoll_in_list(self):
-        owned_pokemon_ids = self.owned_pokemon_ids
-        id = self.enemy_pokemon.id
-        self.pokemon_in_collection = False
-        for num in owned_pokemon_ids:
-            if num == id:
-                self.pokemon_in_collection = True
+    #def check_pokecoll_in_list(self):
+    #    owned_pokemon_ids = self.owned_pokemon_ids
+    #    id = self.enemy_pokemon.id
+    #    self.pokemon_in_collection = False
+    #    for num in owned_pokemon_ids:
+    #        if num == id:
+    #            self.pokemon_in_collection = True
 
     def get_ids_in_collection(self):
         try:
@@ -248,8 +247,8 @@ class AnkimonTracker:
         except Exception as e:
             show_warning_with_traceback(parent=mw, exception=e, message="Error: from AnkimonTracker with function extract_ids_from_file")
 
-    def get_badges(self):
-        pass
+    #def get_badges(self):
+    #    pass
 
     def randomize_battle_scene(self):
         self.battlescene_file = random_battle_scene()
