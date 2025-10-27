@@ -181,7 +181,7 @@ class Reviewer_Manager:
         hud_css = create_css_for_reviewer(
             int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)),
             pokemon_hp_percent,
-            self.settings.get("battle.hp_bar_thickness", 2) * 4,
+            self.settings.get("gui.review_hp_bar_thickness", 2) * 4,
             int(self.settings.compute_special_variable('xp_bar_spacer')),
             -1 if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) == 1 else self.settings.compute_special_variable('view_main_front'),
             mainpkmn_hp_percent,
