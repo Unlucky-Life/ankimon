@@ -21,7 +21,6 @@ MAIN_POKEMON_DEFAULT = {
     "base_experience": None,
     "hp": 100,
     "growth_rate": None,
-    "evos": None,
     "individual_id": None,
     "tier": None,
     "shiny": None,

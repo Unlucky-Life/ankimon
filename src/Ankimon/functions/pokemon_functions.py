@@ -232,7 +232,6 @@ def save_fossil_pokemon(pokemon_id):
     id = pokemon_id
     stats = search_pokedex(name, "baseStats")
     abilities = search_pokedex(name, "abilities")
-    evos = search_pokedex(name, "evos")
     gender = pick_random_gender(name.lower())
     numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
     # Check if there are numeric abilities
@@ -294,7 +293,6 @@ def save_fossil_pokemon(pokemon_id):
         "mega": False,
         "special-form": None,
         "tier": "Fossil",
-        "evos": evos
     }
     # Load existing Pokémon data if it exists
     if mypokemon_path.is_file():

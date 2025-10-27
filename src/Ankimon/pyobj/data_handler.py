@@ -21,7 +21,6 @@ new_values = {
     "gender": "N",
     "type": ["Normal"],
     "attacks": ["tackle", "growl"],
-    "evos": [],
     "id": 132,
     "captured_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 }

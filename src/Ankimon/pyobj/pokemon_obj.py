@@ -35,7 +35,6 @@ class PokemonObject:
         position=(0, 0),
         nickname="",
         moves=None,
-        evos=None,
         ev_yield=None,
         friendship=0,
         everstone=False,
@@ -78,7 +77,6 @@ class PokemonObject:
         self.growth_rate = growth_rate
         self.xp = xp
         self.friendship = friendship
-        self.evos = list(evos) if evos else []
 
         # Battle and status
         self.battle_status = str(battle_status)
@@ -183,7 +181,6 @@ class PokemonObject:
             "individual_id": self.individual_id,
             "mega": getattr(self, "mega", False),
             "special-form": getattr(self, "special_form", None),
-            "evos": self.evos,
             "xp": self.xp,
             "hp": self.hp,  # Current HP
             "friendship": self.friendship,

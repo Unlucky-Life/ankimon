@@ -40,7 +40,6 @@ def create_monthly_challenge_pokemon(pokemon_data, make_shiny=False):
         "everstone": pokemon_data.get("everstone", False),
         "mega": pokemon_data.get("mega", False),
         "special-form": pokemon_data.get("special-form", None),
-        "evos": pokemon_data.get("evos", []),
         "tier": pokemon_data.get("tier", "Normal"),
         "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "individual_id": pokemon_data["individual_id"],
