@@ -293,7 +293,7 @@ def save_fossil_pokemon(pokemon_id):
         "individual_id": str(uuid.uuid4()),
         "mega": False,
         "special-form": None,
-        "tier": "Normal",
+        "tier": "Fossil",
         "evos": evos
     }
     # Load existing Pokémon data if it exists
