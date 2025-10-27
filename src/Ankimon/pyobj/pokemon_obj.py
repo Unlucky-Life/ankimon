@@ -10,51 +10,53 @@ from ..utils import substract_item_from_itembag, give_item
 class PokemonObject:
     def __init__(
         self,
-        name="Ditto",
-        shiny=False,
-        id=None,
-        level=3,
-        ability=None,
-        type=None,
+
+        type,
+        name: str,
+        id: int,
+        shiny: bool,
+        level: int,
+        ability,
+        gender: str,
+        growth_rate: str,
+        captured_date: str | None,
+        tier: str,
+        individual_id: str,
+
         current_hp=15,
         base_stats=None,
         attacks=None,
         base_experience=0,
-        growth_rate="medium",
         hp=16,
         ev=None,
         iv=None,
-        gender="N",
         battle_status="Fighting",
         xp=0,
         position=(0, 0),
         nickname="",
         moves=None,
         evos=None,
-        tier="Normal",
         ev_yield=None,
         friendship=0,
-        individual_id=None,
         everstone=False,
         pokemon_defeated=0,
         is_favorite=False,
-        captured_date=None,
         held_item: Union[str, None]=None,
         **kwargs
     ):
         # Unique identifier
-        self.individual_id = str(individual_id) if individual_id else str(uuid.uuid4())
-        self.name = str(name)
-        self.nickname = str(nickname) if nickname is not None else ""
-        self.shiny = bool(shiny)
-        self.id = int(id) if id is not None else 132
-        self.level = int(level)
-        self.ability = ability if ability else "None"
-        self.type = list(type) if type else ["Normal"]
-        self.gender = str(gender) if gender is not None else "N"
-        self.tier = str(tier) if tier is not None else "Normal"
-        self.everstone = bool(everstone)
-        self.pokemon_defeated = int(pokemon_defeated)
+        self.individual_id = individual_id
+        self.name = name
+        self.nickname = nickname
+        self.shiny = shiny
+        self.id = id
+        self.level = level
+        self.ability = ability
+        self.type = type
+        self.gender = gender
+        self.tier = tier
+        self.everstone = everstone
+        self.pokemon_defeated = pokemon_defeated
 
         if not ability or str(ability).strip().lower() in ("none", "no ability", ""):
             self.ability = "Run Away"
@@ -72,10 +74,10 @@ class PokemonObject:
         self.moves = list(moves) if moves else []
 
         # Experience and growth
-        self.base_experience = int(base_experience)
-        self.growth_rate = str(growth_rate)
-        self.xp = int(xp)
-        self.friendship = int(friendship)
+        self.base_experience = base_experience
+        self.growth_rate = growth_rate
+        self.xp = xp
+        self.friendship = friendship
         self.evos = list(evos) if evos else []
 
         # Battle and status
@@ -93,8 +95,8 @@ class PokemonObject:
         self.hp = int(kwargs.get('hp', self.max_hp))
         self.current_hp = current_hp or 15
 
-        self.is_favorite = bool(is_favorite)
-        self.captured_date = captured_date or None
+        self.is_favorite = is_favorite
+        self.captured_date = captured_date
 
     @classmethod
     def calc_stat(

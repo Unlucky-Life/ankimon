@@ -700,7 +700,10 @@ class TestWindow(QWidget):
         painter2.setFont(font)
 
         painter2.drawText(315,192,f"Level: {level}")
-        painter2.drawText(322, 225, f"Type: {type[0].capitalize() if len(type) < 2 else type[1].capitalize()}")
+        types = self.enemy_pokemon.type or []
+        type_text = ", ".join(t.capitalize() for t in types) if types else "Unknown"
+        painter2.drawText(322, 225, f"Type: {type_text}")
+
 
         painter2.setFont(font)
 
@@ -729,14 +732,14 @@ class TestWindow(QWidget):
         catch_button.setFont(QFont("Arial", 12))  # Adjust the font size and style as needed
         catch_button.setStyleSheet("background-color: rgb(44,44,44);")
         #catch_button.setFixedWidth(150)
-        qconnect(catch_button.clicked, lambda: catch_pokemon(nickname_input.text()))
+        qconnect(catch_button.clicked, lambda: mw.catchpokemon())
 
         kill_button = QPushButton(self.translator.translate("defeat_button"))
         kill_button.setFixedSize(175, 30)  # Adjust the size as needed
         kill_button.setFont(QFont("Arial", 12))  # Adjust the font size and style as needed
         kill_button.setStyleSheet("background-color: rgb(44,44,44);")
         #kill_button.setFixedWidth(150)
-        qconnect(kill_button.clicked, kill_pokemon)
+        qconnect(kill_button.clicked,  lambda: mw.defeatpokemon())
 
         # Set the merged image as the pixmap for the QLabel
         pkmnimage_label.setPixmap(pkmnpixmap_bckg)

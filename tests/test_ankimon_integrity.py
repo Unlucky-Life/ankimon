@@ -40,10 +40,12 @@ def test_import_integrity(monkeypatch):
     """
     Checks for unresolved imports, incorrect import depths, and circular imports.
     """
-    # Mock aqt.mw to prevent AttributeError during import of const.py
+    # Mock aqt and aqt.mw to prevent AttributeError during import of const.py
+    mock_aqt = MagicMock()
     mock_mw = MagicMock()
     mock_mw.pm.name = "test_profile" # Provide a dummy value for pm.name
-    monkeypatch.setattr("aqt.mw", mock_mw)
+    monkeypatch.setitem(sys.modules, "aqt", mock_aqt)
+    monkeypatch.setattr(mock_aqt, "mw", mock_mw)
 
     sys.path.insert(0, str(ANKIMON_SRC_DIR.parent))
 

@@ -65,6 +65,14 @@ def export_to_pkmn_showdown():
     # Show the window
     window.show()
 
+POKEMON_INFO_FORMAT = """{}{}
+Ability: {}
+Level: {}
+Type: {}
+EVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe
+IVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe
+"""
+
 def export_all_pkmn_showdown():
     # Create a main window
     export_window = QDialog()
@@ -86,7 +94,6 @@ def export_all_pkmn_showdown():
                 column = 0
                 row = 0
                 for pokemon in captured_pokemon_data:
-                    pokemon_name = pokemon['name']
                     pokemon_level = pokemon['level']
                     pokemon_ability = pokemon['ability']
                     pokemon_type = pokemon['type']
@@ -95,23 +102,32 @@ def export_all_pkmn_showdown():
                         pokemon_type_text = ""
                         pokemon_type_text += f"{pokemon_type[0].capitalize()}"
                         pokemon_type_text += f" {pokemon_type[1].capitalize()}"
-                    pokemon_stats = pokemon['stats']
-                    pokemon_hp = pokemon_stats["hp"]
                     pokemon_attacks = pokemon['attacks']
                     pokemon_ev = pokemon['ev']
                     pokemon_iv = pokemon['iv']
 
-                    pokemon_info = "{} \nAbility: {}\nLevel: {}\nType: {}\nEVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe\n IVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe \n".format(
-                        pokemon_name,
+                    if pokemon["nickname"]:
+                        pokemon_name_and_nickname = f"{pokemon["nickname"]} ({pokemon["name"]})"
+                    else:
+                        pokemon_name_and_nickname = f"{pokemon["name"]}"
+
+                    if pokemon["gender"] in ["M", "F"]:
+                        exported_gender = f" ({pokemon["gender"]})"
+                    else:
+                        exported_gender = ""
+
+                    pokemon_info = POKEMON_INFO_FORMAT.format(
+                        pokemon_name_and_nickname,
+                        exported_gender,
                         pokemon_ability.capitalize(),
                         pokemon_level,
                         pokemon_type_text,
-                        pokemon_stats["hp"],
-                        pokemon_stats["atk"],
-                        pokemon_stats["def"],
-                        pokemon_stats["spa"],
-                        pokemon_stats["spd"],
-                        pokemon_stats["spe"],
+                        pokemon_ev["hp"],
+                        pokemon_ev["atk"],
+                        pokemon_ev["def"],
+                        pokemon_ev["spa"],
+                        pokemon_ev["spd"],
+                        pokemon_ev["spe"],
                         pokemon_iv["hp"],
                         pokemon_iv["atk"],
                         pokemon_iv["def"],
@@ -177,7 +193,6 @@ def flex_pokemon_collection():
                 column = 0
                 row = 0
                 for pokemon in captured_pokemon_data:
-                    pokemon_name = pokemon['name']
                     pokemon_level = pokemon['level']
                     pokemon_ability = pokemon['ability']
                     pokemon_type = pokemon['type']
@@ -186,23 +201,32 @@ def flex_pokemon_collection():
                         pokemon_type_text = ""
                         pokemon_type_text += f"{pokemon_type[0].capitalize()}"
                         pokemon_type_text += f" {pokemon_type[1].capitalize()}"
-                    pokemon_stats = pokemon['stats']
-                    pokemon_hp = pokemon_stats["hp"]
                     pokemon_attacks = pokemon['attacks']
                     pokemon_ev = pokemon['ev']
                     pokemon_iv = pokemon['iv']
 
-                    pokemon_info = "{} \nAbility: {}\nLevel: {}\nType: {}\nEVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe\n IVs: {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe \n".format(
-                        pokemon_name,
+                    if pokemon["nickname"]:
+                        pokemon_name_and_nickname = f"{pokemon["nickname"]} ({pokemon["name"]})"
+                    else:
+                        pokemon_name_and_nickname = f"{pokemon["name"]}"
+
+                    if pokemon["gender"] in ["M", "F"]:
+                        exported_gender = f" ({pokemon["gender"]})"
+                    else:
+                        exported_gender = ""
+
+                    pokemon_info = POKEMON_INFO_FORMAT.format(
+                        pokemon_name_and_nickname,
+                        exported_gender,
                         pokemon_ability.capitalize(),
                         pokemon_level,
                         pokemon_type_text,
-                        pokemon_stats["hp"],
-                        pokemon_stats["atk"],
-                        pokemon_stats["def"],
-                        pokemon_stats["spa"],
-                        pokemon_stats["spd"],
-                        pokemon_stats["spe"],
+                        pokemon_ev["hp"],
+                        pokemon_ev["atk"],
+                        pokemon_ev["def"],
+                        pokemon_ev["spa"],
+                        pokemon_ev["spd"],
+                        pokemon_ev["spe"],
                         pokemon_iv["hp"],
                         pokemon_iv["atk"],
                         pokemon_iv["def"],
