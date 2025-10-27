@@ -11,6 +11,8 @@ from ..resources import mypokemon_path, frontdefault, team_pokemon_path
 class PokemonTeamDialog(QDialog):
     def __init__(self, settings_obj, logger, parent=mw):
         super().__init__(parent)
+
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setWindowTitle("Choose Your Pokémon Team (Max 6 Pokémon)")
         self.settings = settings_obj
         self.logger = logger
