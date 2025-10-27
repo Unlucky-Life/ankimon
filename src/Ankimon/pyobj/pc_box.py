@@ -844,7 +844,7 @@ class PokemonPC(QDialog):
         default_keys = {
             "nickname", "gender", "ability", "type", "attacks", "base_experience", 
             "growth_rate", "everstone", "shiny", "captured_date", "individual_id", 
-            "mega", "special-form", "xp", "friendship", "pokemon_defeated", 
+            "mega", "special_form", "xp", "friendship", "pokemon_defeated", 
             "tier", "is_favorite", "held_item"
         }
         
@@ -865,7 +865,7 @@ class PokemonPC(QDialog):
             "attacks": ["Struggle"], "base_experience": 0, "growth_rate": "medium",
             "everstone": False, "shiny": False, "captured_date": None,
             "individual_id": lambda p: str(uuid.uuid4()), "mega": False,
-            "special-form": None, "xp": 0, "friendship": 0,
+            "special_form": None, "xp": 0, "friendship": 0,
             "pokemon_defeated": 0, "tier": lambda p: get_tier_by_id(p.get("id", 0)) or "Normal",
             "is_favorite": False, "held_item": None
         }

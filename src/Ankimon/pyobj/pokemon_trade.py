@@ -39,7 +39,7 @@ def create_monthly_challenge_pokemon(pokemon_data, make_shiny=False):
         "pokemon_defeated": pokemon_data.get("pokemon_defeated", 0),
         "everstone": pokemon_data.get("everstone", False),
         "mega": pokemon_data.get("mega", False),
-        "special-form": pokemon_data.get("special-form", None),
+        "special_form": pokemon_data.get("special_form", None),
         "tier": pokemon_data.get("tier", "Normal"),
         "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "individual_id": pokemon_data["individual_id"],
@@ -546,7 +546,7 @@ class PokemonTrade:
                 "everstone": False,
                 "shiny": False,
                 "mega": False,
-                "special-form": None,
+                "special_form": None,
                 "capture_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "individual_id": str(uuid.uuid4())
             }

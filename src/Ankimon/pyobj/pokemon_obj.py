@@ -180,7 +180,7 @@ class PokemonObject:
             "captured_date": getattr(self, "captured_date", None),
             "individual_id": self.individual_id,
             "mega": getattr(self, "mega", False),
-            "special-form": getattr(self, "special_form", None),
+            "special_form": getattr(self, "special_form", None),
             "xp": self.xp,
             "hp": self.hp,  # Current HP
             "friendship": self.friendship,
