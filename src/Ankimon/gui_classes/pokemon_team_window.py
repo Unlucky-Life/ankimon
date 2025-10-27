@@ -181,7 +181,10 @@ class PokemonTeamDialog(QDialog):
         combo_box = QComboBox()
 
         # Add only those Pokémon to the combo box that are not already in the team (checked by individual_id)
-        used_pokemon_ids = [pokemon['individual_id'] for pokemon in self.team_pokemon if pokemon is not None]
+        used_pokemon_ids = []
+        for i, pokemon in enumerate(self.team_pokemon):
+            if pokemon is not None and i != slot:
+                used_pokemon_ids.append(pokemon['individual_id'])
         # Check if there are Pokémon left to choose from (those whose individual_id is not in used_pokemon_ids)
         available_pokemon = [pokemon for pokemon in self.my_pokemon if pokemon and pokemon['individual_id'] not in used_pokemon_ids]
 
