@@ -21,10 +21,10 @@ from PyQt6.QtWidgets import (
     QScrollArea,
 )
 
-from Ankimon.pyobj.InfoLogger import ShowInfoLogger
-from Ankimon.pyobj.evolution_window import EvoWindow
-from Ankimon.pyobj.pokemon_obj import PokemonObject
-from Ankimon.pyobj.starter_window import StarterWindow
+from ..pyobj.InfoLogger import ShowInfoLogger
+from ..pyobj.evolution_window import EvoWindow
+from ..pyobj.pokemon_obj import PokemonObject
+from ..pyobj.starter_window import StarterWindow
 
 from ..business import (
     get_id_and_description_by_item_name
