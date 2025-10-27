@@ -83,7 +83,7 @@ from .utils import (
 )
 from .functions.reviewer_iframe import create_iframe_html, create_head_code
 from .functions.url_functions import open_team_builder, rate_addon_url, report_bug, join_discord_url, open_leaderboard_url
-from .functions.badges_functions import check_badges, handle_achievements, check_and_award_badges
+from .functions.badges_functions import check_badges, handle_review_count_achievement, check_for_badge, receive_badge
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
 from .functions.drawing_utils import tooltipWithColour
 from .functions.discord_function import DiscordPresence
@@ -389,6 +389,9 @@ if database_complete:
 
 cry_counter = 0
 
+# How many cards need to be done before receiving an item
+item_receive_value = random.randint(3, 120)
+
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
@@ -414,20 +417,36 @@ def on_review_card(*args):
         global dmg_from_enemy_move
         global dmg_from_user_move
 
+        global item_receive_value
+
         # Increment the counter when a card is reviewed
         attack_counter = ankimon_tracker_obj.attack_counter
         ankimon_tracker_obj.cards_battle_round += 1
         ankimon_tracker_obj.cry_counter += 1
         cry_counter = ankimon_tracker_obj.cry_counter
-        card_counter = ankimon_tracker_obj.card_counter
+        total_reviews = ankimon_tracker_obj.total_reviews
         reviewer_obj.seconds = 0
         reviewer_obj.myseconds = 0
         ankimon_tracker_obj.general_card_count_for_battle += 1
-        
+                
         color = "#F0B27A" # Initialize with a default color
 
-        achievements = handle_achievements(card_counter, achievements)
-        achievements = check_and_award_badges(card_counter, achievements, ankimon_tracker_obj, test_window)
+        # Handle achievements based on total reviews
+        achievements = handle_review_count_achievement(total_reviews, achievements)
+
+        item_receive_value -= 1
+        if item_receive_value <= 0:
+            item_receive_value = random.randint(3, 120)
+
+            test_window.display_item()
+
+            # Give them a badge for getting an item
+            if not check_for_badge(achievements,6):
+                receive_badge(6, achievements)
+
+        if total_reviews == 10:
+            settings_obj.set("trainer.cash", settings_obj.get("trainer.cash") + 200)
+            trainer_card.cash = settings_obj.get("trainer.cash")
 
         try:
              mutator_full_reset

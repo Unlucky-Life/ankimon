@@ -134,7 +134,6 @@ trainer_card = TrainerCard(
 
 ankimon_tracker_obj = AnkimonTracker(
     trainer_card=trainer_card,
-    settings_obj=settings_obj,
 )
 # Set Pokémon in the tracker
 ankimon_tracker_obj.set_main_pokemon(main_pokemon)
