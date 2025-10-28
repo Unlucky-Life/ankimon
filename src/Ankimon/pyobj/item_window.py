@@ -33,7 +33,9 @@ from ..functions.pokedex_functions import (
     search_pokedex_by_id,
     return_id_for_item_name,
     check_evolution_by_item,
+    find_details_move
 )
+
 from ..resources import mypokemon_path, icon_path, items_path, itembag_path
 from ..functions.badges_functions import check_for_badge, receive_badge
 from ..functions.pokemon_functions import save_fossil_pokemon
@@ -266,22 +268,30 @@ class ItemWindow(QWidget):
                 col = 0
 
     def ItemLabel(self, item_name: str, quantity: int, item_type: str | None):
-        item_file_path = items_path / f"{item_name}.png"
-        if item_type == "TM":
-            item_file_path = items_path / "Bag_TM_Normal_SV_Sprite.png"
         item_frame = QVBoxLayout()  # itemframe
         info_item_button = QPushButton("More Info")
         info_item_button.clicked.connect(lambda: self.more_info_button_act(item_name))
+        
         item_name_for_label = item_name.replace("-", " ")  # Remove hyphens from item_name
         item_name_for_label = f"{item_name_for_label.capitalize()} x{quantity}"  # Display quantity
         if item_type == "TM":
-            item_name_for_label = f"TM : {item_name_for_label}"
+            item_name_for_label = f"TM: {item_name_for_label}"
         item_name_label = QLabel(item_name_for_label)
         item_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        if item_type == "TM":
+            item_file_path = items_path / f"Bag_TM_{find_details_move(item_name)["type"]}_SV_Sprite.png"
+        else:
+            item_file_path = items_path / f"{item_name}.png"
         item_picture_pixmap = QPixmap(str(item_file_path))
+        item_picture_pixmap_scaled = item_picture_pixmap.scaled(
+            96, 96,
+            Qt.AspectRatioMode.KeepAspectRatio, # Important: Keeps the image from stretching
+        )
         item_picture_label = QLabel()
-        item_picture_label.setPixmap(item_picture_pixmap)
+        item_picture_label.setPixmap(item_picture_pixmap_scaled)
         item_picture_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         item_frame.addWidget(item_picture_label)
         item_frame.addWidget(item_name_label)
 
