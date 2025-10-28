@@ -204,8 +204,8 @@ class SettingsWindow(QMainWindow):
             radio_container = QWidget()
             h_layout = QHBoxLayout(radio_container)
             h_layout.setContentsMargins(0, 0, 0, 0)
-            true_radio = QRadioButton("True")
-            false_radio = QRadioButton("False")
+            true_radio = QRadioButton("Enabled")
+            false_radio = QRadioButton("Disabled")
             true_radio.setChecked(value)
             false_radio.setChecked(not value)
             button_group = QButtonGroup(self)
@@ -367,7 +367,7 @@ class SettingsWindow(QMainWindow):
                 else:
                     self.config[key] = new_text
             elif isinstance(widget, QButtonGroup):
-                self.config[key] = (widget.checkedButton().text() == "True")
+                self.config[key] = (widget.checkedButton().text() == "Enabled")
 
         # Now that self.config is up-to-date, call the save callback
         self.save_config_callback(self.config)
