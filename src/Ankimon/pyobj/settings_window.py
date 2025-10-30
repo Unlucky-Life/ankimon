@@ -204,8 +204,8 @@ class SettingsWindow(QMainWindow):
             radio_container = QWidget()
             h_layout = QHBoxLayout(radio_container)
             h_layout.setContentsMargins(0, 0, 0, 0)
-            true_radio = QRadioButton("True")
-            false_radio = QRadioButton("False")
+            true_radio = QRadioButton("Enabled")
+            false_radio = QRadioButton("Disabled")
             true_radio.setChecked(value)
             false_radio.setChecked(not value)
             button_group = QButtonGroup(self)
@@ -261,7 +261,7 @@ class SettingsWindow(QMainWindow):
         scroll_area_layout = QVBoxLayout(scroll_area_content)
         scroll_area.setWidget(scroll_area_content)
         hierarchical_groups = {
-            "General": { "settings": ["Trainer Name", "Language", "Show Tip of the Day On Startup"], "subgroups": { "Technical Settings": {"settings": ["SSH Access", "Receive Ankimon News", "AnkiWeb Sync", "Ankimon Leaderboard", "Developer Mode"]}, "Discord Integration": {"settings": ["Discord Rich Presence - Ankimon", "Discord Rich Presence - Quote Type"]} } },
+            "General": { "settings": ["Trainer Name", "Language", "Show Tip of the Day On Startup"], "subgroups": { "Technical Settings": {"settings": ["SSH Access", "Prevent Ankimon News on Startup", "AnkiWeb Sync", "Ankimon Leaderboard", "Developer Mode"]}, "Discord Integration": {"settings": ["Discord Rich Presence - Ankimon", "Discord Rich Presence - Quote Type"]} } },
             "Battle": { "settings": ["Automatic Battle", "Cards per Round", "Show Main Pokémon in Reviewer", "Show Pokémon Buttons", "Pop-Up on Defeat", "Show Text Message Box in Reviewer", "Message Box Display Time"], "subgroups": { "Fight Hotkeys": {"settings": ["Key for Defeat", "Key for Catching", "Key for Opening/Closing Ankimon", "Allow Choosing Moves"]}, "HP, XP and Level Settings": {"settings": ["HP Bar Configuration", "XP Bar Configuration", "XP Bar Location", "Remove Level Cap"]} } },
             "Styling": {"settings": ["Styling in Reviewer", "Animate Time", "HP Bar Thickness", "Reviewer Image as GIF", "View Main Pokémon Front", "Show GIFs in Collection"]},
             "Sound": {"settings": ["Enable Sound Effects", "Enable Sounds", "Enable Battle Sounds"]},
@@ -367,7 +367,7 @@ class SettingsWindow(QMainWindow):
                 else:
                     self.config[key] = new_text
             elif isinstance(widget, QButtonGroup):
-                self.config[key] = (widget.checkedButton().text() == "True")
+                self.config[key] = (widget.checkedButton().text() == "Enabled")
 
         # Now that self.config is up-to-date, call the save callback
         self.save_config_callback(self.config)

@@ -221,6 +221,13 @@ def daily_item_list():
     """
     Generates a list of items available for the daily shop, filtering out certain categories.
     """
+    # Check if the sprites directory exists. If not, trigger the download dialog.
+    if not Path(items_path).exists():
+        from .pyobj.download_sprites import show_agreement_and_download_dialog
+        show_agreement_and_download_dialog(force_download=True)
+        # Return an empty list to prevent the crash and allow the addon to load.
+        return []
+
     # Items with these suffixes will be excluded from the daily shop
     excluded_suffixes = ["dust", "-piece", "-nugget", "-berry"]
     # Add full item names here to exclude them from the daily shop, e.g., ["master-ball"]

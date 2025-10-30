@@ -80,7 +80,7 @@ enemy_pokemon = PokemonObject(
     id=19,                      # ID number
     level=5,                    # Level
     ability="Run Away",         # Ability specific to Rattata
-    type="Normal",              # Type (Normal type for Rattata)
+    type=["Normal"],              # Type (Normal type for Rattata)
     stats = {                     # Base stats for Rattata
       "hp": 39,
       "atk": 52,
@@ -113,7 +113,10 @@ enemy_pokemon = PokemonObject(
     gender="M",                   # Gender
     battle_status="Fighting",    # Status during battle
     xp=0,                         # XP (experience points)
-    position=(5, 5)              # Position in battle
+    position=(5, 5),              # Position in battle
+    tier="Normal",
+    captured_date=None,
+    individual_id=str(uuid.uuid4()),
 )
 
 # Create a sample trainer card to test
