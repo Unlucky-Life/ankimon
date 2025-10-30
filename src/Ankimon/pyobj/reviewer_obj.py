@@ -59,7 +59,7 @@ class Reviewer_Manager:
         return web_content
 
     def update_life_bar(self, reviewer, card, ease):
-        if int(self.settings.get("gui.show_mainpkmn_in_reviewer", 1)) == 3:
+        if int(self.settings.get("gui.show_mainpkmn_in_reviewer")) == 3:
             reviewer.web.eval("if(window.__ankimonHud) window.__ankimonHud.clear();")
             return
 
@@ -79,14 +79,14 @@ class Reviewer_Manager:
         except Exception:
             pass
 
-        image_format = "gif" if self.settings.get('gui.reviewer_image_gif', 1) else "png"
+        image_format = "gif" if self.settings.get('gui.reviewer_image_gif') else "png"
         mime_type = f"image/{image_format}"
 
         pokemon_image_file = self.enemy_pokemon.get_sprite_path("front", image_format)
 
         main_pkmn_imagefile_path = None
         side = "back" # Default side
-        if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
+        if int(self.settings.get('gui.show_mainpkmn_in_reviewer')) > 0:
             if image_format == "gif":
                 if self.settings.compute_special_variable('view_main_front') == -1:
                     side = "front"
@@ -96,7 +96,7 @@ class Reviewer_Manager:
                 side = "back"
             main_pkmn_imagefile_path = self.main_pokemon.get_sprite_path(side, image_format)
 
-        if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
+        if int(self.settings.get('gui.show_mainpkmn_in_reviewer')) > 0:
             pokemon_hp_percent = int((self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 50) if self.enemy_pokemon.max_hp > 0 else 0
             mainpkmn_hp_percent = int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50) if self.main_pokemon.max_hp > 0 else 0
             image_base64_mainpkmn = get_image_as_base64(main_pkmn_imagefile_path)
@@ -111,9 +111,9 @@ class Reviewer_Manager:
 
         # Build hud_html
         hud_html = '<div id="ankimon-hud">'
-        if self.settings.get("gui.hp_bar_config", True) is True:
+        if self.settings.get("gui.hp_bar_config") is True:
             hud_html += '<div id="life-bar" class="Ankimon"></div>'
-        if self.settings.get("gui.xp_bar_config", False) is True:
+        if self.settings.get("gui.xp_bar_config") is True:
             hud_html += '<div id="xp-bar" class="Ankimon"></div>'
             hud_html += '<div id="xp_text" class="Ankimon">XP</div>'
 
@@ -147,7 +147,7 @@ class Reviewer_Manager:
         enemy_poke_animation_style = f"animation: ankimon-shake-normal {self.seconds}s ease;"
         hud_html += f'<div id="PokeImage" class="Ankimon"><img src="data:{mime_type};base64,{image_base64}" alt="PokeImage" style="{enemy_poke_animation_style}"></div>'
 
-        if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
+        if int(self.settings.get('gui.show_mainpkmn_in_reviewer')) > 0:
 
             my_poke_html_attributes = ""
             # SPECIAL CASE: For front-facing GIFs, the animation conflicts with the transform.
@@ -172,24 +172,24 @@ class Reviewer_Manager:
             main_name_display_text += self.get_boost_values_string(self.main_pokemon, display_neutral_boost=False)
             hud_html += f'<div id="myname-display" class="Ankimon">{main_name_display_text}</div>'
             hud_html += f'<div id="myhp-display" class="Ankimon">HP: {self.main_pokemon.hp}/{self.main_pokemon.max_hp}</div>'
-            if self.settings.get("gui.hp_bar_config", True) is True:
+            if self.settings.get("gui.hp_bar_config") is True:
                 hud_html += '<div id="mylife-bar" class="Ankimon"></div>'
 
         hud_html += '</div>'
 
         # Build hud_css
         hud_css = create_css_for_reviewer(
-            int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)),
+            int(self.settings.get('gui.show_mainpkmn_in_reviewer')),
             pokemon_hp_percent,
-            self.settings.get("gui.review_hp_bar_thickness", 2) * 4,
+            self.settings.get("gui.review_hp_bar_thickness") * 4,
             int(self.settings.compute_special_variable('xp_bar_spacer')),
-            -1 if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) == 1 else self.settings.compute_special_variable('view_main_front'),
+            -1 if int(self.settings.get('gui.show_mainpkmn_in_reviewer')) == 1 else self.settings.compute_special_variable('view_main_front'),
             mainpkmn_hp_percent,
             int(self.settings.compute_special_variable('hp_only_spacer')),
             int(self.settings.compute_special_variable('wild_hp_spacer')),
-            self.settings.get("gui.xp_bar_config", False),
+            self.settings.get("gui.xp_bar_config"),
             self.main_pokemon,
-            int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings.get("remove_levelcap", False))),
+            int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings.get("misc.remove_levelcap"))),
             self.settings.compute_special_variable('xp_bar_location'),
             enemy_hp_true_percent,
             main_hp_true_percent

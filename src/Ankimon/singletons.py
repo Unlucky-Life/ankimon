@@ -64,7 +64,7 @@ settings_window = SettingsWindow(
 )
 
 #Init Translator
-translator = Translator(language=int(settings_obj.get("misc.language", int(9))))
+translator = Translator(language=int(settings_obj.get("misc.language")))
 
 # Not sure what this does, but from afar it looks like a bad idea
 mw.settings_ankimon = settings_window
@@ -124,7 +124,7 @@ trainer_card = TrainerCard(
     logger,
     main_pokemon,
     settings_obj,
-    trainer_name=settings_obj.get("trainer.name", "Ash"),
+    trainer_name=settings_obj.get("trainer.name"),
     badge_count=8,
     trainer_id = ''.join(filter(str.isdigit, str(uuid.uuid4()).replace('-', ''))),
     xp=0,

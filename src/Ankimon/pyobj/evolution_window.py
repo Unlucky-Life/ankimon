@@ -116,7 +116,7 @@ class EvoWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(20), int(self.settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(20), int(self.settings_obj.get("misc.language")))
         message_box_text = f"{(prevo_name).capitalize()} has evolved to {(evo_name).capitalize()} !"
         self.logger.log("game", message_box_text)
         # Draw the text on top of the image

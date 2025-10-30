@@ -414,7 +414,7 @@ class ItemWindow(QWidget):
         if self.main_pokemon.hp > (self.main_pokemon.max_hp):
             self.main_pokemon.hp = self.main_pokemon.max_hp
         self.delete_item(item_name)
-        play_effect_sound("HpHeal")
+        play_effect_sound(settings_obj, "HpHeal")
         self.logger.log_and_showinfo("info", f"{prevo_name} was healed for {heal_points}")
 
     def Check_Evo_Item(self, individual_id: str, prevo_id: str, item_name: str):

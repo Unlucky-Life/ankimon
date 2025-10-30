@@ -71,7 +71,7 @@ def xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon_id, exp, xp
         return exp
 
     original_exp = int(exp * 0.5)
-    remove_level_cap = settings_obj.get("misc.remove_level_cap", False)
+    remove_level_cap = settings_obj.get("misc.remove_level_cap")
     exp = int(exp * 0.5)  # Convert the experience to an integer
 
     # Open the mypokemon_path JSON file and load the data

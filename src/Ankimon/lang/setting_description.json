@@ -22,9 +22,12 @@
     "gui.view_main_front": "View front of main Pokémon in reviewer when GIFs are enabled. Set Disabled to show from the back.",
     "gui.xp_bar_config": "Enable XP bar in the reviewer to show XP progression for main Pokémon.",
     "gui.xp_bar_location": "Location of the XP bar in the reviewer. [1: Top, 2: Bottom]",
+
     "audio.sound_effects": "Enable sound effects for various Pokémon actions.",
     "audio.sounds": "Enable general Pokémon sounds during interactions.",
     "audio.battle_sounds": "Enable recurring battle cries every 10 cards.",
+    "audio.volume": "[0 to 1] volume of audio.",
+
     "misc.gen1": "Include Pokémon from Generation 1.",
     "misc.gen2": "Include Pokémon from Generation 2.",
     "misc.gen3": "Include Pokémon from Generation 3.",

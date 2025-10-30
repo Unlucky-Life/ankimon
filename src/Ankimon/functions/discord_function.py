@@ -70,7 +70,7 @@ class DiscordPresence:
         try:
             while self.loop:
                 self.RPC.update(
-                    state = random.choice(self.quotes) if int(self.settings.get("misc.discord_rich_presence_text", 1)) == 1 else random.choice(self._get_special_quotes()),
+                    state = random.choice(self.quotes) if int(self.settings.get("misc.discord_rich_presence_text")) == 1 else random.choice(self._get_special_quotes()),
                     large_image=self.large_image_url,
                     start=self.start_time
                 )

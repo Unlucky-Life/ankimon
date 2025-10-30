@@ -7,11 +7,10 @@ from PyQt6.QtCore import Qt, QRect, QPoint, QSize, QPoint, QTimer
 from PyQt6.QtWidgets import QApplication, QLabel, QFrame
 
 from ..pyobj.pokemon_obj import PokemonObject
-from ..pyobj.settings import Settings
 
 def tooltipWithColour(msg, color, x=0, y=20, xref=1, parent=None, width=0, height=0, centered=False):
-    from ..config_var import reviewer_text_message_box
-    period = int(Settings().get("gui.reviewer_text_message_box_time", 3) * 1000) #time for pop up message
+    reviewer_text_message_box = mw.settings_obj.get("gui.reviewer_text_message_box")
+    period = int(mw.settings_obj.get("gui.reviewer_text_message_box_time") * 1000) #time for pop up message
     class CustomLabel(QLabel):
         def mousePressEvent(self, evt):
             evt.accept()

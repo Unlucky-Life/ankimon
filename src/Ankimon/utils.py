@@ -1,19 +1,17 @@
 import os
 from pathlib import Path
-from typing import Union
 import requests
 import json
 import markdown
 import random
 import csv
-from collections import Counter
-from typing import Union
 
 from aqt import mw
 from aqt.utils import showWarning, showInfo
-from PyQt6.QtGui import QFontDatabase, QFont
 
-from . import audios
+from aqt.qt import QFontDatabase, QFont, QUrl
+from PyQt6.QtMultimedia import QAudioOutput, QMediaPlayer
+
 from .pyobj.settings import Settings
 from .pyobj.InfoLogger import ShowInfoLogger
 
@@ -39,13 +37,12 @@ from .resources import (
     mypokemon_path,
     mainpokemon_path,
     addon_dir,
-    pokemon_species_baby_path,
-    pokemon_species_legendary_path,
-    pokemon_species_mythical_path,
-    pokemon_species_normal_path,
-    pokemon_species_ultra_path,
     POKEMON_TIERS
 )
+
+audio_output = QAudioOutput()
+media_player = QMediaPlayer()
+media_player.setAudioOutput(audio_output)
 
 # Load move and pokemon name mapping at startup
 with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
@@ -349,7 +346,7 @@ def daily_item_list():
     return item_names
 
 # Function to give an item to the player
-def give_item(item_name, item_type: Union[str, None]=None):
+def give_item(item_name, item_type: str | None=None):
     with open(itembag_path, "r", encoding="utf-8") as json_file:
         itembag_list = json.load(json_file)
         # Check if the item exists and update quantity, otherwise append
@@ -557,8 +554,8 @@ def get_all_sprites(directory):
         print(f"Error: The directory '{directory}' does not exist.")
         return []
 
-def play_effect_sound(sound_type):
-    sound_effects = Settings().get("audio.sound_effects", False)
+def play_effect_sound(settings_obj, sound_type):
+    sound_effects = settings_obj.get("audio.sound_effects")
     if sound_effects is True:
         audio_path = None
         if sound_type == "HurtNotEffective":
@@ -577,10 +574,9 @@ def play_effect_sound(sound_type):
         if not audio_path.is_file():
             return
         else:
-            audio_path = Path(audio_path)
-            #threading.Thread(target=playsound.playsound, args=(audio_path,)).start()
-            audios.will_use_audio_player()
-            audios.audio(audio_path)
+            audio_output.setVolume(settings_obj.get("audio.volume"))
+            media_player.setSource(QUrl.fromLocalFile(str(audio_path)))
+            media_player.play()
     else:
         pass
 
@@ -673,13 +669,13 @@ def get_main_pokemon_data():
         )
 
 def play_sound(enemy_pokemon_id: int, settings_obj: Settings):
-    if settings_obj.get("audio.sounds", False):
+    if settings_obj.get("audio.sounds"):
         file_name = f"{enemy_pokemon_id}.ogg"
         audio_path = addon_dir / "user_files" / "sprites" / "sounds" / file_name
         if audio_path.is_file():
-            audio_path = Path(audio_path)
-            audios.will_use_audio_player()
-            audios.audio(audio_path)
+            audio_output.setVolume(settings_obj.get("audio.volume"))
+            media_player.setSource(QUrl.fromLocalFile(str(audio_path)))
+            media_player.play()
 
 def load_collected_pokemon_ids() -> set:
     if not mypokemon_path.is_file():
@@ -808,7 +804,7 @@ def get_ev_spread(mode: str="random") -> dict[str, int]:
 
     raise ValueError(f"Received unknown value for 'mode': {mode}")
 
-def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
+def get_tier_by_id(pokemon_id: int) -> str | None:
     """
     Determines the tier category of a Pokémon based on its ID.
 
@@ -820,7 +816,7 @@ def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
         pokemon_id (int): The unique identifier of the Pokémon.
 
     Returns:
-        Union[str, None]: The tier name as a string if the Pokémon ID is found
+        str | None: The tier name as a string if the Pokémon ID is found
         in one of the tier lists; otherwise, None.
     """
 
@@ -831,7 +827,7 @@ def get_tier_by_id(pokemon_id: int) -> Union[str, None]:
 
 def safe_get_random_move(
     pokemon_moves: list[str],
-    logger: Union[ShowInfoLogger, None] = None
+    logger: ShowInfoLogger | None = None
 ) -> dict:
     """
     Attempts to retrieve details of a randomly selected move from a list of Pokémon moves.
@@ -843,7 +839,7 @@ def safe_get_random_move(
 
     Args:
         pokemon_moves (list[str]): A list of move names to select from.
-        logger (Union[ShowInfoLogger, None], optional): An optional logger instance for
+        logger (ShowInfoLogger | None, optional): An optional logger instance for
             logging warnings if no valid move is found. Defaults to None.
 
     Returns:

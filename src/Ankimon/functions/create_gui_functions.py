@@ -31,8 +31,8 @@ def create_status_label(status_name):
 
 def create_status_html(status_name, settings_obj, is_pokemon_owned=False, addon_package=""):
     xp_bar_spacer = settings_obj.compute_special_variable('xp_bar_spacer')
-    hp_bar_thickness = settings_obj.get("gui.review_hp_bar_thickness", 2) * 4
-    show_mainpkmn_in_reviewer = int(settings_obj.get("gui.show_mainpkmn_in_reviewer", 1))
+    hp_bar_thickness = settings_obj.get("gui.review_hp_bar_thickness") * 4
+    show_mainpkmn_in_reviewer = int(settings_obj.get("gui.show_mainpkmn_in_reviewer"))
     # Get the colors for the given status name
     colors = status_colors_html.get(status_name.lower())
 

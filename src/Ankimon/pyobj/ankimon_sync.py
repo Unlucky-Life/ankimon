@@ -995,7 +995,7 @@ def check_and_sync_pokemon_data(settings_obj, logger):
     Check for Pokemon data differences and show sync dialog ONLY if needed.
     Returns dialog instance only if differences exist.
     """
-    from ..config_var import ankiweb_sync
+    ankiweb_sync = settings_obj.get("misc.ankiweb_sync")
 
     # Check if sync is disabled
     if not ankiweb_sync:
@@ -1023,7 +1023,7 @@ def check_and_sync_pokemon_data(settings_obj, logger):
 
 def save_ankimon_configs():
     """Convenience function to save configs - called before media sync."""
-    from ..config_var import ankiweb_sync
+    ankiweb_sync = settings_obj.get("misc.ankiweb_sync")
     # Check if sync is disabled
     if not ankiweb_sync:
         return []
@@ -1035,9 +1035,9 @@ def save_ankimon_configs():
         # Gracefully handle errors during startup
         return []
 
-def read_ankimon_configs(media_sync_status: bool = False):
+def read_ankimon_configs(settings_obj, media_sync_status: bool = False):
     """Convenience function to read configs - called after media sync."""
-    from ..config_var import ankiweb_sync
+    ankiweb_sync = settings_obj.get("misc.ankiweb_sync")
     # Check if sync is disabled
     if not ankiweb_sync:
         return []
@@ -1054,7 +1054,7 @@ _automatic_sync_enabled = False
 
 def setup_ankimon_sync_hooks(settings_obj, logger):
     """Set up hooks for automatic Ankimon data syncing - but disabled by default."""
-    from ..config_var import ankiweb_sync
+    ankiweb_sync = settings_obj.get("misc.ankiweb_sync")
 
     # Check if sync is disabled
     if not ankiweb_sync:
@@ -1081,7 +1081,7 @@ def setup_ankimon_sync_hooks(settings_obj, logger):
             return
 
         try:
-            updated_files = read_ankimon_configs(media_sync_status=False)
+            updated_files = read_ankimon_configs(settings_obj, media_sync_status=False)
             if updated_files:
                 logger.log("info", f"Updated {len(updated_files)} files from sync")
                 tooltip(f"Updated {len(updated_files)} Ankimon files from AnkiWeb")

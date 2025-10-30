@@ -81,7 +81,7 @@ class PokemonTeamDialog(QDialog):
             self.xp_share_combo.addItem(f"{pokemon['name']} (Level {pokemon['level']})", pokemon['individual_id'])
 
         # Set the initial XP Share Pokémon (based on settings)
-        xp_share_pokemon_individual_id = self.settings.get("trainer.xp_share", None)
+        xp_share_pokemon_individual_id = self.settings.get("trainer.xp_share")
         if xp_share_pokemon_individual_id:
             xp_share_index = next((i for i, p in enumerate(self.my_pokemon) if p['individual_id'] == xp_share_pokemon_individual_id), 0) + 1
             self.xp_share_combo.setCurrentIndex(xp_share_index)

@@ -36,7 +36,7 @@ class TrainerCardGUI(QDialog):
             }
         """)
 
-        image_path = os.path.join(trainer_sprites_path, self.settings.get("trainer.sprite", "ash") + ".png")
+        image_path = os.path.join(trainer_sprites_path, self.settings.get("trainer.sprite") + ".png")
 
         # Load trainer image if it exists
         if os.path.exists(image_path):
@@ -50,7 +50,7 @@ class TrainerCardGUI(QDialog):
         self.trainer_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Name label
-        name_label = QLabel(self.settings.get("trainer.name", "ash"))
+        name_label = QLabel(self.settings.get("trainer.name"))
         name_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 

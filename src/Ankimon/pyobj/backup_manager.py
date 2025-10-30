@@ -225,7 +225,7 @@ class BackupManager:
                 backups_to_keep.append(backup_dir)
 
         # Keep only the latest MAX_BACKUPS, unless in developer mode
-        if not self.settings_obj.get("misc.developer_mode", False):
+        if not self.settings_obj.get("misc.developer_mode"):
             while len(backups_to_keep) > self.MAX_BACKUPS:
                 oldest_backup = backups_to_keep.pop(0)
                 shutil.rmtree(oldest_backup)

@@ -181,7 +181,7 @@ class PokemonShopManager:
         """)
 
         # Money display
-        self.currency_qlabel = QLabel(f"MONEY: ${self.settings_obj.get('trainer.cash', 0)}")
+        self.currency_qlabel = QLabel(f"MONEY: ${self.settings_obj.get('trainer.cash')}")
         money_font = QFont(self.early_gameboy_font)
         money_font.setPointSize(12)
         self.currency_qlabel.setFont(money_font)
@@ -296,7 +296,7 @@ class PokemonShopManager:
             item['UI_NAME'] = item.get('name', 'poke-ball').replace('-', ' ').title()
             item['price'] = get_item_price(item.get('name', 'poke-ball'))
             # Description for regular items: use get_item_description with language from settings
-            description_text = get_item_description(item['name'], self.settings_obj.get('misc.language', '9'))
+            description_text = get_item_description(item['name'], self.settings_obj.get('misc.language'))
             if not description_text:
                 description_text = f"A useful item: {item['UI_NAME']}"
 
@@ -437,7 +437,7 @@ class PokemonShopManager:
         colors = self._get_theme_colors()
 
         try:
-            if self.settings_obj.get('trainer.cash', 0) < item['price']:
+            if self.settings_obj.get('trainer.cash') < item['price']:
                 msg = QMessageBox(mw)
                 msg.setWindowTitle("Ankimon Mart")
                 msg.setText("You don't have enough money!")
@@ -459,8 +459,8 @@ class PokemonShopManager:
                 msg.exec()
                 return
 
-            self.set_callback('trainer.cash', int(self.get_callback('trainer.cash', 0) - item['price']))
-            self.currency_qlabel.setText(f"MONEY: ${self.settings_obj.get('trainer.cash', 0)}")
+            self.set_callback('trainer.cash', int(self.get_callback('trainer.cash') - item['price']))
+            self.currency_qlabel.setText(f"MONEY: ${self.settings_obj.get('trainer.cash')}")
 
             msg = QMessageBox(mw)
             msg.setWindowTitle("Ankimon Mart")
@@ -490,7 +490,7 @@ class PokemonShopManager:
         """Rerolls the daily items in the shop with theme-aware messaging"""
         colors = self._get_theme_colors()
 
-        if self.settings_obj.get('trainer.cash', 0) < cost:
+        if self.settings_obj.get('trainer.cash') < cost:
             msg = QMessageBox(mw)
             msg.setWindowTitle("Ankimon Mart")
             msg.setText("You don't have enough money to reroll!")
@@ -512,8 +512,8 @@ class PokemonShopManager:
             msg.exec()
             return
 
-        self.set_callback('trainer.cash', int(self.get_callback('trainer.cash', 0) - cost))
-        self.currency_qlabel.setText(f"MONEY: ${self.settings_obj.get('trainer.cash', 0)}")
+        self.set_callback('trainer.cash', int(self.get_callback('trainer.cash') - cost))
+        self.currency_qlabel.setText(f"MONEY: ${self.settings_obj.get('trainer.cash')}")
 
         # Generate new random items
         random.seed()  # Use current time for truly random reroll
