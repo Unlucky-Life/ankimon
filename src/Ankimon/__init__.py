@@ -83,7 +83,7 @@ from .utils import (
 )
 from .functions.reviewer_iframe import create_iframe_html, create_head_code
 from .functions.url_functions import open_team_builder, rate_addon_url, report_bug, join_discord_url, open_leaderboard_url
-from .functions.badges_functions import check_badges, handle_review_count_achievement, check_for_badge, receive_badge
+from .functions.badges_functions import handle_review_count_achievement, check_for_badge, receive_badge
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
 from .functions.drawing_utils import tooltipWithColour
 from .functions.discord_function import DiscordPresence
@@ -667,9 +667,6 @@ if database_complete:
 #Badges needed for achievements:
 with open(badges_list_path, "r", encoding="utf-8") as json_file:
     badges = json.load(json_file)
-
-achievements = {str(i): False for i in range(1, 69)}
-achievements = check_badges(achievements)
 
 if database_complete:
     if mypokemon_path.is_file() is False:
