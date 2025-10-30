@@ -785,26 +785,26 @@ addHook("profileLoaded", on_profile_loaded)
 gui_hooks.profile_did_open.append(on_profile_did_open)
 gui_hooks.profile_will_close.append(backup_manager.on_anki_close)
 
-def catch_shorcut_function():
-    if enemy_pokemon.hp >= 1:
-        tooltip("You only catch a pokemon once it's fainted !")
-    else:
+def catch_shortcut_function():
+    if enemy_pokemon.hp < 1:
         catch_pokemon(enemy_pokemon, ankimon_tracker_obj, logger, "", collected_pokemon_ids, achievements)
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
+    else:
+        tooltip("You only catch a pokemon once it's fainted!")
 
 def defeat_shortcut_function():
-    if enemy_pokemon.hp > 1:
-        tooltip("Wild pokemon has to be fainted to defeat it !")
-    else:
+    if enemy_pokemon.hp < 1:
         kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
+    else:
+        tooltip("Wild pokemon has to be fainted to defeat it!")
 
 catch_shortcut = catch_shortcut.lower()
 defeat_shortcut = defeat_shortcut.lower()
 #// adding shortcuts to _shortcutKeys function in anki
 def _shortcutKeys_wrap(self, _old):
     original = _old(self)
-    original.append((catch_shortcut, lambda: catch_shorcut_function()))
+    original.append((catch_shortcut, lambda: catch_shortcut_function()))
     original.append((defeat_shortcut, lambda: defeat_shortcut_function()))
     return original
 
@@ -820,7 +820,7 @@ if reviewer_buttons is True:
     # Update the link handler function to handle the custom button action
     def linkHandler_wrap(reviewer, url):
         if url == "catch":
-            catch_shorcut_function()
+            catch_shortcut_function()
         elif url == "defeat":
             defeat_shortcut_function()
         else:
