@@ -280,7 +280,7 @@ class ItemWindow(QWidget):
         item_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         if item_type == "TM":
-            item_file_path = items_path / f"Bag_TM_{find_details_move(item_name)["type"]}_SV_Sprite.png"
+            item_file_path = items_path / f"Bag_TM_{find_details_move(item_name)["type"].lower()}_SV_Sprite.png"
         else:
             item_file_path = items_path / f"{item_name}.png"
         item_picture_pixmap = QPixmap(str(item_file_path))
