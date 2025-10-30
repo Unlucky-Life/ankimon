@@ -33,20 +33,14 @@ def receive_badge(badge_num,achievements):
     return achievements
 
 def handle_review_count_achievement(review_count, achievements):
-    if review_count == 100:
-        check = check_for_badge(achievements,1)
-        if check is False:
-            achievements = receive_badge(1,achievements)
-    elif review_count == 200:
-        check = check_for_badge(achievements,2)
-        if check is False:
-            achievements = receive_badge(2,achievements)
-    elif review_count == 300:
-        check = check_for_badge(achievements,3)
-        if check is False:
-            achievements = receive_badge(3,achievements)
-    elif review_count == 500:
-        check = check_for_badge(achievements,4)
-        if check is False:
-            receive_badge(4,achievements)
+    milestones = {
+        100: 1,
+        200: 2,
+        300: 3,
+        500: 4,
+    }
+    badge_to_award = milestones.get(review_count)
+    if badge_to_award and not check_for_badge(achievements, badge_to_award):
+        achievements = receive_badge(badge_to_award, achievements)
+
     return achievements
