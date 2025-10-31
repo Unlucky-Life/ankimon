@@ -1,4 +1,3 @@
-
 [
     {
         "code": "MONTHLY-2025-09-BIDOOF",
@@ -114,6 +113,67 @@
             "shiny": false,
             "captured_date": "2025-09-29 14:42:51",
             "individual_id": "c603d760-d637-4534-92ae-e0d89b15786f",
+            "mega": false,
+            "special-form": null,
+            "evos": []
+        }
+    },
+    {
+        "code": "MONTHLY-2025-11-PSYDUCK",
+        "month": "November 2025",
+        "description": "Confused? So is Psyduck! It's about concentrating under pressure, turning that confusion into destruction 😎",
+        "previous_challenge_individual_id": "c603d760-d637-4534-92ae-e0d89b15786f",
+        "defeat_threshold": 150,
+        "pokemon": {
+            "name": "Psyduck",
+            "nickname": "",
+            "level": 1,
+            "gender": "M",
+            "id": 54,
+            "ability": "Damp",
+            "type": [
+                "Water"
+            ],
+            "stats": {
+                "hp": 50,
+                "atk": 52,
+                "def": 48,
+                "spa": 65,
+                "spd": 50,
+                "spe": 55,
+                "xp": 0
+            },
+            "ev": {
+                "hp": 0,
+                "atk": 0,
+                "def": 0,
+                "spa": 0,
+                "spd": 0,
+                "spe": 0
+            },
+            "iv": {
+                "hp": 2,
+                "atk": 20,
+                "def": 16,
+                "spa": 5,
+                "spd": 13,
+                "spe": 29
+            },
+            "attacks": [
+                "Scratch",
+                "Tail whip",
+                "Bubble",
+                "Water sport"
+            ],
+            "base_experience": 64,
+            "current_hp": 50,
+            "growth_rate": "medium",
+            "friendship": 70,
+            "pokemon_defeated": 0,
+            "everstone": false,
+            "shiny": false,
+            "captured_date": "2025-10-30 22:58:55",
+            "individual_id": "c3d22607-5762-44a9-9bbb-570cef7231a0",
             "mega": false,
             "special-form": null,
             "evos": []
