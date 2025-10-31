@@ -23,6 +23,8 @@ from aqt.qt import (
 )
 from aqt.theme import theme_manager
 
+from ..functions.pokedex_functions import find_details_move
+
 from ..utils import give_item, daily_item_list, get_item_price, get_item_description
 from ..resources import items_path, user_path, pokemon_tm_learnset_path
 
@@ -288,13 +290,13 @@ class PokemonShopManager:
         colors = self._get_theme_colors()
 
         if is_tm:
-            item['UI_NAME'] = item.get('name', '').replace('-', ' ').title()
+            item['UI_NAME'] = item["name"].replace('-', ' ').title()
             item['price'] = self.tm_price
             # Description for TMs: fixed string
             description_text = f"Allows a Pokémon to be taught the move {item['UI_NAME']} (if able)"
         else:
-            item['UI_NAME'] = item.get('name', 'poke-ball').replace('-', ' ').title()
-            item['price'] = get_item_price(item.get('name', 'poke-ball'))
+            item['UI_NAME'] = item["name"].replace('-', ' ').title()
+            item['price'] = get_item_price(item["name"])
             # Description for regular items: use get_item_description with language from settings
             description_text = get_item_description(item['name'], self.settings_obj.get('misc.language', '9'))
             if not description_text:
@@ -323,12 +325,12 @@ class PokemonShopManager:
         # Item image
         image_label = QLabel()
         if is_tm:
-            image_path = items_path / "Bag_TM_Normal_SV_Sprite.png"
+            image_path = items_path / f"Bag_TM_{find_details_move(item["name"])["type"].lower()}_SV_Sprite.png"
         else:
-            image_path = f"{items_path}/{item.get('name', 'poke-ball')}.png"
+            image_path = f"{items_path}/{item["name"]}.png"
 
         pixmap = QPixmap(str(image_path))
-        image_label.setPixmap(pixmap.scaled(48, 48, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        image_label.setPixmap(pixmap.scaled(56, 56, Qt.AspectRatioMode.KeepAspectRatio))
         image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(image_label)
 

@@ -232,7 +232,27 @@ def daily_item_list():
     excluded_suffixes = ["dust", "-piece", "-nugget", "-berry"]
     # Add full item names here to exclude them from the daily shop, e.g., ["master-ball"]
     excluded_full_names = [
-    "Bag_TM_Normal_SV_Sprite", #not a real item
+    # not real items
+    # NOTE: maybe these should be in a separate folder?
+    "Bag_TM_normal_SV_Sprite",
+    "Bag_TM_bug_SV_Sprite",
+    "Bag_TM_dark_SV_Sprite",
+    "Bag_TM_dragon_SV_Sprite",
+    "Bag_TM_electric_SV_Sprite",
+    "Bag_TM_fairy_SV_Sprite",
+    "Bag_TM_fighting_SV_Sprite",
+    "Bag_TM_fire_SV_Sprite",
+    "Bag_TM_flying_SV_Sprite",
+    "Bag_TM_ghost_SV_Sprite",
+    "Bag_TM_grass_SV_Sprite",
+    "Bag_TM_ground_SV_Sprite",
+    "Bag_TM_ice_SV_Sprite",
+    "Bag_TM_poison_SV_Sprite",
+    "Bag_TM_psychic_SV_Sprite",
+    "Bag_TM_rock_SV_Sprite",
+    "Bag_TM_steel_SV_Sprite",
+    "Bag_TM_water_SV_Sprite",
+ 
     # items that are sold for cash
     "balm-mushroom",
     "big-mushroom",
