@@ -127,7 +127,6 @@ class Settings:
                 modified = True
                 config[key] = DEFAULT_CONFIG[key]
 
-        modified = True
         if modified:
             self.save_config(config) # Save modified config to config.obf
 
