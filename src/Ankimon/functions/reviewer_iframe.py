@@ -46,7 +46,7 @@ def create_iframe_html(main_pokemon, enemy_pokemon, settings_obj, textmsg):
     ankimon_package = mw.addonManager.addonFromModule(__name__)
     general_url = f"""/_addons/{ankimon_package}/user_files/web/"""
     sprites_url = f"""/_addons/{ankimon_package}/user_files/sprites/"""
-    if settings_obj.get("gui.reviewer_image_gif", False) == False:
+    if settings_obj.get("gui.reviewer_image_gif") == False:
         top_pokemon_sprite = f"""{sprites_url}front_default/{enemy_pokemon.id}.png"""
         bottom_pokemon_sprite = f"""{sprites_url}back_default/{main_pokemon.id}.png"""
     else:

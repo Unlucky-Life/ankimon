@@ -68,7 +68,7 @@ class ApiKeyDialog(QDialog):
 def sync_data_to_leaderboard(data):
 
         # First check if leaderboard is enabled in config
-        if not mw.settings_obj.get("misc.leaderboard",False):
+        if not mw.settings_obj.get("misc.leaderboard"):
             return
 
         try:
@@ -118,7 +118,7 @@ def sync_data_to_leaderboard(data):
 def get_unique_pokemon():
 
     # Check if leaderboard syncing is enabled in config
-    if not mw.settings_obj.get("misc.leaderboard",False):
+    if not mw.settings_obj.get("misc.leaderboard"):
         return
 
     try:

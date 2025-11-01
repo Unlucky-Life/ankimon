@@ -62,7 +62,7 @@ class TipOfTheDayDialog(QDialog):
 def show_tip_of_the_day():
     """Checks settings and shows the tip of the day dialog if enabled."""
     settings = Settings()
-    if not settings.get("misc.show_tip_on_startup", True):
+    if not settings.get("misc.show_tip_on_startup"):
         return
 
     # Check if the addon has been rated
@@ -86,7 +86,7 @@ def show_tip_of_the_day():
     if not tips:
         return
 
-    last_tip_index = settings.get("misc.last_tip_index", -1)
+    last_tip_index = settings.get("misc.last_tip_index")
     next_tip_index = (last_tip_index + 1) % len(tips)
 
     dialog = TipOfTheDayDialog(tips[next_tip_index], next_tip_index, len(tips), mw)

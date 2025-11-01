@@ -28,29 +28,29 @@ class TrainerCard:
         self.badge_count = badge_count        # Number of badges the trainer has earned
         self.favorite_pokemon = main_pokemon.name  # Trainer's favorite Pokémon
         self.trainer_id = trainer_id          # Unique ID for the trainer
-        self.level = int(settings_obj.get("trainer.level", 1))                    # Trainer's level
+        self.level = int(settings_obj.get("trainer.level"))                    # Trainer's level
         self.xp = xp                          # Experience points
         self.achievements = achievements if achievements else []  # List of achievements (if any)
         self.team = team   # Team as a simple string
         highest_level = self.get_highest_level_pokemon()
         self.highest_level = highest_level  # Highest level Pokémon
-        self.image_path = f"{trainer_sprites_path}" + "/" + settings_obj.get("trainer.sprite", "ash-sinnoh") + ".png"
+        self.image_path = f"{trainer_sprites_path}" + "/" + settings_obj.get("trainer.sprite") + ".png"
         league = find_trainer_rank(int(self.highest_pokemon_level()), int(self.level))  # Trainer's rank in the Pokémon world
         self.league = league
-        cash = int(settings_obj.get("trainer.cash", 0))
+        cash = int(settings_obj.get("trainer.cash"))
         self.cash = cash
 
         #Sync Data to ankimon leaderboard
         data = {
             'trainerRank': f"{league}",  # Example rank
             'trainerName': trainer_name,  # Example trainer name
-            'level': max(1, int(settings_obj.get("trainer.level", 1))),
+            'level': max(1, int(settings_obj.get("trainer.level"))),
             'pokedex': get_unique_pokemon(),  # Example Pokedex
             'caughtPokemon': get_total_pokemon(),  # Example Pokedex
             'highestLevel': highest_level,  # Example highest level
             'shinies': f"{get_shinies()}",  # Example shinies
             'cash': cash,  # Example cash,
-            'trainerSprite': f'{settings_obj.get("trainer.sprite", "ash-sinnoh") + ".png"}'
+            'trainerSprite': f'{settings_obj.get("trainer.sprite") + ".png"}'
         }
         try:
             sync_data_to_leaderboard(data)

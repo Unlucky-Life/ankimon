@@ -44,14 +44,14 @@ class PokemonCollectionDialog(QDialog):
         self.reviewer_obj = reviewer_obj
         self.test_window = test_window
         self.settings = settings_obj
-        self.language = int(self.settings.get("misc.language", 11))
-        self.remove_levelcap = settings_obj.get("remove_levelcap", False)
+        self.language = int(self.settings.get("misc.language"))
+        self.remove_levelcap = settings_obj.get("misc.remove_level_cap")
         self.main_pokemon_function_callback = lambda _pokemon_data: MainPokemon(_pokemon_data, main_pokemon, logger, translator, reviewer_obj, test_window)
         self.main_pokemon = main_pokemon
         #mypokemon file path
         self.mypokemon_path = mypokemon_path
 
-        self.gif_in_collection = self.settings.get("gui.gif_in_collection", 11)
+        self.gif_in_collection = self.settings.get("gui.gif_in_collection")
 
         #paginator variables
         self.current_page = 0

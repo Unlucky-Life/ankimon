@@ -51,7 +51,6 @@ from ..resources import (
     mypokemon_path,
     mainpokemon_path,
 )
-from ..config_var import remove_levelcap
 
 def modify_percentages(total_reviews, daily_average, player_level):
     """
@@ -141,7 +140,7 @@ def get_tier(total_reviews, player_level=1, event_modifier=None):
     Returns:
         choice[0]: The first choice of TIER picked randomly (by a random.choices function)
     """
-    daily_average = int(settings_obj.get('battle.daily_average', 100))
+    daily_average = int(settings_obj.get('battle.daily_average'))
     percentages = modify_percentages(total_reviews, daily_average, player_level)
 
     tiers = list(percentages.keys())
@@ -401,8 +400,8 @@ def save_main_pokemon_progress(
         logger: ShowInfoLogger,
         evo_window: EvoWindow,
         ):
-    experience = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap", False)))
-    if remove_levelcap is True:
+    experience = int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap")))
+    if settings_obj.get("misc.remove_level_cap") is True:
         main_pokemon.xp += exp
         level_cap = None
     elif main_pokemon.level != 100:
@@ -417,7 +416,7 @@ def save_main_pokemon_progress(
     except Exception as e:
         show_warning_with_traceback(parent=mw, exception=e, message="Error loading main pokemon data.")
         return
-    while int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap", False))) < int(main_pokemon.xp) and (level_cap is None or main_pokemon.level < level_cap):
+    while int(find_experience_for_level(main_pokemon.growth_rate, main_pokemon.level, settings_obj.get("misc.remove_level_cap"))) < int(main_pokemon.xp) and (level_cap is None or main_pokemon.level < level_cap):
         main_pokemon.level += 1
         msg = ""
         msg += f"Your {main_pokemon.name} is now level {main_pokemon.level} !"
@@ -429,7 +428,7 @@ def save_main_pokemon_progress(
             tooltipWithColour(msg, color)
         except:
             pass
-        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+        if settings_obj.get('gui.pop_up_dialog_message_on_defeat') is True:
             logger.log_and_showinfo("info",f"{msg}")
         main_pokemon.xp = int(max(0, int(main_pokemon.xp) - int(experience)))
         evo_id = check_evolution_for_pokemon(main_pokemon.individual_id, main_pokemon.id, main_pokemon.level, evo_window, main_pokemon.everstone)
@@ -455,7 +454,7 @@ def save_main_pokemon_progress(
                         msg += translator.translate("mainpokemon_learned_new_attack", new_attack_name=new_attack, main_pokemon_name=main_pokemon.name.capitalize())
                         color = "#6A4DAC"
                         tooltipWithColour(msg, color)
-                        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+                        if settings_obj.get('gui.pop_up_dialog_message_on_defeat') is True:
                             logger.log_and_showinfo("info",f"{msg}")
                     else:
                         dialog = AttackDialog(attacks, new_attack)
@@ -487,7 +486,7 @@ def save_main_pokemon_progress(
         tooltipWithColour(msg, color)
     except:
         pass
-    if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+    if settings_obj.get('gui.pop_up_dialog_message_on_defeat') is True:
         logger.log_and_showinfo("info",f"{msg}")
     # Load existing Pokémon data if it exists
 
@@ -591,18 +590,18 @@ def kill_pokemon(
         trainer_card: Union[TrainerCard, None]=None
         ):
     if trainer_card is not None:
-        trainer_card.gain_xp(enemy_pokemon.tier, settings_obj.get("controls.allow_to_choose_moves", False))
+        trainer_card.gain_xp(enemy_pokemon.tier, settings_obj.get("controls.allow_to_choose_moves"))
 
     # Calculate experience based on whether moves are chosen manually
     exp = calc_experience(main_pokemon.base_experience, enemy_pokemon.level)
-    if settings_obj.get("controls.allow_to_choose_moves", False):
+    if settings_obj.get("controls.allow_to_choose_moves"):
         exp *= 0.5
 
     # Ensure exp is at least 1 and round up if it's a decimal
     exp = max(1, math.ceil(exp))
 
     # Handle XP share logic
-    xp_share_individual_id = settings_obj.get("trainer.xp_share", None)
+    xp_share_individual_id = settings_obj.get("trainer.xp_share")
     if xp_share_individual_id:
         exp = xp_share_gain_exp(logger, settings_obj, evo_window, main_pokemon.id, exp, xp_share_individual_id)
 
@@ -702,7 +701,7 @@ def catch_pokemon(
         ):
     ankimon_tracker_obj.caught += 1
     if ankimon_tracker_obj.caught > 1:
-        if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+        if settings_obj.get('gui.pop_up_dialog_message_on_defeat') is True:
             logger.log_and_showinfo("info",translator.translate("already_caught_pokemon")) # Display a message when the Pokémon is caught
 
     # If we arrive here, this means that ankimon_tracker_obj.caught == 1
@@ -716,7 +715,7 @@ def catch_pokemon(
 
     msg = translator.translate("caught_wild_pokemon", enemy_pokemon_name=enemy_pokemon.name.capitalize())
 
-    if settings_obj.get('gui.pop_up_dialog_message_on_defeat', True) is True:
+    if settings_obj.get('gui.pop_up_dialog_message_on_defeat') is True:
         if logger is not None:
             logger.log_and_showinfo("info",f"{msg}") # Display a message when the Pokémon is caught
 
@@ -741,7 +740,7 @@ def handle_enemy_faint(
     Handles what automatically happens when the enemy Pokémon faints, based on auto-battle settings.
     """
     try:
-        auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))
+        auto_battle_setting = int(settings_obj.get("battle.automatic_battle"))
         if not (0 <= auto_battle_setting <= 3):
             auto_battle_setting = 0  # fallback
     except ValueError:
@@ -788,7 +787,7 @@ def handle_main_pokemon_faint(
     """
     msg = translator.translate("pokemon_fainted", enemy_pokemon_name=main_pokemon.name.capitalize())
     tooltipWithColour(msg, "#E12939")
-    play_effect_sound("Fainted")
+    play_effect_sound(settings_obj, "Fainted")
 
     main_pokemon.hp = main_pokemon.max_hp
     main_pokemon.current_hp = main_pokemon.max_hp

@@ -45,7 +45,7 @@ from .gui_entities import (
 debug = True
 
 # Initialize the menu
-mw.translator = Translator(language=int(Settings().get("misc.language", int(9))))
+mw.translator = Translator(language=int(mw.settings_obj.get("misc.language")))
 mw.pokemenu = QMenu('&' + mw.translator.translate("ankimon_button_title"), mw)
 game_menu = mw.pokemenu.addMenu(mw.translator.translate("ankimon_game_button_title"))
 profile_menu = mw.pokemenu.addMenu(mw.translator.translate("ankimon_profile_button_title"))

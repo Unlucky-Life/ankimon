@@ -331,14 +331,14 @@ class StarterWindow(QWidget):
         painter.drawPixmap(311,-3,grass_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(28), int(self.settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(28), int(self.settings_obj.get("misc.language")))
         message_box_text = "Choose your Starter Pokemon"
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(255,255,255))  # Text color
         painter.drawText(110, 310, message_box_text)
-        custom_font = load_custom_font(int(20), int(self.settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(20), int(self.settings_obj.get("misc.language")))
         painter.setFont(custom_font)
         painter.drawText(10, 330, "Press G to change Generation")
         painter.end()
@@ -374,7 +374,7 @@ class StarterWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(32), int(self.settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(32), int(self.settings_obj.get("misc.language")))
         message_box_text = f"{(starter_name).capitalize()} was chosen as Starter !"
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -414,7 +414,7 @@ class StarterWindow(QWidget):
         painter.drawPixmap(125,10,image_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(32), int(self.settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(32), int(self.settings_obj.get("misc.language")))
         message_box_text = f"{(fossil_name).capitalize()} was brought to life !"
         # Draw the text on top of the image
         # Adjust the font size as needed

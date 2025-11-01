@@ -27,6 +27,7 @@
     "audio.sound_effects": "Enable Sound Effects",
     "audio.sounds": "Enable Sounds",
     "audio.battle_sounds": "Enable Battle Sounds",
+    "audio.volume": "Volume",
 
     "misc.gen1": "Generation 1",
     "misc.gen2": "Generation 2",

@@ -34,17 +34,15 @@ from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
 
 from .resources import generate_startup_files, user_path, IS_EXPERIMENTAL_BUILD, addon_ver, addon_dir
-
 generate_startup_files(addon_dir, user_path)
 
-from .config_var import (
-    no_more_news,
-    ssh,
-    defeat_shortcut,
-    catch_shortcut,
-    reviewer_buttons,
-    battle_sounds
-)
+from .singletons import settings_obj
+no_more_news = settings_obj.get("misc.YouShallNotPass_Ankimon_News")
+ssh = settings_obj.get("misc.ssh")
+defeat_shortcut = settings_obj.get("controls.defeat_key") #default: 5; ; Else if not 5 => controll + Key for capture
+catch_shortcut = settings_obj.get("controls.catch_key") #default: 6; Else if not 6 => controll + Key for capture
+reviewer_buttons = settings_obj.get("controls.pokemon_buttons") #default: true; false = no pokemon buttons in reviewer
+
 from .resources import (
     addon_dir,
     pkmnimgfolder,
@@ -174,7 +172,7 @@ except Exception as e:
 
 backup_manager = BackupManager(logger, settings_obj)
 
-if settings_obj.get("misc.developer_mode", False):
+if settings_obj.get("misc.developer_mode"):
     backup_manager.create_backup(manual=False)
 
 # Initialize mutator and mutator_full_reset
@@ -406,7 +404,7 @@ def on_review_card(*args):
 
         global mutator_full_reset
 
-        global battle_sounds
+        battle_sounds = settings_obj.get("audio.battle_sounds")
         global achievements
         global new_state
         global user_hp_after
@@ -437,7 +435,7 @@ def on_review_card(*args):
         if battle_sounds == True and ankimon_tracker_obj.general_card_count_for_battle == 1:
             play_sound(enemy_pokemon.id, settings_obj)
 
-        if ankimon_tracker_obj.cards_battle_round >= int(settings_obj.get("battle.cards_per_round", 2)):
+        if ankimon_tracker_obj.cards_battle_round >= int(settings_obj.get("battle.cards_per_round")):
             ankimon_tracker_obj.cards_battle_round = 0
             ankimon_tracker_obj.attack_counter = 0
             slp_counter = 0
@@ -463,7 +461,7 @@ def on_review_card(*args):
 
             if ankimon_tracker_obj.pokemon_encouter > 0 and main_pokemon.hp > 0 and enemy_pokemon.hp > 0:
 
-                if settings_obj.get("controls.allow_to_choose_moves", False) == True:
+                if settings_obj.get("controls.allow_to_choose_moves") == True:
                     dialog = MoveSelectionDialog(main_pokemon.attacks)
                     if dialog.exec() == QDialog.DialogCode.Accepted:
                         if dialog.selected_move:
@@ -573,17 +571,17 @@ def on_review_card(*args):
             if true_dmg_from_enemy_move > 0 and multiplier < 1:
                 reviewer_obj.myseconds = settings_obj.compute_special_variable("animate_time")
                 tooltipWithColour(f" -{true_dmg_from_enemy_move} HP ", "#F06060", x=-200)
-                play_effect_sound("HurtNormal")
+                play_effect_sound(settings_obj, "HurtNormal")
 
             if true_dmg_from_user_move > 0:
                 reviewer_obj.seconds = settings_obj.compute_special_variable("animate_time")
                 tooltipWithColour(f" -{true_dmg_from_user_move} HP ", "#F06060", x=200)
                 if multiplier == 1:
-                    play_effect_sound("HurtNormal")
+                    play_effect_sound(settings_obj, "HurtNormal")
                 elif multiplier < 1:
-                    play_effect_sound("HurtNotEffective")
+                    play_effect_sound(settings_obj, "HurtNotEffective")
                 elif multiplier > 1:
-                    play_effect_sound("HurtSuper")
+                    play_effect_sound(settings_obj, "HurtSuper")
             else:
                 reviewer_obj.seconds = 0
 
@@ -692,7 +690,7 @@ create_menu_actions(
     settings_window,
     shop_manager,
     pokedex_window,
-    settings_obj.get("controls.key_for_opening_closing_ankimon","Ctrl+Shift+P"),
+    settings_obj.get("controls.key_for_opening_closing_ankimon"),
     join_discord_url,
     open_leaderboard_url,
     settings_obj,
@@ -754,7 +752,7 @@ def on_profile_did_open():
 
     # AnkiWeb Sync
     try:
-        from .config_var import ankiweb_sync
+        ankiweb_sync = settings_obj.get("misc.ankiweb_sync")
         if not ankiweb_sync:
             logger.log("info", "AnkiWeb sync is disabled in settings - skipping sync system initialization")
             return
@@ -843,7 +841,7 @@ if reviewer_buttons is True:
     # Replace the original link handler function with the modified one
     Reviewer._linkHandler = linkHandler_wrap
 
-if settings_obj.get("misc.discord_rich_presence",False) == True:
+if settings_obj.get("misc.discord_rich_presence") == True:
     client_id = '1319014423876075541'  # Replace with your actual client ID
     large_image_url = "https://raw.githubusercontent.com/Unlucky-Life/ankimon/refs/heads/main/src/Ankimon/ankimon_logo.png"  # URL for the large image
     mw.ankimon_presence = DiscordPresence(client_id, large_image_url, ankimon_tracker_obj, logger, settings_obj)  # Establish connection and get the presence instance

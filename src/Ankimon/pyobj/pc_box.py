@@ -98,7 +98,7 @@ class PokemonPC(QDialog):
         self.n_cols = 5
         self.n_rows = 6
         self.current_box_idx = 0  # Index of current displayed box
-        self.gif_in_collection = settings.get("gui.gif_in_collection", 11)
+        self.gif_in_collection = settings.get("gui.gif_in_collection")
 
         self.slot_size = 75  # Side length in pixels of a PC slot
         self.main_layout = QHBoxLayout()  # Main horizontal layout for split panels
@@ -219,7 +219,7 @@ class PokemonPC(QDialog):
             }}
         """)
 
-        self.gif_in_collection = self.settings.get("gui.gif_in_collection", 11)
+        self.gif_in_collection = self.settings.get("gui.gif_in_collection")
 
         pokemon_list = self.load_pokemon_data()
         pokemon_list = self.filter_pokemon_list(pokemon_list)
@@ -239,7 +239,7 @@ class PokemonPC(QDialog):
         next_box_button.clicked.connect(lambda: self.looparound_go_to_box(self.current_box_idx + 1, max_box_idx))
         curr_box_label = QLabel(f"Box {self.current_box_idx + 1}")
         curr_box_label.setFixedSize(150, 50)
-        curr_box_label.setFont(load_custom_font(20, int(self.settings.get("misc.language", 11))))
+        curr_box_label.setFont(load_custom_font(20, int(self.settings.get("misc.language"))))
         curr_box_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         curr_box_label.setStyleSheet(f"border: 1px solid {button_border}; background-color: {background_color};")
         box_selector_layout.addWidget(prev_box_button, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -719,9 +719,9 @@ class PokemonPC(QDialog):
             pokemon_defeated=pokemon.get('pokemon_defeated', 0),
             everstone=pokemon.get('everstone', False),
             captured_date=pokemon.get('captured_date', 'Missing'),
-            language=int(self.settings.get("misc.language", 11)),
+            language=int(self.settings.get("misc.language")),
             gif_in_collection=self.gif_in_collection,
-            remove_levelcap=self.settings.get("remove_levelcap", False),
+            remove_levelcap=self.settings.get("misc.remove_level_cap"),
             logger=self.logger,
             refresh_callback=self.refresh_gui
         )

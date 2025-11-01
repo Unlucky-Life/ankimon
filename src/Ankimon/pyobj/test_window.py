@@ -87,7 +87,7 @@ class TestWindow(QWidget):
         self.translator = translator
 
         if translator is None:
-            self.translator = Translator(language=int(settings_obj.get("misc.language", int(9))))
+            self.translator = Translator(language=int(settings_obj.get("misc.language")))
 
         self.test = 1
 
@@ -183,7 +183,7 @@ class TestWindow(QWidget):
         if self.ankimon_tracker_obj.pokemon_encouter > 0:
             bckgimage_path = battlescene_path_without_dialog / self.ankimon_tracker_obj.battlescene_file
 
-        msg_font = load_custom_font(int(32), int(self.settings_obj.get("misc.language",11)))
+        msg_font = load_custom_font(int(32), int(self.settings_obj.get("misc.language")))
 
         image_label, msg_font = self.window_show(bckgimage_path, lang_name)
 
@@ -268,7 +268,7 @@ class TestWindow(QWidget):
         painter.drawPixmap((410 - wpkmn_width), (170 - wpkmn_height), pixmap)
         painter.drawPixmap((144 - mpkmn_width), (290 - mpkmn_height), pixmap2)
 
-        experience = int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings_obj.get("misc.remove_level_cap", False)))
+        experience = int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings_obj.get("misc.remove_level_cap")))
 
         mainxp_bar_width = 5
         mainpokemon_xp_value = int((self.main_pokemon.xp / experience) * 148)
@@ -278,9 +278,9 @@ class TestWindow(QWidget):
         painter.drawRect(int(366), int(246), int(mainpokemon_xp_value), int(mainxp_bar_width))
 
         # custom font
-        custom_font = load_custom_font(int(26), int(self.settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(26), int(self.settings_obj.get("misc.language")))
 
-        msg_font = load_custom_font(int(32), int(self.settings_obj.get("misc.language",11)))
+        msg_font = load_custom_font(int(32), int(self.settings_obj.get("misc.language")))
 
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -436,7 +436,7 @@ class TestWindow(QWidget):
         # Reposition main pokemon to be fully visible when message box disappears
         painter.drawPixmap((144 - mpkmn_width), (270 - mpkmn_height), pixmap2)
 
-        experience = int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings_obj.get("misc.remove_level_cap", False)))
+        experience = int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings_obj.get("misc.remove_level_cap")))
 
         mainxp_bar_width = 5
         mainpokemon_xp_value = int((self.main_pokemon.xp / experience) * 148)
@@ -446,9 +446,9 @@ class TestWindow(QWidget):
         painter.drawRect(int(366), int(246), int(mainpokemon_xp_value), int(mainxp_bar_width))
 
         # custom font
-        custom_font = load_custom_font(int(26), int(self.settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(26), int(self.settings_obj.get("misc.language")))
 
-        msg_font = load_custom_font(int(28), int(self.settings_obj.get("misc.language",11)))
+        msg_font = load_custom_font(int(28), int(self.settings_obj.get("misc.language")))
 
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -549,7 +549,7 @@ class TestWindow(QWidget):
             painter.drawPixmap(200,90,item_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(26), int(self.settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(26), int(self.settings_obj.get("misc.language")))
 
         message_box_text = f"{self.translator.translate('received_an_item', item_name=item.capitalize())} !"
 
@@ -560,7 +560,7 @@ class TestWindow(QWidget):
 
         painter.drawText(50, 290, message_box_text)
 
-        custom_font = load_custom_font(int(20), int(self.settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(20), int(self.settings_obj.get("misc.language")))
         painter.setFont(custom_font)
         #painter.drawText(10, 330, "You can look this up in your item bag.")
 
@@ -619,7 +619,7 @@ class TestWindow(QWidget):
             painter.drawPixmap(200,90,item_pixmap)
 
             # custom font
-            custom_font = load_custom_font(int(20), int(self.settings_obj.get("misc.language",11)))
+            custom_font = load_custom_font(int(20), int(self.settings_obj.get("misc.language")))
 
             message_box_text = self.translator.translate("received_a_badge")
 
@@ -636,7 +636,7 @@ class TestWindow(QWidget):
             painter.drawText(120, 270, message_box_text)
             painter.drawText(140, 290, message_box_text2)
 
-            custom_font = load_custom_font(int(20), int(self.settings_obj.get("misc.language",11)))
+            custom_font = load_custom_font(int(20), int(self.settings_obj.get("misc.language")))
             painter.setFont(custom_font)
             #painter.drawText(10, 330, "You can look this up in your item bag.")
 

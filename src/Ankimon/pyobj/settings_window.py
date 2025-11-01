@@ -1,11 +1,12 @@
 import json
 import os
-from PyQt6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton,
-    QRadioButton, QHBoxLayout, QMainWindow, QScrollArea, QButtonGroup, QMessageBox
+from aqt.qt import (
+    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton,
+    QRadioButton, QHBoxLayout, QMainWindow, QScrollArea, QButtonGroup, QMessageBox,
+    QPixmap, QPainter, QPainterPath,
+    Qt, QRectF
 )
-from PyQt6.QtGui import QPixmap, QPainter, QPainterPath
-from PyQt6.QtCore import Qt, QRectF
+
 from aqt.utils import showWarning
 from aqt import mw
 from aqt.theme import theme_manager
@@ -182,13 +183,10 @@ class SettingsWindow(QMainWindow):
         return {}
 
     def _create_setting(self, key, layout):
-        if not key or key not in self.config:
-            return [], "", ""
-
         value = self.config[key]
-        friendly_name = self.friendly_names.get(key, key)
+        friendly_name = self.friendly_names[key]
         description = self.descriptions.get(key, "No description available.")
-        
+
         created_widgets = []
         label = QLabel(friendly_name)
         label.setProperty("class", "setting-label")
@@ -216,7 +214,7 @@ class SettingsWindow(QMainWindow):
             layout.addWidget(radio_container)
             created_widgets.append(radio_container)
             self.input_widgets[key] = button_group
-        elif isinstance(value, (int, str)):
+        elif isinstance(value, (int, str, float)):
             line_edit = QLineEdit(str(value))
             layout.addWidget(line_edit)
             created_widgets.append(line_edit)
@@ -264,7 +262,7 @@ class SettingsWindow(QMainWindow):
             "General": { "settings": ["Trainer Name", "Language", "Show Tip of the Day On Startup"], "subgroups": { "Technical Settings": {"settings": ["SSH Access", "Prevent Ankimon News on Startup", "AnkiWeb Sync", "Ankimon Leaderboard", "Developer Mode"]}, "Discord Integration": {"settings": ["Discord Rich Presence - Ankimon", "Discord Rich Presence - Quote Type"]} } },
             "Battle": { "settings": ["Automatic Battle", "Cards per Round", "Show Main Pokémon in Reviewer", "Show Pokémon Buttons", "Pop-Up on Defeat", "Show Text Message Box in Reviewer", "Message Box Display Time"], "subgroups": { "Fight Hotkeys": {"settings": ["Key for Defeat", "Key for Catching", "Key for Opening/Closing Ankimon", "Allow Choosing Moves"]}, "HP, XP and Level Settings": {"settings": ["HP Bar Configuration", "XP Bar Configuration", "XP Bar Location", "Remove Level Cap"]} } },
             "Styling": {"settings": ["Styling in Reviewer", "Animate Time", "HP Bar Thickness", "Reviewer Image as GIF", "View Main Pokémon Front", "Show GIFs in Collection"]},
-            "Sound": {"settings": ["Enable Sound Effects", "Enable Sounds", "Enable Battle Sounds"]},
+            "Sound": {"settings": ["Enable Sound Effects", "Enable Sounds", "Enable Battle Sounds", "Volume"]},
             "Study": {"settings": ["Goal of Daily Average Cards", "Card Max Time"]},
             "Generations": {"settings": ["Generation 1", "Generation 2", "Generation 3", "Generation 4", "Generation 5", "Generation 6", "Generation 7", "Generation 8", "Generation 9"]}
         }
@@ -362,6 +360,11 @@ class SettingsWindow(QMainWindow):
                 if isinstance(original_value, int):
                     try:
                         self.config[key] = int(new_text)
+                    except ValueError:
+                        self.config[key] = original_value
+                elif isinstance(original_value, float):
+                    try:
+                        self.config[key] = float(new_text)
                     except ValueError:
                         self.config[key] = original_value
                 else:

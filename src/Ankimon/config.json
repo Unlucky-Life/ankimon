@@ -23,7 +23,7 @@
     "gui.view_main_front": true,
     "gui.xp_bar_config": true,
     "gui.xp_bar_location": 2,
-    
+
     "audio.sound_effects": false,
     "audio.sounds": true,
     "audio.battle_sounds": false,

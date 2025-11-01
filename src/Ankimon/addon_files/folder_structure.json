@@ -95,16 +95,6 @@
                     "type": "file"
                 },
                 {
-                    "name": "playsound",
-                    "type": "folder",
-                    "children": [
-                        {
-                            "name": "License",
-                            "type": "file"
-                        }
-                    ]
-                },
-                {
                     "name": "pokeball.png",
                     "type": "file"
                 },
@@ -789,10 +779,6 @@
             "type": "file"
         },
         {
-            "name": "audios.py",
-            "type": "file"
-        },
-        {
             "name": "business.py",
             "type": "file"
         },
@@ -812,10 +798,6 @@
         },
         {
             "name": "config.md",
-            "type": "file"
-        },
-        {
-            "name": "config_var.py",
             "type": "file"
         },
         {
@@ -982,10 +964,6 @@
         },
         {
             "name": "meta.json",
-            "type": "file"
-        },
-        {
-            "name": "playsound.py",
             "type": "file"
         },
         {

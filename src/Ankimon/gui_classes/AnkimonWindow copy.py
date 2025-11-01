@@ -191,8 +191,8 @@ class TestWindow(QWidget):
                 gender_symbol = ""  # None
 
             # custom font
-            custom_font = load_custom_font(int(26), int(settings_obj.get("misc.language",11)))
-            msg_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
+            custom_font = load_custom_font(int(26), int(settings_obj.get("misc.language")))
+            msg_font = load_custom_font(int(32), int(settings_obj.get("misc.language")))
             mainpokemon_lang_name = get_pokemon_diff_lang_name(int(mainpokemon_id))
             # Draw the text on top of the image
             # Adjust the font size as needed
@@ -309,8 +309,8 @@ class TestWindow(QWidget):
         mainlvl = (f"{mainpokemon_level}")
 
         # custom font
-        custom_font = load_custom_font(int(28), int(settings_obj.get("misc.language",11)))
-        msg_font = load_custom_font(int(32), int(settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(28), int(settings_obj.get("misc.language")))
+        msg_font = load_custom_font(int(32), int(settings_obj.get("misc.language")))
 
         # Draw the text on top of the image
         # Adjust the font size as needed
@@ -382,14 +382,14 @@ class TestWindow(QWidget):
             painter.drawPixmap(200,90,item_pixmap)
 
         # custom font
-        custom_font = load_custom_font(int(26), int(settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(26), int(settings_obj.get("misc.language")))
         message_box_text = f"You have received a item: {item.capitalize()} !"
         # Draw the text on top of the image
         # Adjust the font size as needed
         painter.setFont(custom_font)
         painter.setPen(QColor(255,255,255))  # Text color
         painter.drawText(50, 290, message_box_text)
-        custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language",11)))
+        custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language")))
         painter.setFont(custom_font)
         #painter.drawText(10, 330, "You can look this up in your item bag.")
         painter.end()
@@ -440,7 +440,7 @@ class TestWindow(QWidget):
             painter.drawPixmap(200,90,item_pixmap)
 
             # custom font
-            custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language",11)))
+            custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language")))
             message_box_text = "You have received a badge for:"
             message_box_text2 = f"{badges[str(badge_number)]}!"
             # Draw the text on top of the image
@@ -449,7 +449,7 @@ class TestWindow(QWidget):
             painter.setPen(QColor(255,255,255))  # Text color
             painter.drawText(120, 270, message_box_text)
             painter.drawText(140, 290, message_box_text2)
-            custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language",11)))
+            custom_font = load_custom_font(int(20), int(settings_obj.get("misc.language")))
             painter.setFont(custom_font)
             #painter.drawText(10, 330, "You can look this up in your item bag.")
             painter.end()

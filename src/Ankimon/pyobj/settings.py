@@ -7,6 +7,65 @@ from PyQt6.QtWidgets import QRadioButton, QHBoxLayout, QMainWindow, QScrollArea
 from pathlib import Path
 from ..resources import user_path
 
+DEFAULT_CONFIG = {
+    "battle.automatic_battle": 0,
+    "battle.cards_per_round": 2,
+    "battle.daily_average": 100,
+    "battle.card_max_time": 60,
+
+    "controls.pokemon_buttons": True,
+    "controls.defeat_key": "5",
+    "controls.catch_key": "6",
+    "controls.key_for_opening_closing_ankimon": "Ctrl+Shift+P",
+    "controls.allow_to_choose_moves": False,
+
+    "gui.animate_time": True,
+    "gui.gif_in_collection": True,
+    "gui.styling_in_reviewer": True,
+    "gui.hp_bar_config": True,
+    "gui.pop_up_dialog_message_on_defeat": False,
+    "gui.review_hp_bar_thickness": 2,
+    "gui.reviewer_image_gif": False,
+    "gui.reviewer_text_message_box": True,
+    "gui.reviewer_text_message_box_time": 3,
+    "gui.show_mainpkmn_in_reviewer": 1,
+    "gui.view_main_front": True,
+    "gui.xp_bar_config": True,
+    "gui.xp_bar_location": 2,
+
+    "audio.sound_effects": False,
+    "audio.sounds": True,
+    "audio.battle_sounds": False,
+    "audio.volume": 0.5,
+
+    "misc.gen1": True,
+    "misc.gen2": True,
+    "misc.gen3": True,
+    "misc.gen4": True,
+    "misc.gen5": True,
+    "misc.gen6": True,
+    "misc.gen7": True,
+    "misc.gen8": True,
+    "misc.gen9": False,
+    "misc.remove_level_cap": False,
+    "misc.language": 9,
+    "misc.ssh": True,
+    "misc.leaderboard": False,
+    "misc.ankiweb_sync": False,
+    "misc.YouShallNotPass_Ankimon_News": False,
+    "misc.show_tip_on_startup": True, # Added default for Tip of the Day
+    "misc.discord_rich_presence": False,
+    "misc.discord_rich_presence_text": 1,
+
+    "misc.developer_mode": False,
+
+    "trainer.name": "Ash",
+    "trainer.sprite": "ash",
+    "trainer.id": 0,
+    "trainer.cash": 0,
+    "trainer.level": 0,
+}
+
 class Settings:
     def __init__(self):
         self.config = self.load_config()
@@ -60,71 +119,17 @@ class Settings:
                 print(f"Ankimon: Error loading config from config.obf: {e}. Falling back to default config.")
                 config = {} # Fallback to default if error occurs
 
-        if not config:
-            # If config.obf was not found, was empty, or had errors, load default config
-            config = {
-                "battle.automatic_battle": 0,
-                "battle.cards_per_round": 2,
-                "battle.daily_average": 100,
-                "battle.card_max_time": 60,
-
-                "controls.pokemon_buttons": True,
-                "controls.defeat_key": "5",
-                "controls.catch_key": "6",
-                "controls.key_for_opening_closing_ankimon": "Ctrl+Shift+P",
-                "controls.allow_to_choose_moves": False,
-
-                "gui.animate_time": True,
-                "gui.gif_in_collection": True,
-                "gui.styling_in_reviewer": True,
-                "gui.hp_bar_config": True,
-                "gui.pop_up_dialog_message_on_defeat": False,
-                "gui.review_hp_bar_thickness": 2,
-                "gui.reviewer_image_gif": False,
-                "gui.reviewer_text_message_box": True,
-                "gui.reviewer_text_message_box_time": 3,
-                "gui.show_mainpkmn_in_reviewer": 1,
-                "gui.view_main_front": True,
-                "gui.xp_bar_config": True,
-                "gui.xp_bar_location": 2,
-
-                "audio.sound_effects": False,
-                "audio.sounds": True,
-                "audio.battle_sounds": False,
-
-                "misc.gen1": True,
-                "misc.gen2": True,
-                "misc.gen3": True,
-                "misc.gen4": True,
-                "misc.gen5": True,
-                "misc.gen6": True,
-                "misc.gen7": True,
-                "misc.gen8": True,
-                "misc.gen9": False,
-                "misc.remove_level_cap": False,
-                "misc.language": 9,
-                "misc.ssh": True,
-                "misc.leaderboard": False,
-                "misc.ankiweb_sync": False,
-                "misc.YouShallNotPass_Ankimon_News": False,
-                "misc.show_tip_on_startup": True, # Added default for Tip of the Day
-                "misc.discord_rich_presence": False,
-                "misc.discord_rich_presence_text": 1,
-
-                "misc.developer_mode": False,
-
-                "trainer.name": "Ash",
-                "trainer.sprite": "ash",
-                "trainer.id": 0,
-                "trainer.cash": 0,
-                "trainer.level": 0,
-            }
-            self.save_config(config) # Save default config to config.obf
+        modified = False
+        
         # Ensure new settings are present in existing configurations
-        if "misc.show_tip_on_startup" not in config:
-            config["misc.show_tip_on_startup"] = True # Default to True
-        if "misc.developer_mode" not in config:
-            config["misc.developer_mode"] = False
+        for key in DEFAULT_CONFIG:
+            if key not in config:
+                modified = True
+                config[key] = DEFAULT_CONFIG[key]
+
+        if modified:
+            self.save_config(config) # Save modified config to config.obf
+
         return config
 
     def save_config(self, config):
@@ -140,8 +145,8 @@ class Settings:
         except Exception as e:
             print(f"Ankimon: Could not save obfuscated config: {e}")
 
-    def get(self, key, default=None):
-        return self.config.get(key, default)
+    def get(self, key):
+        return self.config.get(key)
 
     def set(self, key, value):
         self.config[key] = value
@@ -152,8 +157,6 @@ class Settings:
         # Manage conditional GUI settings
         config = self.config
         sound_effects = config.get("audio.sound_effects", False)
-        if sound_effects:
-            from .. import playsound
 
         view_main_front = config.get("gui.view_main_front", True)
         reviewer_image_gif = config.get("gui.reviewer_image_gif", False)
