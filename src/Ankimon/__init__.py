@@ -20,8 +20,6 @@ except ModuleNotFoundError:
 import json
 import random
 import copy
-from pathlib import Path
-import traceback
 
 import aqt
 from anki.hooks import addHook, wrap
@@ -47,22 +45,14 @@ from .resources import (
     addon_dir,
     pkmnimgfolder,
     mypokemon_path,
-    mainpokemon_path,
-    pokemon_names_file_path,
-    move_names_file_path,
     itembag_path,
     badgebag_path,
     sound_list_path,
     badges_list_path,
-    items_list_path,
-    rate_path,
 )
 from .menu_buttons import create_menu_actions
 from .hooks import setupHooks
 from .texts import _bottomHTML_template, button_style
-from .business import (
-    get_multiplier_stats,
-)
 from .utils import (
     check_folders_exist,
     safe_get_random_move,
@@ -72,14 +62,11 @@ from .utils import (
     compare_files,
     write_local_file,
     count_items_and_rewrite,
-    format_pokemon_name,
-    format_move_name,
     play_effect_sound,
     get_main_pokemon_data,
     play_sound,
     load_collected_pokemon_ids,
 )
-from .functions.reviewer_iframe import create_iframe_html, create_head_code
 from .functions.url_functions import open_team_builder, rate_addon_url, report_bug, join_discord_url, open_leaderboard_url
 from .functions.badges_functions import handle_review_count_achievement, check_for_badge, receive_badge
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
@@ -94,17 +81,15 @@ from .functions.encounter_functions import (
     handle_enemy_faint,
     handle_main_pokemon_faint
 )
-from .functions.pokedex_functions import find_details_move
 from .gui_entities import UpdateNotificationWindow, CheckFiles
 from .pyobj.download_sprites import show_agreement_and_download_dialog
 from .pyobj.help_window import HelpWindow
 from .pyobj.backup_files import run_backup
 from .pyobj.backup_manager import BackupManager
-from .pyobj.ankimon_sync import save_ankimon_configs, read_ankimon_configs, setup_ankimon_sync_hooks, check_and_sync_pokemon_data
+from .pyobj.ankimon_sync import setup_ankimon_sync_hooks, check_and_sync_pokemon_data
 from .pyobj.tip_of_the_day import show_tip_of_the_day
 from .classes.choose_move_dialog import MoveSelectionDialog
 from .poke_engine.ankimon_hooks_to_poke_engine import simulate_battle_with_poke_engine
-from .poke_engine import constants
 from .singletons import (
     reviewer_obj,
     logger,
@@ -122,7 +107,6 @@ from .singletons import (
     shop_manager,
     ankimon_tracker_window,
     pokedex_window,
-    reviewer_obj,
     eff_chart,
     gen_id_chart,
     license,
@@ -131,7 +115,6 @@ from .singletons import (
     starter_window,
     item_window,
     version_dialog,
-    pokecollection_win,
     achievements,
     pokemon_pc
 )
@@ -142,18 +125,9 @@ from .functions.battle_functions import (
     update_pokemon_battle_status,
     validate_pokemon_status,
     process_battle_data,
-    _process_battle_effects
 )
 
 from .pyobj.error_handler import show_warning_with_traceback
-from .functions.drawing_utils import draw_gender_symbols, draw_stat_boosts
-
-# Load move and pokemon name mapping at startup
-with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
-    POKEMON_NAME_LOOKUP = json.load(f)
-
-with open(move_names_file_path, "r", encoding="utf-8") as f:
-    MOVE_NAME_LOOKUP = json.load(f)
 
 mw.settings_ankimon = settings_window
 mw.logger = logger
@@ -192,10 +166,6 @@ if not _collection_loaded: # If the collection hasn't already been loaded
     _collection_loaded = True
 
 
-
-items_list = []
-with open(items_list_path, "r", encoding="utf-8") as file:
-    items_list = json.load(file)
 
 with open(sound_list_path, "r", encoding="utf-8") as json_file:
     sound_list = json.load(json_file)
@@ -237,14 +207,6 @@ if not database_complete:
     show_agreement_and_download_dialog(force_download=True)
     dialog = CheckFiles()
     dialog.show()
-
-if mainpokemon_path.is_file():
-    with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
-        main_pokemon_data = json.load(json_file)
-        if not main_pokemon_data or main_pokemon_data is None:
-            mainpokemon_empty = True
-        else:
-            mainpokemon_empty = False
 
 sync_dialog = None
 
@@ -317,10 +279,6 @@ def open_help_window(online_connectivity):
         help_dialog.exec()
     except Exception as e:
         show_warning_with_traceback(parent=mw, exception=e, message="Error in opening Help Guide:")
-
-gen_config = []
-for i in range(1,10):
-    gen_config.append(settings_obj.get(f"misc.gen{i}"))
 
 def answerCard_before(filter, reviewer, card):
 	utils.answBtnAmt = reviewer.mw.col.sched.answerButtons(card)
@@ -661,10 +619,6 @@ if database_complete:
         badge_list = json.load(json_file)
         if len(badge_list) > 1: # has atleast one badge
             rate_this_addon()
-
-#Badges needed for achievements:
-with open(badges_list_path, "r", encoding="utf-8") as json_file:
-    badges = json.load(json_file)
 
 if database_complete:
     if mypokemon_path.is_file() is False:
