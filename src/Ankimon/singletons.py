@@ -46,7 +46,7 @@ from .gui_entities import (
     Version_Dialog,
 )
 from .functions.update_main_pokemon import update_main_pokemon
-from .functions.badges_functions import check_badges
+from .functions.badges_functions import populate_achievements_from_badges
 from .resources import addon_dir, itembag_path
 
 # start loggerobject for Ankimon
@@ -134,7 +134,6 @@ trainer_card = TrainerCard(
 
 ankimon_tracker_obj = AnkimonTracker(
     trainer_card=trainer_card,
-    settings_obj=settings_obj,
 )
 # Set Pokémon in the tracker
 ankimon_tracker_obj.set_main_pokemon(main_pokemon)
@@ -180,7 +179,7 @@ license = License()
 credits = Credits()
 version_dialog = Version_Dialog()
 
-achievements = check_badges({str(i): False for i in range(1, 69)})
+achievements = populate_achievements_from_badges({str(i): False for i in range(1, 69)})
 
 evo_window = EvoWindow(
     logger,
