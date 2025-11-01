@@ -25,11 +25,13 @@ import aqt
 from anki.hooks import addHook, wrap
 from aqt import gui_hooks, mw, utils
 from aqt.qt import QDialog
+from aqt.operations import QueryOp
 from aqt.reviewer import Reviewer
 from aqt.utils import downArrow, showWarning, tr, tooltip
 from PyQt6.QtWidgets import QDialog
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
+import markdown
 
 from .resources import generate_startup_files, user_path, IS_EXPERIMENTAL_BUILD, addon_ver, addon_dir
 generate_startup_files(addon_dir, user_path)
@@ -237,39 +239,45 @@ setupHooks(None, ankimon_tracker_obj)
 online_connectivity = test_online_connectivity()
 
 #Connect to GitHub and Check for Notification and HelpGuideChanges
-try:
-    if online_connectivity and ssh != False:
+update_infos_md = addon_dir / "updateinfos.md"
+def download_changelog():
+    try:
         # URL of the file on GitHub
         github_url = f"https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/changelogs/{addon_ver}.md"
-
-        # Path to the local file
-        local_file_path = addon_dir / "updateinfos.md"
+    
         # Read content from GitHub
-        github_content, github_html_content = read_github_file(github_url)
-
+        github_content = read_github_file(github_url)
+    
         # If changelog content is None, try unknown.md as a fallback for all builds
         if github_content is None:
             github_url = "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/changelogs/unknown.md"
-            github_content, github_html_content = read_github_file(github_url)
+            github_content = read_github_file(github_url)
 
+        return github_content
+    except Exception as e:
+        return e
+
+if online_connectivity and ssh:
+    def done(result: Exception | str | None):
+        if isinstance(result, Exception):
+            show_warning_with_traceback(parent=mw, exception=result, message="Error connecting to GitHub:")
+            return
+        if result is None:
+            showWarning("Failed to retrieve Ankimon content from GitHub.")
+            return
         # Read content from the local file
-        local_content = read_local_file(local_file_path)
-        # If local content exists and is the same as GitHub content, do not open dialog
-        if local_content is not None and compare_files(local_content, github_content):
-            pass
-        else:
-            # Download new content from GitHub
-            if github_content is not None:
-                # Write new content to the local file
-                write_local_file(local_file_path, github_content)
-                dialog = UpdateNotificationWindow(github_html_content)
-                if no_more_news is False:
-                    dialog.exec()
-            else:
-                showWarning("Failed to retrieve Ankimon content from GitHub.")
-except Exception as e:
-    if ssh != False:
-        show_warning_with_traceback(parent=mw, exception=e, message="Error connecting to GitHub:")
+        local_content = read_local_file(update_infos_md)
+        # If local content is not the same as the GitHub content, open dialog
+        if not compare_files(local_content, result):
+            write_local_file(update_infos_md, result)
+            dialog = UpdateNotificationWindow(markdown.markdown(result))
+            if not no_more_news:
+                dialog.exec()
+    op = QueryOp(
+        parent=mw,
+        op=lambda _col: download_changelog(), # Background operation
+        success=done, # Ran on UI thread
+    ).without_collection().run_in_background()
 
 def open_help_window(online_connectivity):
     try:

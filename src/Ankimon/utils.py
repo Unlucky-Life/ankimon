@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 import requests
 import json
-import markdown
 import random
 import csv
 
@@ -139,10 +138,9 @@ def read_github_file(url):
     if response.status_code == 200:
         # File exists, parse the Markdown content
         content = response.text
-        html_content = markdown.markdown(content)
-        return content, html_content
+        return content
     else:
-        return None, None
+        return None
 
 # Function to check if the content of the two files is the same
 def compare_files(local_content, github_content):
