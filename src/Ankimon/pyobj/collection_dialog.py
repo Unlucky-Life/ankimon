@@ -566,7 +566,6 @@ def PokemonTradeIn(number_code, old_pokemon_name, position):
         else:
             gender = None #None
         stats = details["baseStats"]
-        evos = details.get("evos", "None")
         #type = search_pokedex(name, "types")
         #stats = search_pokedex(name, "baseStats")
         with open(str(pokeapi_db_path), "r") as json_file:
@@ -590,7 +589,6 @@ def PokemonTradeIn(number_code, old_pokemon_name, position):
                 "base_experience": base_experience,
                 "current_hp": calculate_hp(stats["hp"], level, ev, iv),
                 "growth_rate": growth_rate,
-                "evos": evos
         }
         trade_pokemon(f"{old_pokemon_name}", pokemon_trade, position)
         logger.log_and_showinfo("info",f"You have sucessfully traded your {old_pokemon_name} for {name} ")
@@ -696,8 +694,7 @@ def MainPokemon(
         pokemon_defeated=pokemon_data.get('pokemon_defeated', 0),
         everstone=pokemon_data.get('everstone', False),
         mega=pokemon_data.get('mega', False),
-        special_form=pokemon_data.get('special-form', None),
-        evos=pokemon_data.get('evos', []),
+        special_form=pokemon_data.get('special_form', None),
         tier=pokemon_data.get('tier', None),
         captured_date=pokemon_data.get('captured_date', None),
         is_favorite = pokemon_data.get('is_favorite', False),
@@ -705,13 +702,11 @@ def MainPokemon(
     )
     # Set any additional fields not in constructor
     extra_fields = [
-        'captured_date', 'tier', 'friendship', 'pokemon_defeated', 'everstone', 'mega', 'special-form', 'evos', 'current_hp', 'base_experience'
+        'captured_date', 'tier', 'friendship', 'pokemon_defeated', 'everstone', 'mega', 'special_form', 'current_hp', 'base_experience'
     ]
-    for key in extra_fields:
-        # Use attribute name 'special_form' for 'special-form'
-        attr = 'special_form' if key == 'special-form' else key
-        if key in pokemon_data:
-            setattr(new_main_pokemon, attr, pokemon_data[key])
+    for attr in extra_fields:
+        if attr in pokemon_data:
+            setattr(new_main_pokemon, attr, pokemon_data[attr])
 
     # Update existing reference
     main_pokemon.__dict__.update(new_main_pokemon.__dict__)

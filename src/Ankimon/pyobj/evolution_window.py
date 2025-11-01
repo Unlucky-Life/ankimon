@@ -238,7 +238,6 @@ class EvoWindow(QWidget):
                                 pokemon["name"] = evo_name.capitalize()
                                 pokemon["id"] = evo_id
                                 pokemon["type"] = search_pokedex(evo_name.lower(), "types")
-                                pokemon["evos"] = []
                                 attacks = pokemon["attacks"]
                                 new_attacks = get_random_moves_for_pokemon(evo_name.lower(), int(pokemon["level"]))
                                 for new_attack in new_attacks:

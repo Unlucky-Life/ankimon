@@ -155,7 +155,7 @@ def shiny_chance():
 #        "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 #        "individual_id": str(uuid.uuid4()),
 #        "mega": False,
-#        "special-form": None,
+#        "special_form": None,
 #    }
 #    return caught_pokemon
 
@@ -232,7 +232,6 @@ def save_fossil_pokemon(pokemon_id):
     id = pokemon_id
     stats = search_pokedex(name, "baseStats")
     abilities = search_pokedex(name, "abilities")
-    evos = search_pokedex(name, "evos")
     gender = pick_random_gender(name.lower())
     numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
     # Check if there are numeric abilities
@@ -292,9 +291,8 @@ def save_fossil_pokemon(pokemon_id):
         "captured_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "individual_id": str(uuid.uuid4()),
         "mega": False,
-        "special-form": None,
+        "special_form": None,
         "tier": "Fossil",
-        "evos": evos
     }
     # Load existing Pokémon data if it exists
     if mypokemon_path.is_file():

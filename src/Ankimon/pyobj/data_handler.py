@@ -9,7 +9,7 @@ new_values = {
     "everstone": False,
     "shiny": False,
     "mega": False,
-    "special-form": None,
+    "special_form": None,
     "friendship": 0,
     "pokemon_defeated": 0,
     "ability": "No Ability",
@@ -21,7 +21,6 @@ new_values = {
     "gender": "N",
     "type": ["Normal"],
     "attacks": ["tackle", "growl"],
-    "evos": [],
     "id": 132,
     "captured_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 }

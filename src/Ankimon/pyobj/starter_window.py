@@ -86,7 +86,6 @@ class StarterWindow(QWidget):
         id = search_pokedex(starter_name, "num")
         base_stats = search_pokedex(starter_name, "baseStats")
         abilities = search_pokedex(starter_name, "abilities")
-        evos = search_pokedex(starter_name, "evos")
         gender = pick_random_gender(name.lower())
         numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
         # Check if there are numeric abilities
@@ -136,7 +135,6 @@ class StarterWindow(QWidget):
             base_experience=base_experience,
             current_hp=calculate_hp(int(base_stats["hp"]), level, ev, iv),
             growth_rate=growth_rate,
-            evos=evos,
             individual_id=str(uuid.uuid4()),
             captured_date=None,
             shiny=False,
