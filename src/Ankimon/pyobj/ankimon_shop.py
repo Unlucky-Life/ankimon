@@ -423,16 +423,20 @@ class PokemonShopManager:
 
         def flatten(xss):
             return [x for xs in xss for x in xs]
-        all_tms = flatten(list(pokemon_tm_learnset.values()))
-        all_tms = list(set(all_tms))
-        all_tms = [
+        all_tms = flatten(pokemon_tm_learnset.values())
+        all_tms = set(all_tms)
+        all_tms = list(
             {
             "name": tm,
             "description": f"Allows a Pokemon to be taught the move {tm} (if able).",
             "price": self.tm_price,
             "item_type": "TM",
-            } for tm in all_tms]
-        return list(all_tms)
+            } for tm in all_tms)
+
+        # Ensure deterministic order
+        all_tms.sort(key = lambda tm: tm["name"])
+
+        return all_tms
 
     def buy_item(self, item, item_type: Union[str, None]=None):
         """Handle item purchase with theme-aware retro-style messages."""
