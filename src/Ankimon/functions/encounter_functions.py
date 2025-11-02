@@ -440,7 +440,7 @@ def save_main_pokemon_progress(
                 tooltipWithColour(msg, color)
             except:
                 pass
-                    #evo_window.display_pokemon_evo(main_pokemon.name.lower())
+                    #evo_window.ask_pokemon_evo(main_pokemon.name.lower())
         for mainpkmndata in main_pokemon_data:
             if mainpkmndata["name"] == main_pokemon.name.capitalize():
                 attacks = mainpkmndata["attacks"]

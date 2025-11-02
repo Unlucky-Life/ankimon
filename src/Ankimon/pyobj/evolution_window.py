@@ -78,10 +78,10 @@ class EvoWindow(QWidget):
     def open_dynamic_window(self):
         self.show()
 
-    def display_evo_pokemon(self, prevo_id, evo_id):
+    def display_evo_complete(self, prevo_id, evo_id):
         self.clear_layout(self.layout())
         layout = self.layout()
-        pkmn_label = self.pokemon_display_evo(prevo_id, evo_id)
+        pkmn_label = self._display_evo_complete_layout(prevo_id, evo_id)
         layout.addWidget(pkmn_label)
         self.setStyleSheet("background-color: rgb(14,14,14);")
         self.setLayout(layout)
@@ -89,7 +89,7 @@ class EvoWindow(QWidget):
         self.setMaximumHeight(300)
         self.show()
 
-    def pokemon_display_evo(self, prevo_id, evo_id):
+    def _display_evo_complete_layout(self, prevo_id, evo_id):
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         prevo_name = return_name_for_id(prevo_id)
         evo_name = return_name_for_id(evo_id)
@@ -131,12 +131,12 @@ class EvoWindow(QWidget):
 
         return pkmn_label
 
-    def display_pokemon_evo(self, individual_id, prevo_id, evo_id):
+    def ask_pokemon_evo(self, individual_id, prevo_id, evo_id):
         self.setMaximumWidth(600)
         self.setMaximumHeight(530)
         self.clear_layout(self.layout())
         layout = self.layout()
-        pokemon_images, evolve_button, dont_evolve_button = self.pokemon_display_evo_pokemon(individual_id, prevo_id, evo_id)
+        pokemon_images, evolve_button, dont_evolve_button = self._ask_pokemon_evo_layout(individual_id, prevo_id, evo_id)
         layout.addWidget(pokemon_images)
         layout.addWidget(evolve_button)
         layout.addWidget(dont_evolve_button)
@@ -144,7 +144,7 @@ class EvoWindow(QWidget):
         self.setLayout(layout)
         self.show()
 
-    def pokemon_display_evo_pokemon(self, individual_id, prevo_id, evo_id):
+    def _ask_pokemon_evo_layout(self, individual_id, prevo_id, evo_id):
         # Update mainpokemon_evolution and handle evolution logic
         prevo_name = return_name_for_id(prevo_id)
         evo_name = return_name_for_id(evo_id)
@@ -317,7 +317,7 @@ class EvoWindow(QWidget):
                     self.test_window.display_first_encounter()
         except Exception as e:
             show_warning_with_traceback(parent=mw, exception=e, message=f"Error occured in updating main_pokemon obj")
-        self.display_evo_pokemon(prevo_id, evo_id)
+        self.display_evo_complete(prevo_id, evo_id)
         check = check_for_badge(self.achievements, 16)
         if check is False:
             receive_badge(16, self.achievements)

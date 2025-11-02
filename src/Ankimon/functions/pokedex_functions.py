@@ -437,7 +437,7 @@ def check_evolution_for_pokemon(
                         continue  # Skip this evolution if minimum_level is missing or not a number
                     min_level = int(min_level_str)
                     if min_level <= level:
-                        evo_window.display_pokemon_evo(
+                        evo_window.ask_pokemon_evo(
                             individual_id, pokemon_id, int(evos)
                         )
                         return int(evos)  # Return the evolution ID
