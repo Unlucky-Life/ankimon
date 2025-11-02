@@ -2,7 +2,6 @@ import json
 import random
 
 from aqt import mw
-from aqt.utils import showWarning
 from aqt.qt import (
     QFont,
     QLabel,
@@ -12,16 +11,13 @@ from aqt.qt import (
     QWidget,
     QDialog,
     qconnect,
-    )
+)
 from PyQt6.QtGui import QColor, QPen
 from PyQt6.QtWidgets import (
-    QLabel,
     QPushButton,
-    QVBoxLayout,
-    QWidget,
-    )
+)
 
-from ..utils import limit_ev_yield, load_custom_font
+from ..utils import load_custom_font
 from ..functions.pokedex_functions import return_name_for_id, search_pokeapi_db_by_id, search_pokedex
 from ..functions.pokemon_functions import get_random_moves_for_pokemon
 from ..functions.battle_functions import calculate_hp
@@ -40,7 +36,6 @@ from ..resources import (
     addon_dir,
     frontdefault,
     evolve_image_path,
-    mainpokemon_path,
     mypokemon_path,
 )
 
@@ -50,7 +45,6 @@ class EvoWindow(QWidget):
             logger: ShowInfoLogger,
             settings_obj: Settings,
             main_pokemon: PokemonObject,
-            enemy_pokemon: PokemonObject,
             translator: Translator,
             reviewer_obj: Reviewer_Manager,
             test_window: TestWindow,
@@ -64,7 +58,6 @@ class EvoWindow(QWidget):
         self.logger = logger
         self.settings_obj = settings_obj
         self.main_pokemon = main_pokemon
-        self.enemy_pokemon = enemy_pokemon
         self.translator = translator
         self.reviewer_obj = reviewer_obj
         self.test_window = test_window
