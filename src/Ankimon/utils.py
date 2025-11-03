@@ -192,7 +192,7 @@ def filter_item_sprites(string):
     showInfo(f"{item_names}")
     return item_names
 
-USELESS_ITEMS = [
+USELESS_ITEMS = {
     # not real items
     # NOTE: maybe these should be in a separate folder?
     "Bag_TM_normal_SV_Sprite",
@@ -304,7 +304,7 @@ USELESS_ITEMS = [
     "max-ether",
     "elixir",
     "ether"
-]
+}
 
 def random_item():
     item_names: list[str] = []
