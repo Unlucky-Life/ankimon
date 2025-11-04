@@ -192,43 +192,7 @@ def filter_item_sprites(string):
     showInfo(f"{item_names}")
     return item_names
 
-def random_item():
-    # Initialize an empty list to store the file names
-    item_names = []
-    # Iterate over each file in the directory
-    for file in os.listdir(items_path):
-        # Check if the file is a .png file
-        if file.endswith(".png"):
-            # Append the file name without the .png extension to the list
-            item_names.append(file[:-4])
-    item_names = [name for name in item_names if not name.endswith("-ball")]
-    item_names = [name for name in item_names if not name.endswith("-repel")]
-    item_names = [name for name in item_names if not name.endswith("-incense")]
-    item_names = [name for name in item_names if not name.endswith("-fang")]
-    item_names = [name for name in item_names if not name.endswith("dust")]
-    item_names = [name for name in item_names if not name.endswith("-piece")]
-    item_names = [name for name in item_names if not name.endswith("-nugget")]
-    item_name = random.choice(item_names)
-    # add item to item list
-    give_item(item_name)
-    return item_name
-
-# Function to get the list of daily items
-def daily_item_list():
-    """
-    Generates a list of items available for the daily shop, filtering out certain categories.
-    """
-    # Check if the sprites directory exists. If not, trigger the download dialog.
-    if not Path(items_path).exists():
-        from .pyobj.download_sprites import show_agreement_and_download_dialog
-        show_agreement_and_download_dialog(force_download=True)
-        # Return an empty list to prevent the crash and allow the addon to load.
-        return []
-
-    # Items with these suffixes will be excluded from the daily shop
-    excluded_suffixes = ["dust", "-piece", "-nugget", "-berry"]
-    # Add full item names here to exclude them from the daily shop, e.g., ["master-ball"]
-    excluded_full_names = [
+USELESS_ITEMS = {
     # not real items
     # NOTE: maybe these should be in a separate folder?
     "Bag_TM_normal_SV_Sprite",
@@ -249,7 +213,7 @@ def daily_item_list():
     "Bag_TM_rock_SV_Sprite",
     "Bag_TM_steel_SV_Sprite",
     "Bag_TM_water_SV_Sprite",
- 
+
     # items that are sold for cash
     "balm-mushroom",
     "big-mushroom",
@@ -340,7 +304,59 @@ def daily_item_list():
     "max-ether",
     "elixir",
     "ether"
-]
+}
+
+def random_item():
+    item_names: list[str] = []
+
+    # Iterate over each file in the directory
+    for file in os.listdir(items_path):
+        # Check if the file is a .png file
+        if not file.endswith(".png"):
+            continue
+
+        # File name without the .png extension to the list
+        name = file[:-4]
+
+        if name in USELESS_ITEMS:
+            continue
+        if name.endswith("-ball"):
+            continue
+        if name.endswith("-repel"):
+            continue
+        if name.endswith("-incense"):
+            continue
+        if name.endswith("-fang"):
+            continue
+        if name.endswith("dust"):
+            continue
+        if name.endswith("-piece"):
+            continue
+        if name.endswith("-nugget"):
+            continue
+
+        item_names.append(name)
+
+    item_name = random.choice(item_names)
+    # add item to item list
+    give_item(item_name)
+    return item_name
+
+# Function to get the list of daily items
+def daily_item_list():
+    """
+    Generates a list of items available for the daily shop, filtering out certain categories.
+    """
+    # Check if the sprites directory exists. If not, trigger the download dialog.
+    if not Path(items_path).exists():
+        from .pyobj.download_sprites import show_agreement_and_download_dialog
+        show_agreement_and_download_dialog(force_download=True)
+        # Return an empty list to prevent the crash and allow the addon to load.
+        return []
+
+    # Items with these suffixes will be excluded from the daily shop
+    excluded_suffixes = ["dust", "-piece", "-nugget", "-berry"]
+    # Add full item names here to exclude them from the daily shop, e.g., ["master-ball"]
 
 
     item_names = []
@@ -353,7 +369,7 @@ def daily_item_list():
         # Filter out excluded items
         if (
                 get_item_price(item_name) == 0 or
-                item_name in excluded_full_names or
+                item_name in USELESS_ITEMS or
                 any(item_name.endswith(suffix) for suffix in excluded_suffixes)):
             continue
 

@@ -388,7 +388,7 @@ if database_complete:
 cry_counter = 0
 
 # How many cards need to be done before receiving an item
-item_receive_value = random.randint(3, 120)
+item_receive_value = random.randint(3, 385)
 
 # Hook into Anki's card review event
 def on_review_card(*args):
@@ -434,7 +434,7 @@ def on_review_card(*args):
 
         item_receive_value -= 1
         if item_receive_value <= 0:
-            item_receive_value = random.randint(3, 120)
+            item_receive_value = random.randint(3, 385)
 
             test_window.display_item()
 
