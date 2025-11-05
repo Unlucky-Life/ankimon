@@ -99,7 +99,7 @@ class DiscordPresence:
         try:
             self.loop = False
             if hasattr(self, 'thread') and self.thread and self.thread.is_alive():
-                self.thread.join() # Wait for the thread to finish
+                # self.thread.join() # Removed to prevent blocking
                 self.thread = None  # Reset the thread
             self.RPC.clear()
         except Exception as e:
