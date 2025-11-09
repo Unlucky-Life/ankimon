@@ -2,7 +2,6 @@ import json
 import random
 
 from aqt import mw
-from aqt.utils import showWarning
 from aqt.qt import (
     QFont,
     QLabel,
@@ -12,16 +11,13 @@ from aqt.qt import (
     QWidget,
     QDialog,
     qconnect,
-    )
+)
 from PyQt6.QtGui import QColor, QPen
 from PyQt6.QtWidgets import (
-    QLabel,
     QPushButton,
-    QVBoxLayout,
-    QWidget,
-    )
+)
 
-from ..utils import limit_ev_yield, load_custom_font
+from ..utils import load_custom_font
 from ..functions.pokedex_functions import return_name_for_id, search_pokeapi_db_by_id, search_pokedex
 from ..functions.pokemon_functions import get_random_moves_for_pokemon
 from ..functions.battle_functions import calculate_hp
@@ -40,7 +36,6 @@ from ..resources import (
     addon_dir,
     frontdefault,
     evolve_image_path,
-    mainpokemon_path,
     mypokemon_path,
 )
 
@@ -50,7 +45,6 @@ class EvoWindow(QWidget):
             logger: ShowInfoLogger,
             settings_obj: Settings,
             main_pokemon: PokemonObject,
-            enemy_pokemon: PokemonObject,
             translator: Translator,
             reviewer_obj: Reviewer_Manager,
             test_window: TestWindow,
@@ -64,7 +58,6 @@ class EvoWindow(QWidget):
         self.logger = logger
         self.settings_obj = settings_obj
         self.main_pokemon = main_pokemon
-        self.enemy_pokemon = enemy_pokemon
         self.translator = translator
         self.reviewer_obj = reviewer_obj
         self.test_window = test_window
@@ -78,10 +71,10 @@ class EvoWindow(QWidget):
     def open_dynamic_window(self):
         self.show()
 
-    def display_evo_pokemon(self, prevo_id, evo_id):
+    def display_evo_complete(self, prevo_id, evo_id):
         self.clear_layout(self.layout())
         layout = self.layout()
-        pkmn_label = self.pokemon_display_evo(prevo_id, evo_id)
+        pkmn_label = self._display_evo_complete_layout(prevo_id, evo_id)
         layout.addWidget(pkmn_label)
         self.setStyleSheet("background-color: rgb(14,14,14);")
         self.setLayout(layout)
@@ -89,7 +82,7 @@ class EvoWindow(QWidget):
         self.setMaximumHeight(300)
         self.show()
 
-    def pokemon_display_evo(self, prevo_id, evo_id):
+    def _display_evo_complete_layout(self, prevo_id, evo_id):
         bckgimage_path = addon_dir / "addon_sprites" / "starter_screen" / "bg.png"
         prevo_name = return_name_for_id(prevo_id)
         evo_name = return_name_for_id(evo_id)
@@ -131,12 +124,12 @@ class EvoWindow(QWidget):
 
         return pkmn_label
 
-    def display_pokemon_evo(self, individual_id, prevo_id, evo_id):
+    def ask_pokemon_evo(self, individual_id, prevo_id, evo_id):
         self.setMaximumWidth(600)
         self.setMaximumHeight(530)
         self.clear_layout(self.layout())
         layout = self.layout()
-        pokemon_images, evolve_button, dont_evolve_button = self.pokemon_display_evo_pokemon(individual_id, prevo_id, evo_id)
+        pokemon_images, evolve_button, dont_evolve_button = self._ask_pokemon_evo_layout(individual_id, prevo_id, evo_id)
         layout.addWidget(pokemon_images)
         layout.addWidget(evolve_button)
         layout.addWidget(dont_evolve_button)
@@ -144,7 +137,7 @@ class EvoWindow(QWidget):
         self.setLayout(layout)
         self.show()
 
-    def pokemon_display_evo_pokemon(self, individual_id, prevo_id, evo_id):
+    def _ask_pokemon_evo_layout(self, individual_id, prevo_id, evo_id):
         # Update mainpokemon_evolution and handle evolution logic
         prevo_name = return_name_for_id(prevo_id)
         evo_name = return_name_for_id(evo_id)
@@ -232,73 +225,73 @@ class EvoWindow(QWidget):
                 pokemon = None
                 if captured_pokemon_data:
                     for pokemon_data in captured_pokemon_data:
-                        if pokemon_data['individual_id'] == individual_id:
-                            pokemon = pokemon_data
-                            if pokemon is not None:
-                                pokemon["name"] = evo_name.capitalize()
-                                pokemon["id"] = evo_id
-                                pokemon["type"] = search_pokedex(evo_name.lower(), "types")
-                                attacks = pokemon["attacks"]
-                                new_attacks = get_random_moves_for_pokemon(evo_name.lower(), int(pokemon["level"]))
-                                for new_attack in new_attacks:
-                                    if new_attack not in new_attacks:
-                                        if len(attacks) < 4:
-                                            attacks.append(new_attack)
-                                        else:
-                                            dialog = AttackDialog(attacks, new_attack)
-                                            if dialog.exec() == QDialog.DialogCode.Accepted:
-                                                selected_attack = dialog.selected_attack
-                                                index_to_replace = None
-                                                for index, attack in enumerate(attacks):
-                                                    if attack == selected_attack:
-                                                        index_to_replace = index
-                                                        pass
-                                                    else:
-                                                        pass
-                                                # If the attack is found, replace it with 'new_attack'
-                                                if index_to_replace is not None:
-                                                    attacks[index_to_replace] = new_attack
-                                                    self.logger.log_and_showinfo("info", self.translator.translate("replaced_selected_attack", selected_attack=selected_attack, new_attack=new_attack))
-                                                else:
-                                                    self.logger.log_and_showinfo("info", self.translator.translate("selected_attack_not_found", selected_attack=selected_attack))
-                                            else:
-                                                # Handle the case where the user cancels the dialog
-                                                self.logger.log_and_showinfo("info", self.translator.translate("no_attack_selected"))
-                                pokemon["attacks"] = attacks
-                                base_stats = search_pokedex(evo_name.lower(), "baseStats")
-                                pokemon["base_stats"] = base_stats
-                                pokemon["stats"] = base_stats
-                                pokemon["xp"] = 0
-                                hp_stat = int(base_stats['hp'])
-                                iv = pokemon["iv"]
-                                ev = pokemon["ev"]
-                                level = pokemon["level"]
-                                hp = calculate_hp(hp_stat, level, ev, iv)
-                                pokemon["current_hp"] = int(hp)
-                                pokemon["growth_rate"] = search_pokeapi_db_by_id(evo_id,"growth_rate")
-                                pokemon["base_experience"] = search_pokeapi_db_by_id(evo_id,"base_experience")
-                                abilities = search_pokedex(evo_name.lower(), "abilities")
-                                numeric_abilities = None
-                                try:
-                                    numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
-                                except Exception:
-                                    ability = self.translator.translate("no_ability")
-                                if numeric_abilities:
-                                    abilities_list = list(numeric_abilities.values())
-                                    pokemon["ability"] = random.choice(abilities_list)
+                        if pokemon_data['individual_id'] != individual_id:
+                            continue
+                        pokemon = pokemon_data
+                        pokemon["name"] = evo_name.capitalize()
+                        pokemon["id"] = evo_id
+                        pokemon["type"] = search_pokedex(evo_name.lower(), "types")
+                        attacks = pokemon["attacks"]
+                        new_attacks = get_random_moves_for_pokemon(evo_name.lower(), int(pokemon["level"]))
+                        for new_attack in new_attacks:
+                            if new_attack not in new_attacks:
+                                if len(attacks) < 4:
+                                    attacks.append(new_attack)
                                 else:
-                                    pokemon["ability"] = self.translator.translate("no_ability")
-                                with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
-                                    mypokemondata = json.load(output_file)
-                                    # Find and replace the specified Pokémon's data in mypokemondata
-                                    for index, pokemon_data in enumerate(mypokemondata):
-                                        if pokemon_data["individual_id"] == individual_id:
-                                            mypokemondata[index] = pokemon
-                                            break
-                                            # Save the modified data to the output JSON file
-                                    with open(str(mypokemon_path), "w") as output_file:
-                                        json.dump(mypokemondata, output_file, indent=2)
-                                self.logger.log_and_showinfo("info", self.translator.translate("mainpokemon_has_evolved", prevo_name=prevo_name, evo_name=evo_name))
+                                    dialog = AttackDialog(attacks, new_attack)
+                                    if dialog.exec() == QDialog.DialogCode.Accepted:
+                                        selected_attack = dialog.selected_attack
+                                        index_to_replace = None
+                                        for index, attack in enumerate(attacks):
+                                            if attack == selected_attack:
+                                                index_to_replace = index
+                                                pass
+                                            else:
+                                                pass
+                                        # If the attack is found, replace it with 'new_attack'
+                                        if index_to_replace is not None:
+                                            attacks[index_to_replace] = new_attack
+                                            self.logger.log_and_showinfo("info", self.translator.translate("replaced_selected_attack", selected_attack=selected_attack, new_attack=new_attack))
+                                        else:
+                                            self.logger.log_and_showinfo("info", self.translator.translate("selected_attack_not_found", selected_attack=selected_attack))
+                                    else:
+                                        # Handle the case where the user cancels the dialog
+                                        self.logger.log_and_showinfo("info", self.translator.translate("no_attack_selected"))
+                        pokemon["attacks"] = attacks
+                        base_stats = search_pokedex(evo_name.lower(), "baseStats")
+                        pokemon["base_stats"] = base_stats
+                        pokemon["stats"] = base_stats
+                        pokemon["xp"] = 0
+                        hp_stat = int(base_stats['hp'])
+                        iv = pokemon["iv"]
+                        ev = pokemon["ev"]
+                        level = pokemon["level"]
+                        hp = calculate_hp(hp_stat, level, ev, iv)
+                        pokemon["current_hp"] = int(hp)
+                        pokemon["growth_rate"] = search_pokeapi_db_by_id(evo_id,"growth_rate")
+                        pokemon["base_experience"] = search_pokeapi_db_by_id(evo_id,"base_experience")
+                        abilities = search_pokedex(evo_name.lower(), "abilities")
+                        numeric_abilities = None
+                        try:
+                            numeric_abilities = {k: v for k, v in abilities.items() if k.isdigit()}
+                        except Exception:
+                            ability = self.translator.translate("no_ability")
+                        if numeric_abilities:
+                            abilities_list = list(numeric_abilities.values())
+                            pokemon["ability"] = random.choice(abilities_list)
+                        else:
+                            pokemon["ability"] = self.translator.translate("no_ability")
+                        with open(str(mypokemon_path), "r", encoding="utf-8") as output_file:
+                            mypokemondata = json.load(output_file)
+                            # Find and replace the specified Pokémon's data in mypokemondata
+                            for index, pokemon_data in enumerate(mypokemondata):
+                                if pokemon_data["individual_id"] == individual_id:
+                                    mypokemondata[index] = pokemon
+                                    break
+                                    # Save the modified data to the output JSON file
+                            with open(str(mypokemon_path), "w") as output_file:
+                                json.dump(mypokemondata, output_file, indent=2)
+                        self.logger.log_and_showinfo("info", self.translator.translate("mainpokemon_has_evolved", prevo_name=prevo_name, evo_name=evo_name))
         except Exception as e:
             show_warning_with_traceback(parent=mw, exception=e, message=f"Error occured in evolving pokemon")
             self.logger.log(f"{e}")
@@ -317,7 +310,7 @@ class EvoWindow(QWidget):
                     self.test_window.display_first_encounter()
         except Exception as e:
             show_warning_with_traceback(parent=mw, exception=e, message=f"Error occured in updating main_pokemon obj")
-        self.display_evo_pokemon(prevo_id, evo_id)
+        self.display_evo_complete(prevo_id, evo_id)
         check = check_for_badge(self.achievements, 16)
         if check is False:
             receive_badge(16, self.achievements)

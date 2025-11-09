@@ -185,7 +185,6 @@ evo_window = EvoWindow(
     logger,
     settings_obj,
     main_pokemon,
-    enemy_pokemon,
     translator,
     reviewer_obj,
     test_window,
