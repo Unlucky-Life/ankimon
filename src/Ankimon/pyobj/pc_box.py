@@ -237,7 +237,7 @@ class PokemonPC(QDialog):
         next_box_button.setFont(QFont('System', 25))
         prev_box_button.clicked.connect(lambda: self.looparound_go_to_box(self.current_box_idx - 1, max_box_idx))
         next_box_button.clicked.connect(lambda: self.looparound_go_to_box(self.current_box_idx + 1, max_box_idx))
-        curr_box_label = QLabel(f"Box {self.current_box_idx + 1}")
+        curr_box_label = QLabel(f"Box {self.current_box_idx + 1}/{max_box_idx + 1}")
         curr_box_label.setFixedSize(150, 50)
         curr_box_label.setFont(load_custom_font(20, int(self.settings.get("misc.language"))))
         curr_box_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
