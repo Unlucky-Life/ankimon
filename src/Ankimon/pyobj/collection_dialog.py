@@ -720,6 +720,8 @@ def MainPokemon(
         "info",
         translator.translate("picked_main_pokemon",main_pokemon_name=main_pokemon.name.capitalize())
         )
+    from ..functions.migration import migrate_starter_individual_id
+    migrate_starter_individual_id(pokemon_id)
 
     # Update UI components
     class Container(object): pass
