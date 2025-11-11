@@ -9,7 +9,7 @@ def get_starter_evolution_ids(starter_id: int) -> list[int]:
     """
     return [starter_id, starter_id + 1, starter_id + 2]
 
-def migrate_starter_individual_id(main_pokemon_id: int):
+def migrate_starter_individual_id():
     """
     Checks for and fixes a bug where a starter's individual_id in mainpokemon.json
     does not match any Pokemon in mypokemon.json.
