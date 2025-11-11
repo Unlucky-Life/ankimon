@@ -37,6 +37,7 @@ def migrate_starter_individual_id(main_pokemon_id: int):
 
     main_pokemon = main_pokemon_data[0]
     main_individual_id = main_pokemon.get("individual_id")
+main_pokemon_id = main_pokemon.get("id")
 
     if not main_individual_id:
         # No individual_id in mainpokemon, so nothing to sync.
