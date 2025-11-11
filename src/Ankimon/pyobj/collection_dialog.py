@@ -632,6 +632,8 @@ def MainPokemon(
         reviewer_obj: Reviewer_Manager,
         test_window: TestWindow,
         ):
+    from ..functions.migration import migrate_starter_individual_id
+    migrate_starter_individual_id()
     # --- Save the existing mainpokemon to mypokemon before replacing ---
     try:
         # Load the current mainpokemon
@@ -720,8 +722,6 @@ def MainPokemon(
         "info",
         translator.translate("picked_main_pokemon",main_pokemon_name=main_pokemon.name.capitalize())
         )
-    from ..functions.migration import migrate_starter_individual_id
-    migrate_starter_individual_id()
 
     # Update UI components
     class Container(object): pass
