@@ -20,18 +20,18 @@ except ModuleNotFoundError:
 import json
 import random
 import copy
-from pathlib import Path
-import traceback
 
 import aqt
 from anki.hooks import addHook, wrap
 from aqt import gui_hooks, mw, utils
 from aqt.qt import QDialog
+from aqt.operations import QueryOp
 from aqt.reviewer import Reviewer
 from aqt.utils import downArrow, showWarning, tr, tooltip
 from PyQt6.QtWidgets import QDialog
 from aqt.gui_hooks import webview_will_set_content
 from aqt.webview import WebContent
+import markdown
 
 from .resources import generate_startup_files, user_path, IS_EXPERIMENTAL_BUILD, addon_ver, addon_dir
 generate_startup_files(addon_dir, user_path)
@@ -47,22 +47,14 @@ from .resources import (
     addon_dir,
     pkmnimgfolder,
     mypokemon_path,
-    mainpokemon_path,
-    pokemon_names_file_path,
-    move_names_file_path,
     itembag_path,
     badgebag_path,
     sound_list_path,
     badges_list_path,
-    items_list_path,
-    rate_path,
 )
 from .menu_buttons import create_menu_actions
 from .hooks import setupHooks
 from .texts import _bottomHTML_template, button_style
-from .business import (
-    get_multiplier_stats,
-)
 from .utils import (
     check_folders_exist,
     safe_get_random_move,
@@ -72,14 +64,11 @@ from .utils import (
     compare_files,
     write_local_file,
     count_items_and_rewrite,
-    format_pokemon_name,
-    format_move_name,
     play_effect_sound,
     get_main_pokemon_data,
     play_sound,
     load_collected_pokemon_ids,
 )
-from .functions.reviewer_iframe import create_iframe_html, create_head_code
 from .functions.url_functions import open_team_builder, rate_addon_url, report_bug, join_discord_url, open_leaderboard_url
 from .functions.badges_functions import handle_review_count_achievement, check_for_badge, receive_badge
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
@@ -94,17 +83,15 @@ from .functions.encounter_functions import (
     handle_enemy_faint,
     handle_main_pokemon_faint
 )
-from .functions.pokedex_functions import find_details_move
 from .gui_entities import UpdateNotificationWindow, CheckFiles
 from .pyobj.download_sprites import show_agreement_and_download_dialog
 from .pyobj.help_window import HelpWindow
 from .pyobj.backup_files import run_backup
 from .pyobj.backup_manager import BackupManager
-from .pyobj.ankimon_sync import save_ankimon_configs, read_ankimon_configs, setup_ankimon_sync_hooks, check_and_sync_pokemon_data
+from .pyobj.ankimon_sync import setup_ankimon_sync_hooks, check_and_sync_pokemon_data
 from .pyobj.tip_of_the_day import show_tip_of_the_day
 from .classes.choose_move_dialog import MoveSelectionDialog
 from .poke_engine.ankimon_hooks_to_poke_engine import simulate_battle_with_poke_engine
-from .poke_engine import constants
 from .singletons import (
     reviewer_obj,
     logger,
@@ -122,7 +109,6 @@ from .singletons import (
     shop_manager,
     ankimon_tracker_window,
     pokedex_window,
-    reviewer_obj,
     eff_chart,
     gen_id_chart,
     license,
@@ -131,7 +117,6 @@ from .singletons import (
     starter_window,
     item_window,
     version_dialog,
-    pokecollection_win,
     achievements,
     pokemon_pc
 )
@@ -142,18 +127,9 @@ from .functions.battle_functions import (
     update_pokemon_battle_status,
     validate_pokemon_status,
     process_battle_data,
-    _process_battle_effects
 )
 
 from .pyobj.error_handler import show_warning_with_traceback
-from .functions.drawing_utils import draw_gender_symbols, draw_stat_boosts
-
-# Load move and pokemon name mapping at startup
-with open(pokemon_names_file_path, "r", encoding="utf-8") as f:
-    POKEMON_NAME_LOOKUP = json.load(f)
-
-with open(move_names_file_path, "r", encoding="utf-8") as f:
-    MOVE_NAME_LOOKUP = json.load(f)
 
 mw.settings_ankimon = settings_window
 mw.logger = logger
@@ -192,10 +168,6 @@ if not _collection_loaded: # If the collection hasn't already been loaded
     _collection_loaded = True
 
 
-
-items_list = []
-with open(items_list_path, "r", encoding="utf-8") as file:
-    items_list = json.load(file)
 
 with open(sound_list_path, "r", encoding="utf-8") as json_file:
     sound_list = json.load(json_file)
@@ -238,14 +210,6 @@ if not database_complete:
     dialog = CheckFiles()
     dialog.show()
 
-if mainpokemon_path.is_file():
-    with open(mainpokemon_path, "r", encoding="utf-8") as json_file:
-        main_pokemon_data = json.load(json_file)
-        if not main_pokemon_data or main_pokemon_data is None:
-            mainpokemon_empty = True
-        else:
-            mainpokemon_empty = False
-
 sync_dialog = None
 
 #If reviewer showed question; start card_timer for answering card
@@ -275,39 +239,45 @@ setupHooks(None, ankimon_tracker_obj)
 online_connectivity = test_online_connectivity()
 
 #Connect to GitHub and Check for Notification and HelpGuideChanges
-try:
-    if online_connectivity and ssh != False:
+update_infos_md = addon_dir / "updateinfos.md"
+def download_changelog():
+    try:
         # URL of the file on GitHub
         github_url = f"https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/changelogs/{addon_ver}.md"
-
-        # Path to the local file
-        local_file_path = addon_dir / "updateinfos.md"
+    
         # Read content from GitHub
-        github_content, github_html_content = read_github_file(github_url)
-
+        github_content = read_github_file(github_url)
+    
         # If changelog content is None, try unknown.md as a fallback for all builds
         if github_content is None:
             github_url = "https://raw.githubusercontent.com/h0tp-ftw/ankimon/refs/heads/main/assets/changelogs/unknown.md"
-            github_content, github_html_content = read_github_file(github_url)
+            github_content = read_github_file(github_url)
 
+        return github_content
+    except Exception as e:
+        return e
+
+if online_connectivity and ssh:
+    def done(result: Exception | str | None):
+        if isinstance(result, Exception):
+            show_warning_with_traceback(parent=mw, exception=result, message="Error connecting to GitHub:")
+            return
+        if result is None:
+            showWarning("Failed to retrieve Ankimon content from GitHub.")
+            return
         # Read content from the local file
-        local_content = read_local_file(local_file_path)
-        # If local content exists and is the same as GitHub content, do not open dialog
-        if local_content is not None and compare_files(local_content, github_content):
-            pass
-        else:
-            # Download new content from GitHub
-            if github_content is not None:
-                # Write new content to the local file
-                write_local_file(local_file_path, github_content)
-                dialog = UpdateNotificationWindow(github_html_content)
-                if no_more_news is False:
-                    dialog.exec()
-            else:
-                showWarning("Failed to retrieve Ankimon content from GitHub.")
-except Exception as e:
-    if ssh != False:
-        show_warning_with_traceback(parent=mw, exception=e, message="Error connecting to GitHub:")
+        local_content = read_local_file(update_infos_md)
+        # If local content is not the same as the GitHub content, open dialog
+        if not compare_files(local_content, result):
+            write_local_file(update_infos_md, result)
+            dialog = UpdateNotificationWindow(markdown.markdown(result))
+            if not no_more_news:
+                dialog.exec()
+    op = QueryOp(
+        parent=mw,
+        op=lambda _col: download_changelog(), # Background operation
+        success=done, # Ran on UI thread
+    ).without_collection().run_in_background()
 
 def open_help_window(online_connectivity):
     try:
@@ -317,10 +287,6 @@ def open_help_window(online_connectivity):
         help_dialog.exec()
     except Exception as e:
         show_warning_with_traceback(parent=mw, exception=e, message="Error in opening Help Guide:")
-
-gen_config = []
-for i in range(1,10):
-    gen_config.append(settings_obj.get(f"misc.gen{i}"))
 
 def answerCard_before(filter, reviewer, card):
 	utils.answBtnAmt = reviewer.mw.col.sched.answerButtons(card)
@@ -661,10 +627,6 @@ if database_complete:
         badge_list = json.load(json_file)
         if len(badge_list) > 1: # has atleast one badge
             rate_this_addon()
-
-#Badges needed for achievements:
-with open(badges_list_path, "r", encoding="utf-8") as json_file:
-    badges = json.load(json_file)
 
 if database_complete:
     if mypokemon_path.is_file() is False:
