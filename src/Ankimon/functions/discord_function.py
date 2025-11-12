@@ -1,6 +1,8 @@
 import threading
 import random
 import time
+
+from ..pyobj.ankimon_tracker import AnkimonTracker
 from ..addon_files.lib.pypresence import Presence
 from aqt.utils import showWarning, tooltip
 from aqt import mw
@@ -13,7 +15,7 @@ class DiscordPresence:
             self.RPC = Presence(client_id)
             self.RPC.connect()
             self.large_image_url = large_image_url
-            self.ankimon_tracker = ankimon_tracker
+            self.ankimon_tracker: AnkimonTracker = ankimon_tracker
             self.logger_obj = mw.logger
             self.settings = settings_obj
             self.loop = True
@@ -45,22 +47,24 @@ class DiscordPresence:
     def _get_special_quotes(self):
         return [
             f"In battle with {self.ankimon_tracker.main_pokemon.name.capitalize()} Lvl {self.ankimon_tracker.main_pokemon.level}",
-            f"Currently battling {self.ankimon_tracker.enemy_pokemon.name.capitalize()} Lvl {self.ankimon_tracker.enemy_pokemon.level}",
             f"{self.ankimon_tracker.main_pokemon.name.capitalize()} is fired up and ready to fight!",
-            f"The opponent {self.ankimon_tracker.enemy_pokemon.name.capitalize()} seems tough—stay sharp!",
             f"{self.ankimon_tracker.main_pokemon.name.capitalize()} is waiting for your next move!",
-            f"Level up and take down {self.ankimon_tracker.enemy_pokemon.name.capitalize()}!",
+            f"The battle is intense, but {self.ankimon_tracker.main_pokemon.name.capitalize()} won't back down!",
+            f"The stakes are high! {self.ankimon_tracker.main_pokemon.name.capitalize()} needs your help to win this fight!",
             f"Victory is within reach for {self.ankimon_tracker.main_pokemon.nickname or self.ankimon_tracker.main_pokemon.name.capitalize()}!",
             f"{self.ankimon_tracker.main_pokemon.name.capitalize()} is determined to show its strength!",
+
             f"Keep your guard up! {self.ankimon_tracker.enemy_pokemon.name.capitalize()} is no pushover.",
-            f"The battle is intense, but {self.ankimon_tracker.main_pokemon.name.capitalize()} won't back down!",
             f"Strategy is key! Plan your moves wisely against {self.ankimon_tracker.enemy_pokemon.name.capitalize()}!",
-            f"The stakes are high! {self.ankimon_tracker.main_pokemon.name.capitalize()} needs your help to win this fight!",
+            f"Currently battling {self.ankimon_tracker.enemy_pokemon.name.capitalize()} Lvl {self.ankimon_tracker.enemy_pokemon.level}",
+            f"The opponent {self.ankimon_tracker.enemy_pokemon.name.capitalize()} seems tough—stay sharp!",
+            f"Level up and take down {self.ankimon_tracker.enemy_pokemon.name.capitalize()}!",
+
             f"Total reviews completed: {self.ankimon_tracker.total_reviews}",
-            f"{self.ankimon_tracker.good_count} good reviews so far—keep it up!",
-            f"You've marked {self.ankimon_tracker.again_count} cards as 'Again'—let's focus and improve!",
-            f"Great job! {self.ankimon_tracker.easy_count} cards rated 'Easy'!",
-            f"{self.ankimon_tracker.hard_count} cards rated 'Hard'—you're tackling the tough ones!",
+            f"{self.ankimon_tracker.card_ratings_count["good"]} good reviews so far—keep it up!",
+            f"You've marked {self.ankimon_tracker.card_ratings_count["again"]} cards as 'Again'—let's focus and improve!",
+            f"Great job! {self.ankimon_tracker.card_ratings_count["easy"]} cards rated 'Easy'!",
+            f"{self.ankimon_tracker.card_ratings_count["hard"]} cards rated 'Hard'—you're tackling the tough ones!",
         ]
 
     def update_presence(self):
