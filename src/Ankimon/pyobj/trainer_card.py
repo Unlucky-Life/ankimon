@@ -34,6 +34,7 @@ class TrainerCard:
         self.team = team   # Team as a simple string
         highest_level = self.get_highest_level_pokemon()
         self.highest_level = highest_level  # Highest level Pokémon
+        highest_pokemon_level = int(self.highest_pokemon_level())
         self.image_path = f"{trainer_sprites_path}" + "/" + settings_obj.get("trainer.sprite") + ".png"
         league = find_trainer_rank(int(self.highest_pokemon_level()), int(self.level))  # Trainer's rank in the Pokémon world
         self.league = league
@@ -47,7 +48,7 @@ class TrainerCard:
             'level': max(1, int(settings_obj.get("trainer.level"))),
             'pokedex': get_unique_pokemon(),  # Example Pokedex
             'caughtPokemon': get_total_pokemon(),  # Example Pokedex
-            'highestLevel': highest_level,  # Example highest level
+            'highestLevel': highest_pokemon_level,  # Example highest level
             'shinies': f"{get_shinies()}",  # Example shinies
             'cash': cash,  # Example cash,
             'trainerSprite': f'{settings_obj.get("trainer.sprite") + ".png"}'
