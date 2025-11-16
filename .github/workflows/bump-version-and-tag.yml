@@ -19,67 +19,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get previous tag
-        id: previous_tag
-        run: echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
-
-      - name: Generate changelog
-        id: changelog
-        uses: tj-actions/changelog-generator@v1.18
-        with:
-          from_tag: ${{ steps.previous_tag.outputs.tag }}
-          labels: |
-            - enhancement
-            - bug
-            - documentation
-          exclude_labels: "ignore-for-changelog"
-          exclude_authors: "github-actions[bot]"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create final changelog file
+      - name: Check for changelog file
         run: |
           version=${{ github.event.inputs.version }}
+          # Remove leading 'v' if present
           version_no_prefix=$(echo $version | sed 's/^v//')
-          changelog_path="assets/changelogs/$version_no_prefix.md"
-          
-          # Prepare Contributor List
-          contributors=$(echo "${{ steps.changelog.outputs.contributors }}" | sed 's/,/, @/g' | sed 's/^/@/')
-          thank_you_note="A huge thank you to ${contributors} for their contributions to this update! <3"
-          
-          # Prepare "What's New" from PR titles
-          pr_titles=$(echo "${{ steps.changelog.outputs.pr_titles }}" | sed 's/^/- /')
 
-          cat > "$changelog_path" << EOF
-## 🌟 Ankimon v$version_no_prefix 🌟
-
-${thank_you_note}
-
-### What’s new
-${pr_titles}
-
-### 💢 PSA
-If you love Ankimon, please join our developers 🥺  
-**Dev Guide**: https://h0tp-ftw.github.io/ankimon/
-
-Feel free to study with us in the **Library VC** in our [Discord](https://discord.gg/Vkvdawxd5s)!
-
-— h0tp 💖
-
-***
-
-## 📜 Full changelog — v$version_no_prefix
-
-### Features & Improvements
-${{ steps.changelog.outputs.enhancement_contributions }}
-
-### Bug Fixes & Stability
-${{ steps.changelog.outputs.bug_contributions }}
-
-### Documentation
-${{ steps.changelog.outputs.documentation_contributions }}
-
-***
-EOF
+          if [ ! -f assets/changelogs/$version_no_prefix.md ]; then
+            echo "Changelog file assets/changelogs/$version_no_prefix.md is missing. Stopping the workflow."
+            exit 1
+          fi
 
       - name: Bump version in manifest.json
         run: |
@@ -92,7 +41,6 @@ EOF
           title: "Bump version to ${{ github.event.inputs.version }}"
           body: |
             Automated PR to bump version to ${{ github.event.inputs.version }}.
-            This PR includes the automatically generated changelog based on merged PRs. Please review before merging.
 
             ---
             **@h0tp-ftw: After merging this PR, create the tag and push it with:**
@@ -108,6 +56,6 @@ EOF
             This will create and push the tag needed to trigger the release workflow.
           branch: bump-version-${{ github.event.inputs.version }}
           base: main
-          add-paths: |
-            src/Ankimon/manifest.json
-            assets/changelogs/
+          add-paths: src/Ankimon/manifest.json
+
+# After you merge the PR, you can run a separate workflow to create a tag and release using the same input
