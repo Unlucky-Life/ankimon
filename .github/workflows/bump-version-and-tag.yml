@@ -49,37 +49,37 @@ jobs:
           # Prepare "What's New" from PR titles
           pr_titles=$(echo "${{ steps.changelog.outputs.pr_titles }}" | sed 's/^/- /')
 
-          cat > "$changelog_path" << EOF
-## 🌟 Ankimon v$version_no_prefix 🌟
-
-$thank_you_note
-
-### What’s new
-$pr_titles
-
-### 💢 PSA
-If you love Ankimon, please join our developers 🥺  
-**Dev Guide**: https://h0tp-ftw.github.io/ankimon/
-
-Feel free to study with us in the **Library VC** in our [Discord](https://discord.gg/Vkvdawxd5s)!
-
-— h0tp 💖
-
-***
-
-## 📜 Full changelog — v$version_no_prefix
-
-### Features & Improvements
-${{ steps.changelog.outputs.enhancement_contributions }}
-
-### Bug Fixes & Stability
-${{ steps.changelog.outputs.bug_contributions }}
-
-### Documentation
-${{ steps.changelog.outputs.documentation_contributions }}
-
-***
-EOF
+          {
+            echo "## 🌟 Ankimon v$version_no_prefix 🌟"
+            echo ""
+            echo "$thank_you_note"
+            echo ""
+            echo "### What’s new"
+            echo "$pr_titles"
+            echo ""
+            echo "### 💢 PSA"
+            echo "If you love Ankimon, please join our developers 🥺"
+            echo "**Dev Guide**: https://h0tp-ftw.github.io/ankimon/"
+            echo ""
+            echo "Feel free to study with us in the **Library VC** in our [Discord](https://discord.gg/Vkvdawxd5s)!"
+            echo ""
+            echo "— h0tp 💖"
+            echo ""
+            echo "***"
+            echo ""
+            echo "## 📜 Full changelog — v$version_no_prefix"
+            echo ""
+            echo "### Features & Improvements"
+            echo "${{ steps.changelog.outputs.enhancement_contributions }}"
+            echo ""
+            echo "### Bug Fixes & Stability"
+            echo "${{ steps.changelog.outputs.bug_contributions }}"
+            echo ""
+            echo "### Documentation"
+            echo "${{ steps.changelog.outputs.documentation_contributions }}"
+            echo ""
+            echo "***"
+          } > "$changelog_path"
 
       - name: Bump version in manifest.json
         run: |
