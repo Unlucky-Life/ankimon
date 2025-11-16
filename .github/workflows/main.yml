@@ -3,7 +3,7 @@ name: Create Add-on Release
 on:
   push:
     tags:
-      - '*'   # Run on any tag push
+      - '*'
 
 jobs:
   create-release:
@@ -16,23 +16,22 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           fetch-tags: true
           ref: ${{ github.ref }}
 
       - name: Setup Python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install git+https://github.com/glutanimate/anki-addon-builder.git@4039b5bb743773a18cb2911e6dd38fa1e3f65982
           python -m pip install pyqt5
-          sudo apt-get update && sudo apt-get install -y jq gh
 
       - name: Setup git config
         run: |
@@ -47,8 +46,32 @@ jobs:
         shell: bash
         run: |
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "module_name=$(ls src)"           >> $GITHUB_OUTPUT
+          echo "module_name=$(ls src)" >> $GITHUB_OUTPUT
           echo "build_name=$(ls build/*.ankiaddon)" >> $GITHUB_OUTPUT
+          
+          # Extract version number without 'v' prefix
+          tag_name="${{ github.ref_name }}"
+          version_no_prefix=$(echo "$tag_name" | sed 's/^v//')
+          echo "version_no_prefix=${version_no_prefix}" >> $GITHUB_OUTPUT
+
+      - name: Get changelog for this version
+        id: get_changelog
+        run: |
+          version_no_prefix="${{ steps.vars.outputs.version_no_prefix }}"
+          changelog_file="assets/changelogs/${version_no_prefix}.md"
+          
+          if [ -f "$changelog_file" ]; then
+            echo "changelog_exists=true" >> $GITHUB_OUTPUT
+            # Read changelog content (escape for GitHub Actions)
+            {
+              echo 'changelog<<EOF'
+              cat "$changelog_file"
+              echo 'EOF'
+            } >> $GITHUB_OUTPUT
+          else
+            echo "changelog_exists=false" >> $GITHUB_OUTPUT
+            echo "Warning: Changelog file not found at $changelog_file"
+          fi
 
       - name: Get previous tag
         id: previoustag
@@ -57,12 +80,18 @@ jobs:
           fallback: '0.0.0'
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: "${{ steps.vars.outputs.module_name }} v${{ github.ref_name }}"
-          generate_release_notes: true
+          body: |
+            ${{ steps.get_changelog.outputs.changelog_exists == 'true' && steps.get_changelog.outputs.changelog || 'No changelog available for this release.' }}
+            
+            ---
+            
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.previoustag.outputs.tag }}...${{ github.ref_name }}
           files: build/*.ankiaddon
           draft: true
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
