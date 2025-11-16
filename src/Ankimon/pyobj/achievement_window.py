@@ -19,12 +19,13 @@ from PyQt6.QtWidgets import (
     )
 from PyQt6.QtGui import QIcon, QColor
 
-from ..resources import icon_path, badges_path, badgebag_path, badges_list_path
+from ..functions.badges_functions import get_achieved_badges
+
+from ..resources import icon_path, badges_path, badges_list_path
 
 class AchievementWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.read_item_file()
         self.initUI()
 
     def initUI(self):
@@ -49,7 +50,6 @@ class AchievementWindow(QWidget):
         self.setLayout(self.layout)
 
     def renewWidgets(self):
-        self.read_item_file()
         # Clear the existing widgets from the layout
         for i in reversed(range(self.contentLayout.count())):
             widget = self.contentLayout.itemAt(i).widget()
@@ -57,11 +57,12 @@ class AchievementWindow(QWidget):
                 widget.deleteLater()
         row, col = 0, 0
         max_items_per_row = 4
-        if self.badge_list is None or not self.badge_list:  # Wenn None oder leer
+        achieved_badges = get_achieved_badges()
+        if achieved_badges is None or not achieved_badges:  # Wenn None oder leer
             empty_label = QLabel("You dont own any badges yet.")
             self.contentLayout.addWidget(empty_label, 1, 1)
         else:
-            for badge_num in self.badge_list:
+            for badge_num in achieved_badges:
                 item_widget = self.BadgesLabel(badge_num)
                 self.contentLayout.addWidget(item_widget, row, col)
                 col += 1
@@ -111,11 +112,6 @@ class AchievementWindow(QWidget):
         frame_widget.setLayout(frame)
 
         return frame_widget
-
-    def read_item_file(self):
-        # Read the list from the JSON file
-        with open(badgebag_path, "r", encoding="utf-8") as json_file:
-            self.badge_list = json.load(json_file)
 
     def clear_layout(self, layout):
         while layout.count():
