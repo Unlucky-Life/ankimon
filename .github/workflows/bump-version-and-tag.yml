@@ -25,7 +25,7 @@ jobs:
 
       - name: Generate changelog
         id: changelog
-        uses: tj-actions/changelog-generator@v1.18
+        uses: tj-actions/github-changelog-generator@v1.18
         with:
           from_tag: ${{ steps.previous_tag.outputs.tag }}
           labels: |
