@@ -34,55 +34,114 @@ jobs:
             const previousTag = '${{ steps.previous_tag.outputs.tag }}';
             const newVersion = '${{ github.event.inputs.version }}';
             
-            // If no previous tag exists, get all PRs
-            let releaseNotes = {};
+            console.log(`Generating changelog from ${previousTag} to ${newVersion}`);
+            
+            let pullRequests = [];
+            const contributors = new Set();
             
             if (previousTag) {
               try {
-                releaseNotes = await github.rest.repos.generateReleaseNotes({
+                // Step 1: Use compare API to get commits between tags
+                const comparison = await github.rest.repos.compareCommitsWithBasehead({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  tag_name: newVersion,
-                  previous_tag_name: previousTag
+                  basehead: `${previousTag}...HEAD`
                 });
+                
+                console.log(`Found ${comparison.data.commits.length} commits between ${previousTag} and HEAD`);
+                
+                // Step 2: For each commit, get associated pull requests
+                const prNumbers = new Set();
+                
+                for (const commit of comparison.data.commits) {
+                  try {
+                    const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      commit_sha: commit.sha
+                    });
+                    
+                    // Add each PR number to our set (avoids duplicates)
+                    for (const pr of prs) {
+                      if (pr.merged_at && !prNumbers.has(pr.number)) {
+                        prNumbers.add(pr.number);
+                        pullRequests.push(pr);
+                        if (pr.user && pr.user.login !== 'github-actions[bot]') {
+                          contributors.add(pr.user.login);
+                        }
+                      }
+                    }
+                  } catch (error) {
+                    console.log(`Could not fetch PRs for commit ${commit.sha}: ${error.message}`);
+                  }
+                }
+                
+                console.log(`Found ${pullRequests.length} unique PRs`);
+                
               } catch (error) {
-                console.log('Could not generate release notes via API, falling back to manual generation');
-                releaseNotes.data = { body: '' };
+                console.log(`Error comparing commits: ${error.message}`);
+                // Fallback: get recent merged PRs if comparison fails
+                const { data: recentPRs } = await github.rest.pulls.list({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'closed',
+                  sort: 'updated',
+                  direction: 'desc',
+                  per_page: 50
+                });
+                
+                pullRequests = recentPRs.filter(pr => pr.merged_at);
+                for (const pr of pullRequests) {
+                  if (pr.user && pr.user.login !== 'github-actions[bot]') {
+                    contributors.add(pr.user.login);
+                  }
+                }
+              }
+            } else {
+              console.log('No previous tag found, fetching recent merged PRs');
+              // No previous tag - get recent merged PRs
+              const { data: recentPRs } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'closed',
+                sort: 'updated',
+                direction: 'desc',
+                per_page: 100
+              });
+              
+              pullRequests = recentPRs.filter(pr => pr.merged_at);
+              for (const pr of pullRequests) {
+                if (pr.user && pr.user.login !== 'github-actions[bot]') {
+                  contributors.add(pr.user.login);
+                }
               }
             }
-            
-            // Get merged PRs since last tag
-            const prQuery = previousTag 
-              ? `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged merged:>=${previousTag}`
-              : `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged`;
-              
-            const { data: pullRequests } = await github.rest.search.issuesAndPullRequests({
-              q: prQuery,
-              sort: 'updated',
-              order: 'desc',
-              per_page: 100
-            });
             
             // Categorize PRs by label
             const enhancements = [];
             const bugs = [];
             const documentation = [];
             const other = [];
-            const contributors = new Set();
             
-            for (const pr of pullRequests.items) {
-              const labels = pr.labels.map(l => l.name);
-              contributors.add(pr.user.login);
+            for (const pr of pullRequests) {
+              const labels = pr.labels.map(l => l.name.toLowerCase());
+              
+              // Skip if marked to exclude from changelog
+              if (labels.includes('ignore-for-changelog') || 
+                  labels.includes('exclude-from-changelog') ||
+                  labels.includes('meta: exclude from changelog')) {
+                continue;
+              }
               
               const prEntry = `- ${pr.title} (#${pr.number}) @${pr.user.login}`;
               
-              if (labels.some(l => ['enhancement', 'feature', 'Type: Enhancement'].includes(l))) {
+              if (labels.some(l => ['enhancement', 'feature', 'type: enhancement'].includes(l))) {
                 enhancements.push(prEntry);
-              } else if (labels.some(l => ['bug', 'fix', 'Type: Bug'].includes(l))) {
+              } else if (labels.some(l => ['bug', 'fix', 'type: bug'].includes(l))) {
                 bugs.push(prEntry);
-              } else if (labels.some(l => ['documentation', 'docs'].includes(l))) {
+              } else if (labels.some(l => ['documentation', 'docs', 'type: documentation'].includes(l))) {
                 documentation.push(prEntry);
-              } else if (!labels.includes('ignore-for-changelog')) {
+              } else {
                 other.push(prEntry);
               }
             }
@@ -92,137 +151,115 @@ jobs:
             core.setOutput('bugs', bugs.join('\n'));
             core.setOutput('documentation', documentation.join('\n'));
             core.setOutput('other', other.join('\n'));
-            core.setOutput('contributors', Array.from(contributors).join(', '));
-            core.setOutput('github_notes', releaseNotes.data?.body || '');
-            core.setOutput('pr_count', pullRequests.items.length);
+            core.setOutput('contributors', Array.from(contributors).sort().join(', '));
+            core.setOutput('pr_count', pullRequests.length);
+            
+            console.log('Changelog generation complete!');
+            console.log(`- Total PRs: ${pullRequests.length}`);
+            console.log(`- Enhancements: ${enhancements.length}`);
+            console.log(`- Bugs: ${bugs.length}`);
+            console.log(`- Documentation: ${documentation.length}`);
+            console.log(`- Other: ${other.length}`);
+            console.log(`- Contributors: ${Array.from(contributors).join(', ')}`);
 
       - name: Create final changelog file
+        env:
+          ENHANCEMENTS: ${{ steps.changelog.outputs.enhancements }}
+          BUGS: ${{ steps.changelog.outputs.bugs }}
+          DOCUMENTATION: ${{ steps.changelog.outputs.documentation }}
+          OTHER: ${{ steps.changelog.outputs.other }}
+          CONTRIBUTORS: ${{ steps.changelog.outputs.contributors }}
+          PR_COUNT: ${{ steps.changelog.outputs.pr_count }}
         run: |
           version="${{ github.event.inputs.version }}"
-          version_no_prefix=$(echo $version | sed 's/^v//')
+          version_no_prefix=$(echo "$version" | sed 's/^v//')
           changelog_path="assets/changelogs/$version_no_prefix.md"
           
           # Create directory if it doesn't exist
           mkdir -p assets/changelogs
           
           # Prepare Contributor List
-          contributors="${{ steps.changelog.outputs.contributors }}"
-          if [ -n "$contributors" ]; then
-            contributor_mentions=$(echo "$contributors" | sed 's/,/, @/g' | sed 's/^/@/')
+          if [ -n "$CONTRIBUTORS" ]; then
+            contributor_mentions=$(echo "$CONTRIBUTORS" | sed 's/,/, @/g' | sed 's/^/@/')
             thank_you_note="A huge thank you to ${contributor_mentions} for their contributions to this update! <3"
           else
             thank_you_note="Thank you to all contributors! <3"
           fi
           
-          # Build changelog
-          cat > "$changelog_path" << 'CHANGELOG_EOF'
-          ## 🌟 Ankimon v$VERSION_NO_PREFIX 🌟
-          
-          $THANK_YOU_NOTE
-          
+          # Create changelog using heredoc with proper quoting
+          cat > "$changelog_path" << 'EOF'
+          ## 🌟 Ankimon vVERSION_PLACEHOLDER 🌟
+
+          THANK_YOU_PLACEHOLDER
+
           ### What's new
-          
-          This release includes $PR_COUNT merged pull requests with enhancements, bug fixes, and improvements.
-          
+
+          This release includes PR_COUNT_PLACEHOLDER merged pull requests with enhancements, bug fixes, and improvements.
+
           ### 💢 PSA
           If you love Ankimon, please join our developers 🥺
           **Dev Guide**: https://h0tp-ftw.github.io/ankimon/
-          
+
           Feel free to study with us in the **Library VC** in our [Discord](https://discord.gg/Vkvdawxd5s)!
-          
+
           — h0tp 💖
-          
+
           ***
-          
-          ## 📜 Full changelog — v$VERSION_NO_PREFIX
-          
-          CHANGELOG_EOF
+
+          ## 📜 Full changelog — vVERSION_PLACEHOLDER
+
+          EOF
           
           # Add Features & Improvements
-          if [ -n "${{ steps.changelog.outputs.enhancements }}" ]; then
+          if [ -n "$ENHANCEMENTS" ]; then
             cat >> "$changelog_path" << 'EOF'
           ### ✨ Features & Improvements
-          
-          $ENHANCEMENTS
-          
+
           EOF
+            # Use printf to safely add content
+            printf '%s\n\n' "$ENHANCEMENTS" >> "$changelog_path"
           fi
           
           # Add Bug Fixes
-          if [ -n "${{ steps.changelog.outputs.bugs }}" ]; then
+          if [ -n "$BUGS" ]; then
             cat >> "$changelog_path" << 'EOF'
           ### 🐛 Bug Fixes & Stability
-          
-          $BUGS
-          
+
           EOF
+            printf '%s\n\n' "$BUGS" >> "$changelog_path"
           fi
           
           # Add Documentation
-          if [ -n "${{ steps.changelog.outputs.documentation }}" ]; then
+          if [ -n "$DOCUMENTATION" ]; then
             cat >> "$changelog_path" << 'EOF'
           ### 📚 Documentation
-          
-          $DOCUMENTATION
-          
+
           EOF
+            printf '%s\n\n' "$DOCUMENTATION" >> "$changelog_path"
           fi
           
           # Add Other changes
-          if [ -n "${{ steps.changelog.outputs.other }}" ]; then
+          if [ -n "$OTHER" ]; then
             cat >> "$changelog_path" << 'EOF'
           ### 🔧 Other Changes
-          
-          $OTHER
-          
+
           EOF
+            printf '%s\n\n' "$OTHER" >> "$changelog_path"
           fi
           
+          # Add closing
           cat >> "$changelog_path" << 'EOF'
-          
+
           ***
           EOF
           
-          # Replace placeholders
-          sed -i "s/\$VERSION_NO_PREFIX/${version_no_prefix}/g" "$changelog_path"
-          sed -i "s/\$THANK_YOU_NOTE/${thank_you_note}/g" "$changelog_path"
-          sed -i "s/\$PR_COUNT/${{ steps.changelog.outputs.pr_count }}/g" "$changelog_path"
-          
-          # Use printf to handle multiline variables properly
-          tmp_file=$(mktemp)
-          cp "$changelog_path" "$tmp_file"
-          
-          # Replace enhancement section
-          if [ -n "${{ steps.changelog.outputs.enhancements }}" ]; then
-            awk -v enhancements="${{ steps.changelog.outputs.enhancements }}" \
-              '{gsub(/\$ENHANCEMENTS/, enhancements); print}' "$tmp_file" > "$changelog_path"
-            cp "$changelog_path" "$tmp_file"
-          fi
-          
-          # Replace bugs section  
-          if [ -n "${{ steps.changelog.outputs.bugs }}" ]; then
-            awk -v bugs="${{ steps.changelog.outputs.bugs }}" \
-              '{gsub(/\$BUGS/, bugs); print}' "$tmp_file" > "$changelog_path"
-            cp "$changelog_path" "$tmp_file"
-          fi
-          
-          # Replace documentation section
-          if [ -n "${{ steps.changelog.outputs.documentation }}" ]; then
-            awk -v docs="${{ steps.changelog.outputs.documentation }}" \
-              '{gsub(/\$DOCUMENTATION/, docs); print}' "$tmp_file" > "$changelog_path"
-            cp "$changelog_path" "$tmp_file"
-          fi
-          
-          # Replace other section
-          if [ -n "${{ steps.changelog.outputs.other }}" ]; then
-            awk -v other="${{ steps.changelog.outputs.other }}" \
-              '{gsub(/\$OTHER/, other); print}' "$tmp_file" > "$changelog_path"
-            cp "$changelog_path" "$tmp_file"
-          fi
-          
-          rm -f "$tmp_file"
+          # Replace placeholders using sed (safe because placeholders don't contain special chars)
+          sed -i "s/VERSION_PLACEHOLDER/${version_no_prefix}/g" "$changelog_path"
+          sed -i "s/THANK_YOU_PLACEHOLDER/${thank_you_note}/g" "$changelog_path"
+          sed -i "s/PR_COUNT_PLACEHOLDER/${PR_COUNT}/g" "$changelog_path"
           
           echo "Changelog created at: $changelog_path"
+          echo "----------------------------------------"
           cat "$changelog_path"
 
       - name: Bump version in manifest.json
@@ -241,32 +278,37 @@ jobs:
             
             This automated PR bumps the version and includes an auto-generated changelog.
             
-            ### ✅ Checklist
+            ### ✅ Pre-Merge Checklist
             - [ ] Review the generated changelog in `assets/changelogs/`
-            - [ ] Verify `manifest.json` version update
-            - [ ] Merge this PR to main
+            - [ ] Verify `manifest.json` version update is correct
+            - [ ] Check that all changes are intentional
             
             ---
             
-            **Next Steps After Merge:**
+            ### 📋 Post-Merge Steps (REQUIRED)
             
-            The tag `${{ github.event.inputs.version }}` will need to be created to trigger the release workflow.
+            After you merge this PR, **you must manually create and push the tag** to trigger the release workflow:
             
-            **Option 1: Automatic (Recommended)**
-            Merge this PR and the workflow will handle tagging automatically.
-            
-            **Option 2: Manual**
             ```
-            git fetch origin
+            # 1. Update your local main branch
             git checkout main
-            git pull
+            git pull origin main
+            
+            # 2. Create the tag
             git tag ${{ github.event.inputs.version }}
+            
+            # 3. Push the tag to trigger release workflow
             git push origin ${{ github.event.inputs.version }}
             ```
             
-            **Generated Changelog Preview:**
+            **Why manual?** For security, only maintainers can create tags that trigger releases.
             
-            ${{ steps.changelog.outputs.pr_count }} pull requests included in this release.
+            ---
+            
+            ### 📊 Release Summary
+            - **Version**: ${{ github.event.inputs.version }}
+            - **PRs included**: ${{ steps.changelog.outputs.pr_count }}
+            - **Contributors**: ${{ steps.changelog.outputs.contributors }}
           branch: bump-version-${{ github.event.inputs.version }}
           base: main
           labels: |
