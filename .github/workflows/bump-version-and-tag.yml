@@ -34,21 +34,42 @@ jobs:
             const previousTag = '${{ steps.previous_tag.outputs.tag }}';
             const newVersion = '${{ github.event.inputs.version }}';
             
-            console.log(`Generating changelog from ${previousTag} to ${newVersion}`);
+            console.log(`Generating changelog from ${previousTag} to current HEAD`);
             
             let pullRequests = [];
             const contributors = new Set();
             
             if (previousTag) {
               try {
-                // Step 1: Use compare API to get commits between tags
+                // Get the commit SHA for the previous tag
+                const { data: prevTagRef } = await github.rest.git.getRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `tags/${previousTag}`
+                });
+                
+                const prevTagSha = prevTagRef.object.sha;
+                console.log(`Previous tag ${previousTag} points to commit ${prevTagSha}`);
+                
+                // Get current HEAD SHA
+                const { data: currentRef } = await github.rest.git.getRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: 'heads/main'  // or your default branch name
+                });
+                
+                const currentSha = currentRef.object.sha;
+                console.log(`Current HEAD is at commit ${currentSha}`);
+                
+                // Compare the two commits to get ONLY commits between them
                 const comparison = await github.rest.repos.compareCommitsWithBasehead({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  basehead: `${previousTag}...HEAD`
+                  basehead: `${prevTagSha}...${currentSha}`
                 });
                 
                 console.log(`Found ${comparison.data.commits.length} commits between ${previousTag} and HEAD`);
+                console.log(`Comparison status: ${comparison.data.status}`);
                 
                 // Step 2: For each commit, get associated pull requests
                 const prNumbers = new Set();
@@ -76,10 +97,11 @@ jobs:
                   }
                 }
                 
-                console.log(`Found ${pullRequests.length} unique PRs`);
+                console.log(`Found ${pullRequests.length} unique PRs between tags`);
                 
               } catch (error) {
                 console.log(`Error comparing commits: ${error.message}`);
+                console.log(`Falling back to recent merged PRs`);
                 // Fallback: get recent merged PRs if comparison fails
                 const { data: recentPRs } = await github.rest.pulls.list({
                   owner: context.repo.owner,
@@ -117,7 +139,8 @@ jobs:
               }
             }
             
-            // Categorize PRs by label
+            // Categorize PRs by label and CREATE MARKDOWN LINKS
+            const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
             const enhancements = [];
             const bugs = [];
             const documentation = [];
@@ -133,7 +156,10 @@ jobs:
                 continue;
               }
               
-              const prEntry = `- ${pr.title} (#${pr.number}) @${pr.user.login}`;
+              // Create markdown links for PR number and username
+              const prLink = `[#${pr.number}](${repoUrl}/pull/${pr.number})`;
+              const userLink = `[@${pr.user.login}](https://github.com/${pr.user.login})`;
+              const prEntry = `- ${pr.title} ${prLink} ${userLink}`;
               
               if (labels.some(l => ['enhancement', 'feature', 'type: enhancement'].includes(l))) {
                 enhancements.push(prEntry);
@@ -146,12 +172,18 @@ jobs:
               }
             }
             
+            // Create markdown links for contributors
+            const contributorLinks = Array.from(contributors)
+              .sort()
+              .map(username => `[@${username}](https://github.com/${username})`)
+              .join(', ');
+            
             // Export data for next step
             core.setOutput('enhancements', enhancements.join('\n'));
             core.setOutput('bugs', bugs.join('\n'));
             core.setOutput('documentation', documentation.join('\n'));
             core.setOutput('other', other.join('\n'));
-            core.setOutput('contributors', Array.from(contributors).sort().join(', '));
+            core.setOutput('contributors', contributorLinks);
             core.setOutput('pr_count', pullRequests.length);
             
             console.log('Changelog generation complete!');
@@ -160,7 +192,7 @@ jobs:
             console.log(`- Bugs: ${bugs.length}`);
             console.log(`- Documentation: ${documentation.length}`);
             console.log(`- Other: ${other.length}`);
-            console.log(`- Contributors: ${Array.from(contributors).join(', ')}`);
+            console.log(`- Contributors: ${contributorLinks}`);
 
       - name: Create final changelog file
         env:
@@ -178,10 +210,9 @@ jobs:
           # Create directory if it doesn't exist
           mkdir -p assets/changelogs
           
-          # Prepare Contributor List
+          # Prepare Contributor List (already has markdown links)
           if [ -n "$CONTRIBUTORS" ]; then
-            contributor_mentions=$(echo "$CONTRIBUTORS" | sed 's/,/, @/g' | sed 's/^/@/')
-            thank_you_note="A huge thank you to ${contributor_mentions} for their contributions to this update! <3"
+            thank_you_note="A huge thank you to ${CONTRIBUTORS} for their contributions to this update! <3"
           else
             thank_you_note="Thank you to all contributors! <3"
           fi
@@ -255,7 +286,7 @@ jobs:
           
           # Replace placeholders using sed (safe because placeholders don't contain special chars)
           sed -i "s/VERSION_PLACEHOLDER/${version_no_prefix}/g" "$changelog_path"
-          sed -i "s/THANK_YOU_PLACEHOLDER/${thank_you_note}/g" "$changelog_path"
+          sed -i "s|THANK_YOU_PLACEHOLDER|${thank_you_note}|g" "$changelog_path"
           sed -i "s/PR_COUNT_PLACEHOLDER/${PR_COUNT}/g" "$changelog_path"
           
           echo "Changelog created at: $changelog_path"
