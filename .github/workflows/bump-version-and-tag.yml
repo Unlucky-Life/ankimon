@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version string (e.g. 1.2.3)
+        description: Version string (e.g. 1.5-E)
         required: true
 
 jobs:
@@ -23,9 +23,30 @@ jobs:
       - name: Get previous tag
         id: previous_tag
         run: |
-          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          echo "tag=${PREV_TAG}" >> $GITHUB_OUTPUT
-          echo "Previous tag: ${PREV_TAG}"
+          CURRENT_VERSION="${{ github.event.inputs.version }}"
+          
+          # Find all -E pattern tags, sort by creation date, exclude current version
+          PREV_TAG=$(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags | \
+                     grep -E '^[0-9]+\.[0-9]+-E$' | \
+                     grep -v "^${CURRENT_VERSION}$" | \
+                     head -1)
+          
+          if [ -z "$PREV_TAG" ]; then
+            echo "No previous tag found"
+            echo "tag=" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${PREV_TAG}" >> $GITHUB_OUTPUT
+            echo "Previous tag found: ${PREV_TAG}"
+          fi
+
+      - name: Load contributor nicknames
+        id: nicknames
+        run: |
+          if [ -f .github/contributor-nicknames.json ]; then
+            echo "nicknames_exist=true" >> $GITHUB_OUTPUT
+          else
+            echo "nicknames_exist=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Generate changelog using GitHub API
         id: changelog
@@ -34,45 +55,68 @@ jobs:
           script: |
             const previousTag = '${{ steps.previous_tag.outputs.tag }}';
             const newVersion = '${{ github.event.inputs.version }}';
+            const nicknamesExist = '${{ steps.nicknames.outputs.nicknames_exist }}' === 'true';
             
-            console.log(`Generating changelog from ${previousTag} to current HEAD`);
+            console.log(`Generating changelog for version ${newVersion}`);
+            console.log(`Previous tag: ${previousTag || 'NONE'}`);
+            
+            // Load contributor nicknames
+            let nicknames = {};
+            if (nicknamesExist) {
+              try {
+                const { data: nicknameFile } = await github.rest.repos.getContent({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  path: '.github/contributor-nicknames.json'
+                });
+                const content = Buffer.from(nicknameFile.content, 'base64').toString('utf8');
+                nicknames = JSON.parse(content);
+                console.log('Loaded contributor nicknames:', nicknames);
+              } catch (error) {
+                console.log('Could not load nicknames:', error.message);
+              }
+            }
             
             let pullRequests = [];
             const contributors = new Set();
+            const previousContributors = new Set();
             
             if (previousTag) {
               try {
-                // Get the commit SHA for the previous tag
-                const { data: prevTagRef } = await github.rest.git.getRef({
+                // Get contributors from previous tag
+                const prevComparison = await github.rest.repos.compareCommitsWithBasehead({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  ref: `tags/${previousTag}`
+                  basehead: `${previousTag}...${previousTag}`,
+                  per_page: 1
                 });
                 
-                const prevTagSha = prevTagRef.object.sha;
-                console.log(`Previous tag ${previousTag} points to commit ${prevTagSha}`);
-                
-                // Get current HEAD SHA
-                const { data: currentRef } = await github.rest.git.getRef({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  ref: 'heads/main'  // or your default branch name
+                // Get all PRs up to previous tag to find existing contributors
+                const { data: oldPRs } = await github.rest.search.issuesAndPullRequests({
+                  q: `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged`,
+                  sort: 'updated',
+                  order: 'desc',
+                  per_page: 100
                 });
                 
-                const currentSha = currentRef.object.sha;
-                console.log(`Current HEAD is at commit ${currentSha}`);
+                for (const pr of oldPRs.items) {
+                  if (pr.user && pr.user.login !== 'github-actions[bot]') {
+                    previousContributors.add(pr.user.login);
+                  }
+                }
                 
-                // Compare the two commits to get ONLY commits between them
+                console.log(`Found ${previousContributors.size} previous contributors`);
+                
+                // Get commits between tags
                 const comparison = await github.rest.repos.compareCommitsWithBasehead({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  basehead: `${prevTagSha}...${currentSha}`
+                  basehead: `${previousTag}...main`,
+                  per_page: 250
                 });
                 
-                console.log(`Found ${comparison.data.commits.length} commits between ${previousTag} and HEAD`);
-                console.log(`Comparison status: ${comparison.data.status}`);
+                console.log(`Found ${comparison.data.commits.length} commits between ${previousTag} and main`);
                 
-                // Step 2: For each commit, get associated pull requests
                 const prNumbers = new Set();
                 
                 for (const commit of comparison.data.commits) {
@@ -83,11 +127,11 @@ jobs:
                       commit_sha: commit.sha
                     });
                     
-                    // Add each PR number to our set (avoids duplicates)
                     for (const pr of prs) {
                       if (pr.merged_at && !prNumbers.has(pr.number)) {
                         prNumbers.add(pr.number);
                         pullRequests.push(pr);
+                        
                         if (pr.user && pr.user.login !== 'github-actions[bot]') {
                           contributors.add(pr.user.login);
                         }
@@ -98,31 +142,15 @@ jobs:
                   }
                 }
                 
-                console.log(`Found ${pullRequests.length} unique PRs between tags`);
+                console.log(`Found ${pullRequests.length} unique PRs`);
                 
               } catch (error) {
                 console.log(`Error comparing commits: ${error.message}`);
-                console.log(`Falling back to recent merged PRs`);
-                // Fallback: get recent merged PRs if comparison fails
-                const { data: recentPRs } = await github.rest.pulls.list({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  state: 'closed',
-                  sort: 'updated',
-                  direction: 'desc',
-                  per_page: 50
-                });
-                
-                pullRequests = recentPRs.filter(pr => pr.merged_at);
-                for (const pr of pullRequests) {
-                  if (pr.user && pr.user.login !== 'github-actions[bot]') {
-                    contributors.add(pr.user.login);
-                  }
-                }
+                // For orphaned tags, use empty list
+                pullRequests = [];
               }
             } else {
-              console.log('No previous tag found, fetching recent merged PRs');
-              // No previous tag - get recent merged PRs
+              console.log('No previous tag - fetching recent PRs');
               const { data: recentPRs } = await github.rest.pulls.list({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -139,6 +167,23 @@ jobs:
                 }
               }
             }
+            
+            // Find new contributors
+            const newContributors = [];
+            for (const contributor of contributors) {
+              if (!previousContributors.has(contributor)) {
+                // Find their first PR in this release
+                const firstPR = pullRequests.find(pr => pr.user.login === contributor);
+                if (firstPR) {
+                  newContributors.push({
+                    username: contributor,
+                    prNumber: firstPR.number
+                  });
+                }
+              }
+            }
+            
+            console.log(`Found ${newContributors.length} new contributors:`, newContributors);
             
             // Categorize PRs by label and CREATE MARKDOWN LINKS
             const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
@@ -157,7 +202,7 @@ jobs:
                 continue;
               }
               
-              // Create markdown links for PR number and username
+              // Create markdown links
               const prLink = `[#${pr.number}](${repoUrl}/pull/${pr.number})`;
               const userLink = `[@${pr.user.login}](https://github.com/${pr.user.login})`;
               const prEntry = `- ${pr.title} ${prLink} ${userLink}`;
@@ -173,27 +218,34 @@ jobs:
               }
             }
             
-            // Create markdown links for contributors
+            // Create contributor links with nicknames
             const contributorLinks = Array.from(contributors)
               .sort()
-              .map(username => `[@${username}](https://github.com/${username})`)
+              .map(username => {
+                const nickname = nicknames[username] || username;
+                return `[@${username}](https://github.com/${username}) (${nickname})`;
+              })
               .join(', ');
             
-            // Export data for next step
+            // Create new contributors section
+            const newContributorsSection = newContributors
+              .map(nc => {
+                const nickname = nicknames[nc.username] || nc.username;
+                return `* [@${nc.username}](https://github.com/${nc.username}) made their first contribution in [#${nc.prNumber}](${repoUrl}/pull/${nc.prNumber}), welcome to the devs 🫡`;
+              })
+              .join('\n');
+            
+            // Export data
             core.setOutput('enhancements', enhancements.join('\n'));
             core.setOutput('bugs', bugs.join('\n'));
             core.setOutput('documentation', documentation.join('\n'));
             core.setOutput('other', other.join('\n'));
             core.setOutput('contributors', contributorLinks);
-            core.setOutput('pr_count', pullRequests.length);
+            core.setOutput('new_contributors', newContributorsSection);
+            core.setOutput('has_new_contributors', newContributors.length > 0 ? 'true' : 'false');
+            core.setOutput('pr_count', enhancements.length + bugs.length + documentation.length + other.length);
             
             console.log('Changelog generation complete!');
-            console.log(`- Total PRs: ${pullRequests.length}`);
-            console.log(`- Enhancements: ${enhancements.length}`);
-            console.log(`- Bugs: ${bugs.length}`);
-            console.log(`- Documentation: ${documentation.length}`);
-            console.log(`- Other: ${other.length}`);
-            console.log(`- Contributors: ${contributorLinks}`);
 
       - name: Create final changelog file
         env:
@@ -202,23 +254,24 @@ jobs:
           DOCUMENTATION: ${{ steps.changelog.outputs.documentation }}
           OTHER: ${{ steps.changelog.outputs.other }}
           CONTRIBUTORS: ${{ steps.changelog.outputs.contributors }}
+          NEW_CONTRIBUTORS: ${{ steps.changelog.outputs.new_contributors }}
+          HAS_NEW_CONTRIBUTORS: ${{ steps.changelog.outputs.has_new_contributors }}
           PR_COUNT: ${{ steps.changelog.outputs.pr_count }}
         run: |
           version="${{ github.event.inputs.version }}"
           version_no_prefix=$(echo "$version" | sed 's/^v//')
           changelog_path="assets/changelogs/$version_no_prefix.md"
           
-          # Create directory if it doesn't exist
           mkdir -p assets/changelogs
           
-          # Prepare Contributor List (already has markdown links)
+          # Prepare Contributor List
           if [ -n "$CONTRIBUTORS" ]; then
             thank_you_note="A huge thank you to ${CONTRIBUTORS} for their contributions to this update! <3"
           else
             thank_you_note="Thank you to all contributors! <3"
           fi
           
-          # Create changelog using heredoc with proper quoting
+          # Create changelog
           cat > "$changelog_path" << 'EOF'
           ## 🌟 Ankimon vVERSION_PLACEHOLDER 🌟
 
@@ -226,7 +279,7 @@ jobs:
 
           ### What's new
 
-          This release includes PR_COUNT_PLACEHOLDER merged pull requests with enhancements, bug fixes, and improvements.
+          This release includes PR_COUNT_PLACEHOLDER merged pull requests with enhancements, bug fixes, and improvements!
 
           ### 💢 PSA
           If you love Ankimon, please join our developers 🥺
@@ -245,17 +298,16 @@ jobs:
           # Add Features & Improvements
           if [ -n "$ENHANCEMENTS" ]; then
             cat >> "$changelog_path" << 'EOF'
-          ### ✨ Features & Improvements
+          ### ✨ Features & Improvements!
 
           EOF
-            # Use printf to safely add content
             printf '%s\n\n' "$ENHANCEMENTS" >> "$changelog_path"
           fi
           
           # Add Bug Fixes
           if [ -n "$BUGS" ]; then
             cat >> "$changelog_path" << 'EOF'
-          ### 🐛 Bug Fixes & Stability
+          ### 🐛 Bug Fixes & Stability!
 
           EOF
             printf '%s\n\n' "$BUGS" >> "$changelog_path"
@@ -264,7 +316,7 @@ jobs:
           # Add Documentation
           if [ -n "$DOCUMENTATION" ]; then
             cat >> "$changelog_path" << 'EOF'
-          ### 📚 Documentation
+          ### 📚 Documentation!
 
           EOF
             printf '%s\n\n' "$DOCUMENTATION" >> "$changelog_path"
@@ -273,25 +325,38 @@ jobs:
           # Add Other changes
           if [ -n "$OTHER" ]; then
             cat >> "$changelog_path" << 'EOF'
-          ### 🔧 Other Changes
+          ### 🔧 Other Changes!
 
           EOF
             printf '%s\n\n' "$OTHER" >> "$changelog_path"
           fi
           
-          # Add closing
+          # Add New Contributors section if there are any
+          if [ "$HAS_NEW_CONTRIBUTORS" = "true" ] && [ -n "$NEW_CONTRIBUTORS" ]; then
+            cat >> "$changelog_path" << 'EOF'
+          ## New Contributors
+
+          EOF
+            printf '%s\n\n' "$NEW_CONTRIBUTORS" >> "$changelog_path"
+          fi
+          
+          # Add backup notice
           cat >> "$changelog_path" << 'EOF'
+          ***
+
+          Make a backup, but *your progress should NOT BE LOST from updating* - put a bug report if you lose your files
+
+          Backup guide :arrow_right: https://discord.com/channels/1241773562629718148/1303759380768096318
 
           ***
           EOF
           
-          # Replace placeholders using sed (safe because placeholders don't contain special chars)
+          # Replace placeholders
           sed -i "s/VERSION_PLACEHOLDER/${version_no_prefix}/g" "$changelog_path"
           sed -i "s|THANK_YOU_PLACEHOLDER|${thank_you_note}|g" "$changelog_path"
           sed -i "s/PR_COUNT_PLACEHOLDER/${PR_COUNT}/g" "$changelog_path"
           
           echo "Changelog created at: $changelog_path"
-          echo "----------------------------------------"
           cat "$changelog_path"
 
       - name: Bump version in manifest.json
@@ -341,6 +406,7 @@ jobs:
             - **Version**: ${{ github.event.inputs.version }}
             - **PRs included**: ${{ steps.changelog.outputs.pr_count }}
             - **Contributors**: ${{ steps.changelog.outputs.contributors }}
+            - **New contributors**: ${{ steps.changelog.outputs.has_new_contributors == 'true' && '✨ Yes!' || 'None' }}
           branch: bump-version-${{ github.event.inputs.version }}
           base: main
           labels: |
