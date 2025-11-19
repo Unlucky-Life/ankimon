@@ -189,7 +189,7 @@ class Reviewer_Manager:
             int(self.settings.compute_special_variable('wild_hp_spacer')),
             self.settings.get("gui.xp_bar_config"),
             self.main_pokemon,
-            int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings.get("misc.remove_levelcap"))),
+            int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings.get("misc.remove_level_cap"))),
             self.settings.compute_special_variable('xp_bar_location'),
             enemy_hp_true_percent,
             main_hp_true_percent
