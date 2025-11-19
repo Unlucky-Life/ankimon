@@ -1021,7 +1021,7 @@ def check_and_sync_pokemon_data(settings_obj, logger):
         logger.log("error", f"Failed to check Pokemon data sync: {str(e)}")
         return None
 
-def save_ankimon_configs():
+def save_ankimon_configs(settings_obj):
     """Convenience function to save configs - called before media sync."""
     ankiweb_sync = settings_obj.get("misc.ankiweb_sync")
     # Check if sync is disabled
@@ -1068,7 +1068,7 @@ def setup_ankimon_sync_hooks(settings_obj, logger):
             return
 
         try:
-            synced_files = save_ankimon_configs()
+            synced_files = save_ankimon_configs(settings_obj)
             if synced_files:
                 logger.log("info", f"Prepared {len(synced_files)} files for sync")
         except Exception as e:
