@@ -60,7 +60,7 @@ class TrainerCardGUI(QDialog):
         username_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Badge count
-        badge_label = QLabel(f"Badges: {self.trainer_card.badge_count}")
+        badge_label = QLabel(f"Badges: {self.trainer_card.badge_count()}")
         badge_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         badge_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 

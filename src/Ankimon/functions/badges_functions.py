@@ -2,13 +2,15 @@ import json
 
 from ..resources import badgebag_path
 
+def get_achieved_badges():
+    with open(badgebag_path, "r", encoding="utf-8") as json_file:
+        return json.load(json_file)
+
 def populate_achievements_from_badges(achievements):
     # name change for clarification
     try:
-        with open(badgebag_path, "r", encoding="utf-8") as json_file:
-            badge_list = json.load(json_file)
-            for badge_num in badge_list:
-                achievements[str(badge_num)] = True
+        for badge_num in get_achieved_badges():
+            achievements[str(badge_num)] = True
     except (FileNotFoundError, json.JSONDecodeError):
         # If file doesn't exist or is empty, just return the initial achievements
         pass

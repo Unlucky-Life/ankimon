@@ -1,6 +1,8 @@
 import json
+
+from .badges_functions import get_achieved_badges
 from .pokedex_functions import extract_ids_from_file
-from ..resources import mypokemon_path, badgebag_path
+from ..resources import mypokemon_path
 from .pokemon_functions import find_experience_for_level
 from .pokedex_functions import check_evolution_for_pokemon, return_name_for_id
 from aqt.utils import showInfo, showWarning
@@ -28,9 +30,7 @@ def find_trainer_rank(highest_level, trainer_level):
             shiny_pokemon_count = sum(1 for pokemon in my_pokemon if pokemon.get('shiny', False))  # Assuming 'shiny' is a key
 
         # Count badges
-        with open(badgebag_path, 'r', encoding='utf-8') as f:
-            badges = json.load(f)
-            badge_count = len(badges)
+        badge_count = len(get_achieved_badges())
 
         # Determine rank based on achievements
         if caught_pokemon >= 900 and highest_level >= 99 and trainer_level >= 100 and shiny_pokemon_count >= 50:

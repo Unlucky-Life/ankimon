@@ -48,9 +48,7 @@ from .resources import (
     pkmnimgfolder,
     mypokemon_path,
     itembag_path,
-    badgebag_path,
     sound_list_path,
-    badges_list_path,
 )
 from .menu_buttons import create_menu_actions
 from .hooks import setupHooks
@@ -70,7 +68,7 @@ from .utils import (
     load_collected_pokemon_ids,
 )
 from .functions.url_functions import open_team_builder, rate_addon_url, report_bug, join_discord_url, open_leaderboard_url
-from .functions.badges_functions import handle_review_count_achievement, check_for_badge, receive_badge
+from .functions.badges_functions import get_achieved_badges, handle_review_count_achievement, check_for_badge, receive_badge
 from .functions.pokemon_showdown_functions import export_to_pkmn_showdown, export_all_pkmn_showdown, flex_pokemon_collection
 from .functions.drawing_utils import tooltipWithColour
 from .functions.discord_function import DiscordPresence
@@ -623,10 +621,9 @@ def on_review_card(*args):
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
 
 if database_complete:
-    with open(badgebag_path, "r", encoding="utf-8") as json_file:
-        badge_list = json.load(json_file)
-        if len(badge_list) > 1: # has atleast one badge
-            rate_this_addon()
+    badge_list = get_achieved_badges()
+    if len(badge_list) > 1: # has atleast one badge
+        rate_this_addon()
 
 if database_complete:
     if mypokemon_path.is_file() is False:

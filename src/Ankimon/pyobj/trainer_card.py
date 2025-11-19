@@ -1,5 +1,6 @@
 from ..resources import trainer_sprites_path, mypokemon_path
 from ..functions.trainer_functions import find_trainer_rank
+from ..functions.badges_functions import get_achieved_badges
 from aqt.utils import showWarning, showInfo
 import math
 import json
@@ -20,12 +21,11 @@ POKEMON_TIERS = {
 }
 
 class TrainerCard:
-    def __init__(self, logger, main_pokemon, settings_obj, trainer_name, badge_count, trainer_id, level=1, xp=0, achievements=None, team="", image_path=trainer_sprites_path, league="unranked"):
+    def __init__(self, logger, main_pokemon, settings_obj, trainer_name, trainer_id, level=1, xp=0, achievements=None, team="", image_path=trainer_sprites_path, league="unranked"):
         self.logger = logger
         self.main_pokemon = main_pokemon
         self.settings_obj = settings_obj
         self.trainer_name = trainer_name      # Name of the trainer
-        self.badge_count = badge_count        # Number of badges the trainer has earned
         self.favorite_pokemon = main_pokemon.name  # Trainer's favorite Pokémon
         self.trainer_id = trainer_id          # Unique ID for the trainer
         self.level = int(settings_obj.get("trainer.level"))                    # Trainer's level
@@ -58,6 +58,9 @@ class TrainerCard:
         except Exception as e :
             self.logger.log_and_showinfo("error", f"Error in syncing data to leaderboard {e}")
 
+    # Number of badges the trainer has earned
+    def badge_count(self):
+        return len(get_achieved_badges())
 
     def get_highest_level_pokemon(self):
         """Method to find the name of the highest-level Pokémon from the mypokemon_path."""
@@ -114,7 +117,7 @@ class TrainerCard:
             'trainer_id': self.trainer_id,
             'level': self.level,
             'xp': self.xp,
-            'badges': self.badge_count,
+            'badges': self.badge_count(),
             'favorite_pokemon': self.main_pokemon.name,
             'highest_level_pokemon': self.get_highest_level_pokemon(),
             'team': self.team,
