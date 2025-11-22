@@ -760,16 +760,7 @@ def handle_enemy_faint(
         kill_pokemon(main_pokemon, enemy_pokemon, evo_window, logger , achievements, trainer_card)
         new_pokemon(enemy_pokemon, test_window, ankimon_tracker_obj, reviewer_obj)  # Show a new random Pokémon
 
-    else:
-        # Manual mode (auto_battle_setting == 0): show the catch/defeat dialog
-        if test_window is not None:
-            try:
-                test_window.display_pokemon_death()
-                test_window.show()
-                return
-            except Exception as e:
-                show_warning_with_traceback(parent=mw, exception=e, message="Error showing catch/defeat window:")
-
+    # For Manual mode (auto_battle_setting == 0): no need to show window or do actions automatically
 
     main_pokemon.reset_bonuses()
     ankimon_tracker_obj.general_card_count_for_battle = 0
