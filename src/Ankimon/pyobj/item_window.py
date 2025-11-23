@@ -431,7 +431,7 @@ class ItemWindow(QWidget):
         try:
             item_id = return_id_for_item_name(item_name)
             evo_id = check_evolution_by_item(prevo_id, item_id)
-            if evo_id is not None:
+            if evo_id:
                 # Perform your action when the item matches the Pokémon's evolution item
                 self.logger.log_and_showinfo("info", "Pokemon Evolution is fitting !")
                 self.evo_window.ask_pokemon_evo(individual_id, prevo_id, evo_id)
