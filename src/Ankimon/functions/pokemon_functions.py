@@ -261,12 +261,12 @@ def save_fossil_pokemon(pokemon_id):
         "spe": 0
     }
     iv = {
-        "hp": random.randint(1, 32),
-        "atk": random.randint(1, 32),
-        "def": random.randint(1, 32),
-        "spa": random.randint(1, 32),
-        "spd": random.randint(1, 32),
-        "spe": random.randint(1, 32)
+        "hp": random.randint(0, 31),
+        "atk": random.randint(0, 31),
+        "def": random.randint(0, 31),
+        "spa": random.randint(0, 31),
+        "spd": random.randint(0, 31),
+        "spe": random.randint(0, 31)
     }
     stats["xp"] = 0
     caught_pokemon = {
