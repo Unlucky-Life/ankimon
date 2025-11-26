@@ -1,0 +1,2 @@
+- name: Generate folder JSON
+  run: python ankimon/src/Ankimon/addon_files/generate_json.py
