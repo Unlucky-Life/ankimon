@@ -29,7 +29,7 @@ jobs:
           import os
           import json
 
-          addon_dir = "/ankimon/ankimon/src/Ankimon/"  # Folder to scan
+          addon_dir = "/home/runner/work/ankimon/ankimon/src/Ankimon/"  # Folder to scan
           json_file_structure = "folder_structure.json"
           exclude_folders = ["__pycache__"]
 
