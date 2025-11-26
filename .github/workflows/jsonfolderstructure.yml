@@ -1,4 +1,11 @@
 - name: Generate folder JSON
+# Trigger on push to main and manually
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # <-- this allows on-demand runs
+  
   run: |
     python <<EOF
     import os, json
