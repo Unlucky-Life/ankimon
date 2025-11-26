@@ -34,39 +34,24 @@ jobs:
 
       # Step 4: Run the folder-to-JSON script
       - name: Generate folder JSON
-        run: |
-          import os
-          import json
-
-          addon_dir = "ankimon/src/"  # replace with your folder path
-          json_file_structure = "folder_structure.json"
-          exclude_folders = ["__pycache__"]
-
-          def create_folder_structure_json(directory=addon_dir, output_file=json_file_structure, exclude_folders=exclude_folders):
-              def folder_to_dict(path):
-                  if os.path.basename(path) in exclude_folders:
-                      return None
-                  folder_dict = {'name': os.path.basename(path), 'type': 'folder', 'children': []}
-                  try:
-                      for item in os.listdir(path):
-                          item_path = os.path.join(path, item)
-                          if os.path.isdir(item_path):
-                              subfolder = folder_to_dict(item_path)
-                              if subfolder:
-                                  folder_dict['children'].append(subfolder)
-                          else:
-                              folder_dict['children'].append({'name': item, 'type': 'file'})
-                  except PermissionError:
-                      folder_dict['children'].append({'name': 'Permission Denied', 'type': 'error'})
-                  return folder_dict
-
-              folder_structure = folder_to_dict(directory)
-              if not folder_structure:
-                  folder_structure = {'name': 'root', 'type': 'folder', 'children': []}
-              with open(output_file, 'w', encoding='utf-8') as f:
-                  json.dump(folder_structure, f, indent=4)
-
-          create_folder_structure_json()
+        run: python -c "
+      import os, json
+      addon_dir='ankimon/src/'
+      json_file_structure='folder_structure.json'
+      exclude_folders=['__pycache__']
+      def folder_to_dict(path):
+          if os.path.basename(path) in exclude_folders: return None
+          d={'name':os.path.basename(path),'type':'folder','children':[]}
+          try:
+              for i in os.listdir(path):
+                  p=os.path.join(path,i)
+                  d['children'].append(folder_to_dict(p) if os.path.isdir(p) else {'name':i,'type':'file'})
+          except PermissionError:
+              d['children'].append({'name':'Permission Denied','type':'error'})
+          return d
+      structure=folder_to_dict(addon_dir) or {'name':'root','type':'folder','children':[]}
+      json.dump(structure, open(json_file_structure,'w'), indent=4)
+      "
 
       # Step 5: Upload the generated JSON as an artifact
       - name: Upload JSON
