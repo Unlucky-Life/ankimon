@@ -1,0 +1,72 @@
+name: Generate Folder JSON
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # allows manual triggering
+
+jobs:
+  generate-json:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # Step 3: Install dependencies (if needed)
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # add any dependencies if your script needs them
+          # e.g., pip install somepackage
+
+      # Step 4: Run the folder-to-JSON script
+      - name: Generate folder JSON
+        run: |
+          import os
+          import json
+
+          addon_dir = "YOUR_FOLDER_PATH"  # replace with your folder path
+          json_file_structure = "folder_structure.json"
+          exclude_folders = ["__pycache__"]
+
+          def create_folder_structure_json(directory=addon_dir, output_file=json_file_structure, exclude_folders=exclude_folders):
+              def folder_to_dict(path):
+                  if os.path.basename(path) in exclude_folders:
+                      return None
+                  folder_dict = {'name': os.path.basename(path), 'type': 'folder', 'children': []}
+                  try:
+                      for item in os.listdir(path):
+                          item_path = os.path.join(path, item)
+                          if os.path.isdir(item_path):
+                              subfolder = folder_to_dict(item_path)
+                              if subfolder:
+                                  folder_dict['children'].append(subfolder)
+                          else:
+                              folder_dict['children'].append({'name': item, 'type': 'file'})
+                  except PermissionError:
+                      folder_dict['children'].append({'name': 'Permission Denied', 'type': 'error'})
+                  return folder_dict
+
+              folder_structure = folder_to_dict(directory)
+              if not folder_structure:
+                  folder_structure = {'name': 'root', 'type': 'folder', 'children': []}
+              with open(output_file, 'w', encoding='utf-8') as f:
+                  json.dump(folder_structure, f, indent=4)
+
+          create_folder_structure_json()
+
+      # Step 5: Upload the generated JSON as an artifact
+      - name: Upload JSON
+        uses: actions/upload-artifact@v3
+        with:
+          name: folder-structure
+          path: folder_structure.json
