@@ -33,7 +33,7 @@ jobs:
           import os
           import json
 
-          addon_dir = "YOUR_FOLDER_PATH"  # replace with your folder path
+          addon_dir = "ankimon/source"  # replace with your folder path
           json_file_structure = "folder_structure.json"
           exclude_folders = ["__pycache__"]
 
