@@ -1,2 +1,38 @@
-- name: Generate folder JSON
-  run: python ankimon/src/Ankimon/addon_files/generate_json.py
+name: Generate Folder JSON
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # allows manual triggering
+
+jobs:
+  generate-json:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # Step 3: Install dependencies (if needed)
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+
+      # Step 4: Run the Python script
+      - name: Generate folder JSON
+        run: python ankimon/src/Ankimon/addon_files/generate_json.py
+
+      # Step 5: Upload the generated JSON as an artifact
+      - name: Upload JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: folder-structure
+          path: folder_structure.json
