@@ -26,7 +26,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           # add any dependencies if your script needs them
-          # e.g., pip install somepackage
 
       # Step 4: Run the folder-to-JSON script
       - name: Generate folder JSON
@@ -64,9 +63,9 @@ jobs:
 
           create_folder_structure_json()
 
-      # Step 5: Upload the generated JSON as an artifact
+      # Step 5: Upload the generated JSON as an artifact using the new action
       - name: Upload JSON
-        uses: actions/upload-artifact@v3
+        uses: gh-actions/upload-artifact@v2
         with:
           name: folder-structure
           path: folder_structure.json
