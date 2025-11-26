@@ -33,7 +33,7 @@ jobs:
           import os
           import json
 
-          addon_dir = "ankimon/source"  # replace with your folder path
+          addon_dir = "ankimon/src/"  # replace with your folder path
           json_file_structure = "folder_structure.json"
           exclude_folders = ["__pycache__"]
 
@@ -63,9 +63,9 @@ jobs:
 
           create_folder_structure_json()
 
-      # Step 5: Upload the generated JSON as an artifact using the new action
+      # Step 5: Upload the generated JSON as an artifact
       - name: Upload JSON
-        uses: gh-actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: folder-structure
           path: folder_structure.json
