@@ -251,7 +251,7 @@ class TestWindow(QWidget):
         # draw background to a specific pixel
         painter.drawPixmap(0, 0, pixmap_bckg)
 
-        painter = self.draw_hp_bar(118, 76, 8, 116, self.enemy_pokemon.hp, self.enemy_pokemon.max_hp, painter)  # enemy pokemon hp_bar
+        painter = self.draw_hp_bar(118, 76, 8, 116, self.enemy_pokemon.current_hp, self.enemy_pokemon.max_hp, painter)  # enemy pokemon hp_bar
 
         painter = self.draw_hp_bar(401, 208, 8, 116, self.main_pokemon.hp, self.main_pokemon.max_hp, painter)  # main pokemon hp_bar
 
@@ -279,7 +279,7 @@ class TestWindow(QWidget):
 
         # custom font
         custom_font = load_custom_font(int(26), int(self.settings_obj.get("misc.language")))
-
+        hp_enemy_text_font = load_custom_font(int(18), int(self.settings_obj.get("misc.language")))
         msg_font = load_custom_font(int(32), int(self.settings_obj.get("misc.language")))
 
         # Draw the text on top of the image
@@ -309,6 +309,9 @@ class TestWindow(QWidget):
         #painter.drawText(55, 85, gender_text)
         painter.drawText(490, 199, f"{self.main_pokemon.level}")
 
+        enemy_hp_text = str(int(self.enemy_pokemon.hp)) + "/"
+        enemy_max_hp_text = str(int(self.enemy_pokemon.max_hp))
+
         hp_text = str(int(self.main_pokemon.hp))
         max_hp_text = str(int(self.main_pokemon.max_hp))
 
@@ -318,10 +321,19 @@ class TestWindow(QWidget):
         painter.drawText(max_hp_x, 238, max_hp_text)
         painter.drawText(hp_x, 238, hp_text)
 
+        enemy_hp_x = 41 if int(self.enemy_pokemon.max_hp) < 100 else 40  # Shift left if 3 digits
+        enemy_max_hp_x = 64 if int(self.enemy_pokemon.max_hp) < 100 else 56  # Shift left if 3 digits
+
         painter.setFont(msg_font)
         painter.setPen(QColor(240, 240, 208))  # Text color
 
         painter.drawText(40, 320, message_box_text)
+
+        painter.setFont(hp_enemy_text_font)
+        painter.setPen(QColor(31, 31, 39))  # Text color
+        self.enemy_pokemon.max_hp = 101  # For testing purposes
+        painter.drawText(enemy_hp_x, 84 if int(self.enemy_pokemon.max_hp) < 100 else 80 , enemy_hp_text)
+        painter.drawText(enemy_max_hp_x, 84 if int(self.enemy_pokemon.max_hp) < 100 else 88, enemy_max_hp_text)
 
         painter.end()
 
@@ -447,7 +459,7 @@ class TestWindow(QWidget):
 
         # custom font
         custom_font = load_custom_font(int(26), int(self.settings_obj.get("misc.language")))
-
+        hp_enemy_text_font = load_custom_font(int(18), int(self.settings_obj.get("misc.language")))
         msg_font = load_custom_font(int(28), int(self.settings_obj.get("misc.language")))
 
         # Draw the text on top of the image
@@ -486,7 +498,7 @@ class TestWindow(QWidget):
         painter.drawText(hp_x, 238, hp_text)
 
         painter.setFont(msg_font)
-        painter.setPen(QColor(240, 240, 208))  # Text color
+        painter.setPen(QColor(31, 31, 39))  # Text color
 
         painter.end()
 
