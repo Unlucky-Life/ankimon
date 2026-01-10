@@ -21,7 +21,7 @@ from ..utils import load_custom_font
 from ..functions.pokedex_functions import return_name_for_id, search_pokeapi_db_by_id, search_pokedex
 from ..functions.pokemon_functions import get_random_moves_for_pokemon
 from ..functions.battle_functions import calculate_hp
-from ..functions.update_main_pokemon import update_main_pokemon
+from ..functions.update_main_pokemon import update_main_pokemon, save_main_pokemon
 from ..functions.badges_functions import check_for_badge, receive_badge
 from ..pyobj.attack_dialog import AttackDialog
 from ..pyobj.settings import Settings
@@ -298,8 +298,16 @@ class EvoWindow(QWidget):
 
         try:  # Update Main Pokemon Object and sync with file
             if main_pokemon is not None and main_pokemon.individual_id == individual_id:
-                # Update the in-memory main_pokemon object with the evolved data                # Call update_main_pokemon to ensure file and object are in sync (this will also save to disk)
+                # Update the in-memory main_pokemon object with the evolved data
+                # Remove stats property because it is read-only in PokemonObject refer to pokemon_obj.py line 132
+                update_data = pokemon.copy()
+                if "stats" in update_data:
+                    del update_data["stats"]
+                
+                main_pokemon.update_stats(**update_data)
+                save_main_pokemon(main_pokemon)
                 main_pokemon, _ = update_main_pokemon(main_pokemon)
+                
                 # Update UI as before
                 class Container(object):
                     pass
