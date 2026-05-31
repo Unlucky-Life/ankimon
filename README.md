@@ -1,4 +1,6 @@
 # Ankimon - Gamify Your Learning Experience with Anki
+LATEST VERSION ON: https:
+[![SLATEST VERSION ON:](//github.com/h0tp-ftw/ankimon)](//github.com/h0tp-ftw/ankimon)
 
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=unlucky-life/ankimon&type=Date)](https://www.star-history.com/#unlucky-life/ankimon&Date)
