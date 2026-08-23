@@ -75,13 +75,14 @@ def get_multiplier_acc_eva(stage):
     return stage_to_factor_new.get(stage, "Invalid stage")
 
 def bP_none_moves(move):
-    target =  move.get("target", None)
+    target = move.get("target", None)
     if target == "normal":
         damage = move.get("damage")
         if damage is None:
             damage = 5
         return damage
-    
+    return 0
+
 def type_colors(type):
     type_colors = {
         "Normal": "#A8A77A",

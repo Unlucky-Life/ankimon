@@ -50,7 +50,10 @@ def calc_atk_dmg(level, critical, power, stat_atk, wild_stat_def, main_type, mov
             critical = critical * 1
         else:
             critical += 2
-        stab = 1.5 if move_type == main_type else 1.0
+        # main_type is a list (e.g. ["Grass"]) and move_type a bare string (e.g. "grass") -
+        # comparing them directly (`move_type == main_type`) never matched, so STAB never applied.
+        main_types = [main_type] if isinstance(main_type, str) else main_type
+        stab = 1.5 if move_type.capitalize() in [t.capitalize() for t in main_types] else 1.0
         eff = get_effectiveness(move_type, wild_type)
         # random luck
         random_number = random.randint(217, 255)
@@ -97,16 +100,19 @@ def status_effect(pokemon_obj, move, slp_counter, msg, acc):
         msg += (f"The wild {name} is badly poisoned and was hurt by is poisoning!")
         stat = "psn"
     elif stat == "frz":
-        free_chance = 20 / 100
+        # NOTE: this used to be inverted - `random_number < free_chance` was
+        # treated as "stays frozen", so a fire move (free_chance forced to 1)
+        # almost always kept the target frozen instead of always thawing it.
+        thaw_chance = 20 / 100
         if move["type"] == "fire" and move["target"] != "self":
-            free_chance = 1
+            thaw_chance = 1
         random_number = random.random()
-        if random_number < free_chance:
-            msg += (f"Wild {name} is frozen solid!")
-            acc = 0
-        else:
+        if random_number < thaw_chance:
             stat = None
             msg += (f"Wild {name} is no longer frozen!")
+        else:
+            msg += (f"Wild {name} is frozen solid!")
+            acc = 0
     elif stat == "slp":
             if slp_counter > 1:
                 slp_counter -= 1
@@ -114,4 +120,7 @@ def status_effect(pokemon_obj, move, slp_counter, msg, acc):
             else:
                 stat = None
                 msg += (f"Wild {name} is no longer asleep!")
-    return msg, acc, stat, battle_stats
+    # brn/psn/tox above compute damage-over-time into `hp` - persist it back
+    # onto the Pokemon (it used to be discarded, making status DOT a no-op).
+    pokemon_obj.hp = max(0, int(hp))
+    return msg, acc, stat, stats

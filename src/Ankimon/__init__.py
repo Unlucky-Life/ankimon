@@ -65,6 +65,7 @@ try:
     from .functions.pokedex_functions import *
     from .functions.badges_functions import *
     from .functions.battle_functions import *
+    from .functions import battle_engine
     from .functions.pokemon_functions import *
     from .functions.create_gui_functions import *
     from .functions.create_css_for_reviewer import create_css_for_reviewer
@@ -1639,7 +1640,7 @@ def on_review_card(*args):
         if ankimon_tracker_obj.cards_battle_round >= int(settings_obj.get("battle.cards_per_round", 2)):
             ankimon_tracker_obj.cards_battle_round = 0
             ankimon_tracker_obj.attack_counter = 0
-            slp_counter = 0
+            slp_counter = ankimon_tracker_obj.slp_counter
             ankimon_tracker_obj.pokemon_encouter += 1
             multiplier = int(ankimon_tracker_obj.multiplier)
             msg = ""
@@ -1667,7 +1668,9 @@ def on_review_card(*args):
                     else:
                         if e_move_category == "Status":
                             color = "#F7DC6F"
-                            msg = effect_status_moves(rand_enemy_atk, enemy_pokemon.stats, main_pokemon.stats, msg, main_pokemon.name , enemy_pokemon.name)
+                            msg, battle_status, slp_counter = battle_engine.resolve_status_move(
+                                rand_enemy_atk, enemy_pokemon.stats, main_pokemon.stats,
+                                enemy_pokemon.name, main_pokemon.name, msg, battle_status, slp_counter)
                         elif e_move_category == "Physical" or e_move_category == "Special":
                             critRatio = enemy_move.get("critRatio", 1)
                             if e_move_category == "Physical":
@@ -1697,14 +1700,18 @@ def on_review_card(*args):
                                 else:
                                     reviewer_obj.myseconds = 0
                                 msg += translator.translate("dmg_dealt", dmg=enemy_dmg, pokemon_name=main_pokemon.name.capitalize())
-                except:
+                except Exception as e:
+                    logger.log_and_showinfo("error", f"Enemy attack resolution failed, falling back to a generic attack: {e}")
                     enemy_dmg = 0
                     rand_enemy_atk = random.choice(enemy_pokemon.attacks)
                     enemy_move = find_details_move(rand_enemy_atk)
                     e_move_category = enemy_move.get("category")
+                    critRatio = enemy_move.get("critRatio", 1)
                     if e_move_category == "Status":
                             color = "#F7DC6F"
-                            msg = effect_status_moves(rand_enemy_atk, enemy_pokemon.stats, main_pokemon.stats, msg, main_pokemon.name , enemy_pokemon.name)
+                            msg, battle_status, slp_counter = battle_engine.resolve_status_move(
+                                rand_enemy_atk, enemy_pokemon.stats, main_pokemon.stats,
+                                enemy_pokemon.name, main_pokemon.name, msg, battle_status, slp_counter)
                     elif e_move_category == "Physical" or e_move_category == "Special":
                         if e_move_category == "Special":
                             def_stat = main_pokemon.stats["spd"]
@@ -1739,7 +1746,7 @@ def on_review_card(*args):
                 category = move.get("category")
                 acc = move.get("accuracy")
                 if battle_status != "fighting":
-                    msg, acc, battle_status, enemy_pokemon.stats = status_effect(enemy_pokemon, move, slp_counter, msg, acc)
+                    msg, acc, battle_status, enemy_pokemon.stats = battle_engine.resolve_status_effect(enemy_pokemon, move, slp_counter, msg, acc)
                 if acc is True:
                     acc = 100
                 if acc != 0:
@@ -1761,10 +1768,12 @@ def on_review_card(*args):
                 else:
                     if category == "Status":
                         color = "#F7DC6F"
-                        msg = effect_status_moves(random_attack, main_pokemon.stats, enemy_pokemon.stats, msg, enemy_pokemon.name, main_pokemon.name)
+                        msg, battle_status, slp_counter = battle_engine.resolve_status_move(
+                            random_attack, main_pokemon.stats, enemy_pokemon.stats,
+                            main_pokemon.name, enemy_pokemon.name, msg, battle_status, slp_counter)
                     elif category == "Physical" or category == "Special":
+                        critRatio = move.get("critRatio", 1)
                         try:
-                            critRatio = move.get("critRatio", 1)
                             if category == "Physical":
                                 color = "#F0B27A"
                             elif category == "Special":
@@ -1787,17 +1796,11 @@ def on_review_card(*args):
                                     dmg = 1
                                 enemy_pokemon.hp -= dmg
                                 msg += translator.translate("dmg_dealt", dmg=dmg, pokemon_name=enemy_pokemon.name.capitalize())
-                                move_stat = move.get("status", None)
-                                secondary = move.get("secondary", None)
-                                if secondary is not None:
-                                    bat_status = move.get("secondary", None).get("status", None)
-                                    if bat_status is not None:
-                                        move_with_status(move, move_stat, secondary)
-                                if move_stat is not None:
-                                    move_with_status(move, move_stat, secondary)
+                                battle_status, slp_counter = battle_engine.apply_secondary_status(move, battle_status, slp_counter)
                                 if dmg == 0:
                                     msg += "\n" + translator.translate("move_has_missed")
-                        except:
+                        except Exception as e:
+                            logger.log_and_showinfo("error", f"Player attack resolution failed, falling back to a generic attack: {e}")
                             if category == "Special":
                                 def_stat = enemy_pokemon.stats["spd"]
                                 atk_stat = main_pokemon.stats["spa"]
@@ -1821,6 +1824,11 @@ def on_review_card(*args):
                             play_effect_sound("HurtSuper")
                     else:
                         reviewer_obj.seconds = 0
+
+            # Persist status/sleep-counter so they carry over into the next round,
+            # instead of silently resetting every time on_review_card runs.
+            ankimon_tracker_obj.slp_counter = slp_counter
+            enemy_pokemon.battle_status = battle_status
 
             if enemy_pokemon.hp < 1:
                 enemy_pokemon.hp = 0
@@ -1875,65 +1883,10 @@ def on_review_card(*args):
     except Exception as e:
         showWarning(f"An error occurred in reviewer: {str(e)}")
 
-def effect_status_moves(move_name, mainpokemon_stats, stats, msg, name, mainpokemon_name):
-    global battle_status
-    move = find_details_move(move_name)
-    target = move.get("target")
-    boosts = move.get("boosts", {})
-    stat_boost_value = {
-        "hp": boosts.get("hp", 0),
-        "atk": boosts.get("atk", 0),
-        "def": boosts.get("def", 0),
-        "spa": boosts.get("spa", 0),
-        "spd": boosts.get("spd", 0),
-        "spe": boosts.get("spe", 0),
-        "xp": mainpokemon_stats.get("xp", 0)
-    }
-    move_stat = move.get("status",None)
-    status = move.get("secondary",None)
-    if move_stat is not None:
-        battle_status = move_stat
-    if status is not None:
-        random_number = random.random()
-        chances = status["chance"] / 100
-        if random_number < chances:
-            battle_status = status["status"]
-    if battle_status == "slp":
-        slp_counter = random.randint(1, 3)
-    if target == "self":
-        for boost, stage in boosts.items():
-            stat = get_multiplier_stats(stage)
-            mainpokemon_stats[boost] = mainpokemon_stats.get(boost, 0) * stat
-            msg += f" {main_pokemon.name.capitalize()}'s "
-            if stage < 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_decreased')}."
-            elif stage > 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
-    elif target in ["normal", "allAdjacentFoes"]:
-        for boost, stage in boosts.items():
-            stat = get_multiplier_stats(stage)
-            stats[boost] = stats.get(boost, 0) * stat
-            msg += f" {name.capitalize()}'s "
-            if stage < 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_decreased')}."
-            elif stage > 0:
-                msg += f"{boost.capitalize()} {translator.translate('stat_increased')}."
-    return msg
-
-def move_with_status(move, move_stat, status):
-    global battle_status
-    target = move.get("target")
-    bat_status = move.get("secondary", None).get("status", None)
-    if target in ["normal", "allAdjacentFoes"]:
-        if move_stat is not None:
-            battle_status = move_stat
-        if status is not None:
-            random_number = random.random()
-            chances = status["chance"] / 100
-            if random_number < chances:
-                battle_status = status["status"]
-    if battle_status == "slp":
-        slp_counter = random.randint(1, 3)
+## effect_status_moves / move_with_status were replaced by
+## functions.battle_engine.resolve_status_move / apply_secondary_status,
+## which thread battle_status/slp_counter explicitly instead of relying on
+## module globals that on_review_card's local variables never actually saw.
 
 # Connect the hook to Anki's review event
 gui_hooks.reviewer_did_answer_card.append(on_review_card)
