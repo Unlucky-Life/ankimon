@@ -1,0 +1,36 @@
+name: Raid Server
+
+on:
+  push:
+    paths:
+      - "raid-server/**"
+      - ".github/workflows/raid-server.yml"
+  pull_request:
+    paths:
+      - "raid-server/**"
+      - ".github/workflows/raid-server.yml"
+
+jobs:
+  test:
+    name: go build & test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: raid-server
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build ./...
+
+      - name: Test
+        run: go test ./... -race -v

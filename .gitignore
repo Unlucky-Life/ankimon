@@ -3,3 +3,5 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+raid-server/*.exe
+raid-server/ankimon-raid-server
