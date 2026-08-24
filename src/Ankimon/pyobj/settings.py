@@ -22,6 +22,12 @@ class Settings:
         if "misc.leaderboard" not in config:
             config["misc.leaderboard"] = False  # Add the new setting with its default value
 
+        # Backfill raid settings for existing configs created before this feature
+        if "raid.enabled" not in config:
+            config["raid.enabled"] = False
+        if "raid.server_url" not in config:
+            config["raid.server_url"] = "http://localhost:8080"
+
         if not config:
             #Card max time in Seconds
             config = {
@@ -69,6 +75,9 @@ class Settings:
                 "misc.ssh": True,
                 "misc.leaderboard": False,
                 "misc.YouShallNotPass_Ankimon_News": False,
+
+                "raid.enabled": False,
+                "raid.server_url": "http://localhost:8080",
                 "misc.discord_rich_presence": False,
                 "misc.discord_rich_presence_text": 1,
 

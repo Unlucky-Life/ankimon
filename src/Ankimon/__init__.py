@@ -66,6 +66,7 @@ try:
     from .functions.badges_functions import *
     from .functions.battle_functions import *
     from .functions import battle_engine
+    from .functions import raid_functions
     from .functions.pokemon_functions import *
     from .functions.create_gui_functions import *
     from .functions.create_css_for_reviewer import create_css_for_reviewer
@@ -269,6 +270,12 @@ ankimon_tracker_obj = AnkimonTracker(
 # Set Pokémon in the tracker
 ankimon_tracker_obj.set_main_pokemon(main_pokemon)
 ankimon_tracker_obj.set_enemy_pokemon(enemy_pokemon)
+
+# Raid session tracks whether we're currently in a shared boss fight - see
+# pyobj/raid_obj.py and functions/raid_functions.py (talks to raid-server/).
+from .pyobj.raid_obj import RaidSession
+raid_session_obj = RaidSession()
+mw.raid_session_obj = raid_session_obj
 
 # Initialize the Pokémon Shop Manager
 shop_manager = PokemonShopManager(
@@ -1799,6 +1806,18 @@ def on_review_card(*args):
                                 battle_status, slp_counter = battle_engine.apply_secondary_status(move, battle_status, slp_counter)
                                 if dmg == 0:
                                     msg += "\n" + translator.translate("move_has_missed")
+                                if raid_session_obj.active and dmg > 0:
+                                    raid_functions.try_send_attack(
+                                        raid_session_obj.raid_id, dmg, main_pokemon.level,
+                                        move["basePower"], atk_stat, def_stat)
+                                    raid_session_obj.note_card_reviewed()
+                                    if raid_session_obj.should_poll():
+                                        try:
+                                            raid_session_obj.apply_state(raid_functions.poll_raid_state(raid_session_obj.raid_id))
+                                        except raid_functions.RaidClientError as e:
+                                            logger.log_and_showinfo("error", f"Raid state poll failed: {e}")
+                                        finally:
+                                            raid_session_obj.note_polled()
                         except Exception as e:
                             logger.log_and_showinfo("error", f"Player attack resolution failed, falling back to a generic attack: {e}")
                             if category == "Special":
