@@ -28,14 +28,19 @@ There's no real account system yet (v1 matches the addon's leaderboard
 feature, which is also "well-formed credentials", not verified identity) -
 this exists to keep anonymous/accidental traffic out, not to authenticate.
 
+The participant identity for `/join` and `/attack` always comes from the
+`X-Ankimon-Username` header, never from a body field - a request body has no
+way to act as, join as, or attack as a different trainer than whoever
+authenticated the request.
+
 | Method | Path                  | Body                                                                 | Notes |
 |--------|-----------------------|-----------------------------------------------------------------------|-------|
 | GET    | `/healthz`            | -                                                                     | no auth required |
 | POST   | `/raids`               | `{"boss_name","boss_level","max_hp"}`                                 | creates a raid, returns it with a short `id` |
 | GET    | `/raids`               | -                                                                     | lists raids whose boss hasn't been defeated yet |
 | GET    | `/raids/{id}`          | -                                                                     | full raid state, including participants |
-| POST   | `/raids/{id}/join`     | `{"username"}`                                                        | idempotent - joining twice is a no-op |
-| POST   | `/raids/{id}/attack`   | `{"username","damage","level","base_power","atk_stat","def_stat"}`    | see below |
+| POST   | `/raids/{id}/join`     | `{}`                                                                   | idempotent - joining twice is a no-op |
+| POST   | `/raids/{id}/attack`   | `{"damage","level","base_power","atk_stat","def_stat"}`               | see below |
 
 ### Anti-cheat on `/attack`
 
@@ -50,7 +55,10 @@ compare it to what you sent if you need to detect clamping.
 This is an approximation (no access to the addon's type effectiveness chart
 server-side), tuned to always let legitimate hits through and only reject
 physically-impossible claims - not a byte-for-byte reimplementation of the
-Python damage formula.
+Python damage formula. `level`/`base_power`/`atk_stat`/`def_stat` are
+themselves clamped to real-game-plausible ranges before the ceiling is
+computed, so a client can't inflate its own ceiling by claiming an absurd
+level or stat.
 
 ## Manual smoke test
 
@@ -65,10 +73,10 @@ echo "$RAID"
 # grab "id" from the response, then:
 curl -s -X POST http://localhost:8080/raids/<id>/join \
   -H "X-Ankimon-Username: leon" -H "X-Ankimon-Api-Key: k" \
-  -d '{"username":"leon"}'
+  -d '{}'
 curl -s -X POST http://localhost:8080/raids/<id>/attack \
   -H "X-Ankimon-Username: leon" -H "X-Ankimon-Api-Key: k" \
-  -d '{"username":"leon","damage":25,"level":20,"base_power":40,"atk_stat":50,"def_stat":50}'
+  -d '{"damage":25,"level":20,"base_power":40,"atk_stat":50,"def_stat":50}'
 ```
 
 ## Not implemented yet (v1 scope)

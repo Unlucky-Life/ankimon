@@ -56,18 +56,16 @@ func getRaidHandler(store *Store) http.HandlerFunc {
 	}
 }
 
-type joinRaidRequest struct {
-	Username string `json:"username"`
-}
+// joinRaidHandler and attackRaidHandler intentionally do NOT accept a
+// "username" field in the request body - the participant identity always
+// comes from the authenticated X-Ankimon-Username header (see
+// authenticatedUsername/requireCredentials in main.go). Trusting a
+// body-supplied username would let any authenticated caller act, join, or
+// deal damage as anyone else.
 
 func joinRaidHandler(store *Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req joinRaidRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON body"})
-			return
-		}
-		raid, err := store.Join(r.PathValue("id"), req.Username)
+		raid, err := store.Join(r.PathValue("id"), authenticatedUsername(r))
 		if err != nil {
 			writeJSON(w, statusForError(err), map[string]string{"error": err.Error()})
 			return
@@ -77,12 +75,11 @@ func joinRaidHandler(store *Store) http.HandlerFunc {
 }
 
 type attackRaidRequest struct {
-	Username  string `json:"username"`
-	Damage    int    `json:"damage"`     // damage the client computed locally
-	Level     int    `json:"level"`      // attacker's Pokemon level
-	BasePower int    `json:"base_power"` // move base power
-	AtkStat   int    `json:"atk_stat"`
-	DefStat   int    `json:"def_stat"`
+	Damage    int `json:"damage"`     // damage the client computed locally
+	Level     int `json:"level"`      // attacker's Pokemon level
+	BasePower int `json:"base_power"` // move base power
+	AtkStat   int `json:"atk_stat"`
+	DefStat   int `json:"def_stat"`
 }
 
 type attackRaidResponse struct {
@@ -97,7 +94,7 @@ func attackRaidHandler(store *Store) http.HandlerFunc {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON body"})
 			return
 		}
-		raid, accepted, err := store.Attack(r.PathValue("id"), req.Username, req.Damage, req.Level, req.BasePower, req.AtkStat, req.DefStat)
+		raid, accepted, err := store.Attack(r.PathValue("id"), authenticatedUsername(r), req.Damage, req.Level, req.BasePower, req.AtkStat, req.DefStat)
 		if err != nil {
 			writeJSON(w, statusForError(err), map[string]string{"error": err.Error()})
 			return
