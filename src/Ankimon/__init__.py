@@ -1814,6 +1814,7 @@ def on_review_card(*args):
                                     if raid_session_obj.should_poll():
                                         try:
                                             raid_session_obj.apply_state(raid_functions.poll_raid_state(raid_session_obj.raid_id))
+                                            raid_functions.announce_completion(raid_session_obj)
                                         except raid_functions.RaidClientError as e:
                                             logger.log_and_showinfo("error", f"Raid state poll failed: {e}")
                                         finally:

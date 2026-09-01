@@ -133,6 +133,7 @@ class RaidDialog(QDialog):
         try:
             raid_state = raid_functions.poll_raid_state(self.raid_session.raid_id)
             self.raid_session.apply_state(raid_state)
+            raid_functions.announce_completion(self.raid_session)
             self.raid_session.note_polled()
         except RaidClientError as e:
             self.status_label.setText(f"Couldn't refresh raid state: {e}")
