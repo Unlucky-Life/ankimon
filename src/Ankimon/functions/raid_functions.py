@@ -6,6 +6,7 @@ directly, and surface failures via showInfo/logger instead of silently
 swallowing them.
 """
 import json
+import os
 
 import requests
 from aqt import mw
@@ -18,26 +19,40 @@ class RaidClientError(Exception):
     """Raised when a raid-server request fails or credentials are missing."""
 
 
+_http_session = requests.Session()
+_credentials_cache = None
+
+
 def _server_url():
     return mw.settings_obj.get("raid.server_url", "http://localhost:8080").rstrip("/")
 
 
 def _auth_headers():
+    global _credentials_cache
     try:
-        with open(user_path_credentials, "r", encoding="utf-8") as f:
-            credentials = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        raise RaidClientError(
-            "No Ankimon credentials found. Set them up from the Ankimon menu "
-            "(the same credentials used for the leaderboard) before joining a raid."
-        )
+        credentials_mtime = os.stat(user_path_credentials).st_mtime_ns
+    except OSError:
+        credentials_mtime = None
 
-    username = credentials.get("username")
-    api_key = credentials.get("api_key")
-    if not username or not api_key:
-        raise RaidClientError(
-            "Missing username/api_key in Ankimon credentials. Set them up from the Ankimon menu."
-        )
+    if _credentials_cache is not None and _credentials_cache[0] == credentials_mtime:
+        username, api_key = _credentials_cache[1:]
+    else:
+        try:
+            with open(user_path_credentials, "r", encoding="utf-8") as f:
+                credentials = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            raise RaidClientError(
+                "No Ankimon credentials found. Set them up from the Ankimon menu "
+                "(the same credentials used for the leaderboard) before joining a raid."
+            )
+
+        username = credentials.get("username")
+        api_key = credentials.get("api_key")
+        if not username or not api_key:
+            raise RaidClientError(
+                "Missing username/api_key in Ankimon credentials. Set them up from the Ankimon menu."
+            )
+        _credentials_cache = (credentials_mtime, username, api_key)
 
     return username, {
         "X-Ankimon-Username": username,
@@ -53,7 +68,7 @@ def _request(method, path, json_body=None):
     _, headers = _auth_headers()
     url = f"{_server_url()}{path}"
     try:
-        response = requests.request(method, url, headers=headers, json=json_body, timeout=10)
+        response = _http_session.request(method, url, headers=headers, json=json_body, timeout=10)
     except requests.exceptions.RequestException as e:
         raise RaidClientError(f"Couldn't reach the raid server at {url}: {e}")
 
