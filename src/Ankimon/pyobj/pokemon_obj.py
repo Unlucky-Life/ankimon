@@ -64,12 +64,14 @@ class PokemonObject:
         self._update_battle_stats()
 
     def _update_battle_stats(self):
-        """Update battle stats with current stats, EVs, and IVs."""
-        self._battle_stats = {}
-        # Only update battle stats with valid keys
-        for d in [self.stats, self.iv, self.ev]:
-            for key, value in d.items():
-                self._battle_stats[key] = value
+        """Snapshot the current working stats for in-battle modification (stat stages, status).
+
+        Previously this merged self.stats/self.iv/self.ev by overwriting the
+        same keys in that order, so it silently ended up equal to `self.ev`
+        (the last dict in the loop) instead of the actual stats - e.g.
+        paralysis speed reduction was operating on an EV value, not Speed.
+        """
+        self._battle_stats = dict(self.stats)
 
     def calculate_max_hp(self):
         ev_value = self.ev["hp"] / 4
