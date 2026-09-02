@@ -29,6 +29,19 @@
 	width:100% ;
 }
 
+#topTrainer {
+	position: absolute;
+	right: 2%;
+	top: 28%;
+	width: 64px;
+	height: 64px;
+	display: none;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	z-index: 4;
+}
+
 #bottom {
 	background-color: rgb(64,64,80) ;
 	height: 30% ;

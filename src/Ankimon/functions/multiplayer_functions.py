@@ -22,6 +22,17 @@ _batch_size = 5
 _max_pending_events = 100
 
 
+def _trainer_profile():
+    """Return the public trainer card used by friend and bot battle state."""
+    settings = mw.settings_obj
+    return {
+        "name": str(settings.get("trainer.name", "Trainer")),
+        "rank": str(settings.get("trainer.rank", "Trainer")),
+        "sprite": str(settings.get("trainer.sprite", "")),
+        "motto": str(settings.get("trainer.motto", "")),
+    }
+
+
 def _headers():
     global _credentials_cache
     try:
@@ -62,6 +73,8 @@ def _request(method, path, body=None):
         raise MultiplayerClientError("The multiplayer server returned invalid JSON.") from exc
     if response.status_code >= 400:
         raise MultiplayerClientError(payload.get("error", f"Server error ({response.status_code})"))
+    # Reviewer rendering can reuse the latest state without another request.
+    mw.multiplayer_state = payload
     return payload
 
 
@@ -74,7 +87,10 @@ def get_state():
 
 
 def challenge_bot(challenge_value):
-    return _request("POST", "/v1/matches", {"opponent": challenge_value})
+    return _request("POST", "/v1/matches", {
+        "opponent": challenge_value,
+        "trainer_profile": _trainer_profile(),
+    })
 
 
 def submit_turn(match_id, move=None):
@@ -128,6 +144,7 @@ def flush_reviews():
         state = _request("POST", "/v1/events:batch", {
             "events": events,
             "active_pokemon": active_pokemon,
+            "trainer_profile": _trainer_profile(),
         })
         del _pending_events[:len(events)]
         return state
