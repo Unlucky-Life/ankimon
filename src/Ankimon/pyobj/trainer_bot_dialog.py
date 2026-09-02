@@ -20,6 +20,8 @@ class TrainerBotDialog(QDialog):
 
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel("Practice against a named trainer. Each trainer fields a different Pokémon and style."))
+        self.attack_status = QLabel("Banked attacks: 0 / 3")
+        layout.addWidget(self.attack_status)
         self.roster = QListWidget()
         layout.addWidget(self.roster)
         refresh = QPushButton("Refresh trainers")
@@ -34,6 +36,11 @@ class TrainerBotDialog(QDialog):
             QMessageBox.warning(self, "Trainer Battles", str(exc))
             return
         self._state = state
+        pvp_state = state.get("pvp", {})
+        self.attack_status.setText(
+            f"Banked attacks: {pvp_state.get('banked_attacks', 0)} / "
+            f"{pvp_state.get('max_banked_attacks', 3)}"
+        )
 
         self.roster.clear()
         for bot in state.get("bots", []):
@@ -45,7 +52,7 @@ class TrainerBotDialog(QDialog):
                  candidate.get("opponent_is_bot")),
                 None,
             )
-            self.roster.setItemWidget(item, self._bot_widget(bot, match, state.get("pvp", {})))
+            self.roster.setItemWidget(item, self._bot_widget(bot, match, pvp_state))
 
         for match in state.get("pvp", {}).get("matches", []):
             if match.get("opponent_is_bot") and match.get("status") == "finished":

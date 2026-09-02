@@ -66,6 +66,10 @@ def _request(method, path, body=None):
 
 
 def get_state():
+    # A user opening the trainer screen expects their latest reviews to be
+    # reflected immediately, even when fewer than the normal batch size are
+    # waiting.
+    flush_reviews()
     return _request("GET", "/v1/state")
 
 
