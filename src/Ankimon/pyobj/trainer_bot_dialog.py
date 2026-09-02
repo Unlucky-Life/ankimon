@@ -72,11 +72,21 @@ class TrainerBotDialog(QDialog):
         else:
             sprite.setText("Trainer")
         row.addWidget(sprite)
+        battle_text = ""
+        if match and match.get("status") == "active":
+            battle_text = (
+                f"<br><b>Battle:</b> You {match.get('your_hp', '?')} HP · "
+                f"{match.get('opponent', 'Trainer')} {match.get('opponent_hp', '?')} HP"
+            )
+        elif match and match.get("status") == "finished":
+            won = match.get("winner") != match.get("opponent")
+            battle_text = f"<br><b>{'Victory' if won else 'Defeat'}</b>"
         text = QLabel(
             f"<b>{bot.get('trainer_name', bot.get('username', 'Trainer'))}</b>"
             f" &mdash; {bot.get('trainer_rank', 'Trainer')}<br>"
             f"{bot.get('motto', '')}<br>"
             f"Pokémon: {bot.get('pokemon', '?')} · Lv. {bot.get('level', '?')}"
+            f"{battle_text}"
         )
         text.setTextFormat(Qt.TextFormat.RichText)
         row.addWidget(text, 1)
