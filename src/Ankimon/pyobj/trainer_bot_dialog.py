@@ -16,6 +16,7 @@ class TrainerBotDialog(QDialog):
         self.setWindowTitle("Ankimon Trainer Battles")
         self.setMinimumSize(560, 520)
         self._seen_finished_matches = set()
+        self._state = {}
 
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel("Practice against a named trainer. Each trainer fields a different Pokémon and style."))
@@ -32,12 +33,19 @@ class TrainerBotDialog(QDialog):
         except multiplayer_functions.MultiplayerClientError as exc:
             QMessageBox.warning(self, "Trainer Battles", str(exc))
             return
+        self._state = state
 
         self.roster.clear()
         for bot in state.get("bots", []):
             item = QListWidgetItem()
             self.roster.addItem(item)
-            self.roster.setItemWidget(item, self._bot_widget(bot))
+            match = next(
+                (candidate for candidate in state.get("pvp", {}).get("matches", [])
+                 if candidate.get("opponent") == bot.get("username") and
+                 candidate.get("opponent_is_bot")),
+                None,
+            )
+            self.roster.setItemWidget(item, self._bot_widget(bot, match, state.get("pvp", {})))
 
         for match in state.get("pvp", {}).get("matches", []):
             if match.get("opponent_is_bot") and match.get("status") == "finished":
@@ -47,7 +55,7 @@ class TrainerBotDialog(QDialog):
                     won = match.get("winner") != match.get("opponent")
                     show_bot_battle_result(match.get("opponent", "trainer"), won)
 
-    def _bot_widget(self, bot):
+    def _bot_widget(self, bot, match=None, pvp_state=None):
         widget = QWidget()
         row = QHBoxLayout(widget)
         sprite = QLabel()
@@ -69,6 +77,11 @@ class TrainerBotDialog(QDialog):
         challenge.setEnabled(not bot.get("in_match", False))
         challenge.clicked.connect(lambda: self.challenge(bot))
         row.addWidget(challenge)
+        if match and match.get("status") == "active":
+            attack = QPushButton("Attack")
+            attack.setEnabled((pvp_state or {}).get("banked_attacks", 0) > 0)
+            attack.clicked.connect(lambda: self.attack(match["id"]))
+            row.addWidget(attack)
         return widget
 
     def challenge(self, bot):
@@ -78,4 +91,12 @@ class TrainerBotDialog(QDialog):
             QMessageBox.warning(self, "Trainer Battle", str(exc))
             return
         QMessageBox.information(self, "Trainer Battle", f"{bot.get('trainer_name', bot.get('username', 'Trainer'))} accepts your challenge!\nAnswer a card to make your first move.")
+        self.refresh()
+
+    def attack(self, match_id):
+        try:
+            state = multiplayer_functions.submit_turn(match_id)
+        except multiplayer_functions.MultiplayerClientError as exc:
+            QMessageBox.warning(self, "Trainer Battle", str(exc))
+            return
         self.refresh()
