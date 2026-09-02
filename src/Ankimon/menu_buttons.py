@@ -9,6 +9,7 @@ from PyQt6.QtGui import QAction, QKeySequence
 from .pyobj.trainer_card_window import TrainerCardGUI
 from .pyobj.ankimon_leaderboard import show_api_key_dialog
 from .pyobj.raid_dialog import RaidDialog
+from .pyobj.trainer_bot_dialog import TrainerBotDialog
 from .gui_classes.choose_trainer_sprite import TrainerSpriteDialog
 from .gui_classes.pokemon_team_window import PokemonTeamDialog
 from .gui_classes.check_files import FileCheckerApp
@@ -218,6 +219,11 @@ def create_menu_actions(
     raid_button.setMenuRole(QAction.MenuRole.NoRole)
     raid_button.triggered.connect(lambda: RaidDialog(mw.raid_session_obj).exec())
     game_menu.addAction(raid_button)
+
+    trainer_battle_button = QAction("Trainer Battles", mw)
+    trainer_battle_button.setMenuRole(QAction.MenuRole.NoRole)
+    trainer_battle_button.triggered.connect(lambda: TrainerBotDialog(mw).exec())
+    game_menu.addAction(trainer_battle_button)
 
     # Button: Show credits
     credits_button = QAction(
