@@ -17,7 +17,9 @@ class MultiplayerClientError(Exception):
 _session = requests.Session()
 _credentials_cache = None
 _pending_events = []
+_active_pokemon = None
 _batch_size = 5
+_max_pending_events = 100
 
 
 def _headers():
@@ -76,7 +78,7 @@ def submit_turn(match_id, move=None):
     return _request("POST", f"/v1/matches/{match_id}/turns", body)
 
 
-def queue_review(reviewer_args, level):
+def queue_review(reviewer_args, level, active_pokemon=None):
     """Queue one Anki review and flush in small batches.
 
     The hook intentionally does no network work for the common case: callers
@@ -90,6 +92,13 @@ def queue_review(reviewer_args, level):
         ease = 0
     card_id = getattr(card, "id", None) or uuid.uuid4().hex
     grade = {1: "again", 2: "hard", 3: "good", 4: "easy"}.get(int(ease), "good")
+    global _active_pokemon
+    if active_pokemon:
+        _active_pokemon = {
+            "name": str(active_pokemon.get("name", "")),
+            "id": int(active_pokemon.get("id", 0)),
+            "level": max(1, int(active_pokemon.get("level", level) or level or 1)),
+        }
     _pending_events.append({
         "id": f"review-{card_id}-{time.time_ns()}-{uuid.uuid4().hex[:8]}",
         "type": "card_reviewed",
@@ -98,6 +107,8 @@ def queue_review(reviewer_args, level):
         "time_s": 0,
         "level": max(1, int(level or 1)),
     })
+    if len(_pending_events) > _max_pending_events:
+        del _pending_events[:-_max_pending_events]
     if len(_pending_events) >= _batch_size:
         return flush_reviews()
     return None
@@ -107,12 +118,16 @@ def flush_reviews():
     """Send queued reviews; failures leave no UI-facing exception."""
     if not _pending_events:
         return None
-    events = list(_pending_events)
-    del _pending_events[:]
+    events = list(_pending_events[:_max_pending_events])
+    active_pokemon = _active_pokemon
     try:
-        return _request("POST", "/v1/events:batch", {"events": events})
+        state = _request("POST", "/v1/events:batch", {
+            "events": events,
+            "active_pokemon": active_pokemon,
+        })
+        del _pending_events[:len(events)]
+        return state
     except MultiplayerClientError:
-        # The server deduplicates IDs, but this client deliberately drops a
-        # failed batch so an unavailable server cannot grow memory forever or
-        # delay the reviewer.
+        # Keep the stable IDs for a later flush. The cap prevents an offline
+        # server from growing memory forever or delaying the reviewer.
         return None

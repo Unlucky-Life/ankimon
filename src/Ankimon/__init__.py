@@ -1600,7 +1600,11 @@ reviewer_obj = Reviewer_Manager(
 def on_review_card(*args):
     try:
         if settings_obj.get("multiplayer.enabled", False):
-            multiplayer_functions.queue_review(args, main_pokemon.level)
+            multiplayer_functions.queue_review(
+                args,
+                main_pokemon.level,
+                {"name": main_pokemon.name, "id": main_pokemon.id, "level": main_pokemon.level},
+            )
         battle_status = enemy_pokemon.battle_status
         multiplier = ankimon_tracker_obj.multiplier
         mainpokemon_type = main_pokemon.type
