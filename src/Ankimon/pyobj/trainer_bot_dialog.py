@@ -54,19 +54,37 @@ class TrainerBotDialog(QDialog):
             )
             self.roster.setItemWidget(item, self._bot_widget(bot, match, pvp_state))
 
+        human_enabled = pvp_state.get("human_enabled", False)
+        for friend in state.get("friends", []):
+            if friend.get("bot"):
+                continue
+            item = QListWidgetItem()
+            self.roster.addItem(item)
+            match = next(
+                (candidate for candidate in state.get("pvp", {}).get("matches", [])
+                 if candidate.get("opponent") == friend.get("username") and
+                 not candidate.get("opponent_is_bot")),
+                None,
+            )
+            self.roster.setItemWidget(
+                item, self._bot_widget(friend, match, pvp_state, human_enabled)
+            )
+
         for match in state.get("pvp", {}).get("matches", []):
-            if match.get("opponent_is_bot") and match.get("status") == "finished":
+            if match.get("status") == "finished":
                 match_id = match.get("id")
                 if match_id and match_id not in self._seen_finished_matches:
                     self._seen_finished_matches.add(match_id)
                     won = match.get("winner") != match.get("opponent")
                     show_bot_battle_result(match.get("opponent", "trainer"), won)
 
-    def _bot_widget(self, bot, match=None, pvp_state=None):
+    def _bot_widget(self, bot, match=None, pvp_state=None, battle_enabled=True):
         widget = QWidget()
         row = QHBoxLayout(widget)
         sprite = QLabel()
-        sprite_path = trainer_sprites_path / f"{bot.get('trainer_sprite', '')}.png"
+        profile = (match or {}).get("opponent_trainer") or {}
+        sprite_name = bot.get("trainer_sprite") or profile.get("sprite", "")
+        sprite_path = trainer_sprites_path / f"{sprite_name}.png"
         if sprite_path.exists():
             sprite.setPixmap(QPixmap(str(sprite_path)).scaled(72, 72, Qt.AspectRatioMode.KeepAspectRatio))
         else:
@@ -91,7 +109,7 @@ class TrainerBotDialog(QDialog):
         text.setTextFormat(Qt.TextFormat.RichText)
         row.addWidget(text, 1)
         challenge = QPushButton("Challenge")
-        challenge.setEnabled(not bot.get("in_match", False))
+        challenge.setEnabled(battle_enabled and not bot.get("in_match", False))
         challenge.clicked.connect(lambda: self.challenge(bot))
         row.addWidget(challenge)
         if match and match.get("status") == "active":

@@ -165,7 +165,7 @@ def announce_completion(session):
 
 
 def show_bot_battle_result(opponent_name, won, pokemon_name=None):
-    """Shared popup hook for the multiplayer bot battle client."""
+    """Show a shared result popup for any multiplayer trainer battle."""
     result = "Victory" if won else "Defeat"
     detail = f"\n{pokemon_name}" if pokemon_name else ""
     showInfo(f"{result} against {opponent_name}!{detail}")
