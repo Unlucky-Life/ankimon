@@ -46,6 +46,17 @@ def _auth_headers():
                 "(the same credentials used for the leaderboard) before joining a raid."
             )
 
+        if isinstance(credentials, list):
+            # Older leaderboard versions stored username and api_key as
+            # separate objects in a list.
+            merged = {}
+            for entry in credentials:
+                if isinstance(entry, dict):
+                    merged.update(entry)
+            credentials = merged
+        if not isinstance(credentials, dict):
+            raise RaidClientError("Your Ankimon credentials file has an invalid format.")
+
         username = credentials.get("username")
         api_key = credentials.get("api_key")
         if not username or not api_key:

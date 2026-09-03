@@ -47,6 +47,16 @@ def _headers():
                 credentials = json.load(handle)
         except (FileNotFoundError, json.JSONDecodeError) as exc:
             raise MultiplayerClientError("Set up your Ankimon username and API key first.") from exc
+        if isinstance(credentials, list):
+            # Older leaderboard versions stored username and api_key as
+            # separate objects in a list.
+            merged = {}
+            for entry in credentials:
+                if isinstance(entry, dict):
+                    merged.update(entry)
+            credentials = merged
+        if not isinstance(credentials, dict):
+            raise MultiplayerClientError("Your Ankimon credentials file has an invalid format.")
         username = credentials.get("username")
         api_key = credentials.get("api_key")
         if not username or not api_key:
