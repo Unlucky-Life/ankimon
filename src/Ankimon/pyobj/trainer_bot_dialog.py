@@ -71,7 +71,7 @@ class TrainerBotDialog(QDialog):
             )
 
         for match in state.get("pvp", {}).get("matches", []):
-            if match.get("opponent_is_bot") and match.get("status") == "finished":
+            if match.get("status") == "finished":
                 match_id = match.get("id")
                 if match_id and match_id not in self._seen_finished_matches:
                     self._seen_finished_matches.add(match_id)
