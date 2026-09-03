@@ -27,6 +27,10 @@ class Settings:
             config["raid.enabled"] = False
         if "raid.server_url" not in config:
             config["raid.server_url"] = "http://localhost:8080"
+        if "multiplayer.server_url" not in config:
+            config["multiplayer.server_url"] = "http://localhost:8080"
+        if "multiplayer.enabled" not in config:
+            config["multiplayer.enabled"] = False
 
         if not config:
             #Card max time in Seconds
@@ -78,6 +82,8 @@ class Settings:
 
                 "raid.enabled": False,
                 "raid.server_url": "http://localhost:8080",
+                "multiplayer.server_url": "http://localhost:8080",
+                "multiplayer.enabled": False,
                 "misc.discord_rich_presence": False,
                 "misc.discord_rich_presence_text": 1,
 

@@ -1,5 +1,24 @@
 def create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_bar_thickness, xp_bar_spacer, view_main_front, mainpkmn_hp_percent, hp_only_spacer, wild_hp_spacer, xp_bar_config, main_pokemon, experience_for_next_lvl, xp_bar_location):
     css = ""
+    css += """
+    #OpponentTrainerImage {
+        position: fixed;
+        right: 108px;
+        bottom: 112px;
+        z-index: 10000;
+        width: 64px;
+        height: 64px;
+        background: rgba(54, 54, 56, 0.7);
+        border-radius: 8px;
+        padding: 3px;
+    }
+    #OpponentTrainerImage img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        image-rendering: pixelated;
+    }
+    """
     if show_mainpkmn_in_reviewer == 0:
         css += f"""
         #life-bar {{

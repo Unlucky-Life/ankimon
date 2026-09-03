@@ -5,7 +5,7 @@ from ..business import get_image_as_base64
 from ..functions.create_css_for_reviewer import create_css_for_reviewer
 from ..texts import inject_life_bar_css_1, inject_life_bar_css_2
 from ..functions.create_gui_functions import create_status_html
-from ..resources import icon_path
+from ..resources import icon_path, trainer_sprites_path
 from ..functions.pokedex_functions import get_pokemon_diff_lang_name
 
 class Reviewer_Manager:
@@ -22,6 +22,29 @@ class Reviewer_Manager:
         gui_hooks.reviewer_will_end.append(self.reviewer_reset_life_bar_inject)
         gui_hooks.webview_will_set_content.append(self.inject_life_bar)
         gui_hooks.reviewer_did_answer_card.append(self.update_life_bar)
+
+    def _opponent_trainer_sprite(self):
+        """Return the active bot/friend trainer sprite path, if available."""
+        state = getattr(mw, "multiplayer_state", {}) or {}
+        for match in state.get("pvp", {}).get("matches", []):
+            if match.get("status") not in {"active", "pending"}:
+                continue
+            sprite = (match.get("opponent_trainer") or {}).get("sprite")
+            if sprite:
+                path = trainer_sprites_path / f"{sprite}.png"
+                if path.exists():
+                    return path
+        return None
+
+    def _trainer_image_html(self):
+        path = self._opponent_trainer_sprite()
+        if not path:
+            return ""
+        return (
+            f'<div id="OpponentTrainerImage" class="Ankimon">'
+            f'<img src="data:image/png;base64,{get_image_as_base64(path)}" '
+            f'alt="Opponent trainer"></div>'
+        )
 
     def reviewer_reset_life_bar_inject(self):
         self.life_bar_injected = False
@@ -137,6 +160,7 @@ class Reviewer_Manager:
                     # Inject a div element at the end of the body for the life bar
                     image_base64 = get_image_as_base64(pokemon_image_file)
                     web_content.body += f'<div id="PokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64}" alt="PokeImage style="animation: shake 0s ease;"></div>'
+                    web_content.body += self._trainer_image_html()
                     if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
                         image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
                         web_content.body += f'<div id="MyPokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage" style="animation: shake 0s ease;"></div>'

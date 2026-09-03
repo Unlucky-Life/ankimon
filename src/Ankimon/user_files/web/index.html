@@ -45,6 +45,7 @@
 				</div>
 			</div>
 			<div id="topPoke"><img id="topPokemonEffects"></img></div>
+			<div id="topTrainer"></div>
 			
 		</div>
 	</div>
@@ -118,6 +119,7 @@
 		var sprites_url = getUrlParameter('spritesUrl');
 		var bottomPokemonSprite = getUrlParameter('bottomPokemonSprite');
 		var topPokemonSprite = getUrlParameter('topPokemonSprite');
+		var topTrainerSprite = getUrlParameter('topTrainerSprite');
 		//var topPokeUrl = `../sprites/back_default_gif/1.gif`;
 		var text = getUrlParameter('text');
 		var levelTop = getUrlParameter('levelTop');
@@ -139,6 +141,7 @@
 		// Get elements by ID
 		var bottomPokemon = document.getElementById('bottomPokemon');
 		var topPoke = document.getElementById('topPoke');
+		var topTrainer = document.getElementById('topTrainer');
 		var battleText = document.getElementById('battleText');
 		var level_bottom = document.getElementById('level_bottom');
 		var level_top = document.getElementById('level_top');
@@ -219,6 +222,10 @@
 		// Update Pokémon images and font dynamically
 		bottomPokemon.style.backgroundImage = 'url(' + bottomPokemonSprite + ')';
 		topPoke.style.backgroundImage = 'url(' + topPokemonSprite + ')';
+		if (topTrainerSprite) {
+			topTrainer.style.backgroundImage = 'url(' + topTrainerSprite + ')';
+			topTrainer.style.display = 'block';
+		}
 
 		if (fontUrl) {
 			var styleElement = document.createElement('style');
