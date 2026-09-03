@@ -17,6 +17,49 @@ class Settings:
 
         # Load existing config or initialize as empty
         config = mw.addonManager.getConfig(__name__) or {}
+        was_empty = not config
+
+        # Older releases may have a partial config. config_var is imported
+        # during addon startup and reads these keys eagerly, so migrate the
+        # complete required surface before returning the config.
+        required_defaults = {
+            "battle.dmg_in_reviewer": True,
+            "battle.automatic_battle": 0,
+            "battle.cards_per_round": 2,
+            "battle.daily_average": 100,
+            "battle.card_max_time": 60,
+            "controls.pokemon_buttons": True,
+            "controls.defeat_key": "5",
+            "controls.catch_key": "6",
+            "controls.key_for_opening_closing_ankimon": "Ctrl+Shift+P",
+            "controls.allow_to_choose_moves": False,
+            "gui.animate_time": True,
+            "gui.gif_in_collection": True,
+            "gui.styling_in_reviewer": True,
+            "gui.hp_bar_config": True,
+            "gui.pop_up_dialog_message_on_defeat": False,
+            "gui.review_hp_bar_thickness": 2,
+            "gui.reviewer_image_gif": False,
+            "gui.reviewer_text_message_box": True,
+            "gui.reviewer_text_message_box_time": 3,
+            "gui.show_mainpkmn_in_reviewer": 1,
+            "gui.view_main_front": True,
+            "gui.xp_bar_config": True,
+            "gui.xp_bar_location": 2,
+            "audio.sound_effects": False,
+            "audio.sounds": True,
+            "audio.battle_sounds": False,
+            "misc.leaderboard": False,
+            "misc.YouShallNotPass_Ankimon_News": False,
+            "misc.remove_level_cap": False,
+            "misc.ssh": True,
+            "misc.language": 9,
+        }
+        changed = False
+        for key, default in required_defaults.items():
+            if key not in config:
+                config[key] = default
+                changed = True
 
         # Check if "misc.leaderboard" exists; if not, add it
         if "misc.leaderboard" not in config:
@@ -25,14 +68,18 @@ class Settings:
         # Backfill raid settings for existing configs created before this feature
         if "raid.enabled" not in config:
             config["raid.enabled"] = False
+            changed = True
         if "raid.server_url" not in config:
             config["raid.server_url"] = "http://localhost:8080"
+            changed = True
         if "multiplayer.server_url" not in config:
             config["multiplayer.server_url"] = "http://localhost:8080"
+            changed = True
         if "multiplayer.enabled" not in config:
             config["multiplayer.enabled"] = False
+            changed = True
 
-        if not config:
+        if was_empty:
             #Card max time in Seconds
             config = {
                 "battle.dmg_in_reviewer": True,
@@ -93,6 +140,9 @@ class Settings:
                 "trainer.cash": 0,
                 "trainer.level": 0,
                 }
+            self.save_config(config)
+            changed = False
+        if changed:
             self.save_config(config)
         return config
     
