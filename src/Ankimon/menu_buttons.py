@@ -212,18 +212,20 @@ def create_menu_actions(
     leaderboard_button.triggered.connect(open_leaderboard_url)
     game_menu.addAction(leaderboard_button)
 
+    multiplayer_menu = game_menu.addMenu("Multiplayer")
+
     # Button: Open Raid Battle dialog
     raid_button = QAction(
         "Raid Battle", mw
     )
     raid_button.setMenuRole(QAction.MenuRole.NoRole)
     raid_button.triggered.connect(lambda: RaidDialog(mw.raid_session_obj).exec())
-    game_menu.addAction(raid_button)
+    multiplayer_menu.addAction(raid_button)
 
     trainer_battle_button = QAction("Trainer Battles", mw)
     trainer_battle_button.setMenuRole(QAction.MenuRole.NoRole)
     trainer_battle_button.triggered.connect(lambda: TrainerBotDialog(mw).exec())
-    game_menu.addAction(trainer_battle_button)
+    multiplayer_menu.addAction(trainer_battle_button)
 
     # Button: Show credits
     credits_button = QAction(
