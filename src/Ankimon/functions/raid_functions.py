@@ -66,8 +66,8 @@ def _auth_headers():
         _credentials_cache = (credentials_mtime, username, api_key)
 
     return username, {
+        "Authorization": f"Bearer {api_key}",
         "X-Ankimon-Username": username,
-        "X-Ankimon-Api-Key": api_key,
         "Content-Type": "application/json",
     }
 
@@ -96,30 +96,50 @@ def _request(method, path, json_body=None):
         raise RaidClientError("Raid server returned an unexpected (non-JSON) response.")
 
 
+def _normalize_raid_state(state):
+    """Adapt the multiplayer API raid shape to RaidSession's UI shape."""
+    raid = state.get("raid") if isinstance(state, dict) else None
+    if not raid:
+        return {}
+    participants = {}
+    for entry in raid.get("party", []):
+        username = entry.get("username", "Trainer")
+        participants[username] = {
+            "username": username,
+            "damage_dealt": entry.get("damage", 0),
+        }
+    return {
+        "id": raid.get("code"),
+        "boss_name": raid.get("boss_name"),
+        "boss_level": raid.get("boss_level"),
+        "max_hp": raid.get("boss_max_hp"),
+        "hp": raid.get("boss_hp"),
+        "participants": participants,
+    }
 def create_raid(boss_name, boss_level, max_hp):
-    """Create a new raid boss on the server. Returns the raid state dict."""
-    return _request("POST", "/raids", {
-        "boss_name": boss_name,
-        "boss_level": boss_level,
-        "max_hp": max_hp,
-    })
+    raise RaidClientError("Raids are created by the server. Choose an available room.")
 
 
 def list_active_raids():
-    """Return the list of raids whose boss hasn't been defeated yet."""
-    return _request("GET", "/raids")
+    """Return server-created rooms whose boss hasn't been defeated yet."""
+    return _request("GET", "/v1/raids").get("rooms", [])
 
 
 def poll_raid_state(raid_id):
-    """Fetch the current state of one raid (boss HP, participants)."""
-    return _request("GET", f"/raids/{raid_id}")
+    """Fetch the authenticated player's current raid state."""
+    return _normalize_raid_state(_request("GET", "/v1/state"))
 
 
 def join_raid(raid_id):
     # No "username" field in the body - the server takes the participant's
     # identity from the authenticated X-Ankimon-Username header, so a
     # request body can't claim to act as someone else.
-    return _request("POST", f"/raids/{raid_id}/join", {})
+    return _normalize_raid_state(_request("POST", f"/v1/raids/{raid_id}/join", {}))
+
+
+def leave_raid(raid_id):
+    """Leave the current server-managed raid room."""
+    return _request("POST", f"/v1/raids/{raid_id}/leave", {})
 
 
 def send_attack(raid_id, damage, level, base_power, atk_stat, def_stat):
@@ -130,13 +150,9 @@ def send_attack(raid_id, damage, level, base_power, atk_stat, def_stat):
     Returns the server's response, whose `damage_accepted` field is what was
     actually applied.
     """
-    return _request("POST", f"/raids/{raid_id}/attack", {
-        "damage": int(damage),
-        "level": int(level),
-        "base_power": int(base_power),
-        "atk_stat": int(atk_stat),
-        "def_stat": int(def_stat),
-    })
+    # Raid damage is credited by /v1/events:batch when a card is reviewed.
+    # This compatibility call only refreshes the authoritative state.
+    return poll_raid_state(raid_id)
 
 
 def try_send_attack(raid_id, damage, level, base_power, atk_stat, def_stat):
