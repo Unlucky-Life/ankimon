@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox,
     QPushButton, QListWidget, QProgressBar, QTabWidget, QWidget, QMessageBox,
 )
+from PyQt6.QtCore import Qt
 from aqt import mw
 
 from ..functions import raid_functions
@@ -21,7 +22,7 @@ class RaidDialog(QDialog):
         self.tabs = QTabWidget()
         layout.addWidget(self.tabs)
 
-        self.tabs.addTab(self._build_create_tab(), "Create")
+        self.tabs.addTab(self._build_create_tab(), "Available raids")
         self.tabs.addTab(self._build_join_tab(), "Join")
 
         self.status_group = QWidget()
@@ -47,33 +48,19 @@ class RaidDialog(QDialog):
 
         layout.addWidget(self.status_group)
 
+        self.refresh_available_raids()
         self.refresh_status()
 
     def _build_create_tab(self):
         tab = QWidget()
         form = QVBoxLayout(tab)
-
-        self.boss_name_input = QLineEdit()
-        self.boss_name_input.setPlaceholderText("Boss name (e.g. Rayquaza)")
-
-        self.boss_level_input = QSpinBox()
-        self.boss_level_input.setRange(1, 100)
-        self.boss_level_input.setValue(50)
-
-        self.boss_hp_input = QSpinBox()
-        self.boss_hp_input.setRange(1, 100000)
-        self.boss_hp_input.setValue(500)
-
-        create_button = QPushButton("Create raid")
-        create_button.clicked.connect(self.create_raid)
-
-        form.addWidget(QLabel("Boss name"))
-        form.addWidget(self.boss_name_input)
-        form.addWidget(QLabel("Boss level"))
-        form.addWidget(self.boss_level_input)
-        form.addWidget(QLabel("Boss max HP"))
-        form.addWidget(self.boss_hp_input)
-        form.addWidget(create_button)
+        form.addWidget(QLabel("Raids are created automatically by the server."))
+        self.available_raids = QListWidget()
+        form.addWidget(self.available_raids)
+        self.available_raids.itemDoubleClicked.connect(self.join_available_room)
+        refresh_button = QPushButton("Refresh available raids")
+        refresh_button.clicked.connect(self.refresh_available_raids)
+        form.addWidget(refresh_button)
         return tab
 
     def _build_join_tab(self):
@@ -91,16 +78,27 @@ class RaidDialog(QDialog):
         form.addWidget(join_button)
         return tab
 
-    def create_raid(self):
-        boss_name = self.boss_name_input.text().strip()
-        if not boss_name:
-            QMessageBox.warning(self, "Ankimon Raid", "Enter a boss name first.")
-            return
+    def refresh_available_raids(self):
         try:
-            raid_state = raid_functions.create_raid(
-                boss_name, self.boss_level_input.value(), self.boss_hp_input.value()
+            rooms = raid_functions.list_active_raids()
+        except RaidClientError as e:
+            QMessageBox.warning(self, "Ankimon Raid", str(e))
+            return
+        self.available_raids.clear()
+        for room in rooms:
+            item = QListWidgetItem(
+                f"{room['boss_name']} Lv. {room['boss_level']} — "
+                f"{room['party_size']}/{room.get('capacity', 5)} trainers"
             )
-            raid_functions.join_raid(raid_state["id"])
+            item.setData(Qt.ItemDataRole.UserRole, room["code"])
+            self.available_raids.addItem(item)
+
+    def join_available_room(self, item):
+        self.join_room(item.data(Qt.ItemDataRole.UserRole))
+
+    def join_room(self, raid_id):
+        try:
+            raid_state = raid_functions.join_raid(raid_id)
             self.raid_session.start(raid_state)
             self.refresh_status()
         except RaidClientError as e:
@@ -119,6 +117,11 @@ class RaidDialog(QDialog):
             QMessageBox.warning(self, "Ankimon Raid", str(e))
 
     def leave_raid(self):
+        if self.raid_session.raid_id:
+            try:
+                raid_functions.leave_raid(self.raid_session.raid_id)
+            except RaidClientError as e:
+                QMessageBox.warning(self, "Ankimon Raid", str(e))
         self.raid_session.stop()
         self.refresh_status()
 
