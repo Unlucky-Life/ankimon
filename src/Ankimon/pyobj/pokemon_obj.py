@@ -4,9 +4,9 @@ from ..resources import pkmnimgfolder
 import os
 
 class PokemonObject:
-    def __init__(self, name="Ditto", shiny=False, id=1, level=3, ability=["None"], type=["Normal"], current_hp=15, stats=None, attacks=None, base_experience=0, 
-                 growth_rate=None, hp=None, ev=None, iv=None, gender=None, battle_status="Fighting", xp=0, 
-                 position=0, nickname=None, moves=None, evos=None, tier = "Normal", ev_yield = {"hp": 1, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}, friendship = 0, **kwargs):
+    def __init__(self, name="Ditto", shiny=False, id=1, level=3, ability=None, type=None, current_hp=15, stats=None, attacks=None, base_experience=0,
+                 growth_rate=None, hp=None, ev=None, iv=None, gender=None, battle_status="Fighting", xp=0,
+                 position=0, nickname=None, moves=None, evos=None, tier="Normal", ev_yield=None, friendship=0, **kwargs):
         self.name = name
         self.nickname = nickname or "" # Allow nickname to be set in the constructor
         self.shiny = shiny or False  # Default to False if None
@@ -14,15 +14,17 @@ class PokemonObject:
         self.level = level or 3  # Default to 3 if None
         self.ability = ability or ["None"]  # Default to ["None"] if None
         self.type = type or ["Normal"]
-        self.stats = stats or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}  # Default to empty dict if None
+        default_stats = {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}
+        self.stats = {**default_stats, **(stats or {})}
         self.attacks = attacks or []  # Default to empty list if None
         self.base_experience = base_experience
         self.growth_rate = growth_rate
-        self.current_hp = current_hp or 15  # Ensure 'current_hp' is accepted here
-        self.ev = ev or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}  # Default to empty dict if None
-        self.iv = iv or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}  # Default to empty dict if None
-        self.ev_yield = ev_yield or {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}
-        self.hp = int((((((stats["hp"] + iv["hp"]) * 2 ) + (ev["hp"] / 4)) * level) / 100) + level + 10)
+        self.current_hp = current_hp if current_hp is not None else 15  # Preserve a saved 0 HP state
+        self.ev = {**default_stats, **(ev or {})}
+        self.iv = {**default_stats, **(iv or {})}
+        self.ev_yield = {"hp": 1, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}
+        self.ev_yield.update(ev_yield or {})
+        self.hp = int((((((self.stats["hp"] + self.iv["hp"]) * 2) + (self.ev["hp"] / 4)) * self.level) / 100) + self.level + 10)
         self.max_hp = self.hp
         self.gender = gender
         self.battle_status = battle_status
