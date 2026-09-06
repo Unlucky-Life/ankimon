@@ -1665,7 +1665,8 @@ def activate_trainer_battle():
 
     calculated_hp = max(1, int(enemy_pokemon.calculate_max_hp()))
     server_max_hp = max(1, int(opponent.get("max_hp") or calculated_hp))
-    server_hp = max(0, int(opponent.get("hp") or server_max_hp))
+    server_hp_value = opponent.get("hp")
+    server_hp = server_max_hp if server_hp_value is None else max(0, int(server_hp_value))
     enemy_pokemon.max_hp = calculated_hp
     enemy_pokemon.hp = min(calculated_hp, round(server_hp / server_max_hp * calculated_hp))
     enemy_pokemon.current_hp = enemy_pokemon.hp
