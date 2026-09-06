@@ -1475,6 +1475,7 @@ def get_random_starter():
 
 def new_pokemon():
     try:
+        enemy_pokemon.trainer_match_id = None
         # new pokemon
         gender = None
         name, id, level, ability, type, stats, enemy_attacks, base_experience, growth_rate, ev, iv, gender, battle_status, battle_stats, tier, ev_yield, shiny = generate_random_pokemon()
@@ -1596,9 +1597,95 @@ reviewer_obj = Reviewer_Manager(
     ankimon_tracker=ankimon_tracker_obj,
 )
 
+
+def activate_trainer_battle():
+    """Load the selected trainer's Pokemon into the real battle engine."""
+    state = getattr(mw, "multiplayer_state", {}) or {}
+    match = next(
+        (candidate for candidate in state.get("pvp", {}).get("matches", [])
+         if candidate.get("status") == "active"
+         and candidate.get("opponent_pokemon")),
+        None,
+    )
+    if not match:
+        return False
+    match_id = match.get("id")
+    if getattr(enemy_pokemon, "trainer_match_id", None) == match_id:
+        return True
+
+    opponent = match.get("opponent_pokemon") or {}
+    name = str(opponent.get("name") or "Rattata")
+    lookup_name = name.lower()
+    pokemon_id = int(opponent.get("id") or 19)
+    level = max(1, int(opponent.get("level") or 5))
+    try:
+        stats = search_pokedex(lookup_name, "baseStats")
+        if not isinstance(stats, dict) or "hp" not in stats:
+            raise ValueError(f"no base stats found for {lookup_name}")
+        types = search_pokedex(lookup_name, "types")
+        abilities = search_pokedex(lookup_name, "abilities")
+        numeric_abilities = [value for key, value in (abilities or {}).items() if str(key).isdigit()]
+        ability = random.choice(numeric_abilities) if numeric_abilities else "No Ability"
+        attacks = get_all_pokemon_moves(lookup_name, level)
+        if not attacks:
+            attacks = ["Tackle"]
+        attacks = attacks if len(attacks) <= 4 else random.sample(attacks, 4)
+        iv = {key: 15 for key in ("hp", "atk", "def", "spa", "spd", "spe")}
+        ev = {key: 0 for key in ("hp", "atk", "def", "spa", "spd", "spe")}
+        enemy_pokemon.update_stats(
+            name=name,
+            id=pokemon_id,
+            level=level,
+            ability=ability,
+            type=types,
+            stats=stats,
+            attacks=attacks,
+            base_experience=search_pokeapi_db_by_id(pokemon_id, "base_experience"),
+            growth_rate=search_pokeapi_db_by_id(pokemon_id, "growth_rate"),
+            ev=ev,
+            iv=iv,
+            gender=pick_random_gender(lookup_name),
+            battle_status="fighting",
+            tier="Normal",
+            shiny=False,
+        )
+    except Exception as exc:
+        logger.log("error", f"Could not load trainer Pokemon {name}: {exc}")
+        enemy_pokemon.name = name
+        enemy_pokemon.id = pokemon_id
+        enemy_pokemon.level = level
+
+    calculated_hp = enemy_pokemon.calculate_max_hp()
+    enemy_pokemon.max_hp = int(opponent.get("max_hp") or calculated_hp)
+    enemy_pokemon.hp = int(opponent.get("hp") or enemy_pokemon.max_hp)
+    enemy_pokemon.current_hp = enemy_pokemon.hp
+    enemy_pokemon.trainer_match_id = match_id
+    reviewer_obj._battle_enemy = enemy_pokemon
+    reviewer_obj.enemy_pokemon = enemy_pokemon
+    ankimon_tracker_obj.pokemon_encouter = max(1, ankimon_tracker_obj.pokemon_encouter)
+    ankimon_tracker_obj.randomize_battle_scene()
+    return True
+
+
+mw.activate_trainer_battle = activate_trainer_battle
+
+
+def deactivate_trainer_battle():
+    """Leave trainer mode and resume normal wild encounters."""
+    if getattr(enemy_pokemon, "trainer_match_id", None) is None:
+        return
+    enemy_pokemon.trainer_match_id = None
+    new_pokemon()
+
+
+mw.deactivate_trainer_battle = deactivate_trainer_battle
+
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
+        trainer_battle_active = activate_trainer_battle()
+        if not trainer_battle_active and getattr(enemy_pokemon, "trainer_match_id", None):
+            deactivate_trainer_battle()
         if settings_obj.get("multiplayer.enabled", False):
             multiplayer_functions.queue_review(
                 args,
@@ -1840,6 +1927,13 @@ def on_review_card(*args):
                             enemy_pokemon.hp = 0
                             msg += translator.translate("pokemon_fainted", enemy_pokemon_name=enemy_pokemon.name.capitalize())
                             
+                    if trainer_battle_active:
+                        try:
+                            multiplayer_functions.submit_turn(
+                                enemy_pokemon.trainer_match_id, random_attack
+                            )
+                        except multiplayer_functions.MultiplayerClientError as exc:
+                            logger.log("error", f"Trainer battle sync failed: {exc}")
                     tooltipWithColour(msg, color)
                     if dmg > 0:
                         reviewer_obj.seconds = int(settings_obj.compute_special_variable("animate_time"))
@@ -1859,6 +1953,15 @@ def on_review_card(*args):
 
             if enemy_pokemon.hp < 1:
                 enemy_pokemon.hp = 0
+
+                if trainer_battle_active:
+                    opponent_name = (getattr(enemy_pokemon, "name", None) or "trainer").capitalize()
+                    raid_functions.show_bot_battle_result(opponent_name, True, enemy_pokemon.name)
+                    enemy_pokemon.trainer_match_id = None
+                    ankimon_tracker_obj.general_card_count_for_battle = 0
+                    new_pokemon()
+                    trainer_battle_active = False
+                    return
                 
                 # New automatic battle handling
                 auto_battle_setting = int(settings_obj.get("battle.automatic_battle", 0))

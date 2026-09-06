@@ -37,6 +37,11 @@ class TrainerBotDialog(QDialog):
             return
         self._state = state
         pvp_state = state.get("pvp", {})
+        open_match = next(
+            (candidate for candidate in pvp_state.get("matches", [])
+             if candidate.get("status") in {"active", "pending"}),
+            None,
+        )
         self.attack_status.setText(
             f"Banked attacks: {pvp_state.get('banked_attacks', 0)} / "
             f"{pvp_state.get('max_banked_attacks', 3)}"
@@ -52,7 +57,7 @@ class TrainerBotDialog(QDialog):
                  candidate.get("opponent_is_bot")),
                 None,
             )
-            widget = self._bot_widget(bot, match, pvp_state)
+            widget = self._bot_widget(bot, match, pvp_state, not open_match)
             item.setSizeHint(widget.sizeHint())
             self.roster.setItemWidget(item, widget)
 
@@ -68,7 +73,9 @@ class TrainerBotDialog(QDialog):
                  not candidate.get("opponent_is_bot")),
                 None,
             )
-            widget = self._bot_widget(friend, match, pvp_state, human_enabled)
+            widget = self._bot_widget(
+                friend, match, pvp_state, human_enabled and not open_match
+            )
             item.setSizeHint(widget.sizeHint())
             self.roster.setItemWidget(item, widget)
 
@@ -116,6 +123,9 @@ class TrainerBotDialog(QDialog):
         challenge.clicked.connect(lambda: self.challenge(bot))
         row.addWidget(challenge)
         if match and match.get("status") == "active":
+            cancel = QPushButton("Cancel")
+            cancel.clicked.connect(lambda: self.cancel(match["id"]))
+            row.addWidget(cancel)
             attack = QPushButton("Attack")
             attack.setEnabled((pvp_state or {}).get("banked_attacks", 0) > 0)
             attack.clicked.connect(lambda: self.attack(match["id"]))
@@ -128,6 +138,9 @@ class TrainerBotDialog(QDialog):
         except multiplayer_functions.MultiplayerClientError as exc:
             QMessageBox.warning(self, "Trainer Battle", str(exc))
             return
+        activate = getattr(mw, "activate_trainer_battle", None)
+        if activate:
+            activate()
         QMessageBox.information(self, "Trainer Battle", f"{bot.get('trainer_name', bot.get('username', 'Trainer'))} accepts your challenge!\nAnswer a card to make your first move.")
         self.refresh()
 
@@ -137,4 +150,16 @@ class TrainerBotDialog(QDialog):
         except multiplayer_functions.MultiplayerClientError as exc:
             QMessageBox.warning(self, "Trainer Battle", str(exc))
             return
+        self.refresh()
+
+    def cancel(self, match_id):
+        try:
+            multiplayer_functions.cancel_match(match_id)
+        except multiplayer_functions.MultiplayerClientError as exc:
+            QMessageBox.warning(self, "Trainer Battle", str(exc))
+            return
+        deactivate = getattr(mw, "deactivate_trainer_battle", None)
+        if deactivate:
+            deactivate()
+        QMessageBox.information(self, "Trainer Battle", "Trainer battle cancelled.")
         self.refresh()
