@@ -1,4 +1,5 @@
 import copy
+import json
 
 from aqt import gui_hooks, mw, utils
 from aqt.utils import showInfo
@@ -7,7 +8,7 @@ from ..business import get_image_as_base64
 from ..functions.create_css_for_reviewer import create_css_for_reviewer
 from ..texts import inject_life_bar_css_1, inject_life_bar_css_2
 from ..functions.create_gui_functions import create_status_html
-from ..resources import icon_path, trainer_sprites_path
+from ..resources import icon_path, mypokemon_path, trainer_sprites_path
 from ..functions.pokedex_functions import get_pokemon_diff_lang_name
 
 class Reviewer_Manager:
@@ -128,6 +129,43 @@ class Reviewer_Manager:
             )
         return f'<div id="OpponentTeam" class="Ankimon">{"".join(balls)}</div>'
 
+    def _player_team_html(self):
+        """Show the selected player's party in the lower-left reviewer corner."""
+        selected = self.settings.get("trainer.team", []) or []
+        if not isinstance(selected, list) or not selected:
+            return ""
+        selected_ids = {
+            str(entry.get("individual_id")) for entry in selected
+            if isinstance(entry, dict) and entry.get("individual_id")
+        }
+        if not selected_ids:
+            return ""
+        try:
+            with open(mypokemon_path, "r", encoding="utf-8") as file:
+                owned = json.load(file)
+        except (OSError, TypeError, ValueError):
+            owned = []
+        team = [pokemon for pokemon in owned
+                if str(pokemon.get("individual_id")) in selected_ids]
+        if not team:
+            return ""
+        active_id = str(getattr(self.main_pokemon, "individual_id", ""))
+        ball = get_image_as_base64(icon_path)
+        balls = []
+        for pokemon in team:
+            pokemon_id = str(pokemon.get("individual_id", ""))
+            status = "active" if pokemon_id == active_id else "available"
+            if int(pokemon.get("current_hp", 1) or 0) <= 0:
+                status = "fainted"
+            opacity = "1" if status != "fainted" else "0.35"
+            outline = "border:1px solid rgba(255,215,80,.9);" if status == "active" else ""
+            name = str(pokemon.get("name", "Pokémon")).replace("`", "")
+            balls.append(
+                f'<img src="data:image/png;base64,{ball}" alt="{name} {status}" '
+                f'title="{name}" style="opacity:{opacity};{outline}">'
+            )
+        return f'<div id="PlayerTeam" class="Ankimon">{"".join(balls)}</div>'
+
     def reviewer_reset_life_bar_inject(self):
         self.life_bar_injected = False
 
@@ -245,6 +283,7 @@ class Reviewer_Manager:
                     web_content.body += f'<div id="PokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64}" alt="PokeImage style="animation: shake 0s ease;"></div>'
                     web_content.body += self._trainer_image_html()
                     web_content.body += self._trainer_team_html()
+                    web_content.body += self._player_team_html()
                     web_content.body += self._raid_boss_html()
                     if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
                         image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
@@ -357,6 +396,11 @@ class Reviewer_Manager:
                 reviewer.web.eval(
                     f'{{const team = document.getElementById("OpponentTeam"); '
                     f'if (team) team.outerHTML = `{team_html}`;}}'
+                )
+                player_team_html = self._player_team_html()
+                reviewer.web.eval(
+                    f'{{const team = document.getElementById("PlayerTeam"); '
+                    f'if (team) team.outerHTML = `{player_team_html}`;}}'
                 )
                 reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
                 if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
