@@ -39,7 +39,21 @@
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: center;
-	z-index: 4;
+	z-index: 1;
+}
+
+#bottomTrainer {
+	position: absolute;
+	left: 2%;
+	top: 16%;
+	width: 48%;
+	height: 76%;
+	display: none;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center bottom;
+	pointer-events: none;
+	z-index: 1;
 }
 
 #bottom {

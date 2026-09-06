@@ -102,6 +102,18 @@ def get_state():
     return _request("GET", "/v1/state")
 
 
+def add_friend(username):
+    return _request("POST", "/v1/friends", {"username": username})
+
+
+def respond_friend(username, accept):
+    return _request("POST", f"/v1/friends/{username}/respond", {"accept": bool(accept)})
+
+
+def remove_friend(username):
+    return _request("DELETE", f"/v1/friends/{username}")
+
+
 def challenge_bot(challenge_value):
     return _request("POST", "/v1/matches", {
         "opponent": challenge_value,

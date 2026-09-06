@@ -10,6 +10,7 @@ from .pyobj.trainer_card_window import TrainerCardGUI
 from .pyobj.ankimon_leaderboard import show_api_key_dialog
 from .pyobj.raid_dialog import RaidDialog
 from .pyobj.trainer_bot_dialog import TrainerBotDialog
+from .pyobj.friends_dialog import FriendsDialog
 from .gui_classes.choose_trainer_sprite import TrainerSpriteDialog
 from .gui_classes.pokemon_team_window import PokemonTeamDialog
 from .gui_classes.check_files import FileCheckerApp
@@ -238,6 +239,12 @@ def create_menu_actions(
     trainer_battle_button.setShortcut(QKeySequence("Ctrl+Shift+B"))
     trainer_battle_button.triggered.connect(open_trainer_battles)
     multiplayer_menu.addAction(trainer_battle_button)
+
+    friends_button = QAction("Friends List", mw)
+    friends_button.setMenuRole(QAction.MenuRole.NoRole)
+    friends_button.setShortcut(QKeySequence("Ctrl+Shift+F"))
+    friends_button.triggered.connect(lambda: FriendsDialog(mw).exec())
+    multiplayer_menu.addAction(friends_button)
 
     # Button: Show credits
     credits_button = QAction(
