@@ -335,7 +335,7 @@ def create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_ba
     if xp_bar_config is True:
             css += f"""
             #xp-bar {{
-            width: {int((main_pokemon.xp / int(experience_for_next_lvl)) * 100)}%; /* Replace with the actual percentage */
+            width: {int((main_pokemon.xp / max(1, int(experience_for_next_lvl))) * 100)}%; /* Replace with the actual percentage */
             height: 10px;
             background: linear-gradient(to right, 
                                         rgba(0, 191, 255, 0.7), /* Light Blue with transparency */
