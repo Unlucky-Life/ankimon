@@ -54,7 +54,8 @@ class TrainerBotDialog(QDialog):
             self.roster.addItem(item)
             match = next(
                 (candidate for candidate in state.get("pvp", {}).get("matches", [])
-                 if candidate.get("opponent") == bot.get("username") and
+                 if str(candidate.get("opponent", "")).removeprefix("bot:") ==
+                 str(bot.get("username", "")).removeprefix("bot:") and
                  candidate.get("opponent_is_bot")),
                 None,
             )
@@ -124,14 +125,15 @@ class TrainerBotDialog(QDialog):
         challenge.setEnabled(battle_enabled and not bot.get("in_match", False))
         challenge.clicked.connect(lambda: self.challenge(bot))
         row.addWidget(challenge)
-        if match and match.get("status") == "active":
+        if match and match.get("status") in {"active", "pending"}:
             cancel = QPushButton("Cancel")
             cancel.clicked.connect(lambda: self.cancel(match["id"]))
             row.addWidget(cancel)
-            attack = QPushButton("Attack")
-            attack.setEnabled((pvp_state or {}).get("banked_attacks", 0) > 0)
-            attack.clicked.connect(lambda: self.attack(match["id"]))
-            row.addWidget(attack)
+            if match.get("status") == "active":
+                attack = QPushButton("Attack")
+                attack.setEnabled((pvp_state or {}).get("banked_attacks", 0) > 0)
+                attack.clicked.connect(lambda: self.attack(match["id"]))
+                row.addWidget(attack)
         return widget
 
     def challenge(self, bot):
