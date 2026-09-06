@@ -52,7 +52,9 @@ class TrainerBotDialog(QDialog):
                  candidate.get("opponent_is_bot")),
                 None,
             )
-            self.roster.setItemWidget(item, self._bot_widget(bot, match, pvp_state))
+            widget = self._bot_widget(bot, match, pvp_state)
+            item.setSizeHint(widget.sizeHint())
+            self.roster.setItemWidget(item, widget)
 
         human_enabled = pvp_state.get("human_enabled", False)
         for friend in state.get("friends", []):
@@ -66,9 +68,9 @@ class TrainerBotDialog(QDialog):
                  not candidate.get("opponent_is_bot")),
                 None,
             )
-            self.roster.setItemWidget(
-                item, self._bot_widget(friend, match, pvp_state, human_enabled)
-            )
+            widget = self._bot_widget(friend, match, pvp_state, human_enabled)
+            item.setSizeHint(widget.sizeHint())
+            self.roster.setItemWidget(item, widget)
 
         for match in state.get("pvp", {}).get("matches", []):
             if match.get("status") == "finished":
@@ -80,6 +82,7 @@ class TrainerBotDialog(QDialog):
 
     def _bot_widget(self, bot, match=None, pvp_state=None, battle_enabled=True):
         widget = QWidget()
+        widget.setMinimumHeight(84)
         row = QHBoxLayout(widget)
         sprite = QLabel()
         profile = (match or {}).get("opponent_trainer") or {}
