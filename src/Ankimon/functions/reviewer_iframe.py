@@ -58,7 +58,7 @@ def create_iframe_html(main_pokemon, enemy_pokemon, settings_obj, textmsg):
     mainpokemon_attack = False
     enemypokemon_attack = False
     experience_for_next_lvl = int(find_experience_for_level(f"{main_pokemon.growth_rate}", int(main_pokemon.level), settings_obj))
-    xp_bar_width = int((int(main_pokemon.xp) / experience_for_next_lvl) * 100)
+    xp_bar_width = int((int(main_pokemon.xp) / max(1, experience_for_next_lvl)) * 100)
     ankimon_package = mw.addonManager.addonFromModule(__name__)
     general_url = f"""/_addons/{ankimon_package}/user_files/web/"""
     sprites_url = f"""/_addons/{ankimon_package}/user_files/sprites/"""

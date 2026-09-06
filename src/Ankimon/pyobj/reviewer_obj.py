@@ -154,7 +154,7 @@ class Reviewer_Manager:
             # Inject CSS and the life bar only if not injected before and in the reviewer
             self.ankimon_tracker.check_pokecoll_in_list()
             if not self.life_bar_injected and is_reviewer:
-                css = create_css_for_reviewer(int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)), pokemon_hp_percent, self.settings.get("battle.hp_bar_thickness", 2) * 4, int(self.settings.compute_special_variable('xp_bar_spacer')), self.settings.compute_special_variable('view_main_front'), int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50), int(self.settings.compute_special_variable('hp_only_spacer')), int(self.settings.compute_special_variable('wild_hp_spacer')), self.settings.get("gui.xp_bar_config", False), self.main_pokemon, int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings.get("remove_levelcap", False))), self.settings.compute_special_variable('xp_bar_location'))
+                css = create_css_for_reviewer(int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)), pokemon_hp_percent, self.settings.get("battle.hp_bar_thickness", 2) * 4, int(self.settings.compute_special_variable('xp_bar_spacer')), self.settings.compute_special_variable('view_main_front'), int((self.main_pokemon.hp / max(1, self.main_pokemon.max_hp)) * 50), int(self.settings.compute_special_variable('hp_only_spacer')), int(self.settings.compute_special_variable('wild_hp_spacer')), self.settings.get("gui.xp_bar_config", False), self.main_pokemon, int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings.get("remove_levelcap", False))), self.settings.compute_special_variable('xp_bar_location'))
                 css += inject_life_bar_css_1
                 css += inject_life_bar_css_2
                 
@@ -317,12 +317,13 @@ class Reviewer_Manager:
                 status_html = create_status_html(f"{self.enemy_pokemon.battle_status}", settings_obj=self.settings)
             if self.settings.get("gui.styling_in_reviewer", True) is True:
                 # Refresh the reviewer content to apply the updated life bar
-                reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
-                reviewer.web.eval('document.getElementById("life-bar").style.background = "linear-gradient(to right, ' + str(hp_color) + ', ' + str(hp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
-                reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px ' + hp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')
-                if self.settings.get("xp_bar_config", False) is True:
+                if self.settings.get("gui.hp_bar_config", True) is True:
+                    reviewer.web.eval('document.getElementById("life-bar").style.width = "' + str(pokemon_hp_percent) + '%";')
+                    reviewer.web.eval('document.getElementById("life-bar").style.background = "linear-gradient(to right, ' + str(hp_color) + ', ' + str(hp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
+                    reviewer.web.eval('document.getElementById("life-bar").style.boxShadow = "0 0 10px ' + hp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')
+                if self.settings.get("gui.xp_bar_config", False) is True:
                     experience_for_next_lvl = int(find_experience_for_level(self.main_pokemon.growth_rate, self.main_pokemon.level, self.settings.get("remove_levelcap", False)))
-                    xp_bar_percent = int((self.main_pokemon.xp / int(experience_for_next_lvl)) * 100)
+                    xp_bar_percent = int((self.main_pokemon.xp / max(1, experience_for_next_lvl)) * 100)
                     reviewer.web.eval('document.getElementById("xp-bar").style.width = "' + str(xp_bar_percent) + '%";')
                 enemy_lang_name = (get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
                 if self.enemy_pokemon.shiny is True:
@@ -365,9 +366,10 @@ class Reviewer_Manager:
                         main_lang_name += " ⭐ "
                     main_name_display_text = f"{main_lang_name} LvL: {self.main_pokemon.level}"
                     main_hp_display_text = f"HP: {self.main_pokemon.hp}/{self.main_pokemon.max_hp}"
-                    reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(int((self.main_pokemon.hp / self.main_pokemon.max_hp) * 50)) + '%";')
-                    reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
-                    reviewer.web.eval('document.getElementById("mylife-bar").style.boxShadow = "0 0 10px ' + myhp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')
+                    if self.settings.get("gui.hp_bar_config", True) is True:
+                        reviewer.web.eval('document.getElementById("mylife-bar").style.width = "' + str(int((self.main_pokemon.hp / max(1, self.main_pokemon.max_hp)) * 50)) + '%";')
+                        reviewer.web.eval('document.getElementById("mylife-bar").style.background = "linear-gradient(to right, ' + str(myhp_color) + ', ' + str(myhp_color) + ' ' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + '100' + '%, ' + 'rgba(54, 54, 56, 0.7)' + ')";')
+                        reviewer.web.eval('document.getElementById("mylife-bar").style.boxShadow = "0 0 10px ' + myhp_color + ', 0 0 30px rgba(54, 54, 56, 1)";')
                     reviewer.web.eval(f'document.getElementById("MyPokeImage").innerHTML = `{new_html_content_mainpkmn}`;')
                     reviewer.web.eval('document.getElementById("myname-display").innerText = "' + main_name_display_text + '";')
                     reviewer.web.eval('document.getElementById("myhp-display").innerText = "' + main_hp_display_text + '";')

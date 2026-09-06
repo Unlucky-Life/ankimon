@@ -82,7 +82,13 @@ def _request(method, path, body=None):
     except ValueError as exc:
         raise MultiplayerClientError("The multiplayer server returned invalid JSON.") from exc
     if response.status_code >= 400:
-        raise MultiplayerClientError(payload.get("error", f"Server error ({response.status_code})"))
+        if isinstance(payload, dict):
+            detail = payload.get("error")
+        else:
+            detail = None
+        raise MultiplayerClientError(detail or f"Server error ({response.status_code})")
+    if not isinstance(payload, dict):
+        raise MultiplayerClientError("The multiplayer server returned an invalid response.")
     # Reviewer rendering can reuse the latest state without another request.
     mw.multiplayer_state = payload
     return payload

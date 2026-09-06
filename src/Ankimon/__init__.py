@@ -2719,8 +2719,9 @@ class TestWindow(QWidget):
         return image_label, msg_font
 
     def draw_hp_bar(self, x, y, h, w, hp, max_hp, painter):
-        pokemon_hp_percent = int((hp / max_hp) * 100)
-        hp_bar_value = int(w * (hp / max_hp))
+        safe_max_hp = max(1, max_hp)
+        pokemon_hp_percent = int((hp / safe_max_hp) * 100)
+        hp_bar_value = int(w * (hp / safe_max_hp))
         # Draw the HP bar
         if pokemon_hp_percent < 25:
             hp_color = QColor(255, 0, 0)  # Red
