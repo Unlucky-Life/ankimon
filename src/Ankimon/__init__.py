@@ -1706,6 +1706,8 @@ def on_review_card(*args):
         cry_counter = ankimon_tracker_obj.cry_counter
         card_counter = ankimon_tracker_obj.card_counter
         dmg = 0
+        trainer_match_state = None
+        finished_trainer_match = None
         reviewer_obj.seconds = 0
         reviewer_obj.myseconds = 0
         ankimon_tracker_obj.general_card_count_for_battle += 1
@@ -1929,7 +1931,7 @@ def on_review_card(*args):
                             
                     if trainer_battle_active:
                         try:
-                            multiplayer_functions.submit_turn(
+                            trainer_match_state = multiplayer_functions.submit_turn(
                                 enemy_pokemon.trainer_match_id, random_attack
                             )
                         except multiplayer_functions.MultiplayerClientError as exc:
@@ -1950,6 +1952,44 @@ def on_review_card(*args):
             # instead of silently resetting every time on_review_card runs.
             ankimon_tracker_obj.slp_counter = slp_counter
             enemy_pokemon.battle_status = battle_status
+
+            if trainer_battle_active and trainer_match_state:
+                trainer_match = next(
+                    (match for match in trainer_match_state.get("pvp", {}).get("matches", [])
+                     if match.get("id") == enemy_pokemon.trainer_match_id),
+                    None,
+                )
+                if trainer_match:
+                    opponent = trainer_match.get("opponent_pokemon") or {}
+                    # Bot damage is resolved by the server. Keep the local
+                    # engine aligned with that result so a local 0 HP does
+                    # not revive an active match on the next review.
+                    if trainer_match.get("status") == "active":
+                        try:
+                            enemy_pokemon.hp = max(0, int(opponent.get("hp", enemy_pokemon.hp)))
+                        except (TypeError, ValueError):
+                            pass
+                    elif trainer_match.get("status") == "finished":
+                        finished_trainer_match = trainer_match
+                        try:
+                            enemy_pokemon.hp = max(0, int(opponent.get("hp", 0)))
+                        except (TypeError, ValueError):
+                            enemy_pokemon.hp = 0
+
+            if finished_trainer_match:
+                opponent_name = (
+                    finished_trainer_match.get("opponent") or "trainer"
+                ).capitalize()
+                winner = finished_trainer_match.get("winner")
+                won = bool(winner) and winner != finished_trainer_match.get("opponent")
+                raid_functions.show_bot_battle_result(
+                    opponent_name, won, enemy_pokemon.name
+                )
+                enemy_pokemon.trainer_match_id = None
+                ankimon_tracker_obj.general_card_count_for_battle = 0
+                new_pokemon()
+                trainer_battle_active = False
+                return
 
             if enemy_pokemon.hp < 1:
                 enemy_pokemon.hp = 0
