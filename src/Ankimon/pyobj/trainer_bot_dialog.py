@@ -128,6 +128,9 @@ class TrainerBotDialog(QDialog):
         except multiplayer_functions.MultiplayerClientError as exc:
             QMessageBox.warning(self, "Trainer Battle", str(exc))
             return
+        activate = getattr(mw, "activate_trainer_battle", None)
+        if activate:
+            activate()
         QMessageBox.information(self, "Trainer Battle", f"{bot.get('trainer_name', bot.get('username', 'Trainer'))} accepts your challenge!\nAnswer a card to make your first move.")
         self.refresh()
 

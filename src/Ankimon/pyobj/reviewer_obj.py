@@ -43,7 +43,7 @@ class Reviewer_Manager:
         state = getattr(mw, "multiplayer_state", {}) or {}
         return next(
             (match for match in state.get("pvp", {}).get("matches", [])
-             if match.get("status") in {"active", "pending"}
+             if match.get("status") == "active"
              and match.get("opponent_pokemon")),
             None,
         )
