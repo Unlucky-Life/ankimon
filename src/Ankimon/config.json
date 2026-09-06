@@ -46,6 +46,11 @@
     "misc.discord_rich_presence": false,
     "misc.discord_rich_presence_text": 1,
 
+    "raid.enabled": true,
+    "raid.server_url": "http://localhost:8080",
+    "multiplayer.server_url": "http://localhost:8080",
+    "multiplayer.enabled": false,
+
     "trainer.name": "Ash",
     "trainer.sprite": "ash",
     "trainer.id": 0,

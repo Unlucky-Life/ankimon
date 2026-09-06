@@ -67,7 +67,7 @@ class Settings:
 
         # Backfill raid settings for existing configs created before this feature
         if "raid.enabled" not in config:
-            config["raid.enabled"] = False
+            config["raid.enabled"] = True
             changed = True
         if "raid.server_url" not in config:
             config["raid.server_url"] = "http://localhost:8080"
@@ -127,7 +127,7 @@ class Settings:
                 "misc.leaderboard": False,
                 "misc.YouShallNotPass_Ankimon_News": False,
 
-                "raid.enabled": False,
+                "raid.enabled": True,
                 "raid.server_url": "http://localhost:8080",
                 "multiplayer.server_url": "http://localhost:8080",
                 "multiplayer.enabled": False,
