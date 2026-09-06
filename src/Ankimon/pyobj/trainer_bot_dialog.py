@@ -114,6 +114,7 @@ class TrainerBotDialog(QDialog):
             f"<b>{bot.get('trainer_name', bot.get('username', 'Trainer'))}</b>"
             f" &mdash; {bot.get('trainer_rank', 'Trainer')}<br>"
             f"{bot.get('motto', '')}<br>"
+            f"Difficulty: <b>{bot.get('difficulty_name', bot.get('difficulty', '?'))}</b><br>"
             f"Pokémon: {bot.get('pokemon', '?')} · Lv. {bot.get('level', '?')}"
             f"{battle_text}"
         )
