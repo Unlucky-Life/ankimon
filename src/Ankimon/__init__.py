@@ -1664,10 +1664,23 @@ def activate_trainer_battle():
 
 mw.activate_trainer_battle = activate_trainer_battle
 
+
+def deactivate_trainer_battle():
+    """Leave trainer mode and resume normal wild encounters."""
+    if getattr(enemy_pokemon, "trainer_match_id", None) is None:
+        return
+    enemy_pokemon.trainer_match_id = None
+    new_pokemon()
+
+
+mw.deactivate_trainer_battle = deactivate_trainer_battle
+
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
         trainer_battle_active = activate_trainer_battle()
+        if not trainer_battle_active and getattr(enemy_pokemon, "trainer_match_id", None):
+            deactivate_trainer_battle()
         if settings_obj.get("multiplayer.enabled", False):
             multiplayer_functions.queue_review(
                 args,

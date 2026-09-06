@@ -108,6 +108,11 @@ def submit_turn(match_id, move=None):
     return _request("POST", f"/v1/matches/{match_id}/turns", body)
 
 
+def cancel_match(match_id):
+    """Cancel an open trainer battle without awarding a winner."""
+    return _request("POST", f"/v1/matches/{match_id}/cancel", {})
+
+
 def queue_review(reviewer_args, level, active_pokemon=None):
     """Queue one Anki review and flush in small batches.
 
