@@ -39,12 +39,42 @@ class Reviewer_Manager:
                     return path
         return None
 
-    def _sync_raid_boss_display(self):
-        """Render the active raid boss without replacing battle mechanics."""
+    def _active_trainer_match(self):
+        state = getattr(mw, "multiplayer_state", {}) or {}
+        return next(
+            (match for match in state.get("pvp", {}).get("matches", [])
+             if match.get("status") in {"active", "pending"}
+             and match.get("opponent_pokemon")),
+            None,
+        )
+
+    def _sync_opponent_display(self):
+        """Use a trainer battle Pokemon, while keeping raid bosses separate."""
+        match = self._active_trainer_match()
+        if match:
+            pokemon = match.get("opponent_pokemon") or {}
+            enemy = copy.copy(self._battle_enemy)
+            try:
+                enemy.id = int(pokemon.get("id", enemy.id))
+            except (TypeError, ValueError):
+                pass
+            enemy.name = pokemon.get("name") or enemy.name
+            enemy.level = pokemon.get("level") or enemy.level
+            enemy.hp = pokemon.get("hp", enemy.hp)
+            enemy.max_hp = pokemon.get("max_hp") or enemy.max_hp
+            enemy.current_hp = enemy.hp
+            enemy.shiny = False
+            enemy.battle_status = "fighting"
+            self.enemy_pokemon = enemy
+            return
+
+        self.enemy_pokemon = self._battle_enemy
+
+    def _raid_boss_html(self):
+        """Return a separate top-right raid boss card for the reviewer."""
         session = getattr(mw, "raid_session_obj", None)
         if not session or not session.active or not session.boss_id:
-            self.enemy_pokemon = self._battle_enemy
-            return
+            return ""
         enemy = copy.copy(self._battle_enemy)
         enemy.id = int(session.boss_id)
         enemy.name = session.boss_name or enemy.name
@@ -53,8 +83,13 @@ class Reviewer_Manager:
         enemy.max_hp = session.max_hp or enemy.max_hp
         enemy.current_hp = enemy.hp
         enemy.shiny = False
-        enemy.battle_status = "fighting"
-        self.enemy_pokemon = enemy
+        image = get_image_as_base64(enemy.get_sprite_path("front", "png"))
+        return (
+            '<div id="RaidBossImage" class="Ankimon">'
+            f'<img src="data:image/png;base64,{image}" alt="Raid boss">'
+            f'<div id="RaidBossLabel">{enemy.name} Lv. {enemy.level}<br>'
+            f'HP: {enemy.hp}/{enemy.max_hp}</div></div>'
+        )
 
     def _trainer_image_html(self):
         path = self._opponent_trainer_sprite()
@@ -70,7 +105,7 @@ class Reviewer_Manager:
         self.life_bar_injected = False
 
     def inject_life_bar(self, web_content, context):
-        self._sync_raid_boss_display()
+        self._sync_opponent_display()
         if int(self.settings.get("gui.show_mainpkmn_in_reviewer", 1)) < 3:
             if self.settings.get('gui.reviewer_image_gif', 1) == False:
                 pokemon_image_file = self.enemy_pokemon.get_sprite_path("front", "png")
@@ -182,6 +217,7 @@ class Reviewer_Manager:
                     image_base64 = get_image_as_base64(pokemon_image_file)
                     web_content.body += f'<div id="PokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64}" alt="PokeImage style="animation: shake 0s ease;"></div>'
                     web_content.body += self._trainer_image_html()
+                    web_content.body += self._raid_boss_html()
                     if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
                         image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
                         web_content.body += f'<div id="MyPokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64_mypkmn}" alt="MyPokeImage" style="animation: shake 0s ease;"></div>'
@@ -205,7 +241,7 @@ class Reviewer_Manager:
         return web_content
 
     def update_life_bar(self, reviewer, card, ease):
-        self._sync_raid_boss_display()
+        self._sync_opponent_display()
         if int(self.settings.get("gui.show_mainpkmn_in_reviewer", 1)) < 3:
             self.ankimon_tracker.check_pokecoll_in_list()
             if self.settings.get('gui.reviewer_image_gif', 1) == False:
@@ -267,6 +303,15 @@ class Reviewer_Manager:
                 hp_display_text = f"HP: {self.enemy_pokemon.hp}/{self.enemy_pokemon.max_hp}"
                 reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')
                 reviewer.web.eval('document.getElementById("hp-display").innerText = "' + hp_display_text + '";')
+                session = getattr(mw, "raid_session_obj", None)
+                if session and session.active:
+                    boss_name = (session.boss_name or "Raid boss").replace("`", "")
+                    boss_hp = session.hp if session.hp is not None else "?"
+                    boss_max_hp = session.max_hp or "?"
+                    reviewer.web.eval(
+                        "document.getElementById('RaidBossLabel').innerHTML = "
+                        f"`{boss_name} Lv. {session.boss_level}<br>HP: {boss_hp}/{boss_max_hp}`;"
+                    )
                 
                 # Update text colors based on current theme
                 reviewer.web.eval('updateTextColors();')

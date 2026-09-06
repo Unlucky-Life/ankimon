@@ -3,8 +3,8 @@ def create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_ba
     css += """
     #OpponentTrainerImage {
         position: fixed;
-        right: 108px;
-        bottom: 112px;
+        right: 10px;
+        top: 10px;
         z-index: 10000;
         width: 64px;
         height: 64px;
@@ -18,6 +18,31 @@ def create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_ba
         object-fit: contain;
         image-rendering: pixelated;
     }
+    #RaidBossImage {
+        position: fixed;
+        right: 10px;
+        top: 10px;
+        z-index: 10000;
+        width: 116px;
+        min-height: 96px;
+        padding: 4px;
+        color: white;
+        background: rgba(54, 54, 56, 0.82);
+        border: 1px solid rgba(255, 210, 80, 0.9);
+        border-radius: 8px;
+        text-align: center;
+        font-size: 11px;
+        font-weight: bold;
+    }
+    #RaidBossImage img {
+        display: block;
+        width: 72px;
+        height: 72px;
+        margin: 0 auto;
+        object-fit: contain;
+        image-rendering: pixelated;
+    }
+    #RaidBossLabel { line-height: 1.25; }
     """
     if show_mainpkmn_in_reviewer == 0:
         css += f"""
