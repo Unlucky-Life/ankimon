@@ -1615,15 +1615,20 @@ def activate_trainer_battle():
 
     opponent = match.get("opponent_pokemon") or {}
     name = str(opponent.get("name") or "Rattata")
+    lookup_name = name.lower()
     pokemon_id = int(opponent.get("id") or 19)
     level = max(1, int(opponent.get("level") or 5))
     try:
-        stats = search_pokedex(name, "baseStats")
-        types = search_pokedex(name, "types")
-        abilities = search_pokedex(name, "abilities")
+        stats = search_pokedex(lookup_name, "baseStats")
+        if not isinstance(stats, dict) or "hp" not in stats:
+            raise ValueError(f"no base stats found for {lookup_name}")
+        types = search_pokedex(lookup_name, "types")
+        abilities = search_pokedex(lookup_name, "abilities")
         numeric_abilities = [value for key, value in (abilities or {}).items() if str(key).isdigit()]
         ability = random.choice(numeric_abilities) if numeric_abilities else "No Ability"
-        attacks = get_all_pokemon_moves(name, level)
+        attacks = get_all_pokemon_moves(lookup_name, level)
+        if not attacks:
+            attacks = ["Tackle"]
         attacks = attacks if len(attacks) <= 4 else random.sample(attacks, 4)
         iv = {key: 15 for key in ("hp", "atk", "def", "spa", "spd", "spe")}
         ev = {key: 0 for key in ("hp", "atk", "def", "spa", "spd", "spe")}
@@ -1639,7 +1644,7 @@ def activate_trainer_battle():
             growth_rate=search_pokeapi_db_by_id(pokemon_id, "growth_rate"),
             ev=ev,
             iv=iv,
-            gender=pick_random_gender(name),
+            gender=pick_random_gender(lookup_name),
             battle_status="fighting",
             tier="Normal",
             shiny=False,
