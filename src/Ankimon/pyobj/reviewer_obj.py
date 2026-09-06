@@ -109,6 +109,25 @@ class Reviewer_Manager:
             f'alt="Opponent trainer"></div>'
         )
 
+    def _trainer_team_html(self):
+        """Show one Poké Ball for every Pokemon in the trainer's party."""
+        match = self._active_trainer_match()
+        if not match:
+            return ""
+        team = match.get("opponent_pokemon_team") or []
+        if not team:
+            team = [match.get("opponent_pokemon") or {}]
+        ball = get_image_as_base64(icon_path)
+        balls = []
+        for pokemon in team:
+            status = pokemon.get("status", "available")
+            opacity = "1" if status in {"active", "available"} else "0.35"
+            balls.append(
+                f'<img src="data:image/png;base64,{ball}" alt="{status}" '
+                f'style="opacity:{opacity}">' 
+            )
+        return f'<div id="OpponentTeam" class="Ankimon">{"".join(balls)}</div>'
+
     def reviewer_reset_life_bar_inject(self):
         self.life_bar_injected = False
 
@@ -225,6 +244,7 @@ class Reviewer_Manager:
                     image_base64 = get_image_as_base64(pokemon_image_file)
                     web_content.body += f'<div id="PokeImage" class="Ankimon"><img src="data:image/png;base64,{image_base64}" alt="PokeImage style="animation: shake 0s ease;"></div>'
                     web_content.body += self._trainer_image_html()
+                    web_content.body += self._trainer_team_html()
                     web_content.body += self._raid_boss_html()
                     if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
                         image_base64_mypkmn = get_image_as_base64(main_pkmn_imagefile_path)
@@ -332,6 +352,11 @@ class Reviewer_Manager:
                 else:
                     pokeicon_html = ''
                 reviewer.web.eval(f'document.getElementById("PokeIcon").innerHTML = `{pokeicon_html}`;')
+                team_html = self._trainer_team_html()
+                reviewer.web.eval(
+                    f'{{const team = document.getElementById("OpponentTeam"); '
+                    f'if (team) team.outerHTML = `{team_html}`;}}'
+                )
                 reviewer.web.eval(f'document.getElementById("pokestatus").innerHTML = `{status_html}`;')
                 if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
                     new_html_content_mainpkmn = f'<img src="data:image/png;base64,{image_base64_mainpkmn}" alt="MyPokeImage" style="animation: shake {self.myseconds}s ease;">'

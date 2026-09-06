@@ -1610,11 +1610,12 @@ def activate_trainer_battle():
     if not match:
         return False
     match_id = match.get("id")
-    if getattr(enemy_pokemon, "trainer_match_id", None) == match_id:
-        return True
-
     opponent = match.get("opponent_pokemon") or {}
     name = str(opponent.get("name") or "Rattata")
+    if (getattr(enemy_pokemon, "trainer_match_id", None) == match_id
+            and str(getattr(enemy_pokemon, "name", "")).lower() == name.lower()
+            and int(getattr(enemy_pokemon, "id", 0) or 0) == int(opponent.get("id") or 0)):
+        return True
     lookup_name = name.lower()
     pokemon_id = int(opponent.get("id") or 19)
     level = max(1, int(opponent.get("level") or 5))
@@ -1655,9 +1656,11 @@ def activate_trainer_battle():
         enemy_pokemon.id = pokemon_id
         enemy_pokemon.level = level
 
-    calculated_hp = enemy_pokemon.calculate_max_hp()
-    enemy_pokemon.max_hp = int(opponent.get("max_hp") or calculated_hp)
-    enemy_pokemon.hp = int(opponent.get("hp") or enemy_pokemon.max_hp)
+    calculated_hp = max(1, int(enemy_pokemon.calculate_max_hp()))
+    server_max_hp = max(1, int(opponent.get("max_hp") or calculated_hp))
+    server_hp = max(0, int(opponent.get("hp") or server_max_hp))
+    enemy_pokemon.max_hp = calculated_hp
+    enemy_pokemon.hp = min(calculated_hp, round(server_hp / server_max_hp * calculated_hp))
     enemy_pokemon.current_hp = enemy_pokemon.hp
     enemy_pokemon.trainer_match_id = match_id
     reviewer_obj._battle_enemy = enemy_pokemon
@@ -1706,6 +1709,8 @@ def on_review_card(*args):
         cry_counter = ankimon_tracker_obj.cry_counter
         card_counter = ankimon_tracker_obj.card_counter
         dmg = 0
+        trainer_match_state = None
+        finished_trainer_match = None
         reviewer_obj.seconds = 0
         reviewer_obj.myseconds = 0
         ankimon_tracker_obj.general_card_count_for_battle += 1
@@ -1747,7 +1752,9 @@ def on_review_card(*args):
             msg = ""
             msg += f"{multiplier}x {translator.translate('multiplier')}"
             #failed card = enemy attack
-            if ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0 and dmg_in_reviewer is True and multiplier < 1:
+            if (ankimon_tracker_obj.pokemon_encouter > 0 and enemy_pokemon.hp > 0
+                    and (dmg_in_reviewer is True or trainer_battle_active)
+                    and multiplier < 1):
                 msg += " \n "
                 try:
                     max_attempts = 3  # Set the maximum number of attempts
@@ -1929,7 +1936,7 @@ def on_review_card(*args):
                             
                     if trainer_battle_active:
                         try:
-                            multiplayer_functions.submit_turn(
+                            trainer_match_state = multiplayer_functions.submit_turn(
                                 enemy_pokemon.trainer_match_id, random_attack
                             )
                         except multiplayer_functions.MultiplayerClientError as exc:
@@ -1950,6 +1957,50 @@ def on_review_card(*args):
             # instead of silently resetting every time on_review_card runs.
             ankimon_tracker_obj.slp_counter = slp_counter
             enemy_pokemon.battle_status = battle_status
+
+            if trainer_battle_active and trainer_match_state:
+                trainer_match = next(
+                    (match for match in trainer_match_state.get("pvp", {}).get("matches", [])
+                     if match.get("id") == enemy_pokemon.trainer_match_id),
+                    None,
+                )
+                if trainer_match:
+                    opponent = trainer_match.get("opponent_pokemon") or {}
+                    # Bot damage is resolved by the server. Keep the local
+                    # engine aligned with that result so a local 0 HP does
+                    # not revive an active match on the next review.
+                    if trainer_match.get("status") == "active":
+                        try:
+                            enemy_pokemon.hp = max(0, int(opponent.get("hp", enemy_pokemon.hp)))
+                        except (TypeError, ValueError):
+                            pass
+                    elif trainer_match.get("status") == "finished":
+                        finished_trainer_match = trainer_match
+                        try:
+                            enemy_pokemon.hp = max(0, int(opponent.get("hp", 0)))
+                        except (TypeError, ValueError):
+                            enemy_pokemon.hp = 0
+                    if trainer_match.get("status") == "active":
+                        # A server-side knockout may have selected the next
+                        # party slot. activate_trainer_battle reloads it
+                        # through the normal Pokemon engine when its name/id
+                        # differs from the current slot.
+                        activate_trainer_battle()
+
+            if finished_trainer_match:
+                opponent_name = (
+                    finished_trainer_match.get("opponent") or "trainer"
+                ).capitalize()
+                winner = finished_trainer_match.get("winner")
+                won = bool(winner) and winner != finished_trainer_match.get("opponent")
+                raid_functions.show_bot_battle_result(
+                    opponent_name, won, enemy_pokemon.name
+                )
+                enemy_pokemon.trainer_match_id = None
+                ankimon_tracker_obj.general_card_count_for_battle = 0
+                new_pokemon()
+                trainer_battle_active = False
+                return
 
             if enemy_pokemon.hp < 1:
                 enemy_pokemon.hp = 0
