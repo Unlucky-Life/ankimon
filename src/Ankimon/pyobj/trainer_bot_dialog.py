@@ -5,6 +5,7 @@ from aqt import mw
 
 from ..functions import multiplayer_functions
 from ..functions.raid_functions import show_bot_battle_result
+from ..gui_classes.pokemon_team_window import PokemonTeamDialog
 from ..resources import trainer_sprites_path
 
 
@@ -133,6 +134,24 @@ class TrainerBotDialog(QDialog):
         return widget
 
     def challenge(self, bot):
+        settings = getattr(mw, "settings_obj", None)
+        team = settings.get("trainer.team", []) if settings else []
+        if not isinstance(team, list) or not team:
+            QMessageBox.information(
+                self,
+                "Choose a team",
+                "You need to select a Pokémon team before challenging a trainer.",
+            )
+            if settings is not None:
+                PokemonTeamDialog(settings, getattr(mw, "logger", None), parent=mw)
+            team = settings.get("trainer.team", []) if settings else []
+            if not isinstance(team, list) or not team:
+                QMessageBox.warning(
+                    self,
+                    "Trainer Battle",
+                    "A trainer battle cannot start without a selected Pokémon team.",
+                )
+                return
         try:
             multiplayer_functions.challenge_bot(bot["challenge_value"])
         except multiplayer_functions.MultiplayerClientError as exc:
