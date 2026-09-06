@@ -44,13 +44,14 @@
 					
 				</div>
 			</div>
-			<div id="topPoke"><img id="topPokemonEffects"></img></div>
 			<div id="topTrainer"></div>
+			<div id="topPoke"><img id="topPokemonEffects"></img></div>
 			
 		</div>
 	</div>
 	<div class="topHalf">
 		<div class="left">
+		<div id="bottomTrainer"></div>
 		<div id="bottomPokemon"><img id="bottomPokemonEffects"></img></div>
 			<div class="ovalOutter">
 				<div class="ovalInner">
@@ -120,6 +121,7 @@
 		var bottomPokemonSprite = getUrlParameter('bottomPokemonSprite');
 		var topPokemonSprite = getUrlParameter('topPokemonSprite');
 		var topTrainerSprite = getUrlParameter('topTrainerSprite');
+		var bottomTrainerSprite = getUrlParameter('bottomTrainerSprite');
 		//var topPokeUrl = `../sprites/back_default_gif/1.gif`;
 		var text = getUrlParameter('text');
 		var levelTop = getUrlParameter('levelTop');
@@ -142,6 +144,7 @@
 		var bottomPokemon = document.getElementById('bottomPokemon');
 		var topPoke = document.getElementById('topPoke');
 		var topTrainer = document.getElementById('topTrainer');
+		var bottomTrainer = document.getElementById('bottomTrainer');
 		var battleText = document.getElementById('battleText');
 		var level_bottom = document.getElementById('level_bottom');
 		var level_top = document.getElementById('level_top');
@@ -225,6 +228,10 @@
 		if (topTrainerSprite) {
 			topTrainer.style.backgroundImage = 'url(' + topTrainerSprite + ')';
 			topTrainer.style.display = 'block';
+		}
+		if (bottomTrainerSprite) {
+			bottomTrainer.style.backgroundImage = 'url(' + bottomTrainerSprite + ')';
+			bottomTrainer.style.display = 'block';
 		}
 
 		if (fontUrl) {

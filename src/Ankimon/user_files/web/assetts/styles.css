@@ -217,7 +217,30 @@ html, body {
 	position: relative;
 	top: 40%;
 	left: 25%;
-	z-index: 9999 !important;
+	z-index: 3;
+}
+
+#bottomTrainer,
+#topTrainer {
+	position: absolute;
+	display: none;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center bottom;
+	pointer-events: none;
+	z-index: 1;
+}
+
+#bottomTrainer {
+	width: 48%;
+	height: 76%;
+	left: 2%;
+	top: 16%;
+}
+
+#bottomPokemon {
+	position: relative;
+	z-index: 3;
 }
 
 #topPoke {
@@ -231,6 +254,14 @@ html, body {
 	position: relative;
 	left: -5%;
 	top: 10%;
+	z-index: 3;
+}
+
+#topTrainer {
+	width: 48%;
+	height: 76%;
+	right: 2%;
+	top: 8%;
 }
 
 /* 6 */
@@ -291,12 +322,14 @@ and (orientation : portrait) {
 	width:50%;
 	height: 100%;
 	overflow: hidden;
+	position: relative;
 }
 
 .right {
 	margin-left: 50%;
 	width:50%;
 	height: 100%;
+	position: relative;
 }
 
 #theTop {

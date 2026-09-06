@@ -21,7 +21,7 @@ from .pokemon_functions import find_experience_for_level
 from ..business import get_image_as_base64
 from ..resources import trainer_sprites_path
 
-def create_html_code(genderTop, genderBottom, nameTop, nameBottom, levelTop, levelBottom, current_health_bottom, max_hp_bottom, max_hp_top, current_health_top, text, general_url, font_url, bottom_pokemon_sprite, top_pokemon_sprite, display, main_attack, enemy_attack, xp_bar_width = 0, top_trainer_sprite = ""):
+def create_html_code(genderTop, genderBottom, nameTop, nameBottom, levelTop, levelBottom, current_health_bottom, max_hp_bottom, max_hp_top, current_health_top, text, general_url, font_url, bottom_pokemon_sprite, top_pokemon_sprite, display, main_attack, enemy_attack, xp_bar_width = 0, top_trainer_sprite = "", bottom_trainer_sprite = ""):
     if not top_trainer_sprite:
         state = getattr(mw, "multiplayer_state", {}) or {}
         for match in state.get("pvp", {}).get("matches", []):
@@ -34,11 +34,7 @@ def create_html_code(genderTop, genderBottom, nameTop, nameBottom, levelTop, lev
                 break
     html_code = """<div id="spacer">&nbsp;</div>"""
     html_code += """<div id="AnkimonWindow"></div>"""
-    html_code += f"""<iframe id="myIframe" class="Ankimon" src='{general_url}index.html?bottomPokemonSprite={bottom_pokemon_sprite}&topPokemonSprite={top_pokemon_sprite}&text={text}&levelTop={levelTop}&levelBottom={levelBottom}&nameTop={nameTop}&nameBottom={nameBottom}&genderTop={genderTop}&genderBottom={genderBottom}&current_health_bottom={current_health_bottom}&max_hp_bottom={max_hp_bottom}&max_hp_top={max_hp_top}&fontUrl={font_url}&current_health_top={current_health_top}&main_attack={main_attack}&enemy_attack={enemy_attack}' width=100% style="display:{display};"></iframe>"""
-    html_code = html_code.replace(
-        f"topPokemonSprite={top_pokemon_sprite}&",
-        f"topPokemonSprite={top_pokemon_sprite}&topTrainerSprite={top_trainer_sprite}&",
-    )
+    html_code += f"""<iframe id="myIframe" class="Ankimon" src='{general_url}index.html?bottomPokemonSprite={bottom_pokemon_sprite}&topPokemonSprite={top_pokemon_sprite}&topTrainerSprite={top_trainer_sprite}&bottomTrainerSprite={bottom_trainer_sprite}&text={text}&levelTop={levelTop}&levelBottom={levelBottom}&nameTop={nameTop}&nameBottom={nameBottom}&genderTop={genderTop}&genderBottom={genderBottom}&current_health_bottom={current_health_bottom}&max_hp_bottom={max_hp_bottom}&max_hp_top={max_hp_top}&fontUrl={font_url}&current_health_top={current_health_top}&main_attack={main_attack}&enemy_attack={enemy_attack}' width=100% style="display:{display};"></iframe>"""
     return html_code
 
 def create_iframe_html(main_pokemon, enemy_pokemon, settings_obj, textmsg):
@@ -69,7 +65,12 @@ def create_iframe_html(main_pokemon, enemy_pokemon, settings_obj, textmsg):
         top_pokemon_sprite = f"""{sprites_url}front_default_gif/{enemy_pokemon.id}.gif"""
         bottom_pokemon_sprite = f"""{sprites_url}back_default_gif/{main_pokemon.id}.gif"""
     font_url = f"""/_addons/{ankimon_package}/web/assetts/PokemonGB.ttf"""
-    html_code = create_html_code(genderTop, genderBottom, nameTop, nameBottom, levelTop, levelBottom, current_health_bottom, max_hp_bottom, max_hp_top, current_health_top, text, general_url, font_url, bottom_pokemon_sprite, top_pokemon_sprite, display, mainpokemon_attack, enemypokemon_attack, xp_bar_width)
+    bottom_trainer_sprite = ""
+    trainer_sprite = settings_obj.get("trainer.sprite", "")
+    trainer_path = trainer_sprites_path / f"{trainer_sprite}.png" if trainer_sprite else None
+    if trainer_path and trainer_path.exists():
+        bottom_trainer_sprite = f"data:image/png;base64,{get_image_as_base64(trainer_path)}"
+    html_code = create_html_code(genderTop, genderBottom, nameTop, nameBottom, levelTop, levelBottom, current_health_bottom, max_hp_bottom, max_hp_top, current_health_top, text, general_url, font_url, bottom_pokemon_sprite, top_pokemon_sprite, display, mainpokemon_attack, enemypokemon_attack, xp_bar_width, bottom_trainer_sprite=bottom_trainer_sprite)
     return html_code
 
 def prepare(html, content, context):
