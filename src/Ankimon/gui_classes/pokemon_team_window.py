@@ -255,6 +255,19 @@ class PokemonTeamDialog(QDialog):
             
     def on_ok(self):
         """Store the selected Pokémon team and XP Share setting, then close the dialog"""
+        active_match = next(
+            (match for match in (getattr(mw, "multiplayer_state", {}) or {})
+             .get("pvp", {}).get("matches", [])
+             if match.get("status") == "active" and match.get("opponent_pokemon")),
+            None,
+        )
+        if active_match:
+            showWarning(
+                "Your Pokémon team is locked during a trainer battle. "
+                "Cancel the battle first if you want to change it; "
+                "cancelling will register the battle as a loss."
+            )
+            return
         #team = [frame_data['label'].text() for frame_data in self.pokemon_frames if frame_data['label'].text() != "Pokémon Not Selected"]
         team_data = []  # Initialize the list to store selected Pokémon
 

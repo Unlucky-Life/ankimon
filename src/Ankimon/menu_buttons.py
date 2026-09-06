@@ -345,9 +345,25 @@ def create_menu_actions(
         mw.translator.translate("choose_pokemon_team_button"), mw
     )
     pokemon_team_button.setMenuRole(QAction.MenuRole.NoRole)
-    pokemon_team_button.triggered.connect(
-        lambda: PokemonTeamDialog(settings_obj, logger)
-    )
+    def open_pokemon_team_dialog():
+        active_match = next(
+            (match for match in (getattr(mw, "multiplayer_state", {}) or {})
+             .get("pvp", {}).get("matches", [])
+             if match.get("status") == "active" and match.get("opponent_pokemon")),
+            None,
+        )
+        if active_match:
+            QMessageBox.warning(
+                mw,
+                "Trainer Battle in Progress",
+                "Your Pokémon team is locked during a trainer battle. "
+                "Cancel the battle first if you want to change your team; "
+                "cancelling will register the battle as a loss.",
+            )
+            return
+        PokemonTeamDialog(settings_obj, logger)
+
+    pokemon_team_button.triggered.connect(open_pokemon_team_dialog)
     game_menu.addAction(pokemon_team_button)
 
     # Button: File checker dialog

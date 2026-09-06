@@ -60,8 +60,16 @@ class Reviewer_Manager:
                 pass
             enemy.name = pokemon.get("name") or enemy.name
             enemy.level = pokemon.get("level") or enemy.level
-            enemy.hp = pokemon.get("hp", enemy.hp)
-            enemy.max_hp = pokemon.get("max_hp") or enemy.max_hp
+            # The battle engine owns HP after a trainer match starts.  The
+            # server snapshot is only authoritative while initializing the
+            # display; reapplying it on every reviewer refresh would restore
+            # the opponent's pre-attack HP.
+            if getattr(self._battle_enemy, "trainer_match_id", None) == match.get("id"):
+                enemy.hp = self._battle_enemy.hp
+                enemy.max_hp = self._battle_enemy.max_hp
+            else:
+                enemy.hp = pokemon.get("hp", enemy.hp)
+                enemy.max_hp = pokemon.get("max_hp") or enemy.max_hp
             enemy.current_hp = enemy.hp
             enemy.shiny = False
             enemy.battle_status = "fighting"
