@@ -26,6 +26,16 @@ def make_pokemon(**overrides):
     return PokemonObject(**kwargs)
 
 
+def test_pokemon_defaults_are_constructible():
+    pokemon = PokemonObject()
+    assert pokemon.max_hp > 0
+    assert pokemon.hp == pokemon.max_hp
+
+
+def test_pokemon_preserves_zero_current_hp():
+    assert PokemonObject(current_hp=0).current_hp == 0
+
+
 class TestGetEffectiveness:
     def test_super_effective(self):
         # Water vs Fire is super effective (2x)

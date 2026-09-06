@@ -147,9 +147,9 @@ class Reviewer_Manager:
                         side = "back"
                     main_pkmn_imagefile_path = self.main_pokemon.get_sprite_path(side, "gif")
             if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
-                pokemon_hp_percent = int((self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 50)
+                pokemon_hp_percent = int((self.enemy_pokemon.hp / max(1, self.enemy_pokemon.max_hp)) * 50)
             else:    
-                pokemon_hp_percent = int((self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 100)
+                pokemon_hp_percent = int((self.enemy_pokemon.hp / max(1, self.enemy_pokemon.max_hp)) * 100)
             is_reviewer = mw.state == "review"
             # Inject CSS and the life bar only if not injected before and in the reviewer
             self.ankimon_tracker.check_pokecoll_in_list()
@@ -285,10 +285,10 @@ class Reviewer_Manager:
                         side = "back"
                     main_pkmn_imagefile_path = self.main_pokemon.get_sprite_path(side, "gif")
             if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
-                pokemon_hp_percent = int((self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 50)
+                pokemon_hp_percent = int((self.enemy_pokemon.hp / max(1, self.enemy_pokemon.max_hp)) * 50)
                 image_base64_mainpkmn = get_image_as_base64(main_pkmn_imagefile_path)
             else:    
-                pokemon_hp_percent = int((self.enemy_pokemon.hp / self.enemy_pokemon.max_hp) * 100)
+                pokemon_hp_percent = int((self.enemy_pokemon.hp / max(1, self.enemy_pokemon.max_hp)) * 100)
             image_base64 = get_image_as_base64(pokemon_image_file)
             # Determine the color based on the percentage
             if self.enemy_pokemon.hp < int(0.25 * self.enemy_pokemon.max_hp):
@@ -301,11 +301,11 @@ class Reviewer_Manager:
                 hp_color = "rgba(114, 230, 96, 0.7)"  # Green
 
             if int(self.settings.get('gui.show_mainpkmn_in_reviewer', 1)) > 0:
-                if self.main_pokemon.hp < int(0.25 * self.main_pokemon.hp):
+                if self.main_pokemon.hp < int(0.25 * self.main_pokemon.max_hp):
                     myhp_color = "rgba(255, 0, 0, 0.7)"  # Red
-                elif self.main_pokemon.hp < int(0.5 * self.main_pokemon.hp):
+                elif self.main_pokemon.hp < int(0.5 * self.main_pokemon.max_hp):
                     myhp_color = "rgba(255, 140, 0, 0.7)"  # Dark Orange
-                elif self.main_pokemon.hp < int(0.75 * self.main_pokemon.hp):
+                elif self.main_pokemon.hp < int(0.75 * self.main_pokemon.max_hp):
                     myhp_color = "rgba(255, 255, 0, 0.7)"  # Yellow
                 else:
                     myhp_color = "rgba(114, 230, 96, 0.7)"  # Green
