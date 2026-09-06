@@ -1625,19 +1625,21 @@ def activate_trainer_battle():
     pokemon_id = int(opponent.get("id") or 19)
     level = max(1, int(opponent.get("level") or 5))
     try:
-        stats = search_pokedex(lookup_name, "baseStats")
+        stats = opponent.get("stats") or search_pokedex(lookup_name, "baseStats")
         if not isinstance(stats, dict) or "hp" not in stats:
             raise ValueError(f"no base stats found for {lookup_name}")
-        types = search_pokedex(lookup_name, "types")
-        abilities = search_pokedex(lookup_name, "abilities")
-        numeric_abilities = [value for key, value in (abilities or {}).items() if str(key).isdigit()]
-        ability = random.choice(numeric_abilities) if numeric_abilities else "No Ability"
-        attacks = get_all_pokemon_moves(lookup_name, level)
+        types = opponent.get("type") or search_pokedex(lookup_name, "types")
+        ability = opponent.get("ability") or "No Ability"
+        if not opponent.get("ability"):
+            abilities = search_pokedex(lookup_name, "abilities")
+            numeric_abilities = [value for key, value in (abilities or {}).items() if str(key).isdigit()]
+            ability = random.choice(numeric_abilities) if numeric_abilities else "No Ability"
+        attacks = opponent.get("attacks") or get_all_pokemon_moves(lookup_name, level)
         if not attacks:
             attacks = ["Tackle"]
         attacks = attacks if len(attacks) <= 4 else random.sample(attacks, 4)
-        iv = {key: 15 for key in ("hp", "atk", "def", "spa", "spd", "spe")}
-        ev = {key: 0 for key in ("hp", "atk", "def", "spa", "spd", "spe")}
+        iv = opponent.get("iv") or {key: 15 for key in ("hp", "atk", "def", "spa", "spd", "spe")}
+        ev = opponent.get("ev") or {key: 0 for key in ("hp", "atk", "def", "spa", "spd", "spe")}
         enemy_pokemon.update_stats(
             name=name,
             id=pokemon_id,
@@ -1646,11 +1648,11 @@ def activate_trainer_battle():
             type=types,
             stats=stats,
             attacks=attacks,
-            base_experience=search_pokeapi_db_by_id(pokemon_id, "base_experience"),
-            growth_rate=search_pokeapi_db_by_id(pokemon_id, "growth_rate"),
+            base_experience=opponent.get("base_experience") or search_pokeapi_db_by_id(pokemon_id, "base_experience"),
+            growth_rate=opponent.get("growth_rate") or search_pokeapi_db_by_id(pokemon_id, "growth_rate"),
             ev=ev,
             iv=iv,
-            gender=pick_random_gender(lookup_name),
+            gender=opponent.get("gender") or pick_random_gender(lookup_name),
             battle_status="fighting",
             tier="Normal",
             shiny=False,

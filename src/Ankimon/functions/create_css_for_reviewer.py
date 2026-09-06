@@ -35,6 +35,23 @@ def create_css_for_reviewer(show_mainpkmn_in_reviewer, pokemon_hp_percent, hp_ba
         object-fit: contain;
         image-rendering: pixelated;
     }
+    #PlayerTeam {
+        position: fixed;
+        left: 10px;
+        bottom: 10px;
+        z-index: 10000;
+        display: flex;
+        gap: 2px;
+        padding: 3px;
+        background: rgba(54, 54, 56, 0.7);
+        border-radius: 6px;
+    }
+    #PlayerTeam img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+        image-rendering: pixelated;
+    }
     #RaidBossImage {
         position: fixed;
         right: 10px;
