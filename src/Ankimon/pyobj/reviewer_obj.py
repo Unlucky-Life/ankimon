@@ -1,3 +1,5 @@
+import copy
+
 from aqt import gui_hooks, mw, utils
 from aqt.utils import showInfo
 from ..functions.pokemon_functions import find_experience_for_level
@@ -13,6 +15,7 @@ class Reviewer_Manager:
         self.settings = settings_obj
         self.main_pokemon = main_pokemon
         self.enemy_pokemon = enemy_pokemon
+        self._battle_enemy = enemy_pokemon
         self.ankimon_tracker = ankimon_tracker
         self.life_bar_injected = False
         self.seconds = 0
@@ -36,6 +39,23 @@ class Reviewer_Manager:
                     return path
         return None
 
+    def _sync_raid_boss_display(self):
+        """Render the active raid boss without replacing battle mechanics."""
+        session = getattr(mw, "raid_session_obj", None)
+        if not session or not session.active or not session.boss_id:
+            self.enemy_pokemon = self._battle_enemy
+            return
+        enemy = copy.copy(self._battle_enemy)
+        enemy.id = int(session.boss_id)
+        enemy.name = session.boss_name or enemy.name
+        enemy.level = session.boss_level or enemy.level
+        enemy.hp = session.hp if session.hp is not None else enemy.hp
+        enemy.max_hp = session.max_hp or enemy.max_hp
+        enemy.current_hp = enemy.hp
+        enemy.shiny = False
+        enemy.battle_status = "fighting"
+        self.enemy_pokemon = enemy
+
     def _trainer_image_html(self):
         path = self._opponent_trainer_sprite()
         if not path:
@@ -50,6 +70,7 @@ class Reviewer_Manager:
         self.life_bar_injected = False
 
     def inject_life_bar(self, web_content, context):
+        self._sync_raid_boss_display()
         if int(self.settings.get("gui.show_mainpkmn_in_reviewer", 1)) < 3:
             if self.settings.get('gui.reviewer_image_gif', 1) == False:
                 pokemon_image_file = self.enemy_pokemon.get_sprite_path("front", "png")
@@ -184,6 +205,7 @@ class Reviewer_Manager:
         return web_content
 
     def update_life_bar(self, reviewer, card, ease):
+        self._sync_raid_boss_display()
         if int(self.settings.get("gui.show_mainpkmn_in_reviewer", 1)) < 3:
             self.ankimon_tracker.check_pokecoll_in_list()
             if self.settings.get('gui.reviewer_image_gif', 1) == False:
