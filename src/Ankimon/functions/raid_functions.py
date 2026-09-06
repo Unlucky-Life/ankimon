@@ -110,6 +110,7 @@ def _normalize_raid_state(state):
         }
     return {
         "id": raid.get("code"),
+        "boss_id": raid.get("boss_id"),
         "boss_name": raid.get("boss_name"),
         "boss_level": raid.get("boss_level"),
         "max_hp": raid.get("boss_max_hp"),

@@ -10,6 +10,7 @@ class RaidSession:
     def __init__(self):
         self.active = False
         self.raid_id = None
+        self.boss_id = None
         self.boss_name = None
         self.boss_level = None
         self.max_hp = None
@@ -28,6 +29,7 @@ class RaidSession:
     def stop(self):
         self.active = False
         self.raid_id = None
+        self.boss_id = None
         self.boss_name = None
         self.boss_level = None
         self.max_hp = None
@@ -41,6 +43,7 @@ class RaidSession:
         was_active = self.active
         previous_hp = self.hp
         self.raid_id = raid_state.get("id", self.raid_id)
+        self.boss_id = raid_state.get("boss_id", self.boss_id)
         self.boss_name = raid_state.get("boss_name", self.boss_name)
         self.boss_level = raid_state.get("boss_level", self.boss_level)
         self.max_hp = raid_state.get("max_hp", self.max_hp)
