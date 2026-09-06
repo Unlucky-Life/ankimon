@@ -222,9 +222,21 @@ def create_menu_actions(
     raid_button.triggered.connect(lambda: RaidDialog(mw.raid_session_obj).exec())
     multiplayer_menu.addAction(raid_button)
 
+    def open_trainer_battles():
+        """Open trainer battles with a visible error instead of a silent menu failure."""
+        try:
+            TrainerBotDialog(mw).exec()
+        except Exception as exc:
+            QMessageBox.critical(
+                mw,
+                "Trainer Battles",
+                f"Could not open Trainer Battles:\n{exc}",
+            )
+
     trainer_battle_button = QAction("Trainer Battles", mw)
     trainer_battle_button.setMenuRole(QAction.MenuRole.NoRole)
-    trainer_battle_button.triggered.connect(lambda: TrainerBotDialog(mw).exec())
+    trainer_battle_button.setShortcut(QKeySequence("Ctrl+Shift+B"))
+    trainer_battle_button.triggered.connect(open_trainer_battles)
     multiplayer_menu.addAction(trainer_battle_button)
 
     # Button: Show credits
