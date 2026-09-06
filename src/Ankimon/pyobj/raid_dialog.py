@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox,
-    QPushButton, QListWidget, QProgressBar, QTabWidget, QWidget, QMessageBox,
+    QPushButton, QListWidget, QListWidgetItem, QProgressBar, QTabWidget, QWidget, QMessageBox,
 )
 from PyQt6.QtCore import Qt
 from aqt import mw
