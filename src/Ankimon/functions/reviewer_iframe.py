@@ -42,6 +42,15 @@ def create_iframe_html(main_pokemon, enemy_pokemon, settings_obj, textmsg):
     text = text.replace("'", "")
     nameBottom = main_pokemon.nickname if main_pokemon.nickname else main_pokemon.name
     nameTop = enemy_pokemon.name
+    state = getattr(mw, "multiplayer_state", {}) or {}
+    trainer_match = next(
+        (match for match in state.get("pvp", {}).get("matches", [])
+         if match.get("status") in {"active", "pending"}
+         and match.get("opponent_pokemon")),
+        None,
+    )
+    if trainer_match:
+        nameTop = f"Ash's {nameTop}"
     current_health_top = enemy_pokemon.hp
     current_health_bottom = main_pokemon.hp
     levelTop = enemy_pokemon.level

@@ -270,6 +270,8 @@ class Reviewer_Manager:
                     enemy_lang_name = (get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
                     if self.enemy_pokemon.shiny is True:
                         enemy_lang_name += " ⭐ "
+                    if self._active_trainer_match():
+                        enemy_lang_name = f"Ash's {enemy_lang_name}"
                     name_display_text = f"{enemy_lang_name} LvL: {self.enemy_pokemon.level}"
                     web_content.body += f'<div id="name-display" class="Ankimon">{name_display_text}</div>'
                     if self.enemy_pokemon.hp > 0:
@@ -367,6 +369,8 @@ class Reviewer_Manager:
                 enemy_lang_name = (get_pokemon_diff_lang_name(int(self.enemy_pokemon.id), int(self.settings.get('misc.language'))).capitalize())
                 if self.enemy_pokemon.shiny is True:
                     enemy_lang_name += " ⭐ "
+                if self._active_trainer_match():
+                    enemy_lang_name = f"Ash's {enemy_lang_name}"
                 name_display_text = f"{enemy_lang_name} LvL: {self.enemy_pokemon.level}"
                 hp_display_text = f"HP: {self.enemy_pokemon.hp}/{self.enemy_pokemon.max_hp}"
                 reviewer.web.eval('document.getElementById("name-display").innerText = "' + name_display_text + '";')

@@ -261,7 +261,8 @@ html, body {
 	width: 48%;
 	height: 76%;
 	right: 2%;
-	top: 8%;
+	top: 24%;
+	z-index: 1;
 }
 
 /* 6 */
