@@ -76,6 +76,7 @@ json_file_structure = addon_dir / "addon_files" / "folder_structure.json"
 type_icon_path_resources = addon_dir / "addon_sprites" / "Types"
 
 team_pokemon_path = addon_dir / "user_files" / "team.json"
+world_state_path = addon_dir / "user_files" / "world_state.json"
 
 #lang routes
 lang_path = addon_dir / "lang"
