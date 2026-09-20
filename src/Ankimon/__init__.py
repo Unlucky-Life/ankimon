@@ -76,6 +76,7 @@ try:
     from .functions.gui_functions import type_icon_path, move_category_path
     from .gui_classes.pokemon_details import *
     from .functions.trainer_functions import xp_share_gain_exp
+    from .functions.world_state import WorldState
 except ImportError as e:
     showWarning(f"Error in importing functions library {e}")
 
@@ -127,6 +128,7 @@ pokemon_collection_obj = PokemonCollection()
 logger = ShowInfoLogger()
 
 data_handler_obj = DataHandler()
+world_state = WorldState.load(world_state_path)
 data_handler_window = DataHandlerWindow(
     data_handler = data_handler_obj
 )
@@ -1694,6 +1696,12 @@ mw.deactivate_trainer_battle = deactivate_trainer_battle
 # Hook into Anki's card review event
 def on_review_card(*args):
     try:
+        # Reviews are the RPG's clock: advance the persistent overworld once
+        # per answered card while leaving the existing battle encounter flow
+        # unchanged.  Route encounters will be consumed by the world UI as it
+        # is added; saving here keeps progress across Anki restarts today.
+        world_state.record_review(correct=True)
+        world_state.save(world_state_path)
         trainer_battle_active = activate_trainer_battle()
         if not trainer_battle_active and getattr(enemy_pokemon, "trainer_match_id", None):
             deactivate_trainer_battle()
